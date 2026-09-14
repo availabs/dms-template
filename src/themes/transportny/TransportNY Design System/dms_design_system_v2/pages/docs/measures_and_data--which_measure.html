@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Which measure should I use? · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="reference" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · reference</div>
+          <h1 class="doc-title">Which measure should I use?</h1>
+          <p class="doc-lede">One decision table across the reliability, delay, speed and coverage measures on the platform. Find your question in the first column and open the measure page in the second. Written for planners and analysts. It assumes you have read <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a>.</p>
+          <div class="stamps">
+            <span class="type">reference</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="reliability-or-delay">Reliability or delay?</h2>
+          <p>Reliability is a ratio of two travel-time percentiles on one segment. It says how much worse a bad trip is than a typical one, and it is blind to how many vehicles were on the road. Delay is time lost below a threshold speed, multiplied by the vehicles present. It says how much time the network lost, and it scales with traffic volume.</p>
+          <p>Thin data pushes the two families in opposite directions. It inflates the reliability ratios and deflates the delay measures. So when reliability and delay disagree across years, check <a href="measures_and_data--measures--coverage.html">Data coverage</a> before concluding anything about the road.</p>
+          <p>Delay comes from two pipelines. The Macro View's <a href="measures_and_data--measures--phed.html">PHED</a> and <a href="measures_and_data--measures--ted.html">TED</a> are annual, per segment, on 15-minute bins, with a free-flow reference by default. The TSMO dashboards' <a href="measures_and_data--measures--excessive_delay.html">excessive delay</a> is monthly, on 5-minute slices, against the posted speed limit, with a median baseline and cause buckets. Never join a figure from one to a figure from the other.</p>
+
+          <h2 id="the-decision-table">The decision table</h2>
+          <p>One question per row: the measure, the reason, and the common wrong turn. Most combinations of variant and question are wrong for most purposes. Pick from this table and nothing else.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>If you want to…</th><th>Use</th><th>Because</th><th>Not this</th></tr></thead>
+            <tbody>
+              <tr><td>Know how much longer a bad trip takes than a typical one, all vehicles</td><td><a href="measures_and_data--measures--lottr.html">LOTTR</a></td><td>The 80th-percentile travel time over the 50th, per segment and period. The federal definition, kept unchanged</td><td>TTTR, which is trucks only. PHED, which is delay</td></tr>
+              <tr><td>Cite the state's reliability against its federal targets</td><td><a href="npmrds--map21.html">MAP-21 PM3 reporting pages</a></td><td>The submittal figures and targets, frozen by 23 CFR 490</td><td>The Macro View, which shows the analytical series</td></tr>
+              <tr><td>Compare truck reliability with a federal figure, or over a large aggregate</td><td><a href="measures_and_data--measures--tttr.html">TTTR</a></td><td>The federal 95th-over-50th ratio. As a statewide length-weighted index it is stable</td><td>TTTR₈₀, which is not a federal measure and reads lower by construction</td></tr>
+              <tr><td>Read truck reliability on one segment or corridor</td><td><a href="measures_and_data--measures--tttr80.html">TTTR₈₀</a></td><td>It reaches ±0.05 precision at 195 bins against TTTR's 57,832. 68.8 % of segments clear its bar against 1.15 % for TTTR</td><td>TTTR, which is not estimable per segment on this network</td></tr>
+              <tr><td>Know how many vehicle-hours a segment loses to congestion in a year</td><td><a href="measures_and_data--measures--ted.html">TED</a></td><td>All hours, in vehicle-hours, per segment, optionally per mile</td><td>LOTTR, a ratio that says nothing about how many vehicles were delayed</td></tr>
+              <tr><td>Know peak-period delay per person, next to the federal figure</td><td><a href="measures_and_data--measures--phed.html">PHED</a></td><td>The federal peak periods, weighted by occupancy</td><td>TED, which counts all hours in vehicle-hours</td></tr>
+              <tr><td>Know how much delay there is and whether it is growing (the default delay question)</td><td><a href="measures_and_data--measures--phed.html#the-four-variants">PHED or TED, anchored free-flow variant</a></td><td>A fixed reference window, so year-over-year change is real rather than the yardstick moving. Keeps the 20 mph floor, so it stays comparable with the federal figure</td><td>The own-year free-flow variant, whose reference tracks traffic and cannot measure deterioration</td></tr>
+              <tr><td>Compare delay across functional classes, or find where congestion is worst</td><td><a href="measures_and_data--measures--phed.html#the-four-variants">PHED or TED, relative variant</a></td><td>Required, not optional. With the floor in place an arterial figure is about 90 % floored and a freeway's about 3 %, so a floored comparison compares the floor, not congestion</td><td>Any floored variant</td></tr>
+              <tr><td>Measure delay against the posted speed limit</td><td><a href="measures_and_data--measures--phed.html#the-four-variants">PHED or TED, posted speed limit variant</a></td><td>The federal formula: the greater of 20 mph and 60 % of the limit. It measures degradation from a policy number</td><td>Reading it as achievable-speed delay. A road that cannot reach its limit reports delay in normal operation</td></tr>
+              <tr><td>Bridge to Macro View figures published before the anchored variant existed</td><td><a href="measures_and_data--measures--phed.html#the-four-variants">PHED or TED, own-year free-flow variant</a></td><td>Transitional only. Its reference tracks prevailing traffic almost perfectly, so it cannot see multi-year deterioration</td><td>Starting new analysis on it</td></tr>
+              <tr><td>See what speed a share of trips beat</td><td><a href="measures_and_data--measures--percentile_speed.html">Percentile speed</a></td><td>Eight percentiles of observed speed, the floating-car view. The distribution behind the ratios</td><td>A reliability ratio, which hides the speeds themselves</td></tr>
+              <tr><td>Decide whether a year-over-year change is real</td><td><a href="measures_and_data--measures--coverage.html">Data coverage</a>, first</td><td>Coverage moves in nine eras between 2017 and 2026 and confounds every other measure on the map</td><td>Differencing two years without checking their era tags</td></tr>
+              <tr><td>Report a region's monthly delay, its causes and its cost</td><td><a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a> with <a href="measures_and_data--measures--delay_attribution.html">Delay attribution</a> and <a href="measures_and_data--measures--cost_of_congestion.html">Cost of congestion</a></td><td>The operational pipeline: 5-minute slices, the posted-limit threshold, a median baseline, one row per segment and month, cause buckets from TRANSCOM events</td><td>PHED or TED, which are annual, per segment and use a different threshold. Never join the two</td></tr>
+              <tr><td>Measure what incidents or work zones cost</td><td><a href="measures_and_data--measures--incident_delay_and_clearance.html">Incident delay and clearance</a> · <a href="measures_and_data--measures--work_zone_delay.html">Work-zone delay</a></td><td>Per-event footprints summed from the attribution table, by category</td><td>Total excessive delay, which includes the recurrent delay an event did not cause</td></tr>
+              <tr><td>Quote a clearance time</td><td><a href="measures_and_data--measures--incident_delay_and_clearance.html">Incident delay and clearance</a>, with its coverage badge</td><td>Verification timestamps exist on 20.1 % of events and lanes-open on 42.7 %. The badge says how many events the figure rests on</td><td>A median without its badge</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="two-axes-that-move-independently">Two axes that move independently</h2>
+          <p>There is no single delay variant that is right for everything, and pretending otherwise would be the real error. Two choices are independent. <strong>Which reference</strong> the threshold is 60 % of governs whether change over time is measurable. An own-year free-flow reference moves with prevailing traffic, so it cannot register deterioration. A reference anchored to a fixed window can. <strong>Whether the 20 mph floor applies</strong> governs whether road classes compare to each other. The floor governs 62.7 % of all measured delay and 89.7 % on principal arterials, but 1.3 % on Interstates.</p>
+          <p>The anchored variant answers the common question. The relative variant answers the cross-class question. The posted-limit variant reproduces the federal formula. The own-year variant exists only to bridge to earlier figures. <a href="measures_and_data--measures--phed.html#the-four-variants">The four threshold variants</a> lists each with its reference and floor.</p>
+
+          <h2 id="before-you-quote-a-delay-figure">Before you quote a delay figure</h2>
+          <ul>
+            <li><strong>Check the coverage era.</strong> Every published row carries an era tag for each stream and a flag when the year crosses a boundary. Use the tag that matches the measure's stream. See <a href="measures_and_data--concepts--coverage_eras_and_comparability.html">Coverage eras and comparability</a>.</li>
+            <li><strong>Check the AADT vintage.</strong> Delay scales linearly with traffic volume, and volume comes from an estimated annual average daily traffic (AADT) dataset with its own revision cycle. On a fixed panel of identical segments, directional AADT fell 14.9 % between 2021 and 2022. Traffic does not do that. Read a multi-year delay series per unit of AADT, or pin one vintage. See <a href="measures_and_data--concepts--aadt_and_vintage.html">AADT and its vintage</a>.</li>
+            <li><strong>Check the PM-peak window.</strong> LOTTR and TTTR compute their PM peak over 16:00–19:59. PHED computes it over 15:00–18:59 and publishes it under the same label. Do not join the two. See <a href="measures_and_data--concepts--peak_periods_and_epochs.html">Peak periods and epochs</a>.</li>
+            <li><strong>Know what is missing.</strong> 61 % of network mileage is absent from the Macro View's delay family. Those segments have no AADT, no speed limit, or fail the AADT gate. A statewide delay total from the Macro View is a total over the 39 % that qualifies.</li>
+          </ul>
+          <div class="callout basis"><span class="k">basis</span>The figures on this page are CY 2025, statewide, all vehicles unless the sentence names trucks, on the full monitored network, from the analytical series. The AADT figure is a fixed panel of segments, 2017 to 2022.</div>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Measures &amp; Methodology page, published 2026-08-28, §03 "Which delay measure should I use?" and §05 "Two traps when reading across years and measures".</li>
+            <li>pm3 provenance record, §9 (the decision table and the deprecation of the own-year reference, r = +0.998), §10 (the floor: 62.7 %, 89.7 %, 1.3 %), §5 (rule R9).</li>
+            <li>pm3 precision module: 195 bins against 57,832; 68.8 % against 1.15 % of segments clearing the ±0.05 bar.</li>
+            <li>NPMRDS data-quality atlas: the fixed-panel AADT series (−14.9 % between 2021 and 2022) and the 61 % of mileage absent from the delay family.</li>
+            <li>TSMO Data &amp; Methodology page: the excessive-delay formula (5-minute slices, posted limit, TMC × month) and the TIM timestamp completeness figures (42.7 %, 20.1 %).</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 2a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data.html">Measures &amp; Data</a>
+          <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a>
+          <a href="start--which_tool.html">Which tool answers my question?</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

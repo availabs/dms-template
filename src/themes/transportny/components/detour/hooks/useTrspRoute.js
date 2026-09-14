@@ -1,25 +1,55 @@
 import { useCallback, useRef, useState } from "react";
 import { resolveTrspRoute } from "./resolveTrspRoute";
+import { chooseAlgorithm } from "./haversineMiles";
+
+// Session-scoped cache for a finished route computation (both directions, closed + open baseline)
+// - repeatedly testing the same closed segment (pressing "Get detour" again after "Clear detour",
+// switching modes and coming back) skips all four backend searches instead of re-paying them every
+// time. Keyed by the closed segment(s) + start/end, so a genuinely different pick never collides.
+const CACHE_PREFIX = "detour-route-cache:";
+const cacheKey = (start, end, excludedEdgeIds) =>
+  `${CACHE_PREFIX}${JSON.stringify(excludedEdgeIds || [])}:${start.lon},${start.lat}:${end.lon},${end.lat}`;
+const readCache = (key) => {
+  try {
+    const raw = sessionStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+const writeCache = (key, value) => {
+  try {
+    sessionStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    // quota exceeded or storage unavailable - the computation still succeeded either way
+  }
+};
+const clearCache = (key) => {
+  try {
+    sessionStorage.removeItem(key);
+  } catch {
+    // no-op
+  }
+};
 
 // Detour plugin's own copy of the route-fetch lifecycle - own state, not shared with
 // ../../routing/hooks/useTrspRoute.js.
 //
-// Computes BOTH travel directions through the closed segment (2026-08-19, user's own framing:
-// "it can be different for the both ways... explore those all" - a river-crossing analogy for how
-// turn restrictions can make the two directions genuinely different routes, not just the same
-// route reversed). `routes` shape: { AtoB: {shortest,fastest}|null, BtoA: {shortest,fastest}|null,
-// AtoBError, BtoAError } | null, where A=start, B=end as derived in comp.jsx.
+// Computes BOTH travel directions through the closed segment - turn restrictions can make the two
+// directions genuinely different routes, not just the same route reversed. `routes` shape:
+// { AtoB: {shortest,fastest}|null, BtoA: {shortest,fastest}|null, AtoBError, BtoAError } | null,
+// where A=start, B=end as derived in comp.jsx.
 //
-// 2026-08-20: also fetches the BASELINE ("open," no exclusion) route for the same two directions,
-// alongside the closed/detour one - the "closure impact" comparison the panel now shows (distance/
-// time/edges, open vs. closed, with the delta). Same shape as `routes`, stored separately as
-// `baselineRoutes` so the panel can show both without conflating them.
+// Also fetches the BASELINE ("open," no exclusion) route for the same two directions, alongside
+// the closed/detour one - the "closure impact" comparison the panel shows (distance/time/edges,
+// open vs. closed, with the delta). Same shape as `routes`, stored separately as `baselineRoutes`
+// so the panel can show both without conflating them.
 //
 // Direction SELECTION (which of AtoB/BtoA is currently shown) does NOT live here - comp.jsx reads
 // it from the shared plugin state (`state.symbology.pluginData.detour.direction`), the same store
-// backing this plugin's internalPanel.jsx controls (2026-08-19 follow-up: "use this window to put
-// the button for the last both direction stuff"). Keeping one source of truth for that selection.
-export const useTrspRoute = (conflationViewId, pgEnv) => {
+// backing this plugin's internalPanel.jsx controls. Keeping one source of truth for that
+// selection.
+export const useTrspRoute = (pgEnv) => {
   const [routes, setRoutes] = useState(null);
   const [baselineRoutes, setBaselineRoutes] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState("shortest"); // "shortest" | "fastest"
@@ -32,18 +62,38 @@ export const useTrspRoute = (conflationViewId, pgEnv) => {
   // (e.g. a one-way restriction makes only one direction routable) while the other does. Losing
   // the working direction because the other failed would hide exactly the asymmetry this feature
   // exists to surface. Used for both the closed (excluded) and open (baseline) fetches below.
-  const fetchBothDirections = (start, end, excludedEdgeIds) =>
-    Promise.allSettled([
-      resolveTrspRoute(start, end, conflationViewId, pgEnv, excludedEdgeIds),
-      resolveTrspRoute(end, start, conflationViewId, pgEnv, excludedEdgeIds),
+  const fetchBothDirections = (start, end, excludedEdgeIds) => {
+    const algorithm = chooseAlgorithm(start, end);
+    return Promise.allSettled([
+      resolveTrspRoute(start, end, pgEnv, excludedEdgeIds, algorithm),
+      resolveTrspRoute(end, start, pgEnv, excludedEdgeIds, algorithm),
     ]).then(([AtoBResult, BtoAResult]) => ({
       AtoB: AtoBResult.status === "fulfilled" ? AtoBResult.value : null,
       BtoA: BtoAResult.status === "fulfilled" ? BtoAResult.value : null,
       AtoBError: AtoBResult.status === "rejected" ? AtoBResult.reason?.message : null,
       BtoAError: BtoAResult.status === "rejected" ? BtoAResult.reason?.message : null,
     }));
+  };
+
+  // The key the currently-shown routes/baselineRoutes belong to - reset() needs this to purge the
+  // right cache entry, since it receives no arguments from the caller.
+  const activeCacheKeyRef = useRef(null);
 
   const getRoute = useCallback((start, end, excludedEdgeIds) => {
+    const key = cacheKey(start, end, excludedEdgeIds);
+    activeCacheKeyRef.current = key;
+
+    const cached = readCache(key);
+    if (cached) {
+      requestIdRef.current++; // invalidate any in-flight request from a previous getRoute() call
+      setRoutes(cached.routes);
+      setBaselineRoutes(cached.baselineRoutes);
+      setSelectedVariant("shortest");
+      setError(null);
+      setLoading(false);
+      return;
+    }
+
     const requestId = ++requestIdRef.current;
     setLoading(true);
     setError(null);
@@ -61,14 +111,17 @@ export const useTrspRoute = (conflationViewId, pgEnv) => {
         setRoutes(closed);
         setBaselineRoutes(open);
         setSelectedVariant("shortest");
+        writeCache(key, { routes: closed, baselineRoutes: open }); // only cache a real success
       }
       setLoading(false);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conflationViewId, pgEnv]);
+  }, [pgEnv]);
 
   const reset = useCallback(() => {
     requestIdRef.current++;
+    if (activeCacheKeyRef.current) clearCache(activeCacheKeyRef.current);
+    activeCacheKeyRef.current = null;
     setRoutes(null);
     setBaselineRoutes(null);
     setSelectedVariant("shortest");

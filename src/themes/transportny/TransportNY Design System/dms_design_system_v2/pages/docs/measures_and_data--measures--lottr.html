@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>LOTTR · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  measures_and_data--measures--lottr.html · IA page 51 · type measure. Phase 2a, 2026-09-04.
+  Sources: macroview/measures.js (answers/definition verbatim, threshold 1.50), _seed--npmrds-measures.html (281670 card),
+  data-types/pm3/PROVENANCE.md §2 §5 §7 §11, pm3/lib/precision.js (curve, MIN_N), pm3/downloadManifest.js MEASURED,
+  live TSMO Reliability methodology band (periods, occupancy 1.7), NPMRDS data-quality atlas (29.1/9.2/17.8, 24.3, 56.0/7.3).
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="measure" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · measure</div>
+          <h1 class="doc-title">Level of Travel Time Reliability (LOTTR).</h1>
+          <p class="doc-lede">How much longer a bad trip takes than a typical one, per segment and per period. This is the canonical definition of the analytical series shown in the Macro View. It assumes you know what a TMC segment is.</p>
+          <div class="stamps">
+            <span class="type">measure</span>
+            <span>applies to · NPMRDS Macro View (www/npmrds)</span>
+            <span>methodology 2026-08 (pm3 analytical series)</span>
+            <span>last reviewed · 2026-09-04</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-it-answers">What it answers</h2>
+          <p><strong>How much longer a bad trip takes than a typical one.</strong> The 80th-percentile travel time divided by the 50th, per segment per peak period.</p>
+          <p>LOTTR is a federal measure under 23 CFR 490 subpart E. New York submits it to the Federal Highway Administration (FHWA) every year. The platform also computes its own analytical version from the same feed. This page documents the analytical version. The submitted figures are on the <a href="npmrds--map21.html">MAP-21 PM3 reporting pages</a>. <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a> explains the difference.</p>
+          <div class="callout basis"><span class="k">basis</span>Every figure on this page is CY 2025, statewide, all vehicles, the full monitored network, unless the sentence says otherwise.</div>
+
+          <h2 id="how-it-is-computed">How it is computed</h2>
+          <ol class="steps">
+            <li>Take the segment's all-vehicle travel times for the calendar year. The feed reports one value per 5-minute epoch.</li>
+            <li>Average the epochs into 15-minute reporting bins. A bin counts as present when any one of its three epochs is present.</li>
+            <li>Assign each bin to a period: weekday AM 06:00–09:59, weekday midday 10:00–15:59, weekday PM 16:00–19:59, weekend 06:00–19:59.</li>
+            <li>Within each period, take the 80th-percentile and the 50th-percentile bin travel time.</li>
+            <li>Divide the first by the second. The ratio is published to four decimal places, per segment, per period, per year.</li>
+          </ol>
+          <div class="formula">LOTTR = TT₈₀ ÷ TT₅₀
+            <span class="var">TT₈₀ = the 80th-percentile travel time of the segment's 15-minute bins in the period</span>
+            <span class="var">TT₅₀ = the 50th-percentile (median) travel time of the same bins</span>
+            <span class="var">computed per segment × period × calendar year · all-vehicle stream · no weighting</span>
+          </div>
+          <p>The federal roll-up reads the ratio differently. A segment is reliable when every period stays below 1.50. The reported figure is the share of person-miles on reliable segments, weighting each segment by AADT, an average occupancy of 1.7 and length. The Macro View shows the per-segment ratio for one selected period instead.</p>
+
+          <h2 id="parameters-and-edge-rules">Parameters and edge rules</h2>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Parameter</th><th>Value</th><th>Source</th></tr></thead>
+            <tbody>
+              <tr><td>Threshold</td><td>Unreliable at LOTTR ≥ 1.50. The value is also a colour boundary on the Macro View map.</td><td>23 CFR 490 · Macro View measure record</td></tr>
+              <tr><td>Periods</td><td>AM peak · midday · PM peak · weekend. The PM peak is 16:00–19:59.</td><td>23 CFR 490.511 · pm3 provenance §11</td></tr>
+              <tr><td>Vehicle stream</td><td>All vehicles. No truck fallback.</td><td>pm3 provenance §11</td></tr>
+              <tr><td>Missing data</td><td>Nothing is imputed and nothing is dropped. A row with zero observations carries a ratio of 1 and a bin count of 0. Read the bin count first.</td><td>pm3 precision module</td></tr>
+              <tr><td>Minimum sample</td><td>None enforced. The bar for ±0.05 precision is 707 bins and is published beside each row's own count.</td><td>pm3 precision module</td></tr>
+              <tr><td>Road system</td><td>Every monitored segment: Interstate, non-Interstate NHS and the expanded network NYSDOT licenses.</td><td>Macro View</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="the-choices-made-and-why">The choices made, and why</h2>
+          <ul>
+            <li><strong>The 80/50 percentile pair is kept unchanged.</strong> It is the federal definition, so the analytical series stays readable next to the submittal.</li>
+            <li><strong>Nothing is suppressed for thin sample.</strong> A segment with few observations still publishes and carries its own precision columns. We flag, never gate. Only 0.16 % of directional vehicle-miles travelled (VMT) sit below the bar, so gating would remove short segments for the wrong reason and bias every roll-up toward well-observed urban segments.</li>
+            <li><strong>The 15-minute mean was inherited, not chosen.</strong> Averaging three epochs into a bin is the largest outlier suppressor in the pipeline. A screen applied to epochs reaches 5.3 times further than the same bound applied to bin means (1.72 % of epochs against 0.33 % of bins). This is not imputation under 23 CFR 490.509(b): nothing is replaced or dropped.</li>
+            <li><strong>LOTTR is the most outlier-robust measure published here.</strong> The 80th percentile ignores the top 0.1 % of trips by construction. Grouping segments by how heavy their own tail is barely moves it.</li>
+          </ul>
+
+          <h2 id="how-much-to-trust-it">How much to trust it</h2>
+          <p>A precision band is published on every row. It was measured by down-sampling real segments, 100 replicates per sample size, and recording the spread of the ratio against each segment's full-sample value.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th class="num">Bins behind the ratio</th><th class="num">Expected spread (standard deviation)</th></tr></thead>
+            <tbody>
+              <tr><td class="num">25</td><td class="num">0.079</td></tr>
+              <tr><td class="num">50</td><td class="num">0.056</td></tr>
+              <tr><td class="num">100</td><td class="num">0.040</td></tr>
+              <tr><td class="num">250</td><td class="num">0.024</td></tr>
+              <tr><td class="num">500</td><td class="num">0.016</td></tr>
+              <tr><td class="num">1,000</td><td class="num">0.007</td></tr>
+            </tbody>
+          </table></div>
+          <p>The curve falls faster than the square-root rule because a finite-population correction bites once the count nears the roughly 1,385 bins an AM-peak year contains. The bar for ±0.05 precision on 90 % of segments is <strong>707 bins</strong>. <strong>85.0 % of CY 2025 segments clear it.</strong> That figure is a share of segments meeting the precision bar. It is not a reliability percentage.</p>
+          <p>Coverage moves the measure. A coverage change of the size actually observed between eras moves LOTTR about 3 % and the flagged-unreliable population about 23 % relative. Thin-but-present data pushes LOTTR <strong>up</strong>, because a high percentile of a small sample skews high.</p>
+
+          <h2 id="worked-example">Worked example</h2>
+          <p>Statewide, CY 2025, all vehicles, full monitored network: <strong>29.1 %</strong> of segments are unreliable by segment count, <strong>9.2 %</strong> by mileage and <strong>17.8 %</strong> by VMT. Say which one you mean.</p>
+          <p><div class="callout note"><span class="k">example pending</span>A per-segment worked example with live values (the figures named above, read from the Macro View or the TSMO page with this measure selected) is still pending; the statewide figures on this page are measured values with their sources listed under References.</div></p>
+
+          <h2 id="known-limits">Known limits</h2>
+          <ul>
+            <li><strong>Short segments are fragile.</strong> 24.3 % of segments are under 0.05 miles. They are flagged unreliable 7.7 times more often than longer segments (56.0 % against 7.3 %). Weight by mileage or VMT before drawing a network conclusion.</li>
+            <li><strong>The PM peak label means two windows.</strong> LOTTR and TTTR compute their PM peak over 16:00–19:59. PHED computes it over 15:00–18:59 and publishes it under the same label. Do not join a LOTTR PM-peak figure to a PHED PM-peak figure.</li>
+            <li><strong>The feed is filtered before it arrives.</strong> Zero of 1,695,358,623 CY 2025 records fall below 2 mph. The slowest readings are clamped upstream and cannot be audited from this side.</li>
+            <li><strong>A precision band is advisory.</strong> The row still publishes when its count is below the bar.</li>
+          </ul>
+
+          <h2 id="comparability-across-years-and-versions">Comparability across years and versions</h2>
+          <p>Do not compare LOTTR across a coverage-era boundary without a coverage control. The feed's completeness moves in nine abrupt, month-aligned eras between 2017 and 2026. Check the era tag and its boundary flag on both years before differencing them. 2024 spans three all-vehicle eras and is the least comparable year in the archive. 2025 sits inside one era. <a href="measures_and_data--concepts--coverage_eras_and_comparability.html">Coverage eras and comparability</a> carries the era table.</p>
+          <p>The federal formula is frozen. The analytical series may change on evidence, and every change is dated in <a href="measures_and_data--methodology_changes.html">Methodology changes</a>.</p>
+
+          <h2 id="where-this-appears">Where this appears</h2>
+          <div class="where">
+            <a href="npmrds--macro_view.html">Macro View · analytical</a>
+            <a href="npmrds--macro_view--download.html">Macro View download</a>
+            <a href="npmrds--segment.html">Segment (TMC) page</a>
+            <a href="npmrds--map21.html">MAP-21 PM3 pages · federal</a>
+            <a href="tsmo--reliability.html">TSMO Reliability dashboard · federal</a>
+            <a href="tsmo--start.html">TSMO home · reliability cards</a>
+          </div>
+
+          <h2 id="revision-log">Revision log</h2>
+          <ul>
+            <li>2026-08-18 · the 1.50 threshold became a colour boundary on the Macro View map. No change to the computation.</li>
+            <li>2026-08-28 · the Measures &amp; Methodology rewrite published, adding the measured precision, coverage and short-segment figures.</li>
+            <li>2026-09-04 · this page created from that rewrite.</li>
+          </ul>
+
+          <h2 id="reproducibility">Reproducibility</h2>
+          <p>Open the <span class="ui">Macro View</span>, select <span class="ui">LOTTR</span>, a year and a period, then build the download. The CSV or GPKG carries the ratio per period, the bin count, the precision band, the minimum-n bar and the era tags. A <code>PM3_README.txt</code> inside the package restates the caveats for that year. The federal figure comes from the MAP-21 annual download instead. See <a href="npmrds--macro_view--download.html">Download data from the Macro View</a>.</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>23 CFR 490 subpart E, National Performance Management Measures to Assess Performance of the National Highway System (LOTTR definition, periods, 1.50 threshold).</li>
+            <li>FHWA-HIF-18-040, National Performance Measures for Congestion, Reliability, and Freight, and CMAQ Traffic Congestion: General Guidance and Step-by-Step Metric Calculation Procedures (2018).</li>
+            <li>FHWA-HIF-18-024, Computation Procedure for Travel Time Based and Percent Non-Single Occupancy Vehicle Travel Performance Measures (2018).</li>
+            <li>pm3 provenance record, §2 (the 15-minute mean), §5 (coverage eras, rule R9), §7 (precision), §11 (the PM-peak windows).</li>
+            <li>pm3 precision module: measured down-sampling curve, 707-bin bar, 85.03 % reach on CY 2025.</li>
+            <li>pm3 download manifest, MEASURED block: coverage sensitivity (~3 % / ~23 %).</li>
+            <li>NPMRDS data-quality atlas (measure analysis on CY 2025): 29.1 / 9.2 / 17.8 %; 24.3 % short segments; 56.0 % against 7.3 %.</li>
+            <li>TSMO Reliability dashboard, methodology band: period hours and the person-miles weighting (occupancy 1.7).</li>
+            <li>Macro View measure record: the verbatim strings above and the 1.50 threshold.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-04 created (phase 2a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--measures--tttr.html">TTTR</a>
+          <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a>
+          <a href="measures_and_data--measures--coverage.html">Data coverage</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

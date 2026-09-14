@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY — Westchester 2026: IEM Plan vs. the Live Site</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-grn': '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+  <style>
+    .tbl { width:100%; border-collapse:collapse; }
+    .tbl th { font-family:'Source Sans 3',system-ui,sans-serif; font-size:11px; font-weight:700; text-transform:uppercase;
+               letter-spacing:0.06em; color:#6D96AE; text-align:left; padding:8px 10px; border-bottom:2px solid #E0EBF0; white-space:nowrap; }
+    .tbl td { font-family:'Source Sans 3',system-ui,sans-serif; font-size:13.5px; line-height:1.5; color:#37576B;
+               padding:9px 10px; border-bottom:1px solid #F3F8F9; vertical-align:top; }
+    .tbl tr:last-child td { border-bottom:none; }
+    .tbl code { font-size:12px; background:#F3F8F9; padding:1px 4px; border-radius:3px; color:#2D3E4C; }
+    .num { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap; }
+    .scroller { overflow-x:auto; }
+    h3.sub { font-family:'Oswald',sans-serif; font-weight:500; font-size:22px; color:#2D3E4C; text-transform:uppercase;
+             letter-spacing:-0.01em; line-height:1.15; }
+    p.body { font-family:'Source Sans 3',system-ui,sans-serif; font-size:16px; line-height:1.65; color:#37576B; }
+    p.body strong { color:#2D3E4C; font-weight:600; }
+    p.body code, li code, td code { font-size:13px; }
+    p.body code { background:#F3F8F9; padding:1px 5px; border-radius:3px; color:#2D3E4C; }
+    li.body { font-family:'Source Sans 3',system-ui,sans-serif; font-size:16px; line-height:1.65; color:#37576B; }
+    li.body strong { color:#2D3E4C; font-weight:600; }
+    .kicker { font-family:'Source Sans 3',system-ui,sans-serif; font-size:12px; font-weight:600; text-transform:uppercase;
+              letter-spacing:0.08em; color:#6D96AE; }
+    .pill { display:inline-block; font-family:'Source Sans 3',system-ui,sans-serif; font-size:11px; font-weight:700;
+            text-transform:uppercase; letter-spacing:0.04em; padding:2px 8px; border-radius:99px; white-space:nowrap; }
+    .p-done { background:#54B99B; color:#fff; }
+    .p-open { background:#EAAD43; color:#3a2a05; }
+    .p-void { background:#E0EBF0; color:#37576B; }
+    .p-stop { background:#DD524C; color:#fff; }
+    .callout { border-left:4px solid #DD524C; background:#FDF3F2; border-radius:0 8px 8px 0; padding:16px 20px; }
+    .callout-ok { border-left:4px solid #54B99B; background:#F1FAF7; border-radius:0 8px 8px 0; padding:16px 20px; }
+    .callout-note { border-left:4px solid #EAAD43; background:#FCF6EC; border-radius:0 8px 8px 0; padding:16px 20px; }
+    .zero { color:#AA2E26; font-weight:700; }
+    .ok { color:#2f8f75; font-weight:600; }
+  </style>
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<!-- ================================================================ HEADER ================================================================ -->
+<div data-dms="layoutGroup" data-name="header">
+  <div class="w-full h-full flex-1 flex flex-row">
+    <div class="flex flex-1 w-full flex-col relative min-h-[200px]">
+      <div class="w-full grid grid-cols-6 md:grid-cols-12">
+        <div class="col-span-6 md:col-span-12">
+          <div class="relative w-full lg:h-[480px] flex flex-col lg:flex-row bg-fit bg-center justify-center">
+            <div class="lg:order-last flex-1 rounded-bl-[395px] bg-gradient-to-r from-[#213440] to-[#1A2732]">
+              <div class="absolute inset-0 opacity-[0.04] rounded-bl-[395px] overflow-hidden pointer-events-none"
+                   style="background:url('../assets/mny/topolines.png');background-size:500px;"></div>
+            </div>
+            <div class="lg:flex-1 top-[150px] sm:top-0">
+              <div class="w-full lg:max-w-[656px] h-full lg:ml-auto flex items-center pt-[100px] sm:pt-[118px] lg:pt-[80px]">
+                <div class="pr-[64px] xl:pl-0 px-[15px]">
+                  <div class="flex flex-col gap-1">
+                    <div class="px-1 z-[5]">
+                      <div class="flex items-center gap-1 font-proxima text-mny-700 text-[14px] sm:text-[16px] font-semibold leading-none">
+                        Plan to Act &middot; IEM Plan vs. the Live Site
+                      </div>
+                    </div>
+                    <div class="text-[36px] sm:text-[72px] tracking-[0px] items-center font-medium font-display text-mny-900 sm:leading-[100%] uppercase">
+                      Westchester<br>Gap Analysis
+                    </div>
+                  </div>
+                  <div class="font-proxima text-[16px] leading-[24px] text-mny-700 w-full p-1 pt-2 max-w-[470px]">
+                    IEM is right that the boxes are empty &mdash; but not for the reason anyone assumed.
+                    <strong>177 sections are written, correct, and invisible</strong>, because no page in
+                    the pattern has ever been published.
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2 mt-4 px-1">
+                    <span class="px-3 py-1.5 bg-mny-red border border-mny-red rounded-full shadow-sm font-proxima text-[12px] font-[700] text-white">177 sections unpublished</span>
+                    <span class="px-3 py-1.5 bg-mny-y700 border border-mny-y700 rounded-full shadow-sm font-proxima text-[12px] font-[700] text-[#3a2a05]">4 capability tables empty</span>
+                    <span class="px-3 py-1.5 bg-mny-grn border border-mny-grn rounded-full shadow-sm font-proxima text-[12px] font-[700] text-white">Annexes live &amp; rendering</span>
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] text-mny-400">Verified live 10 Sep 2026</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOPNAV -->
+<div class="fixed top-0 z-20 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[32px] xl:px-[64px] pointer-events-none">
+  <nav>
+    <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg shadow pointer-events-auto relative">
+      <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
+        <a href="#"><div class="h-12 pl-3 pr-2 flex items-center"><img class="min-h-12" src="../assets/mny/mnyLogo.svg" alt="MitigateNY"></div></a>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto">
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Know the Environment</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Assess Risk</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[600] text-mny-900 px-2 cursor-pointer border-b-2 border-mny-y700">Plan to Act</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Explore Progress</div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- ================================================================ STAT STRIP ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+        <div class="pt-8 pb-2 px-2">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-red">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Written but invisible</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">177</p>
+              <p class="font-proxima text-[11px] text-mny-red font-[600] mt-1">334,761 ch in draft, 0 published</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-y700">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Blank because IEM left it blank</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">68</p>
+              <p class="font-proxima text-[11px] text-mny-y700 font-[600] mt-1">of the 71 empty boxes</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-grn">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Annex rows live</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">45 / 45</p>
+              <p class="font-proxima text-[11px] text-mny-grn font-[600] mt-1">642,739 ch, already rendering</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-900">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Workbook rows loaded</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">4,169</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">HoC 844 &middot; Cap 2,039 &middot; Actions 1,095 &middot; Roles 191</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-red">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Tables not drawing data</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">40</p>
+              <p class="font-proxima text-[11px] text-mny-red font-[600] mt-1">incl. all 4 Local Capabilities tables</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-y700">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">CSV rows</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">364</p>
+              <p class="font-proxima text-[11px] text-mny-400 mt-1">16 types, every one with a target id</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================================ CONTENT ================================================================ -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1">
+        <div data-dms="layoutGroup" data-name="content">
+
+          <!-- ============ 1 · THE HEADLINE ============ -->
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
+                <div class="lg:col-span-7">
+                  <p class="kicker mb-2">The headline</p>
+                  <h2 class="font-display font-[500] text-[36px] text-mny-900 uppercase leading-[1.05] tracking-[-0.02em] mb-4">
+                    The content is there.<br>Nobody can see it.
+                  </h2>
+                  <div class="space-y-4 max-w-[660px]">
+                    <p class="body">
+                      Pattern <code>2448336</code> holds <strong>256 Local Context (Annotation) boxes</strong>.
+                      In <code>draft_sections</code>, <strong>185 of them have text</strong>. In the published
+                      <code>sections</code> that every visitor actually sees, <strong>8 do</strong> &mdash; and
+                      those 8 are county-template pre-fills that were already there.
+                    </p>
+                    <p class="body">
+                      So <strong>177 sections, 334,761 characters of IEM&rsquo;s base plan</strong>, were loaded
+                      correctly on 8 September and have been invisible ever since. Draft and published are separate
+                      component rows in DMS; writing to the draft changes nothing on screen until the page is
+                      published. <strong>No page in this pattern has ever been published.</strong>
+                    </p>
+                    <p class="body">
+                      This is one action, not 177: publish the 30 affected pages. It accounts for the large
+                      majority of what IEM reported.
+                    </p>
+                  </div>
+                </div>
+                <div class="lg:col-span-5">
+                  <div class="callout mb-4">
+                    <p class="kicker mb-2" style="color:#AA2E26">Seen live, 10 Sep 2026</p>
+                    <p class="body" style="font-size:15px">
+                      <code>/the_local_environment/people_and_communities</code> &mdash; the
+                      <strong>LOCAL CONTEXT</strong> box renders as an empty grey rectangle. Draft section
+                      <code>2454034</code> behind it holds <strong>4,402 characters</strong> of Westchester
+                      demographic narrative. The Demographic Statistics card beside it correctly shows
+                      996.9K population, so the geoid is right and the data layer is working.
+                    </p>
+                  </div>
+                  <div class="callout-note">
+                    <p class="kicker mb-2" style="color:#8a6410">Also worth knowing</p>
+                    <p class="body" style="font-size:15px">
+                      The subdomain changed. Every prior document points at
+                      <code>westchester-2026.mitigateny.org</code>, which now returns <strong>404</strong>.
+                      The pattern&rsquo;s <code>subdomain</code> is <code>westchester</code>, so the live site is
+                      <a class="text-mny-700 underline" href="https://westchester.mitigateny.org/">westchester.mitigateny.org</a>.
+                      Worth confirming with IEM that they were looking at the right one.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="scroller">
+                <table class="tbl">
+                  <thead><tr>
+                    <th>Annotation boxes in pattern 2448336</th><th class="num">Count</th><th>What it means</th>
+                  </tr></thead>
+                  <tbody>
+                    <tr><td>Total Local Context / Annotation slots</td><td class="num">256</td><td>across 50 pages, 1,802 components</td></tr>
+                    <tr><td>Filled in <code>draft_sections</code></td><td class="num ok">185</td><td>the load worked</td></tr>
+                    <tr><td>Filled in published <code>sections</code></td><td class="num zero">8</td><td>6 on Home, 1 on Flooding, 1 on The Risk &mdash; all template pre-fills</td></tr>
+                    <tr><td><strong>Written by the IEM load and invisible</strong></td><td class="num zero"><strong>177</strong></td><td>every row of type <code>mny_unpublished_content</code> in the CSV</td></tr>
+                    <tr><td>Genuinely empty in draft too</td><td class="num">71</td><td>68 of them because IEM&rsquo;s document has the heading and no prose &mdash; see below</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============ 2 · THE THREE SOURCES ============ -->
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+              <p class="kicker mb-2">What IEM sent, and where each part landed</p>
+              <h2 class="font-display font-[500] text-[32px] text-mny-900 uppercase leading-[1.05] tracking-[-0.02em] mb-6">
+                Base plan &middot; annexes &middot; workbook
+              </h2>
+
+              <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="border border-mny-100 rounded-lg p-5">
+                  <span class="pill p-stop mb-3">Loaded, not published</span>
+                  <h3 class="sub mt-3 mb-2">Base plan</h3>
+                  <p class="body" style="font-size:14.5px">
+                    <code>2026 Westchester County HMP Base Plan Draft.docx</code> &mdash; 1,965 blocks,
+                    722 headings, of which <strong>197 carry prose</strong> and 525 are heading-only.
+                    183 content-bearing sections were crosswalked; <strong>177 slots written</strong>,
+                    334,761 characters, read-back verified.
+                  </p>
+                  <p class="body mt-3" style="font-size:14.5px"><strong>Status:</strong> correct in draft,
+                    invisible in view. <span class="zero">Publish is the whole fix.</span></p>
+                </div>
+                <div class="border border-mny-100 rounded-lg p-5">
+                  <span class="pill p-done mb-3">Live now</span>
+                  <h3 class="sub mt-3 mb-2">Annexes</h3>
+                  <p class="body" style="font-size:14.5px">
+                    45 <code>Westchester_Jurisdictional_Annex_*.docx</code> &rarr; the Jurisdictions dataset
+                    (<code>internal_source/1346449/version/1346450</code>). 45 rows, 675 column writes,
+                    642,739 characters across 15 lexical columns.
+                  </p>
+                  <p class="body mt-3" style="font-size:14.5px">
+                    <strong>These render today</strong> &mdash; dataset content is not draft/published, so the
+                    annex prose is already public. Two real gaps: <strong>Mount Pleasant has no annex</strong>,
+                    and 12 annex boxes are empty because the IEM annexes carry those headings with no text.
+                  </p>
+                </div>
+                <div class="border border-mny-100 rounded-lg p-5">
+                  <span class="pill p-open mb-3">Loaded, partly unreachable</span>
+                  <h3 class="sub mt-3 mb-2">Workbook</h3>
+                  <p class="body" style="font-size:14.5px">
+                    <code>20260224_Working Copy Westchester Workbook v2.xlsx</code>. Every sheet reached the
+                    platform. What is failing is not the load &mdash; it is a handful of component filters,
+                    plus columns IEM left blank at source.
+                  </p>
+                  <p class="body mt-3" style="font-size:14.5px">
+                    Detail in sections 4&ndash;6.
+                  </p>
+                </div>
+              </div>
+
+              <div class="scroller mt-8">
+                <table class="tbl">
+                  <thead><tr>
+                    <th>Workbook sheet</th><th class="num">Rows in the file</th><th>Live source</th>
+                    <th class="num">Westchester rows live</th><th>Read</th>
+                  </tr></thead>
+                  <tbody>
+                    <tr><td>Hazards of Concern</td><td class="num">678</td><td><code>1473470 / 1473471</code></td><td class="num">844</td>
+                        <td>720 in the current vocabulary (45 per hazard &times; 16) plus ~79 prior-cycle rows in the old lower-case codes</td></tr>
+                    <tr><td>Capabilities</td><td class="num">2,133</td><td><code>1068273 / 1172519</code></td><td class="num">2,039</td>
+                        <td><span class="ok">Faithful.</span> Column fill rates match the workbook almost exactly</td></tr>
+                    <tr><td>Actions</td><td class="num">768</td><td><code>1029065 / 1074456</code></td><td class="num">1,095</td>
+                        <td>Rows are there and well populated, but the per-hazard tagging did not come across</td></tr>
+                    <tr><td>Roles</td><td class="num">208 (184 with a name)</td><td><code>1473295 / 1473296</code></td><td class="num">191</td><td><span class="ok">Fine</span></td></tr>
+                    <tr><td>Participation</td><td class="num">436 (150 real meetings)</td><td><code>1473468 / 1473469</code></td><td class="num">151</td><td><span class="ok">Fine</span></td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============ 3 · WHY THE BOXES ARE EMPTY ============ -->
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+              <p class="kicker mb-2">The empty Local Context boxes</p>
+              <h2 class="font-display font-[500] text-[32px] text-mny-900 uppercase leading-[1.05] tracking-[-0.02em] mb-4">
+                Three different reasons, and only one is ours
+              </h2>
+              <p class="body max-w-[760px] mb-6">
+                Of the 248 boxes IEM would expect to see content in, <strong>177 have content and are
+                unpublished</strong>, and <strong>71 are genuinely empty</strong>. Of those 71,
+                <strong>68 are empty because the corresponding heading in IEM&rsquo;s own Word document has
+                no prose beneath it.</strong>
+              </p>
+
+              <div class="scroller mb-6">
+                <table class="tbl">
+                  <thead><tr>
+                    <th>Heading in the IEM base plan</th><th class="num">Times it appears</th>
+                    <th class="num">With prose</th><th class="num">Empty</th><th>Effect on the site</th>
+                  </tr></thead>
+                  <tbody>
+                    <tr><td><strong>Local Actions</strong></td><td class="num">16</td><td class="num zero">0</td><td class="num">16</td>
+                        <td>the Local Actions box is blank on all 16 hazard pages</td></tr>
+                    <tr><td><strong>Featured Strategy</strong></td><td class="num">16</td><td class="num zero">0</td><td class="num">16</td>
+                        <td>blank on all 16 hazard pages</td></tr>
+                    <tr><td><strong>Local Capabilities</strong></td><td class="num">16</td><td class="num zero">1</td><td class="num">15</td>
+                        <td>blank on 15 of 16 hazard pages</td></tr>
+                    <tr><td>Overview (per hazard)</td><td class="num">28</td><td class="num">4</td><td class="num">24</td>
+                        <td>platform renders this as a data card, so no loss</td></tr>
+                    <tr><td>General Vulnerability</td><td class="num">16</td><td class="num">6</td><td class="num">10</td>
+                        <td>folded into Local Hazard Summary where prose existed</td></tr>
+                    <tr><td>Featured Event</td><td class="num">16</td><td class="num">12</td><td class="num">4</td><td>&mdash;</td></tr>
+                    <tr><td>Declarations and Their Effects on the County</td><td class="num">16</td><td class="num">13</td><td class="num">3</td><td>&mdash;</td></tr>
+                    <tr><td colspan="5" style="padding-top:14px"><strong>Whole-profile gap:</strong> the Avalanche profile carries all 14 of its headings with
+                        <strong>zero characters under every one</strong>, so all 11 of that page&rsquo;s Annotation boxes are blank.
+                        Across the document, <strong>525 of 722 headings are empty</strong>.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="callout-note">
+                  <p class="kicker mb-2" style="color:#8a6410">Worth putting to IEM plainly</p>
+                  <p class="body" style="font-size:15px">
+                    <em>Local Capabilities</em> and <em>Local Actions</em> are the narrative boxes that sit
+                    directly above the capabilities and actions tables. IEM may have left them blank on purpose,
+                    expecting the tables below to carry the content. That is a reasonable reading of the 2.0
+                    architecture &mdash; and it makes the table problems in sections 4&ndash;6 the real issue,
+                    not the empty boxes.
+                  </p>
+                </div>
+                <div class="callout">
+                  <p class="kicker mb-2" style="color:#AA2E26">The Home page still reads as a template</p>
+                  <p class="body" style="font-size:15px">
+                    Live text on <code>/home</code>: <em>&ldquo;This is a county template for local hazard
+                    mitigation plans. It includes places for counties and jurisdictions to input mitigation
+                    planning content&hellip;&rdquo;</em> This is the first thing IEM and the public see. The
+                    plan&rsquo;s Executive Summary [562] was distributed across chapter landing pages, and the
+                    Letter from the Director [580] was skipped because the document says the signed letter will
+                    be inserted later. Neither replaced the template copy.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============ 4 · HAZARDS OF CONCERN ============ -->
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+              <p class="kicker mb-2">Hazards of Concern &middot; <code>internal_source/1473470/version/1473471</code></p>
+              <h2 class="font-display font-[500] text-[32px] text-mny-900 uppercase leading-[1.05] tracking-[-0.02em] mb-4">
+                The table works. Four of its columns are blank in the workbook.
+              </h2>
+
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div class="lg:col-span-7 space-y-4">
+                  <p class="body">
+                    The jurisdictional Hazards of Concern table draws correctly: <strong>45 rows, one per
+                    jurisdiction</strong>, on every hazard page &mdash; verified live on Flooding, Hail and
+                    Earthquake. The rows are there. What is missing is what is inside them.
+                  </p>
+                  <p class="body">
+                    Four of the five vulnerability columns the table displays are <strong>empty in every one of
+                    IEM&rsquo;s 678 workbook rows</strong>. The workbook&rsquo;s own header for General
+                    Vulnerability &amp; Impact reads <em>&ldquo;get from community insights summary&rdquo;</em>
+                    followed by a SharePoint link &mdash; that content was never pulled into the file.
+                    This is a source gap, not a migration gap: nothing was lost in transfer.
+                  </p>
+                  <p class="body">
+                    Separately, the small <strong>Hazards-of-Concern summary card</strong> at the top of every
+                    hazard page returns nothing, and always will. It filters <code>geoid_juris</code> with the
+                    county geoid, and <code>geoid_juris</code> only ever holds jurisdiction geoids. Its one value
+                    column is <code>general_vulnerability</code>, which is blank anyway, so fixing the filter
+                    alone will not make it render.
+                  </p>
+                </div>
+                <div class="lg:col-span-5">
+                  <div class="scroller">
+                    <table class="tbl">
+                      <thead><tr><th>Workbook column</th><th class="num">Filled</th></tr></thead>
+                      <tbody>
+                        <tr><td>General Vulnerability &amp; Impact</td><td class="num zero">0 / 678</td></tr>
+                        <tr><td>Local Vulnerability &amp; Impact &ndash; Buildings</td><td class="num zero">0 / 678</td></tr>
+                        <tr><td>Local Vulnerability &amp; Impact &ndash; Infrastructure</td><td class="num zero">0 / 678</td></tr>
+                        <tr><td>Local Vulnerability &amp; Impact &ndash; Natural Environment</td><td class="num zero">0 / 678</td></tr>
+                        <tr><td>Local Vulnerability &amp; Impact &ndash; People and Communities</td><td class="num ok">434 / 678</td></tr>
+                        <tr><td>Secondary Hazards</td><td class="num zero">0 / 678</td></tr>
+                        <tr><td>Other Comments</td><td class="num zero">0 / 678</td></tr>
+                        <tr><td>Occurrence Assessment (probability)</td><td class="num ok">475 / 678</td></tr>
+                        <tr><td>Future Occurrence Assessment</td><td class="num ok">353 / 678</td></tr>
+                        <tr><td>Impacted by Climate Change</td><td class="num ok">353 / 678</td></tr>
+                        <tr><td>Reason for Exclusion</td><td class="num ok">199 / 678</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <div class="callout-note mt-6">
+                <p class="kicker mb-2" style="color:#8a6410">A latent trap, not currently biting</p>
+                <p class="body" style="font-size:15px">
+                  Every hazard page carries a <code>hazards</code> page variable still set to the retired
+                  lower-case codes &mdash; <code>riverine</code> on Flooding, <code>winterweat</code> on
+                  Snowstorm, <code>coldwave</code> on Extreme Cold, <code>heatwave</code> on Extreme Heat.
+                  The Hazards of Concern data uses the current title-case names. Today the components ignore the
+                  page variable and use their own correct seed, which is why the tables show 45 rows. The moment
+                  anything starts honouring that variable, every one of these tables drops from 45 rows to about
+                  5. Also note the data stores <code>Ice storm</code> with a lower-case s while the page variable
+                  says <code>Ice Storm</code>.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============ 5 · CAPABILITIES ============ -->
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+              <p class="kicker mb-2">Capabilities &middot; <code>internal_source/1068273/version/1172519</code></p>
+              <h2 class="font-display font-[500] text-[32px] text-mny-900 uppercase leading-[1.05] tracking-[-0.02em] mb-4">
+                2,039 records loaded. The county page can reach 43 of them.
+              </h2>
+              <p class="body max-w-[800px] mb-6">
+                This is the clearest confirmed defect in the report, and it is on our side. All four
+                <strong>Local Capabilities Tables</strong> on
+                <code>/the_plan/capabilities_assessment</code> filter on
+                <code>geoid_juris = &lt;page geoid&gt;</code> <em>and</em> <code>geoid_county = &lt;page geoid&gt;</code>.
+                Passing the county geoid <code>36119</code> into <code>geoid_juris</code> keeps only the 43
+                records whose jurisdiction <em>is</em> the county, and discards the
+                <strong>1,996 municipal capability records IEM supplied</strong>. Verified live on
+                10 September: all four render nothing, while the four <em>State</em> Mitigation Capabilities
+                tables beside them happily show 6,885 / 631 / 1,033 / 7,956 rows from the statewide catalog.
+              </p>
+
+              <div class="scroller mb-6">
+                <table class="tbl">
+                  <thead><tr>
+                    <th>Table</th><th><code>draft_section</code></th><th class="num">Ord</th>
+                    <th class="num">Reachable as configured</th><th class="num">Reachable without the <code>geoid_juris</code> clause</th>
+                    <th class="num">Rendered live</th>
+                  </tr></thead>
+                  <tbody>
+                    <tr><td>Local Capabilities Table &mdash; Planning and Regulatory</td><td><code>2469050</code></td><td class="num">7</td><td class="num">39</td><td class="num ok">1,219</td><td class="num zero">0</td></tr>
+                    <tr><td>Local Capabilities Table &mdash; Administrative and Technical</td><td><code>2463313</code></td><td class="num">13</td><td class="num zero">0</td><td class="num ok">24</td><td class="num zero">0</td></tr>
+                    <tr><td>Local Capabilities Table &mdash; Financial</td><td><code>2450074</code></td><td class="num">19</td><td class="num">43</td><td class="num ok">2,039</td><td class="num zero">0</td></tr>
+                    <tr><td>Local Capabilities Table &mdash; Education / Outreach</td><td><code>2463317</code></td><td class="num">25</td><td class="num">1</td><td class="num ok">151</td><td class="num zero">0</td></tr>
+                  </tbody>
+                </table>
+              </div>
+
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div class="callout">
+                  <p class="kicker mb-2" style="color:#AA2E26">A second, independent defect: whitespace</p>
+                  <p class="body" style="font-size:15px">
+                    Two capability-type values are spelled differently in the filters and in the loaded data,
+                    so they can never match:
+                  </p>
+                  <table class="tbl mt-3">
+                    <thead><tr><th>Filter says</th><th>Data says</th><th class="num">Rows lost</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>Codes/&nbsp;Ordinance/&nbsp;Zoning/&nbsp;Policy/&nbsp;Law/&nbsp;Governance</code></td><td><code>Codes/Ordinance/Zoning/Policy/Law/Governance</code></td><td class="num zero">495</td></tr>
+                      <tr><td><code>Studies and/&nbsp;or Risk Assessment</code></td><td><code>Studies and/or Risk Assessment</code></td><td class="num zero">102</td></tr>
+                    </tbody>
+                  </table>
+                  <p class="body mt-3" style="font-size:14px">
+                    This one is statewide, not Westchester-specific.
+                  </p>
+                </div>
+                <div>
+                  <p class="kicker mb-2">Per-hazard capability tables</p>
+                  <p class="body" style="font-size:15px">
+                    On the hazard pages the capability table is filtered by hazard, and there the limit is the
+                    workbook. IEM tagged capabilities against seven hazards and left nine untagged:
+                  </p>
+                  <div class="scroller mt-3">
+                    <table class="tbl">
+                      <thead><tr><th>Hazard</th><th class="num">Capability records tagged</th><th class="num">Rendered live</th></tr></thead>
+                      <tbody>
+                        <tr><td>Earthquake</td><td class="num">53</td><td class="num zero">0 &nbsp;&larr; anomaly</td></tr>
+                        <tr><td>Flooding</td><td class="num">46</td><td class="num ok">43</td></tr>
+                        <tr><td>Hail</td><td class="num">31</td><td class="num ok">31</td></tr>
+                        <tr><td>Extreme Heat</td><td class="num">29</td><td>not visited</td></tr>
+                        <tr><td>Tornado</td><td class="num">14</td><td>not visited</td></tr>
+                        <tr><td>Coastal Hazards</td><td class="num">8</td><td>not visited</td></tr>
+                        <tr><td>Drought</td><td class="num">6</td><td>not visited</td></tr>
+                        <tr><td>Lightning / Wildfire / Wind</td><td class="num">2 each</td><td>not visited</td></tr>
+                        <tr><td>Avalanche, Extreme Cold, Hurricane, Ice Storm, Landslide, Snowstorm</td><td class="num zero">0</td><td>empty, correctly</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p class="body mt-3" style="font-size:14px">
+                    <strong>Earthquake is the outlier</strong> and needs a look: 53 records are tagged and the
+                    table renders nothing, where Flooding and Hail with the same component shape render fine.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============ 6 · ACTIONS ============ -->
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+              <p class="kicker mb-2">Actions &middot; <code>internal_source/1029065/version/1074456</code></p>
+              <h2 class="font-display font-[500] text-[32px] text-mny-900 uppercase leading-[1.05] tracking-[-0.02em] mb-4">
+                1,095 actions loaded. The site thinks almost all of them are flood actions.
+              </h2>
+
+              <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                <div class="lg:col-span-6 space-y-4">
+                  <p class="body">
+                    The actions themselves came through well &mdash; 1,095 Westchester rows, with problem
+                    statements on 1,089, solutions on all 1,095, action type on 1,087 and priority on 1,080.
+                  </p>
+                  <p class="body">
+                    What did not come through is the <strong>hazard tagging</strong>. IEM&rsquo;s workbook marks
+                    each action against individual hazards in its own per-hazard columns &mdash; Wind on 175
+                    actions, Snowstorm on 135, Hurricane on 128, Coastal Hazards on 112, and so on. In the live
+                    source those columns are all but empty, and hazard association survives only in
+                    <code>primary_hazard_type</code>, which is <strong>776 Flooding out of 1,095</strong>.
+                  </p>
+                  <p class="body">
+                    The hazard pages filter on primary / secondary / tertiary hazard type only. So the Local
+                    Actions card and table are empty on Avalanche, Coastal Hazards, Drought, Hail, Ice Storm and
+                    Tornado, and thin everywhere except Flooding. Confirmed live: <strong>Hail 0 rows,
+                    Earthquake 0 rows, Flooding 355 rows.</strong>
+                  </p>
+                  <p class="body">
+                    The Actions Dashboard tells the same story in one screen: it reports 545 actions across
+                    <strong>seven</strong> hazards &mdash; Flooding 356, Most/all 120, Snowstorm 34, Extreme Heat 6,
+                    Wildfire 5, Earthquake 1, Hurricane 1. Nine hazards the workbook tags are absent entirely.
+                  </p>
+                </div>
+                <div class="lg:col-span-6">
+                  <div class="scroller">
+                    <table class="tbl">
+                      <thead><tr><th>Hazard</th><th class="num">Actions tagged in the workbook</th><th class="num">Actions with it as primary hazard type</th></tr></thead>
+                      <tbody>
+                        <tr><td>Wind</td><td class="num">175</td><td class="num">41</td></tr>
+                        <tr><td>Snowstorm</td><td class="num">135</td><td class="num">31</td></tr>
+                        <tr><td>Hurricane</td><td class="num">128</td><td class="num">12</td></tr>
+                        <tr><td>Coastal Hazards</td><td class="num">112</td><td class="num zero">0</td></tr>
+                        <tr><td>Extreme Heat</td><td class="num">110</td><td class="num">10</td></tr>
+                        <tr><td>Ice storm</td><td class="num">104</td><td class="num zero">0</td></tr>
+                        <tr><td>Extreme Cold</td><td class="num">89</td><td class="num zero">0</td></tr>
+                        <tr><td>Wildfire</td><td class="num">67</td><td class="num">10</td></tr>
+                        <tr><td>Lightning</td><td class="num">60</td><td class="num">2</td></tr>
+                        <tr><td>Earthquake</td><td class="num">57</td><td class="num">2</td></tr>
+                        <tr><td>Landslide</td><td class="num">50</td><td class="num">3</td></tr>
+                        <tr><td>Tornado</td><td class="num">49</td><td class="num zero">0</td></tr>
+                        <tr><td>Drought</td><td class="num">43</td><td class="num zero">0</td></tr>
+                        <tr><td>Hail</td><td class="num">16</td><td class="num zero">0</td></tr>
+                        <tr><td>Flooding</td><td class="num">627</td><td class="num ok">776</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <p class="body mt-3" style="font-size:14px">
+                    Two fixes are possible: reload the Actions sheet so the per-hazard columns roll up into the
+                    hazard-type fields, or give the Actions filters the same calculated hazards branch the
+                    Capabilities filters already have. The second is cheaper and benefits every county.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============ 7 · OTHER DEFECTS ============ -->
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+              <p class="kicker mb-2">The rest of the punch list</p>
+              <h2 class="font-display font-[500] text-[32px] text-mny-900 uppercase leading-[1.05] tracking-[-0.02em] mb-6">
+                Smaller things, each with an id
+              </h2>
+              <div class="scroller">
+                <table class="tbl">
+                  <thead><tr>
+                    <th>What</th><th>Where</th><th><code>draft_section</code></th><th>Effect</th><th>Fix</th>
+                  </tr></thead>
+                  <tbody>
+                    <tr>
+                      <td>Floodplain Administrators card filters on the literal string <code>"geoid"</code></td>
+                      <td>NFIP &ndash; Floodplain Management</td><td><code>2450157</code></td>
+                      <td>Asks Roles for <code>geoid_county = "geoid"</code>; matches nothing, though 191 role records are loaded</td>
+                      <td>Set the page&rsquo;s <code>geoid</code> filter value to <code>36119</code></td>
+                    </tr>
+                    <tr>
+                      <td>Local Funding Capabilities filters <code>funding_source = "x"</code></td>
+                      <td>Strategies</td><td><code>2450079</code></td>
+                      <td>Placeholder value no record carries; 116 records have a funding source</td>
+                      <td>Replace or drop the clause</td>
+                    </tr>
+                    <tr>
+                      <td>Local Actions by Progress Status: <code>county_geoid</code> not typed <code>multiselect</code></td>
+                      <td>Actions Database</td><td><code>2454886</code></td>
+                      <td>The column stores <code>["36119"]</code>; a scalar text match never hits</td>
+                      <td>Set the column type to <code>multiselect</code> so the server uses <code>array_contains</code></td>
+                    </tr>
+                    <tr>
+                      <td>Actions filters name <code>secondary_hazard_type</code></td>
+                      <td>all 16 hazard pages</td><td>&mdash;</td>
+                      <td>The source column is spelled <code>seondary_hazard_type</code>, so that OR branch never contributes</td>
+                      <td>Rename the column or repoint the filters &mdash; statewide</td>
+                    </tr>
+                    <tr>
+                      <td>Stale Sullivan geoid <code>36105</code> seeded on two pages</td>
+                      <td>Home, Actions Dashboard</td><td>&mdash;</td>
+                      <td>Nothing wrong on screen today, but a page-level filter overrides the pattern default</td>
+                      <td>Set to <code>36119</code> or delete</td>
+                    </tr>
+                    <tr>
+                      <td>Three Jurisdictions columns bound to no component</td>
+                      <td>Jurisdictional Annexes</td><td>&mdash;</td>
+                      <td><code>nfip</code>, <code>lhmp_dams</code>, <code>demographics_description</code> can never render. The annexes carry no prose for them, so nothing is lost yet</td>
+                      <td>Leave, unless a later annex revision fills them</td>
+                    </tr>
+                    <tr>
+                      <td>All four <code>hhpd_*</code> narrative columns empty on 225 Westchester dams</td>
+                      <td>High Hazard Dams</td><td>&mdash;</td>
+                      <td>Only <code>hhpd_2</code> is bound by a visible component; <code>hhpd_3</code> and <code>hhpd_4</code> by nothing</td>
+                      <td>Decide what to surface before asking IEM for dam narrative</td>
+                    </tr>
+                    <tr>
+                      <td>Bedford still mixes 2021-cycle prose with the 2026 annex</td>
+                      <td>Jurisdictional Annexes</td><td>&mdash;</td>
+                      <td>Four columns had no incoming content, so the old text survives (3,189 ch total)</td>
+                      <td>Owner call: clear or keep</td>
+                    </tr>
+                    <tr>
+                      <td>Mount Pleasant (Town) has no annex</td>
+                      <td>Jurisdictional Annexes</td><td>&mdash;</td>
+                      <td>44 municipal annexes delivered for 45 participating municipalities</td>
+                      <td>Ask IEM</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============ 8 · WHAT TO DO ============ -->
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+              <p class="kicker mb-2">What to do, in order</p>
+              <h2 class="font-display font-[500] text-[32px] text-mny-900 uppercase leading-[1.05] tracking-[-0.02em] mb-6">
+                Four of ours, three of theirs
+              </h2>
+
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div>
+                  <p class="kicker mb-3" style="color:#AA2E26">On our side</p>
+                  <ol class="space-y-3 list-decimal pl-5">
+                    <li class="body"><strong>Publish the pattern.</strong> 30 pages, 177 sections, 334,761
+                      characters. This alone answers most of what IEM reported. Everything is read-back verified
+                      and nothing else changes.</li>
+                    <li class="body"><strong>Drop the <code>geoid_juris</code> clause from the four Local
+                      Capabilities Tables</strong> (<code>2469050</code>, <code>2463313</code>,
+                      <code>2450074</code>, <code>2463317</code>). That is 43 rows &rarr; up to 2,039.</li>
+                    <li class="body"><strong>Fix the Actions hazard rollup</strong>, either by reloading the
+                      Actions sheet or by giving the Actions filters a calculated hazards branch. Until then
+                      the site presents Westchester as a flood-only county.</li>
+                    <li class="body"><strong>Work the punch list in section 7</strong> &mdash; four one-line
+                      filter corrections, plus the two capability-type spellings, which are worth fixing
+                      statewide.</li>
+                  </ol>
+                  <div class="callout-ok mt-5">
+                    <p class="body" style="font-size:15px">
+                      <strong>Sequencing note.</strong> Publishing first is safe and reversible per page, and it
+                      changes what IEM sees more than the other three combined. Do it before the next review call.
+                    </p>
+                  </div>
+                </div>
+                <div>
+                  <p class="kicker mb-3" style="color:#8a6410">To send back to IEM</p>
+                  <ol class="space-y-3 list-decimal pl-5">
+                    <li class="body"><strong>The four vulnerability columns in the Hazards of Concern sheet are
+                      blank</strong> in all 678 rows &mdash; General Vulnerability &amp; Impact, Buildings,
+                      Infrastructure, Natural Environment. Only People and Communities was filled. The header
+                      points at a SharePoint community-insights summary that never made it into the file.</li>
+                    <li class="body"><strong>Local Capabilities, Local Actions and Featured Strategy have no prose
+                      under any of their 48 headings</strong> in the base plan, and the whole Avalanche profile is
+                      empty. Confirm whether that is deliberate &mdash; if the intent is that the tables carry it,
+                      say so and we will hide the boxes rather than leave them blank.</li>
+                    <li class="body"><strong>Mount Pleasant has no annex</strong>, and the Jurisdictional Profile
+                      and Growth and Development Trends boxes are empty on all 45 annexes. The second is a
+                      44 CFR element.</li>
+                    <li class="body"><strong>The County Executive&rsquo;s transmittal letter</strong> is still a
+                      placeholder in the document, so the Home page carries template copy.</li>
+                    <li class="body">Minor: the base plan gives <strong>two different open-space inventories</strong>
+                      (~70,000 ac in table 760 vs 82,490.5 ac in table 768, different category schemes). Which
+                      should the site show?</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============ 9 · THE CSV ============ -->
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[5px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+              <p class="kicker mb-2">The companion CSV</p>
+              <h2 class="font-display font-[500] text-[32px] text-mny-900 uppercase leading-[1.05] tracking-[-0.02em] mb-4">
+                <code style="font-size:26px">westchester-iem-gap-analysis.csv</code>
+              </h2>
+              <p class="body max-w-[800px] mb-6">
+                364 rows, one per gap, sorted by severity. Every row that points at a section carries
+                <code>page_url</code>, <code>draft_section_id</code>, <code>section_order</code>,
+                <code>anchor_url</code> and <code>edit_url</code>.
+              </p>
+
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="scroller">
+                  <table class="tbl">
+                    <thead><tr><th><code>row_type</code></th><th class="num">Rows</th><th>What it is</th></tr></thead>
+                    <tbody>
+                      <tr><td><code>mny_unpublished_content</code></td><td class="num">177</td><td>written, correct, invisible &mdash; one publish fixes all</td></tr>
+                      <tr><td><code>iem_source_gap_baseplan</code></td><td class="num">68</td><td>blank box because IEM&rsquo;s heading has no prose</td></tr>
+                      <tr><td><code>mny_table_no_data</code></td><td class="num">40</td><td>a table that should show data and shows none</td></tr>
+                      <tr><td><code>mny_table_partial_data</code></td><td class="num">25</td><td>rows arrive, columns are blank</td></tr>
+                      <tr><td><code>iem_not_migrated_baseplan</code></td><td class="num">17</td><td>plan text deliberately not transcribed</td></tr>
+                      <tr><td><code>iem_source_gap_annex</code></td><td class="num">12</td><td>annex box empty in all 45 files</td></tr>
+                      <tr><td><code>iem_source_gap_workbook</code></td><td class="num">6</td><td>hazard untagged in the workbook</td></tr>
+                      <tr><td><code>mny_config_defect</code></td><td class="num">6</td><td>wrong column, wrong value, stale geoid</td></tr>
+                      <tr><td><code>mny_blank_section</code></td><td class="num">4</td><td>blank with no matching source heading</td></tr>
+                      <tr><td><code>mny_unsurfaced_column</code></td><td class="num">3</td><td>dataset column no component binds</td></tr>
+                      <tr><td>7 more, 1 row each</td><td class="num">7</td><td><code>iem_not_migrated_workbook</code>, <code>iem_not_migrated_annex</code>, <code>mny_blank_data</code>, <code>mny_data_quality</code>, <code>mny_stale_content</code>, <code>platform_note</code></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div>
+                  <div class="callout-note mb-5">
+                    <p class="kicker mb-2" style="color:#8a6410">About <code>anchor_url</code></p>
+                    <p class="body" style="font-size:15px">
+                      The CSV gives you <code>&lt;page_url&gt;#&lt;draft_section_id&gt;</code> as requested, but it
+                      will not jump yet. A DMS section only renders a DOM <code>id</code> when its author sets
+                      <code>anchorId</code> (or <code>navLabel</code>) in the section settings, and
+                      <strong>none of the 1,802 components in this pattern has either</strong>
+                      (<code>section.jsx:273</code>).
+                    </p>
+                    <p class="body mt-3" style="font-size:15px">
+                      <strong>One CLI pass can set <code>anchorId</code> = the section&rsquo;s own id on all 256
+                      Annotation slots.</strong> It is draft-only, invisible in view mode, and makes every
+                      <code>anchor_url</code> in this CSV work. Say the word and I will run it. Until then, use
+                      <code>edit_url</code> and find the section by its title and <code>section_order</code>.
+                    </p>
+                  </div>
+                  <p class="kicker mb-2">Columns</p>
+                  <p class="body" style="font-size:14.5px">
+                    <code>row_type</code> &middot; <code>severity</code> &middot; <code>area</code> &middot;
+                    <code>item</code> &middot; <code>detail</code> &middot; <code>source_ref</code> &middot;
+                    <code>page_id</code> &middot; <code>page_title</code> &middot; <code>page_url</code> &middot;
+                    <code>draft_section_id</code> &middot; <code>draft_section_title</code> &middot;
+                    <code>section_order</code> &middot; <code>anchor_url</code> &middot; <code>edit_url</code> &middot;
+                    <code>expected_rows</code> &middot; <code>observed_rows</code> &middot; <code>recommendation</code>
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ============ 10 · METHOD ============ -->
+          <div class="w-full h-full flex-1 flex flex-row pt-4 pb-[40px]">
+            <div class="flex flex-1 w-full flex-col shadow-md bg-white rounded-lg relative p-6 lg:p-8">
+              <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div>
+                  <p class="kicker mb-2">How this was checked</p>
+                  <table class="tbl">
+                    <tbody>
+                      <tr><td>Pattern</td><td><code>2448336</code> &middot; instance <code>mitigateny_county_template_v3_copy_2</code></td></tr>
+                      <tr><td>Live site</td><td><code>westchester.mitigateny.org</code> (not <code>westchester-2026</code>)</td></tr>
+                      <tr><td>Enumerated</td><td>50 pages, 1,802 draft components, 1,801 published, both lists compared row by row</td></tr>
+                      <tr><td>Sources queried</td><td>row counts read straight from the <code>uda</code> route, the same one the app uses</td></tr>
+                      <tr><td>Pages opened live</td><td>Home, People and Communities, Capabilities Assessment, Actions Dashboard, Flooding, Hail, Earthquake</td></tr>
+                      <tr><td>Workbook</td><td>all five data sheets read directly and fill-rated column by column</td></tr>
+                    </tbody>
+                  </table>
+                  <p class="font-proxima text-[12px] text-mny-400 mt-4">
+                    Where a figure could not be verified on screen it is labelled &ldquo;not visited&rdquo;.
+                  </p>
+                </div>
+                <div>
+                  <p class="kicker mb-2">Source</p>
+                  <table class="tbl">
+                    <tbody>
+                      <tr><td style="color:#6D96AE">Base plan</td><td><code>2026 Westchester County HMP Base Plan Draft.docx</code></td></tr>
+                      <tr><td style="color:#6D96AE">Annexes</td><td>45 &times; <code>Westchester_Jurisdictional_Annex_*.docx</code></td></tr>
+                      <tr><td style="color:#6D96AE">Workbook</td><td><code>20260224_Working Copy Westchester Workbook v2.xlsx</code></td></tr>
+                      <tr><td style="color:#6D96AE">Consultant</td><td>IEM</td></tr>
+                      <tr><td style="color:#6D96AE">County geoid</td><td><code>36119</code></td></tr>
+                    </tbody>
+                  </table>
+                </div>
+                <div>
+                  <p class="kicker mb-2">Tracked in</p>
+                  <table class="tbl">
+                    <tbody>
+                      <tr><td><code>planning/mitigateny/tasks/current/westchester-iem-gap-analysis.md</code></td></tr>
+                      <tr><td><code>planning/mitigateny/tasks/current/westchester-2026-baseplan-crosswalk.md</code></td></tr>
+                      <tr><td><code>planning/mitigateny/tasks/current/westchester-annex-crosswalk.md</code></td></tr>
+                      <tr><td style="color:#6D96AE;font-size:12.5px">Working folder (git-ignored): <code>references/mny-transcribe/westchester/iem-gap-work/</code></td></tr>
+                    </tbody>
+                  </table>
+                  <p class="font-proxima text-[12px] text-mny-400 mt-4">
+                    All figures verified against <code>dmsserver.availabs.org</code> on 10 September 2026.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Floating nav widget -->
+<div id="dsWidget" style="position:fixed;bottom:24px;right:24px;z-index:9999;font-family:'Source Sans 3',system-ui,sans-serif;">
+  <div id="dsPanel" style="position:absolute;bottom:52px;right:0;background:white;border-radius:10px;padding:12px 0;min-width:250px;box-shadow:0 4px 20px rgba(0,0,0,0.12);opacity:0;transform:translateY(8px) scale(0.95);pointer-events:none;transition:opacity 0.15s,transform 0.15s;max-height:70vh;overflow-y:auto;">
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:0 16px 8px;border-bottom:1px solid #E0EBF0;margin-bottom:4px;">MNY Design System</div>
+    <a href="../design-system/theme.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">1</span> Theme</a>
+    <a href="../design-system/layouts.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">2</span> Layouts</a>
+    <a href="../design-system/grid.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">3</span> Grid</a>
+    <a href="../design-system/components.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">4</span> Components</a>
+    <a href="../design-system/patterns.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">5</span> Patterns</a>
+    <div style="border-top:1px solid #E0EBF0;margin:4px 0;"></div>
+    <div style="font-family:'Oswald',sans-serif;font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:#6D96AE;padding:4px 16px 8px;">Data Reports</div>
+    <a href="westchester-iem-gap-analysis.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#EAAD43;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Westchester IEM Gap Analysis</a>
+    <a href="westchester-migration-status.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Westchester 2026 Status</a>
+    <a href="actions-qa.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Actions QA</a>
+    <a href="duplicate-actions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Duplicate Actions</a>
+    <a href="boilerplate-actions.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Boilerplate Actions</a>
+    <a href="capability-inventory.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Capability Inventory</a>
+    <a href="capabilities-vs-capacity.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> Capabilities vs. Capacity</a>
+    <a href="state-capability-catalog.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> State Capability Catalog</a>
+    <a href="county-template-qa-draft.html" style="display:flex;align-items:center;gap:8px;padding:6px 16px;font-size:13px;font-weight:600;color:#37576B;text-decoration:none;"><span style="font-size:10px;font-weight:500;color:#C5D7E0;min-width:14px;">&bull;</span> County Template QA</a>
+  </div>
+  <button onclick="var p=document.getElementById('dsPanel');var o=p.style.opacity==='1';p.style.opacity=o?'0':'1';p.style.transform=o?'translateY(8px) scale(0.95)':'translateY(0) scale(1)';p.style.pointerEvents=o?'none':'auto';"
+          style="width:40px;height:40px;border-radius:10px;background:#2D3E4C;color:white;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.15);"
+          aria-label="Report navigation">
+    <svg xmlns="http://www.w3.org/2000/svg" style="width:20px;height:20px;" viewBox="0 0 20 20" fill="currentColor"><path d="M2 4.75A.75.75 0 0 1 2.75 4h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 4.75Zm0 10.5a.75.75 0 0 1 .75-.75h7.5a.75.75 0 0 1 0 1.5h-7.5a.75.75 0 0 1-.75-.75ZM2 10a.75.75 0 0 1 .75-.75h14.5a.75.75 0 0 1 0 1.5H2.75A.75.75 0 0 1 2 10Z"/></svg>
+  </button>
+</div>
+
+</body>
+</html>

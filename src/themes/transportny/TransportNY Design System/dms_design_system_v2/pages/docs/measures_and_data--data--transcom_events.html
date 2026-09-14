@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>TRANSCOM events · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  measures_and_data--data--transcom_events.html · IA page 73 · type data. Phase 3, 2026-09-05. OWNS the 2014-vs-2015 start reconciliation.
+  Sources: Data Manager metadata "Transcom Events" (60 columns, no description) and the archived "transcom_events_onto_road_network"
+  (nysdot_general/sub/detailed_category columns); TSMO Data & Methodology 2184101 (source catalog, TIM shares of 3.7M, footprint 18.5 %,
+  cadence 2026-06-22 04:55); TSMO home design header 2026-06-12 ("153,770 NY events in 2025; 3.73M since Oct 2014"); live Incidents /
+  Work Zones pages (nysdot_sub_category classification; Category values) via the Phase 2b docs; Incidents method note (~68 % lanes-open on
+  the reactive subset, owed by Phase 2b); run record 2026-07-15 (June 2026: 36,574 events; event-by-segment table through 2026-05-30).
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="data" data-applies-to="tsmo">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · data</div>
+          <h1 class="doc-title">TRANSCOM events.</h1>
+          <p class="doc-lede">The event store behind every TSMO incident, work-zone and attribution figure: incidents, construction, conditions and special events from the TRANSCOM coalition, multi-state, filtered to New York. The datasheet for operations staff and analysts, including how sparse its timestamps are.</p>
+          <div class="stamps">
+            <span class="type">data</span>
+            <span>applies to · TSMO (www/tsmo)</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="overview">Overview</h2>
+          <p><strong>TRANSCOM is the coalition of transportation and public-safety agencies in the New York, New Jersey and Connecticut region that shares real-time event information.</strong> The TSMO Data &amp; Methodology page describes the store as "Incidents, construction, conditions, and special events from the TRANSCOM coalition. The feed covers the whole multi-state region — every page here filters to New York." The Data Manager catalogues it as "Transcom Events" with 60 columns and no description; the live page is the written source.</p>
+          <p>One row is one event. Events are classified by NYSDOT category at three levels: general, sub-category and detailed. The dashboards key on the sub-category. The Incidents dashboard keeps the reactive set and its <span class="ui">Category</span> filter offers Crash, Message, Other, Road Hazard, Special Event, Volume/Delay and Weather Hazard. The Work Zones dashboard keeps events whose sub-category is Construction, Maintenance or Emergency Operations. Landing copy that says the events are "stitched from 511NY feeds" is not the documented source; TRANSCOM is.</p>
+          <div class="callout basis"><span class="k">basis</span>Counts on this page are the whole New York-filtered store, all categories, unless a year is named. Shares of events are of the 3.7 million events queried 2026-06-22.</div>
+
+          <h2 id="coverage-and-vintage">Coverage and vintage</h2>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Source</th><th>Span</th><th>Lag</th><th>Cadence</th><th>Gaps</th></tr></thead>
+            <tbody>
+              <tr><td>TRANSCOM events</td><td>2015 to present per the TSMO Data &amp; Methodology page; 3.7 million events. 153,770 New York events in CY 2025</td><td>None: live feed. Last update stamped 2026-06-22 04:55 at the page's revision</td><td>Continuous</td><td>Timestamps are sparse (below); a delay footprint exists on 18.5 % of events; secondary crashes are not identified</td></tr>
+            </tbody>
+          </table></div>
+          <h3 id="when-the-store-starts">When the store starts</h3>
+          <p>Two live statements disagree by a few months. The TSMO Data &amp; Methodology page states "2015 → present". The TSMO home's design header, at its 2026-06-12 data revision, counted "3.73M since Oct 2014", and the home's Incident Search card dates the store from 2014. Both are true of the same table: the earliest rows fall in October 2014, and the page that documents the source states the series as beginning in 2015. <strong>The live Data &amp; Methodology page is the authority.</strong> Quote the span as "2015 to present"; if you need the earliest rows, say "first events October 2014, per the TSMO home". The docs pages that mention the store follow this rule.</p>
+          <h3 id="timestamp-completeness">Timestamp completeness</h3>
+          <p>Traffic Incident Management (TIM) measures need pairs of timestamps, and most events carry few. The shares below are of all 3.7 million events, all categories, queried 2026-06-22. The Incidents dashboard's own method note gives a higher lanes-open share, about 68 %, for its reactive subset; the two figures have different denominators, all events against reactive incidents, and the Data &amp; Methodology page's all-events figure is the one to cite unless you name the subset.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Field</th><th>Timestamp</th><th class="num">Share of events</th><th>What it gates</th></tr></thead>
+            <tbody>
+              <tr><td><code>end_all_lanes_open_to_traffic</code></td><td>All lanes reopened</td><td class="num">42.7 %</td><td>The end of roadway clearance time</td></tr>
+              <tr><td><code>incident_verified</code></td><td>Incident verified</td><td class="num">20.1 %</td><td>The start of roadway clearance time; clearance exists only where both are present</td></tr>
+              <tr><td><code>incident_reported</code></td><td>Incident reported</td><td class="num">10.6 %</td><td>The response timeline on an incident page</td></tr>
+              <tr><td><code>response_arrives_on_scene</code></td><td>Response arrives on scene</td><td class="num">0.3 %</td><td>The response timeline; too sparse for a measure</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="schema">Schema</h2>
+          <p>The Data Manager's 60 columns, grouped. Where a meaning is not stated in any source, the row says so. The three NYSDOT category columns are not in the catalog's list for this source; they appear on the archived event-to-road-network table and on the production view the dashboards bind to. The production view the dashboards bind to carries all three; the Data Manager's column list for the catalogued source omits them.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Field</th><th>Type</th><th>Sample value</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>event_id</code></td><td>string</td><td>—</td><td>TRANSCOM's event identifier; the key the incident page opens on.</td></tr>
+              <tr><td><code>event_class</code> · <code>event_type</code></td><td>string</td><td>—</td><td>The coalition's own class and type of event.</td></tr>
+              <tr><td><code>nysdot_general_category</code> · <code>nysdot_sub_category</code> · <code>nysdot_detailed_category</code></td><td>string</td><td>Construction</td><td>NYSDOT's three-level classification. Sub-category drives the Incidents and Work Zones split.</td></tr>
+              <tr><td><code>reporting_organization</code></td><td>string</td><td>—</td><td>The agency that reported the event.</td></tr>
+              <tr><td><code>start_date_time</code> · <code>end_date_time</code> · <code>close_date</code> · <code>last_updatedate</code></td><td>string</td><td>—</td><td>Event start, end, close and last-update times.</td></tr>
+              <tr><td><code>estimated_duration_mins</code> · <code>event_duration</code></td><td>integer · string</td><td>—</td><td>Estimated and recorded duration.</td></tr>
+              <tr><td><code>facility</code> · <code>direction</code> · <code>is_highway</code></td><td>string · string · boolean</td><td>—</td><td>Road name, direction of travel, and whether the facility is a highway.</td></tr>
+              <tr><td><code>lanes_total_count</code> · <code>lanes_affected_count</code> · <code>lanes_detail</code> · <code>lanes_status</code></td><td>integer · string</td><td>—</td><td>Lane counts and the lane-status text.</td></tr>
+              <tr><td><code>description</code> · <code>summary_description</code></td><td>string</td><td>—</td><td>Free-text description; Incident Search's keyword box searches it.</td></tr>
+              <tr><td><code>state</code> · <code>county</code> · <code>city</code> · <code>primary_city</code> · <code>secondary_city</code></td><td>string</td><td>—</td><td>Location names. Every page filters <code>state</code> to New York.</td></tr>
+              <tr><td><code>point_lat</code> · <code>point_long</code> · <code>point_datum</code></td><td>number · string</td><td>—</td><td>Event point and its datum.</td></tr>
+              <tr><td><code>primary_marker</code> · <code>secondary_marker</code> · <code>marker_units</code> · <code>primary_location</code> · <code>secondary_location</code></td><td>number · string</td><td>—</td><td>Mile-marker extent and location text.</td></tr>
+              <tr><td><code>city_article</code> · <code>location_article</code> · <code>marker_article</code></td><td>string</td><td>—</td><td>Grammar fragments the feed carries for composing messages.</td></tr>
+              <tr><td><code>eventstatus</code> · <code>region_closed</code> · <code>icon_file</code></td><td>string · boolean · string</td><td>—</td><td>Status, a closure flag and the feed's icon. The closure flag's semantics are not documented by the feed.</td></tr>
+              <tr><td><code>start_incident_occured</code> · <code>incident_reported</code> · <code>incident_verified</code> · <code>response_identified_and_dispatched</code> · <code>response_arrives_on_scene</code> · <code>end_all_lanes_open_to_traffic</code> · <code>response_departs_scene</code> · <code>time_to_return_to_normal_flow</code></td><td>string</td><td>—</td><td>The TIM timestamps, each with a <code>*_comment</code> column. Sparse; see the shares above.</td></tr>
+              <tr><td><code>no_of_vehicle_involved</code></td><td>string</td><td>—</td><td>Vehicles involved, as text.</td></tr>
+              <tr><td><code>secondary_event</code> · <code>secondary_event_types</code> · <code>secondary_involvements</code></td><td>boolean · string</td><td>—</td><td>Whether the event is secondary to another and of what kind. Secondary crashes are not identified as a measure.</td></tr>
+              <tr><td><code>within_work_zone</code></td><td>boolean</td><td>—</td><td>Whether the event occurred within a work zone.</td></tr>
+            </tbody>
+          </table></div>
+          <p>Two derived tables sit beside the store. The <strong>event-by-segment delay table</strong> expands each delay-relevant event to the segments and 5-minute slices it affected, with bound start and end dates and times and the delay attributed; it is the footprint the incident page draws. The <strong>congestion attribution</strong> writes each event's vehicle-hours and cost back onto the event row. See <a href="measures_and_data--measures--delay_attribution.html">Delay attribution</a>.</p>
+
+          <h2 id="how-it-is-produced">How it is produced</h2>
+          <ol class="steps">
+            <li>The coalition feed is ingested continuously and filtered to New York. June 2026 held 36,574 New York events at the 2026-07-15 check.</li>
+            <li>Events are classified into NYSDOT's general, sub- and detailed categories.</li>
+            <li>Each month, delay-relevant events are matched to segments through the network conflation and attributed a footprint by replaying speeds around the event. A footprint exists on 18.5 % of events, by design; event lists never imply that every event delayed traffic.</li>
+            <li>The attribution runs in batch behind the live feed, so a recent event can show no footprint yet.</li>
+          </ol>
+
+          <h2 id="uses-and-limits">Uses and limits</h2>
+          <p>The store drives the Incidents and Work Zones dashboards, Incident Search, the incident page, and the construction, accident and other buckets of the excessive-delay series. Its limits are the feed's. Timestamps are sparse, so clearance time exists for one event in five and a region-year median can rest on a few dozen events; the dashboards headline the share cleared within 90 minutes instead. A region-month whose events carry no footprint shows a cost of $0. "3.7M events since 2015" on a dashboard counts the whole feed, all years; every panel below it follows the selected year. Multi-state rows are present in the store and filtered out on every page.</p>
+
+          <h2 id="distribution">Distribution</h2>
+          <ul>
+            <li><strong>Incident Search</strong> exports matching events; see <a href="tsmo--incident_search.html">Incident Search</a>.</li>
+            <li><strong>TSMO Data &amp; Methodology, Downloads &amp; API</strong>: the event-by-segment delay table per year, CSV or Parquet, New York extract. A July 2026 report found the section's links not working; check the live page. See <a href="developers--downloads_and_formats.html">Bulk downloads and formats</a>.</li>
+            <li><strong>Data Manager API</strong>, key on sign-in, 10,000 requests per day public. See <a href="developers--data_manager_api.html">Data Manager API</a>.</li>
+          </ul>
+
+          <h2 id="where-this-appears">Where this appears</h2>
+          <div class="where">
+            <a href="tsmo--incidents.html">Incidents dashboard</a>
+            <a href="tsmo--work_zones.html">Work Zones dashboard</a>
+            <a href="tsmo--incident_search.html">Incident Search</a>
+            <a href="tsmo--incident_view.html">Incident page</a>
+            <a href="tsmo--congestion.html">Congestion · attribution buckets</a>
+            <a href="measures_and_data--measures--incident_delay_and_clearance.html">Incident delay and clearance</a>
+          </div>
+
+          <h2 id="revision-log">Revision log</h2>
+          <ul>
+            <li>2026-07-15 · attribution and the event-by-segment table brought current through June 2026.</li>
+            <li>2026-07-28 · the Incidents dashboard's reactive set defined as the complement of the work-zone sub-categories.</li>
+            <li>2026-09-05 · this datasheet created.</li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>TSMO Data &amp; Methodology page: source catalog ("Incidents, construction, conditions, and special events from the TRANSCOM coalition … 3.7M events · 2015 → present · live feed · multi-state, NY-filtered"); the TIM completeness panel (42.7 / 20.1 / 10.6 / 0.3 % of 3.7M, with column names); "delay footprint 18.5% of events · by design"; refresh-cadence table ("continuous (live feed) · 2026-06-22 04:55 EST"); Downloads &amp; API.</li>
+            <li>TSMO home design header, data revision 2026-06-12: "153,770 NY events in 2025; 3.73M since Oct 2014"; the Incident Search card's 2014 span.</li>
+            <li>Data Manager, "Transcom Events": the 60-column list; "transcom_events_onto_road_network" (archived): the nysdot_general_category, nysdot_sub_category and nysdot_detailed_category columns and the conflation fields.</li>
+            <li>TSMO Incidents and Work Zones dashboards, basis notes: classification by NYSDOT sub-category; Construction, Maintenance and Emergency Operations as the work-zone set (2026-07-28); the Category filter values; "3.7M events since 2015" counts the whole feed; the Incidents method note's "~68% of events with real lanes-open timestamps".</li>
+            <li>Documentation style ruling of 2026-09-04: the event source is TRANSCOM; the landing copy's "stitched from 511NY feeds" is logged, not propagated.</li>
+            <li>June 2026 run record (2026-07-15): 36,574 June events; the event-by-segment table extended from 2026-05-30 through June; 0 attribution blobs before the run.</li>
+            <li>Ticket 2195637 (2026-07): Downloads &amp; API links not working.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 3)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--measures--delay_attribution.html">Delay attribution</a>
+          <a href="measures_and_data--measures--incident_delay_and_clearance.html">Incident delay and clearance</a>
+          <a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

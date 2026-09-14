@@ -211,6 +211,34 @@ def clean(s):
     return re.sub(r"\s+", " ", str(s or "")).strip()
 
 
+def fmt_alternative(alt):
+    """
+    Render one worksheet alternative as prose.
+
+    The alternatives are DICTS -- {action, estimated_cost, evaluation} -- and passing one
+    through `clean()` stringifies the dict, so 138 rows were carrying literal Python syntax
+    into a field a county reviewer reads:
+
+        Alternative action 2: {'action': 'Elevate the garage to only the FEMA base flood
+        elevation.', 'estimated_cost': 'To be determined.', 'evaluation': 'The building
+        would not be fully protected from hazards.'}
+
+    Caught before load by listing every template this builder composes, rather than by
+    anything the schema validator could see -- a str is a valid str.
+    """
+    if not isinstance(alt, dict):
+        return clean(alt)
+    action = clean(alt.get("action"))
+    cost = clean(alt.get("estimated_cost"))
+    ev = clean(alt.get("evaluation"))
+    bits = [action] if action else []
+    if cost and cost not in ("$", "$0"):
+        bits.append(f"Estimated cost: {cost}")
+    if ev:
+        bits.append(f"Evaluation: {ev}")
+    return " ".join(bits).strip()
+
+
 def money(s):
     """A number only when the string really is a cost. Prose returns None -- an earlier
     version parsed fragments out of sentences and produced four false HIGH cost bands."""
@@ -329,20 +357,99 @@ def rank_types(found):
     return [primary] + rest
 
 
+def merge_same_name(rows, geoid, juris):
+    """
+    Collapse rows that name the SAME project within one jurisdiction (owner, 2026-09-09).
+
+    The Hagerty annex lists a carried-forward project TWICE: once in the proposed-actions table
+    (as the new cycle's intent) and once in the prior-actions table (with its progress). Both
+    become payload rows, and because the matcher assigns existing rows strictly one-to-one, the
+    proposed row claims the live row and the prior row inserts alongside it -- leaving the same
+    project in the database as both "Proposed - Not Started" and "In-Progress".
+
+    Caught at Gate 4: Long Beach loaded "Install Check Valves for Critical Infrastructure" as an
+    update AND an insert. County-wide it is 11 groups / 22 rows of 571.
+
+    Resolution: keep ONE row, taking the proposed version's fields, and append the dropped
+    row's status and progress narrative to `action_status_details` so nothing is lost. The
+    surviving row therefore keeps the plan's forward-looking status, with the prior cycle's
+    state recorded in the detail text rather than contradicting it in a second row.
+    """
+    groups = collections.defaultdict(list)
+    for r in rows:
+        key = re.sub(r"[^a-z0-9]+", " ", clean(r["data"].get("action_name")).lower()).strip()
+        groups[key].append(r)
+
+    out, merged = [], 0
+    for key, grp in groups.items():
+        if len(grp) == 1 or not key:
+            out.extend(grp)
+            continue
+        # Prefer a proposed row as the survivor; among equals keep the earliest.
+        grp.sort(key=lambda r: (0 if r.get("_kind") == "proposed" else 1, r.get("_row", 0)))
+        keep, drop = grp[0], grp[1:]
+        extra = []
+        for d in drop:
+            bits = [f"Also recorded in the plan's {d.get('_kind')}-actions table"]
+            st = d["data"].get("action_status")
+            if st:
+                bits.append(f"with status \"{st}\"")
+            det = clean(d["data"].get("action_status_details")) or clean(
+                d["data"].get("description_of_the_problem_problem_statement"))
+            line = " ".join(bits) + ("." if not det else f": {det}")
+            extra.append(line)
+        if extra:
+            prior = clean(keep["data"].get("action_status_details"))
+            # Drop an appended note whose detail text the survivor already carries verbatim.
+            # The two tables often describe a carried-forward project in identical words, so a
+            # naive append produced rows reading "Project completed. The building wide
+            # generator is fully operational.  Also recorded in the plan's prior-actions table
+            # with status "Completed": Project completed. The building wide generator is fully
+            # operational." -- the same sentence twice in one field.
+            extra = [e for e in extra if not (prior and prior in e)]
+        if extra:
+            keep["data"]["action_status_details"] = (
+                (prior + "  " if prior else "") + "  ".join(extra))
+        keep["_merged_from"] = [
+            dict(kind=d.get("_kind"), row=d.get("_row"),
+                 status=d["data"].get("action_status")) for d in drop]
+        merged += len(drop)
+        notes.append(f"{geoid} {juris}: merged {len(grp)} same-name rows for "
+                     f"{keep['data'].get('action_name','')[:52]!r} "
+                     f"({'+'.join(str(r.get('_kind')) for r in grp)}) -- kept the "
+                     f"{keep.get('_kind')} row, appended the rest to action_status_details")
+        out.append(keep)
+
+    if merged:
+        out.sort(key=lambda r: (r.get("_kind") != "proposed", r.get("_row", 0)))
+    return out
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     M = json.load(io.open(os.path.join(EX, "maws.json"), encoding="utf-8"))
     ws = {}
     rollup_components = set()
+    rollup_ws = {}
     for w in M["worksheets"]:
         num = w.get("project_number")
         g = str(w.get("geoid") or "")
         if w.get("relationship") == "rollup" or w.get("precedence_applies") is False:
             # A roll-up must not overwrite its components; remember them so precedence is
             # skipped, but keep its worksheet-only fields available as shared context.
-            for c in re.split(r"[,\s]+", str(num or "")):
+            #
+            # Read the components from `covers`, NOT from `project_number`. The extractor
+            # deliberately BLANKS project_number on a roll-up (the raw string lives on in
+            # `project_number_source`) precisely because it is not a single project's number.
+            # Splitting the blank field added nothing, so `rollup_components` stayed empty and
+            # the roll-up branch never once executed. The eight VOH rows still kept their own
+            # costs -- but only because the roll-up worksheet is excluded from `ws` below, so
+            # nothing matched them. Right outcome, wrong mechanism, and the shared worksheet
+            # fields the decision called for were never attached.
+            for c in (w.get("covers") or []):
                 if c:
-                    rollup_components.add((g, c))
+                    rollup_components.add((g, str(c)))
+                    rollup_ws[(g, str(c))] = w
             continue
         if num:
             ws[(g, str(num))] = w
@@ -350,6 +457,7 @@ def main():
     ann = os.path.join(EX, "annexes")
     want = sys.argv[1:] or sorted(f[:-5] for f in os.listdir(ann) if f.endswith(".json"))
     total = collections.Counter()
+    merged_away = emitted = 0
     per, enriched = [], 0
 
     for geoid in want:
@@ -366,8 +474,10 @@ def main():
                     [("completed", a) for a in (A.get("completed_actions") or [])])
         for i, (kind_p, a) in enumerate(proposed):
             num = clean(a.get("Project Number"))
-            w = ws.get((geoid, num))
             is_rollup_component = (geoid, num) in rollup_components
+            # A component inherits its roll-up's worksheet-only fields as shared context, but
+            # `pick()` below refuses to let it overwrite name, cost or narrative.
+            w = ws.get((geoid, num)) or rollup_ws.get((geoid, num))
             if w:
                 enriched += 1
 
@@ -437,7 +547,7 @@ def main():
                     w.get("Local Planning Mechanisms to be Used in Implementation, if any:")) or None
                 alts = w.get("alternatives") or []
                 if alts:
-                    d["alternative_action_1"] = clean(alts[0]) or None
+                    d["alternative_action_1"] = fmt_alternative(alts[0]) or None
                 cbn = []
                 for k in ("Level of Protection:", "Useful Life:",
                           "Estimated Benefits (losses avoided):"):
@@ -445,7 +555,7 @@ def main():
                     if v:
                         cbn.append(f"{k.rstrip(':')}: {v}")
                 if len(alts) > 1:
-                    cbn.append("Alternative action 2: " + clean(alts[1]))
+                    cbn.append("Alternative action 2: " + fmt_alternative(alts[1]))
                 if cbn:
                     d["cost_benefit_notes"] = "  ".join(cbn)
                 if is_rollup_component:
@@ -518,10 +628,10 @@ def main():
                     "jurisdiction": juris,
                     "lead_agency_department": juris,
                     "dhses_comments": (
-                        f"Prior-cycle action carried into the 2020 plan. `action_name` is "
-                        f"derived by truncating the source sentence, which the prior-action "
-                        f"table gives in place of a name; the full sentence is preserved in "
-                        f"Description of the Solution."
+                        f"Prior-cycle action carried into the 2020 plan. The plan lists "
+                        f"these as a sentence rather than a name, so the title here is a "
+                        f"shortened form; the full sentence is preserved in the Description "
+                        f"of the Solution."
                         if len(sent) > 120 else None),
                     "is_this_action_addressing_climate_change": "Not Reported",
                     "is_this_action_mitigating_climate_change_i_e_ghg_reduction": "Not Reported",
@@ -547,6 +657,10 @@ def main():
                 rows.append({"data": d, "_kind": kind, "_row": i})
                 total[kind] += 1
 
+        n_before = len(rows)
+        rows = merge_same_name(rows, geoid, juris)
+        merged_away += n_before - len(rows)
+        emitted += len(rows)
         json.dump(rows, io.open(os.path.join(OUT, f"act_{geoid}.json"), "w", encoding="utf-8"),
                   ensure_ascii=False, indent=1)
         per.append(dict(geoid=geoid, jurisdiction=juris, rows=len(rows)))
@@ -558,7 +672,8 @@ def main():
               io.open(os.path.join(OUT, "_act_summary.json"), "w", encoding="utf-8"),
               ensure_ascii=False, indent=1)
 
-    print(f"Actions: {n} insert rows across {len(per)} jurisdictions")
+    print(f"Actions: {emitted} row(s) emitted across {len(per)} jurisdictions")
+    print(f"     built {n}, merged away {merged_away} same-name duplicate(s) -> {emitted}")
     print(f"     {dict(total)}   expected 287 proposed + 282 prior + 2 completed = 571")
     print(f"     worksheet-enriched: {enriched}")
     print(f"     {len(errs)} error(s), {len(notes)} note(s), "

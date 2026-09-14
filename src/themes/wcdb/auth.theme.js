@@ -21,11 +21,15 @@ const PILL_BUTTON =
 
 export const authTheme = {
   authPages: {
-    // AdminLayout's outer wrapper (manage pages only). The notch is fixed at
-    // the top; this keeps the page header from starting under it.
-    container: "pt-14",
+    // AdminLayout's outer wrapper (manage pages only). The pattern runs a
+    // compact sidenav rail and no topnav, so nothing to clear here.
+    container: "",
     // The `/auth/*` placeholder.
-    landing: "pt-20 px-6 " + EYEBROW,
+    landing: "pt-6 px-6 " + EYEBROW,
+    // Manage pages sit on the brand's admin layout (`layout.styles` "app":
+    // one column beside the rail) — not the public cutaway grid the pattern's
+    // default `activeStyle: 0` would give them.
+    manageLayoutStyle: "app",
 
     sectionGroup: {
       default: {
@@ -92,6 +96,22 @@ export const authTheme = {
       modalBody: "flex flex-row items-center gap-3",
       notice: "pt-6 font-[family-name:var(--font-sans)] text-[15px] text-[color:var(--ink-2)]",
       profileLink: GHOST_LINK,
+      // Row actions (View as / Reset password) are quiet links, not buttons —
+      // a table of pills reads as a wall of controls. Dialog submits are the
+      // pill; the header search boxes are the brand input at header scale.
+      rowAction: GHOST_LINK,
+      modalAction: PILL_BUTTON,
+      headerInput:
+        "w-[150px] appearance-none rounded-[6px] border border-[var(--line-2)] bg-[var(--bg-2)] px-2.5 py-1 " +
+        "font-[family-name:var(--font-sans)] text-[12px] normal-case tracking-normal text-[color:var(--ink-1)] " +
+        "placeholder:text-[color:var(--ink-4)] outline-none focus:border-[color:var(--ink-3)] transition-colors",
+      // The rail's items. The library default is the DMS manager's Sites /
+      // Themes / Auth menu, which points at pages this site does not have.
+      menuItems: [
+        { name: "Profile", path: "/auth/manage/profile" },
+        { name: "Users", path: "/auth/manage/users" },
+        { name: "Groups", path: "/auth/manage/groups" },
+      ],
     },
   },
 

@@ -1,0 +1,578 @@
+<title>Westchester 2026 Base Plan Crosswalk</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=Source+Sans+3:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --paper:#EEF2F4; --surface:#FCFDFD; --sunk:#E4EBEE;
+  --ink:#16242E; --ink-2:#3F5561; --ink-3:#6B838F;
+  --rule:#CBD8DD; --rule-2:#DFE7EA;
+  --accent:#1B6B84; --accent-soft:#DCEAEF;
+  --moss:#446F48; --moss-soft:#E0EBDF;
+  --amber:#9A6712; --amber-soft:#F4E9D3;
+  --clay:#993424; --clay-soft:#F5DFDA;
+  --shadow:0 1px 2px rgba(22,36,46,.06), 0 8px 24px -16px rgba(22,36,46,.22);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --paper:#0D181E; --surface:#15242B; --sunk:#101E25;
+    --ink:#E2ECEF; --ink-2:#A3B8C1; --ink-3:#7A929C;
+    --rule:#263A43; --rule-2:#1D2E36;
+    --accent:#68B2C8; --accent-soft:#153039;
+    --moss:#84B387; --moss-soft:#18291A;
+    --amber:#DCA755; --amber-soft:#2C2213;
+    --clay:#E08872; --clay-soft:#331812;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0D181E; --surface:#15242B; --sunk:#101E25;
+  --ink:#E2ECEF; --ink-2:#A3B8C1; --ink-3:#7A929C;
+  --rule:#263A43; --rule-2:#1D2E36;
+  --accent:#68B2C8; --accent-soft:#153039;
+  --moss:#84B387; --moss-soft:#18291A;
+  --amber:#DCA755; --amber-soft:#2C2213;
+  --clay:#E08872; --clay-soft:#331812;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px -16px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font:400 16px/1.62 "Source Sans 3", ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px; margin:0 auto; padding:0 28px}
+.col{max-width:70ch}
+h1,h2,h3,.eyebrow,.tile-n,.reg-id{font-family:Oswald, "Arial Narrow", sans-serif}
+code,.mono,.blk,.pg-id,.hz-ord{font-family:"IBM Plex Mono", ui-monospace, monospace}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:2px}
+
+/* ---------------------------------------------------------- masthead */
+.mast{border-bottom:1px solid var(--rule); background:var(--surface)}
+.mast .wrap{padding-top:34px; padding-bottom:0}
+.eyebrow{
+  font-size:12.5px; font-weight:500; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--accent); margin:0 0 12px;
+}
+h1{
+  font-size:clamp(30px,4.4vw,48px); font-weight:500; line-height:1.06; letter-spacing:-.005em;
+  margin:0 0 14px; text-wrap:balance; max-width:22ch;
+}
+.dek{font-size:18px; line-height:1.55; color:var(--ink-2); margin:0 0 26px; max-width:62ch}
+.dek b{color:var(--ink); font-weight:600}
+.meta{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(178px,1fr)); gap:0;
+  border-top:1px solid var(--rule-2);
+}
+.meta div{padding:14px 18px 16px 0; border-right:1px solid var(--rule-2)}
+.meta div:last-child{border-right:0}
+.meta dt{
+  font-size:11px; font-weight:600; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--ink-3); margin:0 0 4px;
+}
+.meta dd{margin:0; font-size:14.5px; line-height:1.4; overflow-wrap:anywhere}
+.meta dd.mono{font-size:13px}
+
+/* ---------------------------------------------------------- tiles */
+.tiles{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(158px,1fr));
+  gap:1px; background:var(--rule-2); border:1px solid var(--rule-2);
+  margin:0 0 6px; border-radius:3px; overflow:hidden;
+}
+.tile{background:var(--surface); padding:18px 18px 16px}
+.tile-n{
+  font-size:34px; font-weight:500; line-height:1; letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums; display:block; margin-bottom:7px;
+}
+.tile-n small{font-size:17px; font-weight:400; color:var(--ink-3); letter-spacing:0}
+.tile-l{font-size:13px; line-height:1.35; color:var(--ink-2)}
+.tile.warn .tile-n{color:var(--clay)}
+.tile.ok .tile-n{color:var(--moss)}
+.tile-note{font-size:12.5px; color:var(--ink-3); margin:0 0 44px}
+
+section{padding:44px 0 0}
+h2{
+  font-size:13px; font-weight:600; letter-spacing:.15em; text-transform:uppercase;
+  color:var(--ink-3); margin:0 0 6px; padding-bottom:9px; border-bottom:2px solid var(--ink);
+}
+h2 + .lede{font-size:20px; line-height:1.42; font-weight:400; margin:20px 0 16px; max-width:52ch}
+h3{font-size:19px; font-weight:500; margin:30px 0 8px; letter-spacing:.005em}
+p{margin:0 0 15px}
+.col p:last-child{margin-bottom:0}
+
+/* ---------------------------------------------------------- hazard column map */
+.hzwrap{overflow-x:auto; margin:22px 0 0; border:1px solid var(--rule-2); border-radius:3px; background:var(--surface)}
+table.hz{border-collapse:collapse; width:100%; min-width:640px; font-size:14px}
+table.hz th{
+  text-align:left; padding:10px 14px; font-size:11px; font-weight:600; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink-3); background:var(--sunk);
+  border-bottom:1px solid var(--rule);
+}
+table.hz td{padding:8px 14px; border-bottom:1px solid var(--rule-2); vertical-align:top}
+table.hz tr:last-child td{border-bottom:0}
+.hz-lvl{color:var(--ink-3); font-size:12px; width:44px; padding-top:10px !important}
+.hz-ord{font-size:12.5px; color:var(--ink-2); white-space:nowrap; width:118px}
+tr.anno{background:var(--accent-soft)}
+tr.anno .hz-cmp{color:var(--ink)}
+tr.anno .hz-doc{font-weight:600}
+tr.card .hz-cmp,tr.card .hz-doc{color:var(--ink-2)}
+.cap{font-size:13px; color:var(--ink-3); margin:10px 0 0; max-width:66ch}
+
+/* ---------------------------------------------------------- drift register */
+.reg{display:flex; flex-direction:column; gap:14px; margin:24px 0 0}
+.reg-item{
+  background:var(--surface); border:1px solid var(--rule-2); border-left:3px solid var(--accent);
+  border-radius:0 3px 3px 0; padding:16px 20px 18px;
+}
+.reg-item.block{border-left-color:var(--clay)}
+.reg-item.dec{border-left-color:var(--amber)}
+.reg-head{display:flex; flex-wrap:wrap; align-items:baseline; gap:10px; margin-bottom:8px}
+.reg-id{
+  font-size:14px; font-weight:600; letter-spacing:.06em; color:var(--ink-3);
+  font-variant-numeric:tabular-nums;
+}
+.reg-t{font-size:17px; font-weight:600; line-height:1.3; flex:1 1 300px}
+.reg-item p{font-size:14.5px; line-height:1.55; color:var(--ink-2); margin:0 0 10px; max-width:80ch}
+.reg-item p:last-child{margin-bottom:0}
+.reg-item p b{color:var(--ink)}
+.tag{
+  font-size:10.5px; font-weight:600; letter-spacing:.11em; text-transform:uppercase;
+  padding:3px 8px; border-radius:2px; white-space:nowrap;
+}
+.tag.block{background:var(--clay-soft); color:var(--clay)}
+.tag.dec{background:var(--amber-soft); color:var(--amber)}
+.tag.def{background:var(--accent-soft); color:var(--accent)}
+ul.tight{margin:0 0 10px; padding-left:20px; font-size:14.5px; line-height:1.55; color:var(--ink-2); max-width:80ch}
+ul.tight li{margin-bottom:5px}
+ul.tight li b{color:var(--ink)}
+ul.tight code{color:var(--ink)}
+code{
+  font-size:.88em; background:var(--sunk); padding:1px 5px; border-radius:2px;
+  border:1px solid var(--rule-2);
+}
+
+/* ---------------------------------------------------------- crosswalk */
+.bar{
+  position:sticky; top:0; z-index:5; background:var(--paper); padding:14px 0 12px;
+  border-bottom:1px solid var(--rule); display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+  margin-top:22px;
+}
+.chips{display:flex; flex-wrap:wrap; gap:6px}
+button.f{
+  font:600 12px/1 "Source Sans 3", sans-serif; letter-spacing:.04em; cursor:pointer;
+  padding:8px 11px; border-radius:2px; border:1px solid var(--rule);
+  background:var(--surface); color:var(--ink-2);
+}
+button.f[aria-pressed="true"]{background:var(--ink); border-color:var(--ink); color:var(--paper)}
+button.f .n{font-variant-numeric:tabular-nums; opacity:.65; margin-left:5px}
+input.q{
+  font:400 14px/1 "Source Sans 3", sans-serif; padding:9px 12px; border-radius:2px;
+  border:1px solid var(--rule); background:var(--surface); color:var(--ink);
+  min-width:190px; flex:1 1 190px; max-width:300px;
+}
+input.q::placeholder{color:var(--ink-3)}
+.count{font-size:12.5px; color:var(--ink-3); font-variant-numeric:tabular-nums; margin-left:auto}
+
+.xwrap{overflow-x:auto; border:1px solid var(--rule-2); border-top:0; background:var(--surface)}
+table.x{border-collapse:collapse; width:100%; min-width:1020px; font-size:13.5px}
+table.x thead th{
+  position:sticky; top:0; z-index:4; text-align:left; padding:9px 12px;
+  font-family:Oswald, sans-serif; font-size:11px; font-weight:500; letter-spacing:.11em;
+  text-transform:uppercase; color:var(--ink-3); background:var(--sunk);
+  border-bottom:1px solid var(--rule); white-space:nowrap;
+}
+table.x td{padding:8px 12px; border-bottom:1px solid var(--rule-2); vertical-align:top}
+tr.chap td{
+  background:var(--ink); color:var(--paper); font-family:Oswald, sans-serif; font-weight:500;
+  font-size:12px; letter-spacing:.15em; text-transform:uppercase; padding:9px 12px;
+}
+tr.pg td{background:var(--sunk); padding:9px 12px; border-bottom:1px solid var(--rule)}
+.pg-name{font-family:Oswald, sans-serif; font-size:15px; font-weight:500; margin-right:12px}
+.pg-id{font-size:11.5px; color:var(--ink-3); margin-right:10px}
+.pg-link{font-size:12px; text-decoration:none; border-bottom:1px solid var(--accent-soft)}
+.pg-link:hover{border-bottom-color:var(--accent)}
+.c-doc{min-width:250px; max-width:330px}
+.blk{font-size:12px; color:var(--accent); font-weight:500}
+.lvl{font-size:11px; color:var(--ink-3); letter-spacing:.04em}
+.nil{color:var(--ink-3); font-style:italic}
+.c-num{text-align:right; font-variant-numeric:tabular-nums; color:var(--ink-2);
+       white-space:nowrap; font-size:12.5px; width:62px}
+.c-slot{width:96px}
+.c-slot code{font-size:12px; padding:1px 4px}
+.c-st{min-width:150px; max-width:220px; color:var(--ink-2)}
+.c-conf{width:88px}
+.c-note{min-width:320px; font-size:12.8px; line-height:1.48; color:var(--ink-2)}
+.chip{
+  display:inline-block; font-size:10.5px; font-weight:600; letter-spacing:.08em;
+  text-transform:uppercase; padding:3px 7px; border-radius:2px; white-space:nowrap;
+}
+.chip.c-high{background:var(--moss-soft); color:var(--moss)}
+.chip.c-med{background:var(--amber-soft); color:var(--amber)}
+.chip.c-low{background:var(--amber-soft); color:var(--amber)}
+.chip.c-gap{background:var(--clay-soft); color:var(--clay)}
+.chip.c-skip{background:var(--sunk); color:var(--ink-3)}
+.chip.c-empty{background:var(--sunk); color:var(--ink-3)}
+tr.row.hide,tr.pg.hide,tr.chap.hide{display:none}
+tr.row.c-gap .c-doc,tr.row.c-gap .c-note{color:var(--ink)}
+
+/* ---------------------------------------------------------- steps + foot */
+ol.steps{counter-reset:s; list-style:none; margin:24px 0 0; padding:0; max-width:80ch}
+ol.steps li{
+  counter-increment:s; position:relative; padding:0 0 16px 44px; font-size:15px;
+  line-height:1.55; color:var(--ink-2);
+}
+ol.steps li::before{
+  content:counter(s,decimal-leading-zero); position:absolute; left:0; top:1px;
+  font-family:Oswald, sans-serif; font-size:13px; font-weight:500; color:var(--accent);
+  letter-spacing:.06em; font-variant-numeric:tabular-nums;
+}
+ol.steps li b{color:var(--ink); font-weight:600}
+footer{
+  margin-top:52px; border-top:1px solid var(--rule); background:var(--surface);
+  padding:22px 0 40px; font-size:13px; color:var(--ink-3);
+}
+footer .wrap>p{margin:0 0 6px; max-width:82ch}
+footer code{font-size:12px}
+@media (max-width:640px){
+  .wrap{padding:0 18px}
+  .meta div{border-right:0; border-bottom:1px solid var(--rule-2)}
+  .bar{position:static}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important; animation:none !important}}
+</style>
+
+<header class="mast">
+  <div class="wrap">
+    <p class="eyebrow">MitigateNY 2.0 &middot; content crosswalk &middot; 3 September 2026</p>
+    <h1>Westchester 2026 Base Plan &rarr; pattern 2448336</h1>
+    <p class="dek">The 2026 Westchester County HMP is the <b>first plan drafted against the
+      MitigateNY 2.0 information architecture</b>. IEM built the Word document&rsquo;s heading tree to
+      mirror the platform&rsquo;s pages and components &mdash; and it holds up. This is the county-level
+      pass: every authored section matched to the grey <b>Local Context</b> rich-text box it belongs in,
+      by <code>draft_section</code> id.</p>
+    <dl class="meta">
+      <div><dt>Pattern</dt><dd class="mono">2448336 &middot; Westchester-2026</dd></div>
+      <div><dt>Instance</dt><dd class="mono">mitigateny_county_template_v3_copy_2</dd></div>
+      <div><dt>Draft site</dt><dd><a href="https://westchester-2026.mitigateny.org/" target="_blank" rel="noopener">westchester-2026.mitigateny.org</a></dd></div>
+      <div><dt>Duplicated from</dt><dd class="mono">county_template &middot; 1300890</dd></div>
+      <div><dt>Consultant</dt><dd>IEM &mdash; third profile</dd></div>
+      <div><dt>Source</dt><dd>Base Plan Draft, Aug 2026<br><span class="mono" style="font-size:12px">1,965 blocks &middot; 722 headings</span></dd></div>
+    </dl>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section id="summary">
+  <h2>Where it landed</h2>
+  <div class="tiles">
+    <div class="tile ok"><span class="tile-n">183<small>/197</small></span>
+      <span class="tile-l">Authored doc sections matched to a named slot</span></div>
+    <div class="tile ok"><span class="tile-n">173</span>
+      <span class="tile-l">of those by <em>exact</em> title&nbsp;+&nbsp;position match</span></div>
+    <div class="tile"><span class="tile-n">174<small>/256</small></span>
+      <span class="tile-l">Annotation slots that will receive content</span></div>
+    <div class="tile"><span class="tile-n">328<small>k</small></span>
+      <span class="tile-l">Characters of prose to transcribe</span></div>
+    <div class="tile"><span class="tile-n">16<small>/16</small></span>
+      <span class="tile-l">Hazard profiles mapping 1:1 &mdash; no splits, merges or drops</span></div>
+    <div class="tile warn"><span class="tile-n">3</span>
+      <span class="tile-l">Blockers to clear before the workbook load</span></div>
+  </div>
+  <p class="tile-note">271 crosswalk rows &middot; 173 high &middot; 9 medium &middot; 1 low &middot;
+    6 with no target &middot; 8 skipped as boilerplate &middot; 73 slots left deliberately empty.</p>
+
+  <div class="col">
+    <p>Westchester needed <b>no hazard-taxonomy decision</b> &mdash; a first. Suffolk required a hybrid
+    mapping across split and combined profiles; Schenectady needed three renames and two dropped hazards.
+    Here all sixteen doc profiles land on the sixteen platform hazard pages unchanged.</p>
+  </div>
+</section>
+
+<section id="alignment">
+  <h2>Why the alignment holds</h2>
+  <p class="lede">The document&rsquo;s heading tree <em>is</em> the platform&rsquo;s component order.</p>
+  <div class="col">
+    <p>Read down a hazard page and the correspondence is positional, not just nominal. Every heading the
+    consultant wrote either names an Annotation slot outright or sits exactly where the platform puts a
+    data component &mdash; which is the signal to transcribe nothing there.</p>
+  </div>
+  <div class="hzwrap">
+    <table class="hz">
+      <thead><tr><th></th><th>Doc heading</th><th>Component</th><th>What it is on the page</th></tr></thead>
+      <tbody><!--HAZ--></tbody>
+    </table>
+  </div>
+  <p class="cap">Coastal Hazards, page 2448355. Teal rows are the fill targets; the rest the platform
+  renders itself from geoid-filtered sources. The same shape repeats on all sixteen hazard pages.</p>
+  <div class="col">
+    <p>The county chapters behave the same way: the document uses a literal <code>Local Context</code>
+    heading wherever the platform has an Annotation titled &ldquo;Local Context&rdquo;. Built Environment is
+    the cleanest case &mdash; the doc&rsquo;s eight <code>Local Context</code> sections and the page&rsquo;s
+    eight <code>Local Context</code> Annotations appear in the <b>same order</b>, one to one.</p>
+  </div>
+</section>
+
+<section id="drift">
+  <h2>Drift register</h2>
+  <p class="lede">Nine items where the document and the template have moved apart. Three block the
+    workbook load.</p>
+
+  <div class="reg">
+
+    <div class="reg-item block">
+      <div class="reg-head"><span class="reg-id">D8</span>
+        <span class="reg-t">Three pattern-level fields did not survive duplication</span>
+        <span class="tag block">blocker</span></div>
+      <ul class="tight">
+        <li><b><code>filters</code> still carry geoid <code>36105</code></b> &mdash; that is
+          <b>Sullivan</b>. Westchester is <code>36119</code>. Every geoid-filtered data component on the
+          site is currently pointed at the wrong county. <code>county_template</code> holds the same
+          placeholder, so this is a required post-duplication step rather than template drift.</li>
+        <li><b><code>additionalSectionAttributes</code> is absent.</b> It defines the <code>status</code>
+          select &mdash; including <code>shmp_sourced_content</code>, the value this load writes. Without
+          it the status won&rsquo;t render in the admin UI. Copy from pattern 1300890.</li>
+        <li><b><code>authPermissions</code> is absent.</b> Almost certainly why <b>9 of the 58 page rows
+          read back <code>no-access</code></b>. Copy from pattern 1300890.</li>
+      </ul>
+    </div>
+
+    <div class="reg-item dec">
+      <div class="reg-head"><span class="reg-id">D1</span>
+        <span class="reg-t">Six county-specific sections have no slot anywhere</span>
+        <span class="tag dec">owner decision</span></div>
+      <ul class="tight">
+        <li><b>Executive Summary</b>, plan-wide, 3,983 ch &mdash; no plan-wide Annotation exists; the Home
+          page&rsquo;s six are nav cards. Nearest homes: The Plan Executive Summary <code>2449721</code>,
+          or a new Home component.</li>
+        <li><b>Letter from the Director</b>, 2,150 ch &mdash; county-specific, no slot at all.</li>
+        <li><b>Formal Adoption by Westchester County and Participating Jurisdictions</b>, 609 ch &mdash;
+          closest slot <code>2463655</code> is already claimed by the doc&rsquo;s own Adoption section.
+          Merge, or add a component.</li>
+        <li><b>Background</b>, 4,298 ch &mdash; <b>half of it belongs.</b> Paragraphs 590&ndash;593 and 598
+          are county-specific (45 jurisdictions, 430.8 sq mi, the three coterminous town-villages, what
+          changed since the last plan); 594 and 599&ndash;602 plus Table 1 are 44&nbsp;CFR boilerplate the
+          shared cards already carry.</li>
+        <li><b>Risk Assessment Terms</b>, 888 ch &mdash; a generic glossary. Recommend skipping, or
+          appending to <code>2465617</code>.</li>
+        <li><b>Capabilities Assessment overview</b>, 1,317 ch &mdash; the four-capability framing. The
+          page&rsquo;s first Annotation is order 5 (Planning and Regulatory); order 1 is a data Card.
+          Recommend prepending, or adding a page-overview Annotation to the template.</li>
+      </ul>
+    </div>
+
+    <div class="reg-item dec">
+      <div class="reg-head"><span class="reg-id">D3</span>
+        <span class="reg-t">Climate Change has one Annotation for two large doc sections</span>
+        <span class="tag dec">owner decision</span></div>
+      <p>Local Context (3,382 ch) <em>and</em> Shared Socioeconomic Pathways (9,999 ch, 14 paragraphs) both
+      have to land in <code>2449756</code>, the page&rsquo;s only Annotation. Recommend merging under an SSP
+      sub-heading, or adding a second Annotation. <b>Do not write to component <code>2449734</code></b>
+      &mdash; that is the shared statewide <b>Climate Impacts Matrix</b>, 21,347 characters of
+      hazard-by-hazard climate text used by every county.</p>
+    </div>
+
+    <div class="reg-item dec">
+      <div class="reg-head"><span class="reg-id">D7</span>
+        <span class="reg-t">Six slots the plan leaves empty that arguably shouldn&rsquo;t be</span>
+        <span class="tag dec">back to IEM?</span></div>
+      <p>The document has the heading but no prose underneath. Worth raising before the load rather than
+      after:</p>
+      <ul class="tight">
+        <li><b>Organizational Structure &ndash; Planning Teams</b> <code>2449738</code> &mdash;
+          steering-committee and working-group structure belongs here.</li>
+        <li><b>Technical Data and Existing Resources</b> <code>2449743</code>.</li>
+        <li><b>Continued Public Engagement</b> <code>2449745</code> &mdash; relevant to
+          44&nbsp;CFR&nbsp;201.6(c)(4)(iii).</li>
+        <li><b>Special Districts</b> <code>2449870</code>, <b>Buyouts/Acquisitions</b>
+          <code>2449796</code>, and <b>Track Progress Executive Summary</b> <code>2450116</code> &mdash;
+          the document has no Track Progress chapter at all.</li>
+      </ul>
+    </div>
+
+    <div class="reg-item dec">
+      <div class="reg-head"><span class="reg-id">D4</span>
+        <span class="reg-t">Five doc sections narrate a data table with no Annotation beside it</span>
+        <span class="tag dec">owner decision</span></div>
+      <p>Each is folded into the nearest slot, which is where the Medium and Low confidence rows in the
+      crosswalk come from: <b>Demographic Statistics</b> (2,432 ch) into the People and Communities Local
+      Context; <b>Future Population Projections</b> (1,318) into Population Change, whose guidance
+      explicitly asks for projections; <b>Open Space Parcel Statistics</b> (979) into County Open Space Plan
+      &mdash; the one Low-confidence call, and a reasonable candidate to drop; <b>Local Funding
+      Capabilities</b> (675) into Funding Sources Local Context; and <b>Goals and Objectives</b> (499),
+      a definitional lead-in, prepended to County Goals and Objectives.</p>
+    </div>
+
+    <div class="reg-item">
+      <div class="reg-head"><span class="reg-id">D2</span>
+        <span class="reg-t">Three hazard pages are missing a slot the other thirteen have</span>
+        <span class="tag def">template defect</span></div>
+      <p>Extreme Cold <code>2448347</code> has no <b>Local Actions</b>; Snowstorm <code>2448346</code> and
+      Wind <code>2448391</code> have no <b>Local Hazard Summary</b>. Present in
+      <code>county_template</code> too, so this is a template defect to fix and propagate rather than a
+      duplication error. <b>Does not block this pass</b> &mdash; the document carries no prose for any of
+      the three.</p>
+    </div>
+
+    <div class="reg-item">
+      <div class="reg-head"><span class="reg-id">D9</span>
+        <span class="reg-t">Two stale references carried over from the template</span>
+        <span class="tag def">template defect</span></div>
+      <ul class="tight">
+        <li>Page <code>2448340</code> (&ldquo;Response&rdquo;, under Strategies) has
+          <code>parent = 1300884</code> &mdash; a <b><code>county_template</code> page id</b>, not a page in
+          this pattern. Its parent pointer needs re-pointing at the Westchester subtree.</li>
+        <li>Slot <code>2450153</code> sits directly under the NFIP page&rsquo;s &ldquo;Floodplain
+          Administrators&rdquo; card, but its guidance still reads <i>&ldquo;Provide information on your
+          latest Flood Insurance Rate Map.&rdquo;</i> And <code>2449901</code> (Built Environment, Buildings)
+          carries guidance copy-pasted from the Critical Buildings slot. Neither changes the mapping;
+          both will mislead the next author.</li>
+      </ul>
+    </div>
+
+    <div class="reg-item">
+      <div class="reg-head"><span class="reg-id">D5</span>
+        <span class="reg-t">Lightning has no <code>County Assessment</code> heading</span>
+        <span class="tag def">single exception</span></div>
+      <p>Its county-level assessment prose (3,292 ch) sits under <code>Local Risk Assessment</code>
+      instead &mdash; which on the platform is a plain header, not an Annotation. Target is the
+      <code>County Assessment</code> slot <code>2451746</code>. This is the <b>only</b> hazard subsection in
+      the entire document that doesn&rsquo;t match a slot title.</p>
+    </div>
+
+    <div class="reg-item">
+      <div class="reg-head"><span class="reg-id">D6</span>
+        <span class="reg-t">The doc&rsquo;s per-hazard <code>Overview</code> has no slot of its own</span>
+        <span class="tag def">convention</span></div>
+      <p>It corresponds to platform order 5, a shared data Card. Content exists for only three hazards
+      &mdash; Drought (1,498 ch), Wildfire (350), Ice Storm (219) &mdash; and is folded into
+      <b>Local Hazard Summary</b> alongside <code>General Vulnerability</code>, whose 44&nbsp;CFR tags
+      (<code>B2-a</code>, <code>B2-b</code>) match that slot exactly.</p>
+    </div>
+
+  </div>
+
+  <h3>What did <em>not</em> drift</h3>
+  <div class="col">
+    <p>Otherwise the copy is <b>structurally identical</b> to <code>county_template</code>: the same 256
+    Annotation slots, the same slot titles, the same per-page component counts, across all 49 shared pages.
+    The template has one extra page the copy lacks &mdash;
+    <code>jurisdictional_annexes/select_jurisdiction</code>, which holds no Annotation slots.</p>
+  </div>
+</section>
+
+<section id="crosswalk">
+  <h2>The crosswalk</h2>
+  <p class="lede">271 rows, grouped by chapter and page.</p>
+  <div class="col">
+    <p><b>Doc block</b> is the paragraph index in the extracted document, so any row can be traced back to
+    its source text. <b>Slot</b> is the <code>draft_section</code> id to write, and <b>ord</b> its position in
+    that page&rsquo;s <code>draft_sections</code>. Skipped and deliberately-empty rows are hidden by
+    default &mdash; the chips below turn them on.</p>
+  </div>
+
+  <div class="bar">
+    <div class="chips">
+      <button class="f" data-g="fill" aria-pressed="true">Mappings<span class="n">183</span></button>
+      <button class="f" data-g="GAP" aria-pressed="true">No target<span class="n">6</span></button>
+      <button class="f" data-g="SKIP" aria-pressed="false">Skipped<span class="n">8</span></button>
+      <button class="f" data-g="EMPTY" aria-pressed="false">Leave empty<span class="n">74</span></button>
+    </div>
+    <input class="q" type="search" placeholder="Filter by heading, slot id, page&hellip;" aria-label="Filter crosswalk rows">
+    <span class="count" id="count"></span>
+  </div>
+  <div class="xwrap">
+    <table class="x">
+      <thead><tr>
+        <th>Doc block &amp; heading</th><th>Chars</th><th>Slot</th>
+        <th>Slot title</th><th>Ord</th><th>Conf.</th><th>Notes &amp; recommendation</th>
+      </tr></thead>
+      <tbody id="tb"><!--TABLE--></tbody>
+    </table>
+  </div>
+</section>
+
+<section id="next">
+  <h2>What happens next</h2>
+  <ol class="steps">
+    <li><b>Owner decisions on D1, D3, D4 and D7</b> &mdash; the six no-target sections, the Climate Change
+      merge, the five table-narration folds, and whether the six empty slots go back to IEM.</li>
+    <li><b>Clear D8 before the workbook load.</b> Set <code>filters</code> to geoid <code>36119</code>;
+      copy <code>additionalSectionAttributes</code> and <code>authPermissions</code> from pattern
+      1300890. The internally-sourced tables, cards and graphs won&rsquo;t render against Westchester
+      until the geoid is right.</li>
+    <li><b>Author the fill spec</b> &mdash; one <code>{id, md, status}</code> entry per slot, generated from
+      the crosswalk, with markdown converted to Lexical nodes by the established formatter.</li>
+    <li><b>Back up, dry-run, apply</b> to <code>draft_sections</code> across the ~174 target slots at
+      <code>status: shmp_sourced_content</code>. Nothing gets published &mdash; that stays a human
+      decision.</li>
+    <li><b>Re-run the slot inventory</b> and reconcile filled counts against the crosswalk.</li>
+    <li><b>Then the jurisdictional annexes</b> &mdash; 45 documents into the Jurisdictions dataset, the
+      path already proven on Nassau, Suffolk, Schenectady and Delaware.</li>
+    <li><b>File D2 and D9</b> as <code>county_template</code> findings, for propagation to every duplicate
+      pattern.</li>
+  </ol>
+</section>
+
+</div>
+
+<footer>
+  <div class="wrap">
+    <p>Nothing has been written to the site. This pass produced the crosswalk only &mdash; the fill spec,
+      the backups and the load are the next session&rsquo;s work.</p>
+    <p>Working artifacts (271-row CSV, machine-readable crosswalk, full slot inventory with guidance, the
+      document extraction and the scripts) live in
+      <code>references/mny-transcribe/westchester/final-plan-work/</code>. The tracked task document is
+      <code>planning/mitigateny/tasks/current/westchester-2026-baseplan-crosswalk.md</code>.</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var tb = document.getElementById('tb'), cnt = document.getElementById('count');
+  var q = document.querySelector('input.q'), btns = [].slice.call(document.querySelectorAll('button.f'));
+  var rows = [].slice.call(tb.querySelectorAll('tr.row'));
+  var heads = [].slice.call(tb.querySelectorAll('tr.pg, tr.chap'));
+  function grp(c){
+    if (c === 'SKIP') return 'SKIP';
+    if (c === 'EMPTY' || c === 'PREFILLED') return 'EMPTY';
+    if (c === 'GAP' || c === 'PARTIAL') return 'GAP';
+    return 'fill';
+  }
+  function apply(){
+    var on = {}, term = q.value.trim().toLowerCase();
+    btns.forEach(function(b){ on[b.dataset.g] = b.getAttribute('aria-pressed') === 'true'; });
+    var shown = 0;
+    rows.forEach(function(tr){
+      var ok = on[grp(tr.dataset.conf)] && (!term || tr.dataset.q.indexOf(term) > -1);
+      tr.classList.toggle('hide', !ok);
+      if (ok) shown++;
+    });
+    // A page heading shows only if one of its own rows survives; a chapter
+    // heading only if one of its page headings does. Walk bottom-up so the
+    // page decisions are already made when the chapters are tested.
+    for (var i = heads.length - 1; i >= 0; i--) {
+      var h = heads[i], isChap = h.classList.contains('chap'), any = false;
+      for (var n = h.nextElementSibling; n; n = n.nextElementSibling) {
+        if (n.classList.contains('chap')) break;
+        if (isChap) {
+          if (n.classList.contains('pg') && !n.classList.contains('hide')) { any = true; break; }
+        } else {
+          if (n.classList.contains('pg')) break;
+          if (n.classList.contains('row') && !n.classList.contains('hide')) { any = true; break; }
+        }
+      }
+      h.classList.toggle('hide', !any);
+    }
+    cnt.textContent = shown + ' of ' + rows.length + ' rows';
+  }
+  btns.forEach(function(b){
+    b.addEventListener('click', function(){
+      b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+      apply();
+    });
+  });
+  q.addEventListener('input', apply);
+  apply();
+})();
+</script>

@@ -6,9 +6,8 @@ import {
 import { runWhenStyleReady } from "./runWhenStyleReady";
 
 // Detour plugin's own route-line renderer - own ids, primary (bold, currently-selected
-// direction+variant) + secondary (dimmed, everything else - the "show all routes" test toggle,
-// 2026-08-19: "just for test... always highlight the route like this one"). Same plain geojson
-// source/layer primitive as ../../routing/hooks/useRouteLayer.js.
+// direction+variant) + secondary (dimmed, everything else - the "show all routes" test toggle).
+// Same plain geojson source/layer primitive as ../../routing/hooks/useRouteLayer.js.
 export const useRouteLayer = (map, primaryFeature, secondaryFeatures = []) => {
   useEffect(() => {
     if (!map) return;
@@ -60,7 +59,11 @@ export const useRouteLayer = (map, primaryFeature, secondaryFeatures = []) => {
 
   useEffect(() => {
     return () => {
-      if (!map) return;
+      // `.loaded()`, not just truthiness - see useEdgeLayer.js's cleanup for why (the underlying
+      // maplibre instance can be torn down by its host, e.g. a live DMS page's Map component,
+      // before this effect's cleanup runs - `map` stays a truthy reference but getLayer() throws
+      // internally once its style is gone).
+      if (!map || !map.loaded()) return;
       if (map.getLayer(ROUTE_LAYER_ID)) map.removeLayer(ROUTE_LAYER_ID);
       if (map.getLayer(ROUTE_GLOW_LAYER_ID)) map.removeLayer(ROUTE_GLOW_LAYER_ID);
       if (map.getSource(ROUTE_SOURCE_ID)) map.removeSource(ROUTE_SOURCE_ID);

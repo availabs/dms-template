@@ -45,12 +45,27 @@
  * by anything until now). Ryan's explicit direction: ship colorBreaks.json's existing
  * placeholder-quality numbers now (same ones this file used inline before), not blocked on a real
  * distribution analysis — see that file's own header for the tracked follow-up.
+ *
+ * Semi-reverted 2026-09-02 (Ryan): same walk-back as composeMeasureConfig.js's
+ * `APPLY_STATIC_BREAKS_TO_CHARTS` (see that file's comment) — Ryan reverted maps too, off the same
+ * "every chart/map gets its own dynamic scale, not colorBreaks.json's placeholder numbers"
+ * decision, but wants it just as easy to flip back. `APPLY_STATIC_BREAKS_TO_MAP` below is that
+ * switch: false sends `bin-method: 'quantile'` (pre-round-80 behavior — the live Map runtime
+ * recomputes breaks from real data on every render, colorBreaks.json's `breaks`/`maxValue` for
+ * this measure go unused, only `colors` still comes from here); true restores round 80's
+ * `bin-method: 'custom'` (fixed breaks, no live recompute — see the round-80 paragraph above).
+ * colorBreaks.json/choroplethPaint/route_map.py are untouched either way; route_map.py (the
+ * Python-side converter, not this live-authoring path) has its own matching
+ * `APPLY_STATIC_BREAKS_TO_MAP` flag in convert_old_reports_lib/config.py — flip both together or a
+ * re-converted page's map won't match a freshly-authored one.
  */
 
 import { GRAPH_VOCAB, ensureSelfBoundSubscriber } from './composeMeasureConfig';
 import colorBreaks from './colorBreaks.json';
 import { choroplethPaint } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/ComponentRegistry/map/utils';
 import { buildJoin } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/buildUdaConfig';
+
+const APPLY_STATIC_BREAKS_TO_MAP = false;
 
 // Per-year TMC geometry tile views (DAMA source 582, npmrds2 pgEnv) — same mapping
 // route_map.py's GEOMETRY_TILE_VIEWS uses. The year filter is baked into each view's tile URL, so
@@ -91,6 +106,40 @@ export const MAP_MEASURE_OPTIONS = [
 // colorBreaks.json itself now, not here.
 const CHOROPLETH_DEFAULTS = colorBreaks.measures;
 
+// Hover-value formatFn per measure (shared `formatFunctions` registry — dataWrapper/utils/
+// utils.jsx), mirroring route_map.py's `route_map_hover_columns` for the 4 measures Python also
+// builds. The 4 CO2 variants have no Python precedent and no registry entry suited to their
+// sub-0.01 magnitudes — `decimal_2` would round every real value to "0.00" (see colorBreaks.json's
+// own note on those measures' domains) — so they fall through to raw passthrough (`' '`) below
+// instead of a formatter that would actively lie.
+const HOVER_VALUE_FORMAT = {
+    speed: 'decimal_2',
+    travelTime: 'minutes_clock',
+    hoursOfDelay: 'decimal_2',
+    avgHoursOfDelay: 'decimal_2',
+};
+
+// Hover-popup field list for a Route Map layer (`layer['hover-columns']`, read by the map
+// runtime's HoverComp — ComponentRegistry/map/SymbologyViewLayer.jsx). `tmc`/`value` are the SAME
+// property names every Route Map layer already carries on its rendered tile feature (geometry
+// tiles: `cols=tmc`; choropleth `join.tileColumns`: `['value']`, server-baked into the tile via
+// the tile URL's `join=` param) — the popup reads off the feature already under the cursor, no
+// extra join fetch. Mirrors route_map.py's `route_map_hover_columns` so the live "Add Graph" /
+// QuickControls authoring path and the old-report-conversion path behave identically.
+function routeMapHoverColumns(measureKey) {
+    const columns = [{ column_name: 'tmc', display_name: 'TMC', formatFn: ' ', justify: 'left' }];
+    if (measureKey && measureKey !== 'none') {
+        const measure = GRAPH_VOCAB.measures[measureKey];
+        columns.push({
+            column_name: 'value',
+            display_name: measure?.label || measureKey,
+            formatFn: HOVER_VALUE_FORMAT[measureKey] || ' ',
+            justify: 'right',
+        });
+    }
+    return columns;
+}
+
 // report-authoring-ux-overhaul.md Tier 6A (2026-08-20): Map had NO title auto-compose at all —
 // confirmed by reading this whole file, zero references to `display.title` anywhere in it, unlike
 // composeMeasureConfig.js's `composeAutoTitle`. This is Map's own equivalent, deliberately not a
@@ -112,6 +161,16 @@ export function composeMapAutoTitle(measureKey) {
 export function isMapTitleDirty({ currentTitle, priorMeasureKey }) {
     if (!currentTitle) return false;
     return currentTitle !== composeMapAutoTitle(priorMeasureKey);
+}
+
+// Map's `{ title? }` patch for the SECTION row — the counterpart to composeMeasureConfig.js's
+// composeSectionTitlePatch (read that one's doc comment for why this is returned rather than
+// written). No kicker: a Map card has no unit and no time grouping to caption, and its measure is
+// already the whole title.
+export function composeMapSectionTitlePatch({ currentTitle, priorMeasureKey, measureKey }) {
+    if (isMapTitleDirty({ currentTitle, priorMeasureKey })) return null;
+    const title = composeMapAutoTitle(measureKey);
+    return title ? { title } : null;
 }
 
 function latestAvailableYear() {
@@ -172,6 +231,9 @@ function buildRouteGeometryLayer(year) {
         // The template itself renders nothing (hidden sub-layers below) — keep it out of the
         // legend; materialized per-route clones clear this key (useComparisonSeriesLayers.js).
         'legend-orientation': 'none',
+        // TMC-only hover — no joined measure column on this layer (see routeMapHoverColumns).
+        hover: 'hover',
+        'hover-columns': routeMapHoverColumns(),
         view_id: viewId, source_id: 582,
         sources: [{ id: srcId, source: { type: 'vector', tiles: [tilesUrl], format: 'pbf' } }],
         layers: [
@@ -233,14 +295,19 @@ function buildChoroplethLayer({ measureKey, year, apiHost }) {
         // colorDomain refetch entirely and trusts this layer's own baked
         // paint/legend-data permanently. This is the one line that makes the
         // "fixed breaks" intent above actually real at render time, not just
-        // at compose time — see this file's header comment.
-        'bin-method': 'custom',
+        // at compose time — see this file's header comment. Semi-reverted
+        // 2026-09-02: gated on APPLY_STATIC_BREAKS_TO_MAP (see header) —
+        // 'quantile' is the pre-round-80 dynamic-scale default.
+        'bin-method': APPLY_STATIC_BREAKS_TO_MAP ? 'custom' : 'quantile',
         'color-range': defaults.colors,
         'legend-data': painted.legend,
         // The runtime materializes one visible clone per comparison_series variant
         // (useComparisonSeriesLayers.js); the template layer itself must stay suppressed or it
         // renders an extra, un-labeled duplicate legend row.
         'legend-orientation': 'none',
+        // See routeMapHoverColumns's own comment.
+        hover: 'hover',
+        'hover-columns': routeMapHoverColumns(measureKey),
         view_id: viewId, source_id: 582,
         join: {
             enabled: true, featureKeyColumn: 'tmc', joinColumn: 'tmc',
@@ -297,10 +364,9 @@ export function composeMapSectionConfig({ measureKey = 'none', year, apiHost } =
         },
     };
     ensureSelfBoundSubscriber(state);
-    // Brand-new section, no prior title to preserve — always set (mirrors applyMeasurePickToState's
-    // own "undefined priorPick" creation-time behavior, via isMapTitleDirty's `!currentTitle`
-    // short-circuit).
-    state.display.title = { ...state.display.title, title: composeMapAutoTitle(measureKey) };
+    // The in-card title write that used to live here moved to the SECTION title on 2026-09-11 —
+    // see composeMapSectionTitlePatch. It was always invisible anyway: a Map section is not
+    // rendered by GraphComponent and has no GraphTitle, so `display.title` had no render path.
     return state;
 }
 
@@ -324,8 +390,6 @@ export function applyMapMeasureToState(state, { measureKey = 'none', year, apiHo
         symbology: { activeLayer: layer.id, layers: { [layer.id]: layer } },
     };
     ensureSelfBoundSubscriber(state);
-    const currentTitle = state.display.title?.title;
-    if (!isMapTitleDirty({ currentTitle, priorMeasureKey })) {
-        state.display.title = { ...state.display.title, title: composeMapAutoTitle(measureKey) };
-    }
+    // Title handled by the caller via composeMapSectionTitlePatch (see above) — it writes the
+    // SECTION row, which this function can't reach.
 }

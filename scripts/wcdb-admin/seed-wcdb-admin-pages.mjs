@@ -484,6 +484,9 @@ const pages = [
                 { name: 'release_date', show: true, type: 'text', customName: 'Year', headerFontStyle: 'label', allowEditInView: true },
                 { name: 'score', show: true, customName: 'Matched at', formatFn: 'percent', editable: false, headerFontStyle: 'label' },
                 { name: 'original_title', show: true, customName: 'Detected as', editable: false, headerFontStyle: 'label' },
+                // The primary key, fetched but not drawn: a row only carries the columns it
+                // selects, and both the live-edit save and the Delete button key on `item.id`.
+                { name: 'id', show: true, selectOnly: true },
               ],
               filters: [{ col: 'id', op: 'filter', value: [], usePageFilters: true, searchParamKey: 'edit_song' }],
               display: {

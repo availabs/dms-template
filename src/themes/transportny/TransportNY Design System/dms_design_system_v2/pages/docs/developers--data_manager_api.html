@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Data Manager API · Developers · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  developers--data_manager_api.html · IA page 82 · type reference. Phase 6a, 2026-09-08.
+  Sources: docs-dump 1436006 (the 2025-08-27 reference: options object, legacy `dama` / viewsbyId / databyIndex casing); 1458899 (the
+  `uda` worked example); avail-falcor routes/uda.route.js (the ten read routes and the header's option list), routes/uda_query_sets/
+  helpers.js (filter operators, null handling, case-insensitive like, orderBy, `as` aliases), routes/data_manager/multi-db.routes.js
+  (the legacy dama routes still in the code), index.js + auth/jwtAuth.js (Authorization header; public without one; no rate limiter);
+  dms-template createRequest.js ('uda' case) and datasets pattern paths; .env.example hosts; dms-template .env (VITE_API_HOST=dmsserver).
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="reference" data-applies-to="developers">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Developers · reference</div>
+          <h1 class="doc-title">Data Manager API.</h1>
+          <p class="doc-lede">The read API every dashboard renders from: one graph endpoint, a path grammar under the <code>uda</code> root, and an options object that filters, groups and orders. This page is the lookup for the paths, the options and what returns without a token. It assumes you have run the <a href="developers--quickstart.html">quick start</a>.</p>
+          <div class="stamps">
+            <span class="type">reference</span>
+            <span>applies to · Developers</span>
+            <span>last reviewed · 2026-09-08</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="how-a-request-is-made">How a request is made</h2>
+          <p>The API is a Falcor JSON Graph endpoint. A Falcor request is a list of paths into one large graph; the response is the part of the graph those paths touch. You send the list as a URL-encoded JSON array in the <code>paths</code> query parameter of the graph route, with <code>method=get</code>.</p>
+<pre class="code">GET https://graph.availabs.org/graph?paths=&lt;url-encoded JSON array of paths&gt;&amp;method=get
+
+<span class="c">→</span> { "jsonGraph": { "uda": { "&lt;env&gt;": { … the values at your paths … } } } }</pre>
+          <p>Three rules follow from that shape. The options object is itself a JSON string inside the path array, so it is encoded twice: once as JSON, once as a URL. A value that is an object, a date or a null is wrapped as <code>{"$type":"atom","value":…}</code>; unwrap it. And the response keys are your attribute strings exactly as you sent them.</p>
+
+          <h2 id="hosts-and-roots">Hosts and roots</h2>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Purpose</th><th>Host and route</th><th>Root or body</th></tr></thead>
+            <tbody>
+              <tr><td>Data reads</td><td><code>https://graph.availabs.org/graph</code></td><td><code>uda</code> paths, described below</td></tr>
+              <tr><td>Sign-in token</td><td><code>https://dmsserver.availabs.org/login</code></td><td><code>{ email, password, project }</code> → <code>{ user: { token } }</code></td></tr>
+              <tr><td>Batch reports</td><td><code>https://graph.availabs.org/batchreports/npmrds2/982</code></td><td>REST body; see <a href="developers--batch_reports_api.html">Batch Reports API</a></td></tr>
+            </tbody>
+          </table></div>
+          <p>The site's own configuration names <code>https://graph.availabs.org</code> as the data host, and the 2025 worked example was recorded against it. The sign-in server answers the same <code>uda</code> paths, and a sources length read returned the same value on both hosts at the 2026-09-08 check; write against the data host.</p>
+
+          <h2 id="environments">Environments</h2>
+          <p>The second path segment names a data environment. <code>npmrds2</code> is the platform's environment: every dataset with a datasheet in Measures &amp; Data lives there, and the worked example calls it "the database being pulled from". An environment written <code>app+instance</code>, with a plus sign, is a site-managed dataset rather than a platform table; the server classifies by the plus sign. The datasheets do not use that form.</p>
+
+          <h2 id="sources-and-views">Sources and views</h2>
+          <p>A <strong>source</strong> is a dataset; a <strong>view</strong> is one version of it, and data is always read by view. The source page in Data &amp; Downloads and the datasheets carry the ids. These paths list them.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Path</th><th>Returns</th></tr></thead>
+            <tbody>
+              <tr><td><code>["uda", env, "sources", "length"]</code></td><td>The number of sources in the environment.</td></tr>
+              <tr><td><code>["uda", env, "sources", "byIndex", {from, to}, [attributes]]</code></td><td>Sources in index order, each a reference to <code>sources.byId</code>; attributes are resolved through the reference.</td></tr>
+              <tr><td><code>["uda", env, "sources", "byId", id, [attributes]]</code></td><td>Attribute values for one source. Attributes the site itself reads: <code>name</code>, <code>display_name</code>, <code>type</code>, <code>categories</code>, <code>description</code>, <code>update_interval</code>, <code>statistics</code>, <code>metadata</code>.</td></tr>
+              <tr><td><code>["uda", env, "sources", "byId", id, "views", "length"]</code></td><td>How many views the source has.</td></tr>
+              <tr><td><code>["uda", env, "sources", "byId", id, "views", "byIndex", {from, to}, [attributes]]</code></td><td>The source's views in order, each a reference to <code>views.byId</code>.</td></tr>
+              <tr><td><code>["uda", env, "views", "byId", id, [attributes]]</code></td><td>Attribute values for one view: <code>version</code> is the version name; <code>metadata</code> carries the column list and the <code>download</code> url map.</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="rows">Rows</h2>
+          <p>Row reads hang off <code>viewsById</code> and always carry an options string, even an empty one. Ask for the length first; a range past the end returns nothing for the missing indices.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Path</th><th>Returns</th></tr></thead>
+            <tbody>
+              <tr><td><code>["uda", env, "viewsById", view, "options", options, "length"]</code></td><td>The count of rows that match the options. With <code>groupBy</code>, set <code>aggregatedLen</code> to get the count of groups.</td></tr>
+              <tr><td><code>["uda", env, "viewsById", view, "options", options, "dataByIndex", {from, to}, [attributes]]</code></td><td>The matching rows from index <code>from</code> to <code>to</code> inclusive, one key per attribute.</td></tr>
+              <tr><td><code>["uda", env, "viewsById", view, "options", options, "byIndex", {from, to}]</code></td><td>References to <code>dataById</code> for the matching rows, for tables that carry an <code>id</code> column.</td></tr>
+              <tr><td><code>["uda", env, "viewsById", view, "dataById", id, [attributes]]</code></td><td>One row by its id.</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="the-options-object">The options object</h2>
+          <p>A JSON object, serialised to a string, placed after <code>options</code> in the path. Keys are column names. The first seven rows are the documented grammar; the rest are keys the server accepts today, with what the code does.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Option</th><th>Meaning</th><th>Example</th></tr></thead>
+            <tbody>
+              <tr><td><code>filter</code></td><td>Keep rows whose column is any of the listed values. The strings <code>"null"</code> and <code>"not null"</code> in the list test for a missing or present value.</td><td><code>"filter": { "geoid": [36001, 36002], "status": ["active"] }</code></td></tr>
+              <tr><td><code>exclude</code></td><td>Drop rows whose column is any of the listed values; the same null words apply.</td><td><code>"exclude": { "year": [2011, 2012], "status": ["inactive"] }</code></td></tr>
+              <tr><td><code>gt</code> · <code>gte</code> · <code>lt</code> · <code>lte</code></td><td>Greater than, greater than or equal, less than, less than or equal. One number per column.</td><td><code>"gt": { "loss": 15000 }</code></td></tr>
+              <tr><td><code>like</code></td><td>Pattern match on the column as text, case-insensitive. Supply the wildcards yourself: <code>%</code> is any run of characters, <code>_</code> one character.</td><td><code>"like": { "name": "John%" }</code></td></tr>
+              <tr><td><code>groupBy</code></td><td>Group by these columns or positions. Attributes then need an aggregate for every non-grouped column.</td><td><code>"groupBy": ["geoid", "status"]</code></td></tr>
+              <tr><td><code>orderBy</code></td><td>Sort; the value is the sort order. The worked example uses <code>"desc nulls last"</code>.</td><td><code>"orderBy": { "geoid": "desc", "status": "asc" }</code></td></tr>
+              <tr><td><code>aggregatedLen</code></td><td>With <code>groupBy</code>, make <code>length</code> count groups rather than rows.</td><td><code>"aggregatedLen": true</code></td></tr>
+              <tr><td><code>having</code></td><td>Clauses applied after grouping, joined with <em>and</em>.</td><td><code>"having": ["count(1) > 10"]</code></td></tr>
+              <tr><td><code>normalFilter</code></td><td>A list of <code>{ column, values }</code> objects, merged into <code>filter</code> before the query runs. The worked example sends it empty.</td><td><code>"normalFilter": []</code></td></tr>
+              <tr><td><code>meta</code></td><td>Per-column lookup instructions that replace coded values with labels. Accepted; this page does not document its grammar.</td><td><code>"meta": {}</code></td></tr>
+              <tr><td><code>keepOriginalValues</code> · <code>isDama</code> · <code>fn</code></td><td>Accepted by the server. <code>isDama</code> makes a plus-sign environment read as a platform table. The other two are not documented here.</td><td>—</td></tr>
+            </tbody>
+          </table></div>
+          <p>Conditions across keys combine with <em>and</em>. Blank values and the null words are stripped from the SQL parameters, so an empty list is the same as no condition.</p>
+
+          <h2 id="attributes">Attributes</h2>
+          <p>The last path element on a row read is the list of columns. Each entry is a column name, or a column name followed by <code>as</code> and an alias, or an expression with an alias. The response key is the attribute string as you wrote it: ask for <code>"event_id as event_id"</code> and that is the key you read. The datasheet's schema table lists the real column names; the API does not validate them for you.</p>
+<pre class="code">["event_id", "facility as road", "count(1) as events"]</pre>
+
+          <h2 id="sign-in-and-what-returns-without-a-token">Sign-in and what returns without a token</h2>
+          <p>Reads of a published view work without a token; the worked example carries none. The server reads the <code>Authorization</code> header as the sign-in token and otherwise treats the request as the public user. Sources carry permission levels, so a signed-in request may see sources the public listing does not; this page does not promise which. Row data is never editable through this API. A source's or a view's description and metadata can be updated with a token that carries edit authority on that source; that path is for administrators and is not documented here.</p>
+
+          <h2 id="the-legacy-form">The legacy form</h2>
+          <p>The 2025 reference was written with the root <code>dama</code> and the casing <code>viewsbyId</code> and <code>databyIndex</code>. Those routes remain in the server code and the options object is the same; the <code>uda</code> root supersedes them and is the form the site itself uses. The 2024 appendix's three one-line APIs, NPMRDS, PM3 and RIS, are superseded by these pages. Write new code against <code>uda</code>.</p>
+<pre class="code"><span class="c">legacy</span>  dama[env].viewsbyId[view].options[options].length
+        dama[env].viewsbyId[view].options[options].databyIndex[{from,to}][attributes]
+<span class="c">current</span> uda[env].viewsById[view].options[options].length
+        uda[env].viewsById[view].options[options].dataByIndex[{from,to}][attributes]</pre>
+
+          <h2 id="limits">Limits</h2>
+          <ul>
+            <li>No OpenAPI or Swagger document exists. This page is the reference.</li>
+            <li>No rate limit is published. The data server's code sets none; a limit at the proxy is not documented here.</li>
+            <li>No maximum page size is documented. The site reads its own lists in pages; do the same, and always after a <code>length</code> call.</li>
+            <li>Column names are not checked against the schema before the query runs. A wrong name is a failed request, not an empty column.</li>
+            <li>Numbers can arrive as strings, as <code>"cost": "78062"</code> does in the worked example. Parse them.</li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Data Manager API reference (docs page, 2025-08-27): Get Length by ViewId; Get Attributes By ViewId; the options object with <code>aggregatedLen</code>, <code>filter</code>, <code>exclude</code>, <code>gt</code>/<code>gte</code>/<code>lt</code>/<code>lte</code>, <code>like</code> with <code>%</code> and <code>_</code>, <code>groupBy</code>, <code>orderBy</code>; the examples quoted in the options table; the legacy casing.</li>
+            <li>API request example (docs page, 2025-09-10): <code>https://graph.availabs.org/graph?paths=…&amp;method=get</code>; the <code>uda</code> root, <code>viewsById</code>, <code>dataByIndex</code>; "the database being pulled from"; <code>"desc nulls last"</code>; <code>normalFilter</code> and <code>meta</code> sent empty; atoms and string numbers in the response.</li>
+            <li>Data server code (avail-falcor): <code>routes/uda.route.js</code>, the ten read routes and the header "options support: isDama, filter, exclude, groupBy, orderBy, having, fn, gt, gte, lt, lte, like, meta", "the code relies on having a '+' in the env to classify it as DMS", "There are no setter routes here as DAMA data is never editable", the modify check on source and view metadata; <code>routes/uda_query_sets/helpers.js</code>: null words, case-insensitive <code>like</code> that "assumes '%'s are provided already", <code>having</code> joined with and, <code>as</code> aliases; <code>routes/uda_query_sets/postgres.js</code>: <code>normalFilter</code> merged into <code>filter</code>, <code>keepOriginalValues</code>; <code>routes/data_manager/multi-db.routes.js</code>: the <code>dama</code> routes still present; <code>index.js</code> and <code>auth/jwtAuth.js</code>: <code>Authorization</code> header, public without one, no rate limiter.</li>
+            <li>Site code (dms-template): <code>api/createRequest.js</code>, <code>case 'uda'</code> "use a new route that can accept filter and calculate length"; the datasets pattern's <code>['uda', env, 'sources', …]</code> and <code>views.byId</code> reads and its source and view attribute lists; <code>.env.example</code>: <code>VITE_API_HOST</code> and <code>VITE_DAMA_HOST</code> = <code>https://graph.availabs.org</code>; <code>.env</code> and <code>App.jsx</code>: the dms-template build reads through its API host when no data host is set; both hosts answered the same <code>uda</code> sources length on 2026-09-08.</li>
+            <li>NPMRDS appendix (docs page, section updated 2024-04-04), the APIs section marked draft: NPMRDS API, PM3 API, RIS API.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-08 created (phase 6a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="developers.html">Developers hub</a>
+          <a href="developers--quickstart.html">Quick start</a>
+          <a href="developers--examples.html">Worked examples</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

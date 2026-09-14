@@ -1,5 +1,21 @@
 import { Icons } from "./icons";
 import mny_auth from "./auth.js";
+// `Header: MNY Data` is brand code — its consts.js is a list of mny asset paths —
+// so it lives with the brand, not in @availabs/dms. Registered below through
+// `pageComponents`, which patterns/page/siteConfig.jsx auto-registers; a theme
+// entry silently overrides a built-in of the same key, so this wins over the
+// library copy that is still present (its deletion is a separate submodule
+// change). THE KEY MUST STAY EXACTLY "Header: MNY Data" — that string is the
+// stored element-type on 142 live components across the four county patterns.
+// Note the deliberate mismatch: the registry KEY is "Header: MNY Data" while the
+// config's internal `name` is "Header: MNY". Both stay as they are.
+import MnyHeaderDataDriven from "./components/mnyHeader/config";
+// `county_prose` — excerpt + paragraph-break the DHSES County Database's four
+// narrative fields. Registered as a theme columnType (siteConfig.jsx
+// auto-registers `theme.columnTypes`), because a `formatFn` cannot carry prose:
+// Card.jsx's generic formatFn branch strips every space and calls .replaceAll
+// on the result. See components/countyProse.jsx for the full rationale.
+import countyProseColumnType from "./components/countyProse";
 
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -36,6 +52,30 @@ const MNY_F_PROSE = `"Proxima Nova", "Source Sans 3", system-ui, sans-serif`;
 //   base   (#E0EBF0) — the default: between blocks, around framed white cards
 //   strong (#C5D7E0) — on the mny-50 tint, where a base rule disappears
 // ─────────────────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────────────────────────
+// TAILWIND_SAFELIST — arbitrary utility literals that live in DMS CONTENT.
+//
+// Tailwind 4 generates a rule only for class literals it finds while scanning
+// the project's source. It never sees the database, and it respects .gitignore
+// (so a class written only in a scratchpad build script does not exist). A
+// lexical `layout-container`'s `templateColumns` is exactly such a class: the
+// LHMP plan home's lede stacked its two CTAs under the paragraph for no visible
+// reason until the literal existed somewhere Tailwind scans.
+//
+// This array is never read at runtime. It exists so the scanner finds these
+// strings in a tracked file. Add a line whenever an mny page needs an arbitrary
+// utility that no component source spells out.
+// See src/dms/skills/creating-pages-from-a-design-pattern.md → "A
+// `templateColumns` class only works if the literal exists in a SCANNED source
+// file".
+// eslint-disable-next-line no-unused-vars
+const TAILWIND_SAFELIST = [
+  // lede: prose left, two CTAs pinned right on the same row
+  "md:grid-cols-[1fr_max-content_max-content]",
+  // band header: title left, "all N →" link right
+  "md:grid-cols-[1fr_240px]",
+];
+
 const MNY_RULE = { subtle: '#F3F8F9', base: '#E0EBF0', strong: '#C5D7E0' };
 const ruleSides = (ink, bottomInk = ink) => ({
   top:    `border-t border-t-[${ink}] rounded-none!`,
@@ -503,7 +543,18 @@ const theme = {
             "1/6": { className: "col-span-3 md:col-span-2", iconSize: 16 },
             "1/4": { className: "col-span-6 md:col-span-3", iconSize: 25 },
             "1/3": { className: "col-span-6 md:col-span-4", iconSize: 33 },
+            // 5/12 + 7/12 (added 2026-09-09): the LHMP plan home's hazard band is
+            // 5 + 7 in the design — a focus panel wide enough to put the hazard
+            // name (36px) and its loss (30px) on ONE line, which 4/12 cannot do
+            // (~385px of type into ~363px of column). PURELY ADDITIVE: no stored
+            // section uses these keys, so nothing existing re-renders. The proper
+            // fix is still the 1-12 integer migration
+            // (planning/mitigateny/tasks/current/mny-size-map-integer-migration.md),
+            // which subsumes these two; this unblocks the band without its
+            // five-pattern blast radius.
+            "5/12": { className: "col-span-6 md:col-span-5", iconSize: 41 },
             "1/2": { className: "col-span-6 md:col-span-6", iconSize: 50 },
+            "7/12": { className: "col-span-6 md:col-span-7", iconSize: 58 },
             "2/3": { className: "col-span-6 md:col-span-8", iconSize: 66 },
             1: { className: "col-span-6 md:col-span-9", iconSize: 75 },
             2: { className: "col-span-6 md:col-span-12", iconSize: 100 },
@@ -591,7 +642,7 @@ const theme = {
     logoWrapper: "",
     logoAltImg: "",
     imgWrapper: "h-12 pl-3 pr-2 flex items-center",
-    img: "https://mitigateny.org/themes/mny/mnyLogo.svg",
+    img: "/themes/mny/mnyLogo.svg",
     titleWrapper: "",
     title: "",
     linkPath: "/",
@@ -627,6 +678,19 @@ const theme = {
       {
         name: 'primarySmall',
         button: `cursor-pointer inline-flex items-center gap-2 bg-[#EAAD43] hover:bg-[#D49B35] text-[#2D3E4C] font-['Proxima_Nova'] font-[700] text-[12px] uppercase tracking-wider rounded-full transition-colors focus:outline-none disabled:bg-[#F1CA87] disabled:text-[#2D3E4C]/40 disabled:cursor-not-allowed px-3 py-[6px]`,
+        icon: 'inline-block size-4 shrink-0',
+      },
+      {
+        // `secondarySmall` with its own trailing margins, for a WRAPPING ROW of
+        // chips inside one paragraph. The alternative — a lexical
+        // layout-container with one button per column — costs 24px between
+        // chips on this theme (`layoutItem` is `px-2 py-4`, so 16px of item
+        // padding rides on top of the container's gap) and 16px above and
+        // below; on the LHMP hazard band that pushed four chips 23px past their
+        // column. Margins on the button give the design's `flex flex-wrap
+        // gap-2` exactly, with no container and no arbitrary grid class.
+        name: 'chipRow',
+        button: `cursor-pointer inline-flex items-center gap-2 mr-2 mb-2 border border-[#C5D7E0] bg-[#C5D7E0] hover:bg-[#E0EBF0] text-[#37576B] font-['Proxima_Nova'] font-[700] text-[12px] uppercase tracking-wider rounded-full transition-colors focus:outline-none px-3 py-[6px]`,
         icon: 'inline-block size-4 shrink-0',
       },
       {
@@ -981,6 +1045,25 @@ const theme = {
       { name: 'priority_medium', wrapper: "inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#F1CA87]/20 border border-[#F1CA87] font-['Proxima_Nova'] text-[11px] font-[700] text-[#2D3E4C]" },
       { name: 'priority_low',    wrapper: "inline-flex items-center px-2.5 py-0.5 rounded-full bg-[#FCF6EC] border border-[#C5D7E0] font-['Proxima_Nova'] text-[11px] font-[700] text-[#37576B]" },
       { name: 'priority_unset',  wrapper: "inline-flex items-center font-['Proxima_Nova'] text-[13px] italic text-[#6D96AE]" },
+
+      // --- mny hazard risk-level pills (LHMP plan home hazard band, and the 16
+      // hazard profile pages). Reached from a `status_pill` column via
+      // pillColors: { 'Very High Risk': 'risk_very_high', … }. Weights are the
+      // design's documented risk ramp: Very High mny-red → High mny-org →
+      // Moderate mny-y700 → Low mny-400 → Very Low mny-grn; an unmapped value
+      // reads as muted neutral rather than borrowing a risk colour. ---
+      { name: 'risk_very_high', wrapper: "inline-flex items-center px-2.5 py-[3px] rounded-full bg-[#DD524C] font-['Proxima_Nova'] text-[10px] font-[700] uppercase tracking-wider text-white" },
+      { name: 'risk_high',      wrapper: "inline-flex items-center px-2.5 py-[3px] rounded-full bg-[#EA8954] font-['Proxima_Nova'] text-[10px] font-[700] uppercase tracking-wider text-[#2D3E4C]" },
+      { name: 'risk_moderate',  wrapper: "inline-flex items-center px-2.5 py-[3px] rounded-full bg-[#EAAD43] font-['Proxima_Nova'] text-[10px] font-[700] uppercase tracking-wider text-[#2D3E4C]" },
+      { name: 'risk_low',       wrapper: "inline-flex items-center px-2.5 py-[3px] rounded-full bg-[#6D96AE] font-['Proxima_Nova'] text-[10px] font-[700] uppercase tracking-wider text-white" },
+      { name: 'risk_very_low',  wrapper: "inline-flex items-center px-2.5 py-[3px] rounded-full bg-[#54B99B] font-['Proxima_Nova'] text-[10px] font-[700] uppercase tracking-wider text-[#2D3E4C]" },
+      { name: 'risk_unknown',   wrapper: "inline-flex items-center px-2.5 py-[3px] rounded-full bg-[#E0EBF0] font-['Proxima_Nova'] text-[10px] font-[700] uppercase tracking-wider text-[#6D96AE]" },
+
+      // --- mny jurisdiction-kind pills (Jurisdictions page tiles: Town neutral,
+      // Village amber-tinted, County solid dark — jurisdictions.html mockup) ---
+      { name: 'juris_town',    wrapper: "inline-flex items-center px-2 py-0.5 rounded-full bg-[#E0EBF0] font-['Proxima_Nova'] text-[10px] font-[700] uppercase tracking-wider text-[#37576B]" },
+      { name: 'juris_village', wrapper: "inline-flex items-center px-2 py-0.5 rounded-full bg-[#FCF6EC] border border-[#F1CA87]/50 font-['Proxima_Nova'] text-[10px] font-[700] uppercase tracking-wider text-[#2D3E4C]" },
+      { name: 'juris_county',  wrapper: "inline-flex items-center px-2 py-0.5 rounded-full bg-[#2D3E4C] font-['Proxima_Nova'] text-[10px] font-[700] uppercase tracking-wider text-white" },
     ],
   },
   // ───────────────────────────────────────────────────────────────────────────
@@ -1113,6 +1196,23 @@ const theme = {
         formEditSavingAnimation: 'ring-2 ring-blue-400 animate-pulse',
         linkColValue:
             "flex-1 flex justify-center w-full bg-[#C5D7E0] rounded-full px-[12px] py-[8px] font-[Proxima Nova] font-bold text-[12px] leading-[100%] tracking-[0px] uppercase",
+        // Card link cell that should read as the design's BUTTON, not as text.
+        // `linkColValue` above is the full-width variant (it carries `flex-1
+        // w-full`); this is the inline pill the mockups put at the foot of a
+        // card — same weights, shrink-wrapped to its label. Card.jsx puts
+        // `theme[valueFontStyle]` on the <a> itself for a link cell, so a cell
+        // reaches it with `valueFontStyle: 'cardLinkPill'` and nothing else.
+        // `whitespace-nowrap`: a pill's label must never wrap INSIDE the pill.
+        // In a Card cell the pill is `w-fit` inside a fixed-width grid track, so
+        // without it a label a few px over the track breaks onto a second line
+        // and the pill becomes a two-line lozenge (seen on "Actions Dashboard"
+        // and "Annual Maintenance"). If a row of chips genuinely doesn't fit,
+        // give them fewer per row — don't let the type wrap.
+        cardLinkPill:
+            "inline-flex items-center gap-1.5 w-fit whitespace-nowrap px-3 py-[5px] rounded-full border border-[#C5D7E0] bg-[#C5D7E0] hover:bg-[#E0EBF0] transition-colors font-['Proxima_Nova'] font-[700] text-[12px] uppercase tracking-wider text-[#37576B] hover:text-[#2D3E4C]",
+        // The amber variant, for the one primary action in a band.
+        cardLinkPillPrimary:
+            "inline-flex items-center gap-1.5 w-fit whitespace-nowrap px-3 py-[5px] rounded-full bg-[#EAAD43] hover:bg-[#D49B35] transition-colors font-['Proxima_Nova'] font-[700] text-[12px] uppercase tracking-wider text-[#2D3E4C]",
         justifyTextLeft: "text-start justify-items-start",
         justifyTextRight: "text-end justify-items-end",
         justifyTextCenter: "text-center justify-items-center",
@@ -1123,6 +1223,14 @@ const theme = {
         // against the {textSettings, ...dataCard} merge).
         chartRowLabel:
             "font-semibold font-['Proxima_Nova',_system-ui,_sans-serif] text-[12px] leading-[115%] normal-case! text-[#37576B] hover:text-[#2D3E4C]",
+        // Card KICKER — the small uppercase label that opens a panel ("Mitigation
+        // actions", "Participating jurisdictions", "Most costly hazard"). The
+        // design draws it 11px/700 tracked in mny-700; the nearest existing
+        // tokens miss on one axis each (`textXSReg` is 12px/400, `statCardLabel`
+        // 11px/600, `statCardLabelStrong` 11px/700 but mny-900), and it recurs on
+        // every panel in the LHMP design, so it earns its own key.
+        cardKicker:
+            "font-['Proxima_Nova'] text-[11px] font-[700] uppercase tracking-wide leading-[1] text-[#37576B]",
         // stat-card ROLES (Actions Dashboard status strip): 11px tracked label
         // (Strong = the "All actions" card), value = displayXS at the cell level,
         // 11px muted "N% of actions" subline (via subValueFontStyle)
@@ -1135,6 +1243,10 @@ const theme = {
         // under the value like the design
         statCardSub:
             "w-full font-['Proxima_Nova'] text-[11px] leading-[140%] text-[#6D96AE] mt-1",
+        // amber count chip ("N to tier" — Jurisdictions page tiles). Ink baked in
+        // like metaXXS: uniform across every use in the mockup.
+        chipAmber:
+            "font-['Proxima_Nova'] text-[11px] font-[700] text-[#EAAD43] whitespace-nowrap",
         textXS: "font-medium font-[Oswald] text-[12px] leading-[140%]",
         textXSReg:
             "font-normal font-[Proxima Nova] text-[12px] leading-[100%] uppercase",
@@ -1181,12 +1293,37 @@ const theme = {
         img6XL: "max-w-80 max-h-80",
         img7XL: "max-w-96 max-h-96",
         img8XL: "max-w-128 max-h-128",
+        // Breakout illustration (the LHMP focus panel, and any card where an
+        // isometric render bleeds out of the card's top edge). `img5XL` is
+        // `w-full` with no height, so a 1024x1024 render becomes as tall as the
+        // card is wide — 388px in a 395px column, which is what made the focus
+        // card 501px tall against the design's ~305px box.
+        //
+        // `object-contain`, as the mockup has it. `cover` was tried first and is
+        // wrong for these files: at 494x240 from a 1024x1024 source it scales to
+        // 494x494 and crops 127px off the top AND bottom, which decapitates the
+        // drawing (measured on the LHMP focus panel). These renders fill most of
+        // their square, so there is no spare padding to crop through — the
+        // design/README.md note about transparent padding holds for the smaller
+        // profile-card renders, not for these.
+        //
+        // Contain shows the whole drawing at 240px tall and centres it, which is
+        // exactly what the mockup draws.
+        imgBreakout: "w-full h-[258px] object-contain object-center",
         imgDefault: 'max-w-[50px] max-h-[50px]',
 
-        header: "w-full flex-1 uppercase text-[#37576B]",
+        // `leading-[1.35]`: the content layoutGroup sets `leading-7` (28px) on the
+        // band, and these two wrappers had no line-height of their own, so EVERY
+        // card cell inherited a 28px line box no matter how small its text —
+        // a 14px `proseSM` row measured 28px instead of 19.6px, ~9px of dead
+        // height per cell. Measured on the LHMP strategy band: three
+        // label/value rows at 35px each where 26px was the content.
+        // Only ever shrinks a cell whose content is SHORTER than 28px; a
+        // `text4XL` value (36px, leading-[100%]) is untouched.
+        header: "w-full flex-1 uppercase leading-[1.35] text-[#37576B]",
         headerCompactView: "",
         headerSimpleView: "",
-        value: "w-full text-[#2D3E4C]",
+        value: "w-full leading-[1.35] text-[#2D3E4C]",
         valueWrapper: 'min-h-[20px]',
         valueCompactView: "",
         valueSimpleView: "",
@@ -1226,6 +1363,25 @@ const theme = {
         // ink, so its internal rules match rather than dropping to subtle.
         name: "framed",
         cellBorderSides: ruleSides(MNY_RULE.base),
+      },
+      // ── Left-accent panels (LHMP plan home). One key each: the card surface's
+      // hairline gains a 4px coloured left edge. Author-reachable per section via
+      // the Card toolbar's "Card style" picker, so any future band can borrow the
+      // treatment without code. Ink = what the accent MEANS on this brand:
+      // red = the dominant risk, amber = the county's own commitments,
+      // blue = the jurisdictions that adopt them.
+      { name: "accentRisk",   cardBorder: 'border border-[#E0EBF0] border-l-4 border-l-[#DD524C] shadow-none' },
+      { name: "accentAction", cardBorder: 'border border-[#F1CA87]/60 border-l-4 border-l-[#EAAD43] shadow-none' },
+      { name: "accentPlace",  cardBorder: 'border border-[#E0EBF0] border-l-4 border-l-[#6D96AE] shadow-none' },
+      {
+        // Illustrated panel (the LHMP home profile + explore cards): the mny-50
+        // surface the isometric illustration bleeds out of. The bleed itself is
+        // per-section config (`imageMargin` on the image column + cardsPadding 0),
+        // NOT a theme concern — this style only supplies the surface, and drops
+        // the cell hairlines that would otherwise cut across the panel.
+        name: "illustrated",
+        cardBorder: 'border border-[#E0EBF0] shadow-[0px_0px_6px_0px_rgba(0,0,0,0.02),0px_2px_4px_0px_rgba(0,0,0,0.08)]',
+        subWrapperCompactView: "flex flex-col flex-wrap rounded-[12px] overflow-visible",
       }
     ]
   },
@@ -1542,5 +1698,11 @@ const theme = {
 
 export default {
   ...theme,
+  pageComponents: {
+    "Header: MNY Data": MnyHeaderDataDriven,
+  },
+  columnTypes: {
+    county_prose: countyProseColumnType,
+  },
   Icons
 };

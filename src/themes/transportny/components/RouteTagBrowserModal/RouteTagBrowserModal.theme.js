@@ -7,6 +7,7 @@ export const routeTagBrowserModalTheme = {
   ...pickerModalTheme,
   wrapper: 'flex flex-col h-[70vh] max-h-[640px]',
   header: 'text-base font-bold text-slate-800 mb-1',
+  headerMessage: 'text-xs text-slate-600 bg-amber-50 border border-amber-200 rounded px-2 py-1.5 mb-2',
   breadcrumb: 'flex items-center flex-wrap gap-1 text-xs text-slate-500 mb-2',
   breadcrumbStep: 'hover:text-blue-600 hover:underline cursor-pointer',
   breadcrumbStepCurrent: 'text-slate-700 font-semibold',

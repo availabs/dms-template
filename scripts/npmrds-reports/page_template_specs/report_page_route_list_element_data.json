@@ -1,0 +1,223 @@
+{
+  "externalSource": {
+    "app": "npmrdsv5",
+    "name": "reports_snap_2",
+    "columns": [
+      {
+        "name": "report_id",
+        "display_name": "report_id",
+        "options": null,
+        "type": "text",
+        "required": false
+      },
+      {
+        "name": "name",
+        "display_name": "name",
+        "options": null,
+        "type": "text",
+        "required": false
+      },
+      {
+        "name": "description",
+        "display_name": "description",
+        "options": null,
+        "type": "text",
+        "required": false
+      },
+      {
+        "name": "route_comps",
+        "display_name": "route_comps",
+        "options": null,
+        "type": "text",
+        "required": false
+      },
+      {
+        "name": "graph_comps",
+        "display_name": "graph_comps",
+        "options": null,
+        "type": "text",
+        "required": false
+      },
+      {
+        "name": "station_comps",
+        "display_name": "station_comps",
+        "options": null,
+        "type": "text",
+        "required": false
+      },
+      {
+        "name": "color_range",
+        "display_name": "color_range",
+        "options": null,
+        "type": "text",
+        "required": false
+      },
+      {
+        "name": "created_by",
+        "display_name": "created_by",
+        "options": null,
+        "type": "text",
+        "required": false
+      },
+      {
+        "name": "created_at",
+        "display_name": "created_at",
+        "options": null,
+        "type": "text",
+        "required": false
+      },
+      {
+        "name": "updated_at",
+        "display_name": "updated_at",
+        "options": null,
+        "type": "text",
+        "required": false
+      },
+      {
+        "name": "thumbnail",
+        "display_name": "thumbnail",
+        "options": null,
+        "type": "text",
+        "required": false
+      },
+      {
+        "name": "pic",
+        "display_name": "pic",
+        "options": null,
+        "type": "text",
+        "required": false
+      },
+      {
+        "name": "routes",
+        "type": "text",
+        "mapped_options": "{\"isDms\":true}"
+      }
+    ],
+    "default_columns": null,
+    "source_id": 2177438,
+    "env": "npmrdsv5+reports_snap_2",
+    "srcEnv": "npmrdsv5+datasets",
+    "isDms": true,
+    "baseUrl": "/forms",
+    "type": "reports_snap_2",
+    "view_id": 2177440,
+    "view_name": "version 1"
+  },
+  "columns": [],
+  "filters": {
+    "op": "AND",
+    "groups": []
+  },
+  "display": {
+    "usePagination": true,
+    "pageSize": 5,
+    "hideExternalToggle": true,
+    "totalLength": 1
+  },
+  "data": [],
+  "join": {
+    "sources": {
+      "table1": {
+        "source": 2107426,
+        "view": 2107427,
+        "sourceInfo": {
+          "app": "npmrdsv5",
+          "name": "Routes Data",
+          "columns": [
+            {
+              "name": "route_id",
+              "display_name": "route_id",
+              "options": null,
+              "type": "text",
+              "required": false,
+              "isPrimary": true
+            },
+            {
+              "name": "name",
+              "display_name": "name",
+              "options": null,
+              "type": "text",
+              "required": false
+            },
+            {
+              "name": "description",
+              "display_name": "description",
+              "options": null,
+              "type": "text",
+              "required": false
+            },
+            {
+              "name": "tmc_array",
+              "display_name": "tmc_array",
+              "options": null,
+              "type": "text",
+              "required": false
+            },
+            {
+              "name": "points",
+              "display_name": "points",
+              "options": null,
+              "type": "text",
+              "required": false
+            },
+            {
+              "name": "conflation_array",
+              "display_name": "conflation_array",
+              "options": null,
+              "type": "text",
+              "required": false
+            },
+            {
+              "name": "conflation_version",
+              "display_name": "conflation_version",
+              "options": null,
+              "type": "text",
+              "required": false
+            },
+            {
+              "name": "created_by",
+              "display_name": "created_by",
+              "options": null,
+              "type": "text",
+              "required": false
+            },
+            {
+              "name": "created_at",
+              "display_name": "created_at",
+              "options": null,
+              "type": "text",
+              "required": false
+            },
+            {
+              "name": "updated_at",
+              "display_name": "updated_at",
+              "options": null,
+              "type": "text",
+              "required": false
+            },
+            {
+              "name": "metadata",
+              "display_name": "metadata",
+              "options": null,
+              "type": "text",
+              "required": false
+            }
+          ],
+          "default_columns": null,
+          "source_id": 2107426,
+          "env": "npmrdsv5+routes_data",
+          "srcEnv": "npmrdsv5+datasets",
+          "isDms": true,
+          "baseUrl": "/forms",
+          "type": "routes_data",
+          "view_id": 2107427,
+          "view_name": "version 1",
+          "updated_at": "2026-05-13T16:21:13.706Z"
+        },
+        "joinColumns": [],
+        "mergeStrategy": "join",
+        "type": "left"
+      }
+    }
+  }
+}

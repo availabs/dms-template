@@ -8,12 +8,12 @@ on every title save (see `compute_report_slug()` in convert_old_reports.py),
 so a `report_<old_id>` URL can silently 404 or — worse — fall through to an
 unrelated default/live page that still renders, making a broken test target
 look like a working one. The only slugs guaranteed to resolve today live
-under `converted_reports/<title_snake_case>` (see PAGE_TYPE/CONVERTED_PARENT_SLUG
-in convert_old_reports.py). This script queries the real DMS DB (read-only,
-via dbq.pg) and returns slugs that actually exist right now, so there's no
-guessing involved.
+under `reports/<title_snake_case>` (renamed 2026-09-02 from `converted_reports/...`;
+see PAGE_TYPE/CONVERTED_PARENT_SLUG in convert_old_reports.py). This script
+queries the real DMS DB (read-only, via dbq.pg) and returns slugs that
+actually exist right now, so there's no guessing involved.
 
-Any converted_reports page is fine for read-only Playwright verification
+Any reports/* page is fine for read-only Playwright verification
 (page load + capture, no clicks/writes) — these are real converted report
 pages, not a special "scratch" pool. For anything that involves clicking /
 editing / saving, still make or use a dedicated scratch page instead (see
@@ -34,8 +34,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import dbq
 
 PAGE_TYPE = "npmrds_sub|page"
-CONVERTED_PARENT_SLUG = "converted_reports"
-DEV_HOST = "http://npmrds.localhost:5173"
+CONVERTED_PARENT_SLUG = "reports"
+DEV_HOST = "http://www.localhost:5173/npmrds"  # npmrds_sub's subdomain mount was retired 2026-09-02
 
 
 def _rows(sql):
@@ -76,7 +76,7 @@ def main():
 
     rows = list_reports(args.list) if args.list else pick_random(args.count, args.search)
     if not rows:
-        print("no matching converted_reports pages found", file=sys.stderr)
+        print("no matching reports pages found", file=sys.stderr)
         sys.exit(1)
 
     for row in rows:

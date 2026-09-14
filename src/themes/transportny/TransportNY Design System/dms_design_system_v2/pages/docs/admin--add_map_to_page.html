@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Add a saved map to a page · Admin · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  admin--add_map_to_page.html · IA page 91 · type how-to. Phase 6b, 2026-09-08. Replaces docs-dump 1597434.
+  Labels from code: page/components/sections/sectionArray.jsx (the Add control), section.jsx (the section's Settings menu),
+  sectionMenu.jsx (Type · "<Component> Settings" · Layout with Style/Width/Height), ComponentRegistry/index.jsx (Map),
+  ComponentRegistry/map/settings/controls.jsx (Symbologies · Layer Library Panel · Shareable URL State · On this map ·
+  Add symbology · Add to map · Active layer… · Sync this symbology with the latest editor changes · Remove from map ·
+  Page Variable Bridge · Display: Height / Legend Position / Plugin Control Position / Zoom-pan / Set initial viewport /
+  Use blank basemap / Zoom to Fit), pages/edit/editPane/pagesPane.jsx (Publish · No Changes · Discard).
+  Refresh/drift model from skills/editing-map-symbologies.md §1 and creating-a-map-section.md.
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Admin · how-to</div>
+          <h1 class="doc-title">Add a saved map to a page.</h1>
+          <p class="doc-lede">Put a map section on a page, choose the saved map and the layer it opens on, set its height and legend, optionally tie it to the page's own filters, and publish. At the end readers see the map you built in the editor. This page assumes the saved map exists.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-08</span>
+            <span>owner · —</span>
+            <span class="gated">requires an administrator account</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="before-you-start">Before you start</h2>
+          <p>Build the map first — <a href="admin--map_editor.html">Build a map in the Map Editor</a> — and note its name.</p>
+          <p>Open the page and enter edit mode; its address gains <code>/edit/</code>. You need authority to edit the page, and publishing needs the publish right on it: <span class="ui">All (*)</span> covers both, the earlier scheme's level 10. Without the publish right the button at the foot of the edit panel does not appear and your changes stay a draft.</p>
+          <p>Decide two things first: whether readers switch layers themselves, which decides the <span class="ui">Layer Library Panel</span>, and whether the map follows the page's filters, which decides whether you touch <span class="ui">Page Variable Bridge</span>.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Hover the gap where the map should go and select <span class="ui">Add</span>.<span class="result">An empty section appears with its own <span class="ui">Settings</span> menu.</span></li>
+            <li>Open <span class="ui">Settings</span> › <span class="ui">Type</span> and choose <span class="ui">Map</span>.<span class="result">The section becomes a map at the default view of the state, and the menu gains <span class="ui">Map Settings</span>.</span></li>
+            <li>Open <span class="ui">Map Settings</span> › <span class="ui">Symbologies</span>, which reads "No symbologies yet — add one below."</li>
+            <li>Under <span class="ui">Add symbology</span>, find your saved map with <span class="ui">Search available symbologies…</span> and select <span class="ui">Add to map</span>.<span class="result">It joins <span class="ui">On this map</span>, switched off: "Added hidden — toggle it on above. A second symbology puts the map in multi-symbology mode."</span></li>
+            <li>Switch it on in <span class="ui">On this map</span>.<span class="result">The map draws. The first visible entry is marked <span class="ui">active</span> and is the page's primary map.</span></li>
+            <li>If the saved map has several layers, pick the one it opens on from <span class="ui">Active layer…</span>.<span class="result">The active layer is also the one a filter zooms to, so choose the geography that should frame the map.</span></li>
+            <li>Add further saved maps the same way. With more than one, turn on <span class="ui">Layer Library Panel</span> so readers can toggle them, and give each a <span class="ui">Category</span> to group it there.<span class="result">With the panel off: "Symbologies render as configured; viewers get no toggle panel."</span></li>
+            <li>Open <span class="ui">Map Settings</span> › <span class="ui">Display</span> and set <span class="ui">Height</span>, <span class="ui">Legend Position</span> and <span class="ui">Zoom/pan</span>.<span class="result">A map with zoom and pan off is a picture — a figure, not a tool.</span></li>
+            <li>Frame it: either turn on <span class="ui">Zoom to Fit</span>, or turn on <span class="ui">Set initial viewport</span> and save the view you want.</li>
+            <li>Optional: open <span class="ui">Map Settings</span> › <span class="ui">Filters</span> › <span class="ui">Page Variable Bridge</span>, choose the map's row, turn on <span class="ui">Use Page Filters</span>, and set <span class="ui">Page Variable Key</span> to the page variable that drives it and <span class="ui">Layer Field</span> to the tile column it filters on.<span class="result">The map now follows that filter: pick a region and it draws only that region.</span></li>
+            <li>Set the section's place from <span class="ui">Settings</span> › <span class="ui">Layout</span>: <span class="ui">Width</span> for the column span, <span class="ui">Style</span> for the band.</li>
+            <li>Select <span class="ui">Publish</span> in the edit panel.<span class="result">It reads <span class="ui">No Changes</span> when there is nothing to publish, and <span class="ui">Discard</span> beside it throws the draft away. Readers see the map only after this step.</span></li>
+          </ol>
+
+          <h2 id="keeping-a-pages-map-in-step">Keeping a page's map in step</h2>
+          <p>A page does not point at a saved map; it holds a copy. That is deliberate — a restyle cannot break a published page by surprise — but a page can drift. To bring a restyle across, open the page's <span class="ui">Map Settings</span> › <span class="ui">Symbologies</span>, select the refresh control on the map's row ("Sync this symbology with the latest editor changes"), then publish: it merges the editor's version over the copy and keeps the page's own visibility, active layer and filter bindings. The remove control ("Remove from map") takes the copy off the page, not the saved map.</p>
+          <div class="callout caution"><span class="k">caution</span>A link that opens a map with certain layers switched on can only name maps the section holds — unknown ones are ignored by design. In July 2026, 9 of 22 gallery tiles opened the Freight Atlas map with only part of their preset for that reason. If a preset link comes up short, check <span class="ui">On this map</span> first.</div>
+
+          <h2 id="settings">Settings</h2>
+          <p>The map section's own controls, by group.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Control</th><th>What it does</th><th>Values</th><th>Default</th></tr></thead>
+            <tbody>
+              <tr><td><span class="ui">Add symbology</span> · <span class="ui">Add to map</span></td><td>Adds a saved map to the section, hidden</td><td>Any saved map</td><td>—</td></tr>
+              <tr><td><span class="ui">On this map</span></td><td>One row per saved map: visibility, the <span class="ui">active</span> marker, its category, refresh, <span class="ui">Active layer…</span>, remove</td><td>Per row</td><td>Empty</td></tr>
+              <tr><td><span class="ui">Layer Library Panel</span></td><td>Gives readers an on-map panel to toggle the maps</td><td>On · off</td><td>Off</td></tr>
+              <tr><td><span class="ui">Shareable URL State</span></td><td>Writes the reader's layer choices into the page address so a view can be shared</td><td>On · off</td><td>Off</td></tr>
+              <tr><td><span class="ui">Page Variable Bridge</span></td><td>Per map: <span class="ui">Use Page Filters</span>, <span class="ui">Page Variable Key</span>, <span class="ui">Layer Field</span>, and the click and dynamic filters</td><td>The page's own variables</td><td>Not bound</td></tr>
+              <tr><td><span class="ui">Height</span></td><td>How tall the map draws</td><td>Several fixed heights, up to nearly the full window</td><td>—</td></tr>
+              <tr><td><span class="ui">Legend Position</span> · <span class="ui">Plugin Control Position</span></td><td>Which corner the legend and any plugin panel sit in</td><td>The four corners</td><td>—</td></tr>
+              <tr><td><span class="ui">Zoom/pan</span></td><td>Whether readers can move the map</td><td>On · off</td><td>On</td></tr>
+              <tr><td><span class="ui">Set initial viewport</span></td><td>Saves the current view as the one the map opens at</td><td>On · off, then the map's current view</td><td>Off, which opens on the state</td></tr>
+              <tr><td><span class="ui">Use blank basemap</span></td><td>Draws the layers with no background map</td><td>On · off</td><td>Off</td></tr>
+              <tr><td><span class="ui">Zoom to Fit</span></td><td>Frames the visible layers when the map loads</td><td>On · off</td><td>Off</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul>
+            <li>The section keeps a copy: nothing in the editor reaches a page until that page is refreshed and published, and nothing on a page changes the saved map.</li>
+            <li>A map filter can only follow a page variable the page has declared. A value another card publishes on click is not one, so bind both to the same page variable instead.</li>
+            <li>A filter's values must match the tile column's exactly. Point the page's filter control at the same dataset the layer draws and one vocabulary serves both.</li>
+            <li>On a very large per-row dataset a filter runs after the whole tile downloads, slowly enough to look broken; those layers need the filter applied on the server, which is not a control here.</li>
+            <li>Check the page with no address parameters before publishing: a page variable that is declared but unset must widen the map to everything, not blank it.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="the-section-is-blank">The section is blank</h3>
+          <p>Either no saved map is switched on in <span class="ui">On this map</span>, or the one that is has no visible layer. Switch it on, then check <span class="ui">Active layer…</span>. If it still draws nothing, open the map in the editor and confirm it draws there.</p>
+          <h3 id="the-map-lost-its-colours-when-a-filter-was-set">The map lost its colours when a filter was set</h3>
+          <p>The filter names a column the tiles do not carry, so the layer has nothing to draw. Bind it to a plain column of the dataset the layer draws, kept for the map at upload.</p>
+          <h3 id="readers-see-the-old-map">Readers see the old map</h3>
+          <p>Two causes, in this order: the page's copy has not been refreshed, which is the map's row in <span class="ui">Symbologies</span>; or the page has not been published, so the edit panel's button still reads <span class="ui">Publish</span>.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="admin--map_editor.html">Map Editor</a></li>
+            <li><a href="freight_atlas--map.html">Use the map</a></li>
+            <li><a href="freight_atlas--gallery.html">Maps Gallery</a></li>
+            <li><a href="admin--manage_data.html#versions-and-downloads">Versions and downloads</a></li>
+            <li><a href="admin.html">Admin hub</a></li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Section editing code (page pattern, the build being deployed): the <span class="ui">Add</span> control between sections, the section's <span class="ui">Settings</span> menu, <span class="ui">Type</span> with one entry per registered component including <span class="ui">Map</span>, the "&lt;component&gt; Settings" entry, and <span class="ui">Layout</span> with <span class="ui">Style</span> · <span class="ui">Width</span> · <span class="ui">Height</span>.</li>
+            <li>Map section settings code: the groups <span class="ui">Symbologies</span> · <span class="ui">Filters</span> · <span class="ui">Display</span>; <span class="ui">Layer Library Panel</span> and <span class="ui">Shareable URL State</span> with their two descriptions quoted above; <span class="ui">On this map</span> with "No symbologies yet — add one below.", the <span class="ui">active</span> marker, the refresh control's "Sync this symbology with the latest editor changes", the remove control's "Remove from map" and <span class="ui">Active layer…</span>; <span class="ui">Add symbology</span> with <span class="ui">Search available symbologies…</span>, <span class="ui">Category</span>, <span class="ui">Add to map</span> and the "Added hidden" note; <span class="ui">Page Variable Bridge</span> with <span class="ui">Use Page Filters</span> · <span class="ui">Page Variable Key</span> · <span class="ui">Layer Field</span>; and the seven <span class="ui">Display</span> controls.</li>
+            <li>Publish code (page edit panel): <span class="ui">Publish</span> / <span class="ui">No Changes</span> / <span class="ui">Discard</span>, and the publish permission the button is gated on.</li>
+            <li>Map section authoring notes (platform skills, creating a map section and editing map symbologies): the embedded copy and the refresh merge that preserves author configuration; the tiles-only rule and the column list rebuilt at run time; page-variable binding by key, with zoom-to-filter scoped to the active layer; the exclusion of click-published values; the server-side filter for per-row datasets; and the unset-variable blanking.</li>
+            <li>Adding Maps to a Website (docs page, 2025-12-05): the earlier wording of the same task — edit the map component, add a symbology from the panel, save, publish.</li>
+            <li>Feedback record 2190364 (closed 2026-07-16): 9 of 22 gallery tiles deep-linked saved maps that the map section did not hold; unknown ids are ignored by design.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-08 created (phase 6b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="admin.html">Admin hub</a>
+          <a href="admin--map_editor.html">Map Editor</a>
+          <a href="freight_atlas--map.html">Use the map</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

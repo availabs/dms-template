@@ -5,8 +5,13 @@ sees on the rendered pages**, then the stored configuration behind it —
 configured data components (`Spreadsheet`, `Card`, `Graph`, `FilterComponent` —
 anything consuming `dataWrapper`) audited against the sources they are bound to.
 
-**Scope:** two passes over the same pattern, in this order.
+**Scope:** two passes over the same pattern, in this order, and one gate that
+governs both.
 
+- **The relevance gate** — three tests every finding must pass before it is
+  ranked or written down: name the setting and its correct value, prove nobody
+  already owns it, and separate what you observed from what you inferred.
+  Measured effect on the calibration run: 539 raised, 71 wanted. Read it first.
 - **The visitor pass (Part 0)** — open the pages as a first-time reader and
   report what they would notice. Everything is quoted or measured off the
   *rendered* page. This is the pass a stakeholder asked for when they said "QA
@@ -48,8 +53,11 @@ reader who disagrees with your tier can still check your facts.
 **Status:** drafted 2026-08-17 (config passes), validated against MitigateNY
 (app `mitigat-ny-prod`, pattern 985070). Part 0 added 2026-08-19 after the
 county-template run (pattern 1300890) established that a config-only report
-answers the wrong question. Calibration numbers in the appendix. Promote to
-`src/dms/skills/` after a second site.
+answers the wrong question. **The relevance gate added 2026-09-01** after the
+draft-sections run on the same pattern returned 539 findings of which the owner
+wanted 71 — the first run where the failure was not accuracy but relevance.
+Calibration numbers in the appendix. Promote to `src/dms/skills/` after a second
+site.
 
 ---
 
@@ -66,6 +74,11 @@ answers the wrong question. Calibration numbers in the appendix. Promote to
 >
 > Ask for the URL if you weren't given one. Do not substitute a config sweep for
 > a site you couldn't load — say you couldn't load it.
+>
+> **Run the relevance gate before you rank anything.** Drop every finding that no
+> named setting can fix, that a live task document already owns, or that you
+> inferred from stored config without observing the render. A report that lists
+> everything true is not a QA report; it is a diff. See "The relevance gate".
 >
 > If the scope is a page or a single component, state its editorial intent in
 > one sentence (e.g. *"an all-hazards overview; no hazard is privileged or
@@ -86,6 +99,12 @@ answers the wrong question. Calibration numbers in the appendix. Promote to
 > any `Map` section — **H before F**, since F's findings are usually H's blast
 > radius; G as a cheap add-on. Run I, J, K on any page whose look is in scope.
 > Report as specified. **Do not modify any DMS row.**
+>
+> **Run the checks this document specifies, and name the ones you skipped.** A
+> sweep that reports whatever the scan made convenient, and never says which
+> checks it did not run, reads as complete when it is not. In the calibration
+> run only Check A was run of A–M; Check C would have caught a real defect on a
+> component the report had already flagged for the wrong reason.
 >
 > For the Part 2 (presentational) checks, work at **page and section-order
 > level**, not per component: the defects live in how sections are sequenced and
@@ -155,6 +174,133 @@ element-data.columns              ← what this component renders
 
 ---
 
+# The relevance gate
+
+**Run this before you rank anything, and again before you write.** Every finding
+must pass three tests. A finding that fails one is not wrong — it is usually
+perfectly true — it is *not reportable*, and reporting it costs you the reader's
+attention for the ones that are.
+
+This section exists because of a measured failure. In the calibration run the
+report raised **539 items** and the owner judged **71 relevant — 13%**, of which
+**65 fell in just three of the nine classes**. The rejects were not errors of
+fact. They were true observations that should never have been ranked, and the
+three classes that survived were separable up front by Test 1 alone. See "The
+relevance gate — reference run" in the calibration appendix for the full
+scoreboard.
+
+---
+
+## Test 1 — Can you name the setting and its correct value?
+
+The findings that survive owner review nearly all have one shape: **a named
+setting has a known correct value, and it is currently absent or wrong.** The
+correct value has to come from outside your own judgment:
+
+| Source of the correct value | Example from the calibration run |
+|---|---|
+| A documented rule | internal DMS source → `Data Fetch Mode = Force` (owner's rule, in the task doc) |
+| A published vocabulary | `tags` → a 44 CFR 201.6 element |
+| Overwhelming sibling consensus | `authPermissions` → the object 377 of 398 sibling components already carry |
+
+All three of those classes came back **100% relevant**. Every class that could
+not name a correct value came back at or near **0%**.
+
+**If you cannot state the correct value inside the finding, you do not have a
+finding.** You have an observation. Observations go in an appendix, unranked.
+
+Things that failed this test in the calibration run, and why:
+
+- *"This table stores a row count of zero."* There is no correct value. Zero may
+  be right — see the template rule below.
+- *"This component's snapshot is a generation behind the source."* A correct
+  value exists, but no one has decided the current one is wrong. That is Test 2.
+- *"The work record says done and the platform disagrees."* The correct state is
+  a **question**, not a value. See Test 3's last rule.
+
+## Test 2 — Is this already someone's scheduled work?
+
+**Read the project's live task documents before you rank, not after.** A class
+that a task already owns is not a finding; it is a status line.
+
+This single test accounted for **347 of the 474 rejected rows** — three entire
+classes, all covered by one owner note: *"disregard for now, we will review this
+in a separate update."* One of them was the report's own Tier 1 finding #3.
+
+How to run it:
+
+1. List the classes you are about to report.
+2. Search `planning/**/tasks/current/*.md` (and the project's equivalent) for
+   each class by name, by the setting it touches, and by the source it involves.
+3. Read the **Scope**, **Open items** and any **PAUSED** section. Task docs
+   routinely record that a class is deliberately parked, and say why.
+4. Any class a task names as deferred, parked, scheduled, or already applied is
+   marked **Deferred — owned by `<task>`** and kept **out of the tiers entirely**.
+
+Reading the task docs is not the same as running this test. In the calibration
+run both task documents were read in full, and the deferral still went unnoticed,
+because the docs were mined for *scoping rules* and never asked the question
+*"does this document already own the thing I am about to report?"* Ask it
+explicitly, class by class.
+
+## Test 3 — Did you observe it, or infer it?
+
+Any claim about what a page *shows* — empty, unscoped, unlabelled, broken,
+misaligned — is **latent until the render is observed**. Part 0 already says
+this. The calibration run said it too, in its own limits section, and then
+ranked inferred claims in Tier 1 and Tier 2 anyway. A caveat that does not change
+the ranking is doing no work.
+
+Three inferences that were confidently wrong:
+
+| Inferred from config | What was actually true |
+|---|---|
+| No filter block in `element-data` → "unscoped collection, renders every subject's rows" | Both instances were filtering correctly and showing the intended content |
+| Untitled + untagged + small payload → "contentless shell" | 74 of 75 render exactly as designed. Headers, footers, filters and maps have **no title by design** |
+| `totalLength: 0` → "table not pulling data" | The jurisdiction genuinely has no rows for that table |
+
+### The template rule
+
+**In a template, empty is the expected state.** A county template exists to be
+filled in later by a local author. Blank tables, untitled slots and zero counts
+are the medium, not a defect in it. Before reporting emptiness, ask what would
+have to be true for it to be *wrong* — usually that the subject demonstrably has
+data that is not appearing. If you cannot show that, the finding is that nothing
+distinguishes an intentional vacancy from a failure (detector V5), which is one
+finding about the design, not N findings about N components.
+
+### A record–platform disagreement is a question, not a finding
+
+When a work record says done and the platform disagrees, the record may be
+lagging a deliberate decision. In the calibration run 43 rows were raised as a
+Tier 1 "the record disagrees with the platform"; the owner's answer was *"user
+excluded tags here because they break the design, but the requirements were met
+elsewhere."* Correct observation, wrong frame. Raise it as one question to the
+owner, not as N ranked defects.
+
+---
+
+## What to do with what the gate rejects
+
+Do not delete it. Rejected material has two legitimate homes:
+
+- **Deferred (owned)** — one line per class naming the task that owns it, and
+  its status there. This is how the next reviewer knows not to re-raise it.
+- **Observations** — an unranked appendix, with the reason each is unranked
+  ("no correct value can be named", "not observed in the render").
+
+Both belong *after* the tiers, and neither may contribute to the tier counts or
+to the headline. If your headline count includes anything the gate rejected, the
+headline is wrong.
+
+## The gate in one line
+
+> Report a thing when you can name the setting, name its correct value, show
+> nobody already owns it, and — for anything about what a reader sees — say that
+> you looked.
+
+---
+
 # Part 0 — The visitor pass
 
 Open the pages. Report what a first-time reader notices, and for each thing,
@@ -168,6 +314,10 @@ findings are timing, not config). Do not organise Part 0 by component id.
 ---
 
 ## The ranking: what does this make the reader conclude?
+
+**Only gated findings get ranked.** Anything the relevance gate deferred or
+demoted to an observation is not eligible for a tier and does not count toward
+the tier totals.
 
 Rank findings by the conclusion they produce, not by severity-in-the-abstract
 and not by fix cost. Three tiers, and the boundaries are the point:
@@ -1419,6 +1569,18 @@ stakeholder rather than the platform team, the Part 1/Part 2 tables may belong
 in a separate document entirely — but the fix units in Part 0 must still name
 the cause, or the report is a list of complaints.
 
+**Close every report with two sections the gate produces:** *Deferred — owned
+elsewhere* (one line per class, naming the task that owns it) and *Observations*
+(unranked, each with the reason it is unranked). Then state **which checks you
+ran and which you skipped**, by letter. A reader cannot tell a clean result from
+an unrun one, and a sweep that never says what it skipped will be read as
+complete.
+
+**Report the accepted count, not the raised count.** The headline is the number
+of findings that passed the gate. If a work list carries the rejects too, say so
+in a separate figure — "65 findings; 474 further rows deferred or observational"
+— never a single number that blends them.
+
 ### Deliverable format
 
 Where the project has an established report format, **use it** rather than
@@ -2067,3 +2229,47 @@ who doesn't already know the schema, and the fix list collapsed from 17 findings
 to **9 fix units**, of which the top four — one platform behaviour, one template
 binding, twelve dataset rows, two column definitions — cover everything a reader
 notices in their first thirty seconds.
+
+### The relevance gate — reference run
+
+MitigateNY county template, draft sections, 26 pages. The report raised **539
+rows across 9 classes**; the owner marked each row relevant or irrelevant. The
+result is the sharpest calibration data in this document, because the verdict
+splits almost perfectly along class lines rather than row by row.
+
+| Class | Relevant | Owner's reason for the rejects |
+|---|---|---|
+| No Data Fetch Mode | **34 / 34** | — |
+| No requirement tag | **10 / 10** | — |
+| SHMP not permission locked | **21 / 21** | — |
+| Stores zero rows | 5 / 58 | *"Table configured correctly. The jurisdiction does not have any Completed Actions in the database, so it presents as a blank table."* |
+| Untitled contentless shell | 1 / 75 | *"Header, footer, filter, map components … showing up as headerless and contentless is a false signal. They are all showing up as expected."* |
+| Tag record disagrees with platform | 0 / 43 | *"User excluded tags here because they break the design, but the requirements were met elsewhere."* |
+| Source snapshot out of date | 0 / 104 | *"Disregard for now, we will review this in a separate update."* |
+| Unscoped collection | 0 / 2 | *"Component is filtering correctly and displaying the anticipated content correctly."* |
+| Bound to an unresolvable source | 0 / 192 | same deferral note as snapshots |
+
+**71 of 539 — 13%.** Three classes at 100%, four at 0%, two at noise level.
+
+What separates them is Test 1 exactly. The three classes that survived are the
+three where the finding could name the setting *and* its correct value from an
+external authority — a rule in a task doc, a published vocabulary, and the value
+377 of 398 siblings already carried. Every class that could only say "this looks
+wrong to me" was rejected.
+
+Three further lessons the run paid for:
+
+- **The deferral test is worth more than every other filter combined.** 347 of
+  the 474 rejects were three classes carrying one owner note. Both task
+  documents had been read in full; they were mined for scoping rules and never
+  asked whether they already *owned* a class about to be reported.
+- **A caveat that doesn't change the ranking is doing no work.** The report
+  stated in its own limits that `totalLength` is a cached count and that no
+  render was observed — then ranked 58 zero-row components in Tier 2 and two
+  inferred "unscoped collections" in Tier 3. All but five were rejected on
+  exactly the grounds the caveat had already named.
+- **The owner's most useful note was about a check that was never run.** On the
+  one component where the config detector fired for the wrong reason, the note
+  read: *"the QA sweep should have picked up the 'deprecated' label on a column
+  being used"* — Check C, in this document, unrun. Of checks A–M the run
+  executed only A, and never said so.

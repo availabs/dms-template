@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Start a report from a template · NPMRDS · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">NPMRDS · how-to</div>
+          <h1 class="doc-title">Start a report from a template.</h1>
+          <p class="doc-lede">The Reports page offers 12 templates in five question types. Each arrives with its graphs already wired; you supply the route and, for some, the date to count back from. Here is what the page shows, how to pick a template, and what you get.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · NPMRDS</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="before-you-start">Before you start</h2>
+          <p>Open <span class="ui">Reports</span> from the NPMRDS side navigation. No account is needed to open a template and read it. You need a saved route, yours or a colleague's, or a generated one; <a href="npmrds--routes--create.html">Create a route</a> if you have none. Know which question you are asking: the <a href="npmrds--reports--templates.html">Template reference</a> has one entry per template.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Read the header row. It holds the view toggle <span class="ui">Templates</span> | <span class="ui">All reports</span>, a search bar reading <span class="ui">Find a report — search N by name, road, route or description…</span>, <span class="ui">Create Report</span> and <span class="ui">New route</span>.<span class="result">Below it the band <span class="ui">Start from a question, not a blank page.</span> counts <span class="ui">12 templates</span> in <span class="ui">5 question types</span>.</span></li>
+            <li>Read the five groups: <span class="ui">Before &amp; after</span>, <span class="ui">Floating car</span>, <span class="ui">Events</span>, <span class="ui">Change over time</span> and <span class="ui">Behavioral</span>. Each card carries the template's name, a short description, a difficulty chip on 9 of the 12 (<span class="ui">beginner</span>, <span class="ui">intermediate</span> or <span class="ui">advanced</span>) and the link <span class="ui">use template →</span>.</li>
+            <li>Pick the template that matches your question, using the table below.</li>
+            <li>Select <span class="ui">use template →</span>.<span class="result">The template's page opens. Its routes are not fixed, so an <span class="ui">Add Routes</span> dialog opens at once and asks for exactly the number of routes the template needs, for example <span class="ui">Select 1 more (0/1)</span>. Bi-directional asks for two, one per direction.</span></li>
+            <li>Find your route by name, by <span class="ui">Mine</span>, or through <span class="ui">Browse by tag</span>, and tick it. If the dialog shows <span class="ui">Viewing as of</span>, set the date the template's periods count back from; it starts at the latest date with data.<span class="result">The button reads <span class="ui">Add 1 Route</span>.</span></li>
+            <li>Select it.<span class="result">The report renders with your route in every period the template defines. The address now carries <code>?routes=</code> and, where an anchor date applies, <code>asOf=</code>.</span></li>
+            <li>Read the header: the title, a one-line purpose, the <span class="ui">published</span> pill, and a data line such as <span class="ui">complete through</span> a month. Then read the graph cards top to bottom; the template reference says how.</li>
+            <li>To move the periods, change <span class="ui">Viewing as of</span> in the header. <span class="ui">Use latest available</span> resets it.</li>
+            <li>Copy the address to keep or share this filled view. See <a href="npmrds--reports--share_and_print.html">Share, print and publish a report</a>.</li>
+          </ol>
+
+          <h3 id="the-twelve-templates">The twelve templates</h3>
+          <p>Names and chips as configured in the template definitions that build the shelf.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Group</th><th>Template</th><th>Chip</th><th>Routes asked for</th></tr></thead>
+            <tbody>
+              <tr><td>Before &amp; after</td><td><a href="npmrds--reports--templates.html#single-route">Single Route</a></td><td>beginner</td><td>1</td></tr>
+              <tr><td>Floating car</td><td><a href="npmrds--reports--templates.html#one-week-study">One Week Study</a></td><td>—</td><td>1</td></tr>
+              <tr><td>Floating car</td><td><a href="npmrds--reports--templates.html#annual-average-study">Annual Average Study</a></td><td>—</td><td>1</td></tr>
+              <tr><td>Events</td><td><a href="npmrds--reports--templates.html#single-day-advanced">Single Day (Advanced)</a></td><td>advanced</td><td>1</td></tr>
+              <tr><td>Change over time</td><td><a href="npmrds--reports--templates.html#year-over-year">Year Over Year</a></td><td>beginner</td><td>1</td></tr>
+              <tr><td>Change over time</td><td><a href="npmrds--reports--templates.html#this-month-vs-last-month-vs-last-year">This Month vs. Last Month vs. Last Year</a></td><td>advanced</td><td>1</td></tr>
+              <tr><td>Change over time</td><td><a href="npmrds--reports--templates.html#monthly-congestion">Monthly Congestion</a></td><td>beginner</td><td>1</td></tr>
+              <tr><td>Change over time</td><td><a href="npmrds--reports--templates.html#monthly-speed-comparisons">Monthly Speed Comparisons</a></td><td>—</td><td>1</td></tr>
+              <tr><td>Behavioral</td><td><a href="npmrds--reports--templates.html#snapshot">Snapshot</a></td><td>beginner</td><td>1</td></tr>
+              <tr><td>Behavioral</td><td><a href="npmrds--reports--templates.html#seasonality">Seasonality</a></td><td>intermediate</td><td>1</td></tr>
+              <tr><td>Behavioral</td><td><a href="npmrds--reports--templates.html#bi-directional">Bi-directional</a></td><td>intermediate</td><td>2</td></tr>
+              <tr><td>Behavioral</td><td><a href="npmrds--reports--templates.html#weekly-average">Weekly Average</a></td><td>beginner</td><td>1</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="what-you-get">What you get</h2>
+          <p>A shared template filled with your route. The route choice and the anchor date live in the address, not on the page, so the same template serves everyone and nothing is written to your account. You do not get a copy you can edit. To add graphs, change measures or keep a report of your own, select <span class="ui">Create Report</span> and follow <a href="npmrds--reports--build.html">Build and edit a report</a>.</p>
+
+          <h2 id="settings">Settings</h2>
+          <p>The Reports header and the template controls.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Control</th><th>What it does</th><th>Values</th><th>Default</th></tr></thead>
+            <tbody>
+              <tr><td><span class="ui">Templates</span> | <span class="ui">All reports</span></td><td>Switches between the template shelf and the full list at <code>/reports/list</code></td><td>Two views</td><td><span class="ui">Templates</span></td></tr>
+              <tr><td><span class="ui">Find a report — search N…</span></td><td>Opens the search dialog; the count is live. With <code>?search=</code> in the address it shows the term and <span class="ui">N matches · show results</span></td><td>Text</td><td>Empty</td></tr>
+              <tr><td><span class="ui">Create Report</span></td><td>Makes a blank report page and opens it in edit mode</td><td>—</td><td>—</td></tr>
+              <tr><td><span class="ui">New route</span></td><td>Opens Route Creation</td><td>—</td><td>—</td></tr>
+              <tr><td><span class="ui">use template →</span></td><td>Opens that template's page</td><td>One per card</td><td>—</td></tr>
+              <tr><td><span class="ui">Add Routes</span> (on open)</td><td>Asks for the routes the template needs</td><td>Exactly N; <span class="ui">Add N Routes</span></td><td>None chosen</td></tr>
+              <tr><td><span class="ui">Viewing as of</span></td><td>The date the template's periods count back from</td><td>Any date; <span class="ui">Use latest available</span></td><td>The latest date with data</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul>
+            <li>Templates count back from the anchor date. "Current Year" means the year that date falls in, so a January anchor gives a thin current year. Set the anchor to the end of the period you care about.</li>
+            <li>The latest date with data sits a few weeks behind today. An anchor inside that gap gives blank graphs.</li>
+            <li>Three templates carry no difficulty chip.</li>
+            <li>The <span class="ui">All reports</span> cell of the toggle shipped inert on 2026-09-02; the list page it points to was published on 2026-09-04. The list page is at /reports/list; the toggle's <span class="ui">All reports</span> cell is its entry from the Reports page.</li>
+            <li>The side navigation's <span class="ui">Reports</span> item was recorded as pointing at the page's old address after the 2026-09-02 rename. The side navigation's <span class="ui">Reports</span> item opens /reports.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="the-page-reads-select-routes-to-view-this-report">The page reads "Select routes to view this report."</h3>
+          <p>The address has no route, or fewer than the template needs. The dialog reopens on reload; pick the routes again.</p>
+          <h3 id="every-graph-is-blank">Every graph is blank</h3>
+          <p>Check <span class="ui">Viewing as of</span>. If it is later than the data line's <span class="ui">complete through</span> month, select <span class="ui">Use latest available</span>. If a route is one segment long, thin coverage can also leave a window empty; see <a href="measures_and_data--measures--coverage.html">Data coverage</a>.</p>
+          <h3 id="a-2025-date-gave-route-does-not-exist">A 2025 date gave "route does not exist"</h3>
+          <p>That message came from the earlier tool's template loader and was resolved there. On the current pages a template never stores a route; if a report cannot find one, reopen it from the Reports page and pick the route again.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="npmrds--reports--templates.html">Template reference</a> · one entry per template</li>
+            <li><a href="npmrds--reports--find.html">Find a report</a></li>
+            <li><a href="npmrds--reports--build.html">Build and edit a report</a></li>
+            <li><a href="npmrds--reports--share_and_print.html">Share, print and publish a report</a></li>
+            <li><a href="measures_and_data--measures--percentile_speed.html">Percentile speed</a> · what a speed line on a template is</li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Live Reports page (published 2026-09-02, revision 3): header row of five sections (title, view toggle, search trigger, <span class="ui">Create Report</span>, <span class="ui">New route</span>); template band head and the five group heads; card cells name · description · difficulty · <span class="ui">use template →</span>; the twelve cards filtered by five category tags.</li>
+            <li>Reports page build script and revision-3 task (2026-09-02 to 09-04): band copy quoted above; the inert <span class="ui">All reports</span> cell (decision D2); the counts line removed 2026-09-03; the side-navigation item note.</li>
+            <li>Template definitions (dynamic report specifications, 12 files): titles, difficulty values, category tags, route slots and anchor formulas.</li>
+            <li>Report route rail code: the exact-count <span class="ui">Add Routes</span> gate, <span class="ui">Viewing as of</span>, the "latest available" anchor and its data lag; report header code: <span class="ui">Use latest available</span>.</li>
+            <li>Search trigger code (ChooseReportButton, 2026-09-02): the resting prompt and the <span class="ui">N matches · show results</span> state.</li>
+            <li>Running fix 2172526 (resolved): "2025 data gives error 'route does not exist'", template loading in the earlier tool.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 4a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="npmrds.html">NPMRDS hub</a>
+          <a href="npmrds--reports--templates.html">Template reference</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

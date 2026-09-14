@@ -1,28 +1,70 @@
-import { useContext, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router';
+import { useContext, useEffect, useMemo, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router';
 import { CMSContext, ComponentContext, PageContext } from "../../../../dms/packages/dms/src/patterns/page/context";
 import { ThemeContext, getComponentTheme } from '../../../../dms/packages/dms/src/ui/useTheme'
-import { publish } from '../../../../dms/packages/dms/src/patterns/page/pages/edit/editFunctions';
+import { MountContext } from '../../../../dms/packages/dms/src/ui/mountContext';
+import { resolveMountPath } from '../../../../dms/packages/dms/src/utils/mountPath';
+import { publish, updateTitle } from '../../../../dms/packages/dms/src/patterns/page/pages/edit/editFunctions';
+import { getUrlSlug } from '../../../../dms/packages/dms/src/patterns/page/pages/_utils';
 import { reportPageHeaderTheme } from './ReportPageHeader.theme';
-import { ROUTE_CATALOG_PARAM_KEY } from '../ReportRouteList/useGraphPublish';
-import { resolvedRouteLabel } from '../ReportRouteList/relativeDateResolution';
+import { ROUTE_CATALOG_PARAM_KEY, ROUTE_SOURCE_INFO_PARAM_KEY } from '../ReportRouteList/useGraphPublish';
+import { resolvedRouteLabel, TODAY_ANCHOR_COMP_ID, defaultAnchorDate } from '../ReportRouteList/relativeDateResolution';
+import { useReportCatalogRow } from './useReportCatalogRow';
+import TagsEditor from '../TagsEditor/TagsEditor';
+import RouteTagBrowserModal from '../RouteTagBrowserModal/RouteTagBrowserModal';
 
 // The report canvas's page-header card (npmrds-report.html): kicker+meta → h1+purpose
-// → action stack → freshness footline. h1 and the published/draft pill read the page's
+// → action stack. h1 and the published/draft pill read the page's
 // own `title`/`published` fields directly (real page data, not duplicated into this
-// section's state); everything else (kicker label, meta line, purpose, freshness, the
-// optional Data link) is this component's own authored state, edited inline in place —
-// same two-gate convention as ReportRouteList (editPageMode AND this section's own pencil).
-export default function ReportPageHeader({ isEdit: sectionEditorOpen }) {
-  const { item, editPageMode, pageState, apiUpdate } = useContext(PageContext) || {};
-  const { user } = useContext(CMSContext) || {};
+// section's state); everything else (kicker label, meta line, purpose, the
+// tag editor) is this component's own authored state, edited
+// inline in place, gated on `editPageMode` ALONE — same "no extra click" convention
+// ReportRouteList already uses (2026-09-01 correction, Workstream D: an author on
+// /edit/... shouldn't have to separately click this section into its own edit mode
+// before any of its fields become editable, same reasoning RRL's own comment gives).
+export default function ReportPageHeader() {
+  const { item, editPageMode, pageState, dataItems, apiLoad, apiUpdate } = useContext(PageContext) || {};
+  const { user, app } = useContext(CMSContext) || {};
+  // Inline tag editor next to Done (routes-reports-users-mesh.md, Workstream D) — reads/writes
+  // the SAME `reports_snap_2` row ReportRouteList/useReportRow.js owns `routes` on, via its own
+  // small hook (see useReportCatalogRow.js for why this is a separate fetch, not shared state).
+  // Also owns syncing `name`/`page_path` on that same row when the title is renamed below.
+  const { tags: reportTags, persistTags: persistReportTags, syncTitle: syncCatalogTitle } = useReportCatalogRow({ apiLoad, apiUpdate, app, itemId: item?.id });
   const { state, setState } = useContext(ComponentContext) || {};
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
   const { Button, Icon } = UI || {};
   const t = { ...reportPageHeaderTheme, ...getComponentTheme(themeFromContext, 'reportPageHeader') };
+  const { baseUrl: mountBaseUrl, siteRootPaths } = useContext(MountContext) || {};
   const navigate = useNavigate();
+  const location = useLocation();
   const [shareCopied, setShareCopied] = useState(false);
   const [routesOpen, setRoutesOpen] = useState(true);
+  const [isRouteSwapOpen, setIsRouteSwapOpen] = useState(false);
+
+  // Inline title editor (h1) — same mechanism as the Bottom toolbar's Filter icon → Page Name
+  // field (settingsPane.jsx), reused verbatim via the shared `updateTitle` so title/url_slug
+  // change identically either way. Draft state + commit-on-blur (not fired per keystroke) because
+  // `updateTitle` both writes the page row AND navigates to the new `/edit/<slug>` URL — unlike
+  // this header's other inline fields (kickerLabel/metaLine/purpose), which are local section
+  // display state with no navigation side effect.
+  const [titleDraft, setTitleDraft] = useState(item?.title ?? '');
+  useEffect(() => { setTitleDraft(item?.title ?? ''); }, [item?.id, item?.title]);
+
+  const commitTitle = async () => {
+    const trimmed = (titleDraft ?? '').trim();
+    if (!trimmed || trimmed === item?.title) {
+      setTitleDraft(item?.title ?? '');
+      return;
+    }
+    // Recomputed independently rather than read back off `item.url_slug` after `updateTitle`
+    // resolves — `item.url_slug` in this closure is still the OLD value until the ensuing
+    // navigation's re-fetch lands. `getUrlSlug` is pure (no side effects), so calling it here
+    // with the exact same `newItem` shape `updateTitle` builds internally gives the identical
+    // slug it's about to write, with no race.
+    const nextSlug = getUrlSlug({ id: item.id, title: trimmed, parent: item?.parent || '' }, dataItems || []);
+    await updateTitle(item, dataItems, trimmed, user, apiUpdate, mountBaseUrl, siteRootPaths);
+    await syncCatalogTitle(trimmed, `/${nextSlug}`);
+  };
 
   // Same catalog (id/name/colour/TMCs/date-span), same pageState key, RRL already broadcasts for
   // every graph's own QuickControls Routes pill (ROUTE_CATALOG_PARAM_KEY, useGraphPublish.js) —
@@ -33,6 +75,29 @@ export default function ReportPageHeader({ isEdit: sectionEditorOpen }) {
     const values = pageState?.filters?.find((f) => f.searchKey === ROUTE_CATALOG_PARAM_KEY && f.type === 'action')?.values;
     return Array.isArray(values) ? values : [];
   }, [pageState?.filters]);
+
+  // Dynamic Reports only (dynamic-reports-authoring-gaps.md sub-item 3): a `type: 'routeSlots'`
+  // page filter marks this report as reusable/shared, same test ReportRouteList.jsx's own
+  // `isDynamicReport` uses. `routeSourceInfo` is broadcast by RRL alongside the route catalog
+  // above (ROUTE_SOURCE_INFO_PARAM_KEY, useGraphPublish.js) — this header has no join source of
+  // its own configured, so it reads RRL's instead rather than needing a second binding authored
+  // on every report.
+  const routeSlotFilter = pageState?.filters?.find((f) => f.type === 'routeSlots');
+  const isDynamicReport = !!routeSlotFilter;
+  const routeSourceInfoValues = pageState?.filters?.find((f) => f.searchKey === ROUTE_SOURCE_INFO_PARAM_KEY && f.type === 'action')?.values;
+  const routeSourceInfo = Array.isArray(routeSourceInfoValues) ? routeSourceInfoValues[0] : routeSourceInfoValues;
+  // Pre-population for the route preview-swap modal below — same catalog entries as
+  // `routeCatalog`, but with `name` run through `resolvedRouteLabel` first: the modal's own
+  // selected-chip display reads `.name` verbatim (it has no other resolution step of its own),
+  // so without this an unresolved slot's `%n`/`%y` template shows up literally in the chip
+  // ("%n (%y)") instead of the same resolved label the routes disclosure/chart legend already
+  // show for the exact same route. `routeCatalog` itself is left untouched — its raw `name`/
+  // `dateFormula` fields are still what the routes-disclosure render below calls
+  // `resolvedRouteLabel` on directly.
+  const swapInitialRoutes = useMemo(
+    () => routeCatalog.map((r) => ({ ...r, name: resolvedRouteLabel(r) })),
+    [routeCatalog]
+  );
 
   // Grouped by `groupKey` (useDynamicReportRoutes.js's routeSlotGroupKey) — several catalog
   // entries are really just date/settings VIEWS of ONE physical route a viewer picked once
@@ -53,7 +118,78 @@ export default function ReportPageHeader({ isEdit: sectionEditorOpen }) {
     return Array.from(byKey.values());
   }, [routeCatalog]);
 
-  const canEdit = Boolean(editPageMode) && Boolean(sectionEditorOpen);
+  // "Viewing as of" — a persistent, always-available port of the SAME override
+  // ReportRouteList's Dynamic Report entry gate already offers (`RouteTagBrowserModal`'s
+  // `showAsOfDate`/`asOfDateValue`), which only ever appears once, on a viewer's very first
+  // visit before routes resolve. Ryan's ask: give a viewer who's already past that gate (or an
+  // author who never saw it) a way to change the date without hand-editing `?asOf=` in the
+  // URL. Reuses RRL's own mechanism verbatim rather than inventing a second one — the `baseDate`-
+  // typed, `useSearchParams: true` page filter (searchKey 'asOf') RRL's `toggleDynamicReport`
+  // registers, and the `TODAY_ANCHOR_COMP_ID`-derived route detection that gates RRL's own
+  // control. Only rendered when the report actually has a route deriving from the Today anchor
+  // AND the filter is registered (a Dynamic Report authored before this feature shipped never
+  // got the filter added — see RRL's own `baseDateFilter` comment) — otherwise there's nothing
+  // for it to control.
+  const usesTodayAnchor = useMemo(
+    () => routeCatalog.some((r) => r.derivedFromRoute === TODAY_ANCHOR_COMP_ID),
+    [routeCatalog]
+  );
+  const baseDateFilter = pageState?.filters?.find((f) => f.type === 'baseDate');
+  const baseDateRawValues = Array.isArray(baseDateFilter?.values) ? baseDateFilter.values : [baseDateFilter?.values];
+  const asOfOverride = baseDateRawValues.filter(Boolean)[0] || null;
+  // The no-override default is real wall-clock today MINUS NPMRDS_DATA_LAG_DAYS (see
+  // relativeDateResolution.js), not literal today — NPMRDS's own ClickHouse table publishes on
+  // a ~15-21 day lag, so "today" would silently resolve to a date with no data yet. Named/shown
+  // as "latest available" everywhere in this control (not "today") so a viewer resetting the
+  // override isn't misled about what date they're actually getting back (Ryan, 2026-09-03).
+  const latestAvailableDate = defaultAnchorDate();
+  const anchorDateStr = asOfOverride || latestAvailableDate;
+
+  // Same `navigate`-with-updated-search-params approach RRL's entry gate uses (view.jsx/edit/
+  // index.jsx's `updatePageStateFiltersOnSearchParamChange` re-derives `pageState.filters` from
+  // whatever lands in the URL on the next render) — but built off the raw `location.search`
+  // string rather than reconstructing every `useSearchParams` filter's own value shape, so a
+  // sibling param this component knows nothing about (`routes`, already `|||`-delimited) is
+  // preserved byte-for-byte instead of needing to be re-derived here too.
+  const handleAsOfChange = (nextDate) => {
+    if (!baseDateFilter) return;
+    const params = new URLSearchParams(location.search);
+    if (nextDate) {
+      params.set(baseDateFilter.searchKey, nextDate);
+    } else {
+      params.delete(baseDateFilter.searchKey);
+    }
+    const search = params.toString();
+    navigate(`${location.pathname}${search ? `?${search}` : ''}`);
+  };
+
+  // Route preview-swap (dynamic-reports-authoring-gaps.md sub-item 3): reopens
+  // RouteTagBrowserModal, pre-populated with whatever's currently resolved (`routeCatalog`,
+  // deduped by the modal's own `id`-keyed selection Map), and on a fresh confirm rewrites
+  // `?routes=` — same raw-`location.search` patch approach as `handleAsOfChange` just above, so a
+  // sibling `?asOf=` (if present) survives untouched. Purely a URL/view-time swap: never touches
+  // the page's own persisted `routes[]` slot array, no RRL/`persistRoutes` involvement.
+  const handleRouteSwapConfirm = (selectedRoutes) => {
+    if (!routeSlotFilter) return;
+    const ids = selectedRoutes.map((r) => r.id).filter((id) => id != null);
+    const params = new URLSearchParams(location.search);
+    if (ids.length) {
+      params.set(routeSlotFilter.searchKey, ids.join('|||'));
+    } else {
+      params.delete(routeSlotFilter.searchKey);
+    }
+    const search = params.toString();
+    navigate(`${location.pathname}${search ? `?${search}` : ''}`);
+  };
+
+  // Backlink to the reports landing page (Ryan, 2026-09-03: no way to navigate back to the
+  // reports list from an individual report page). Site-absolute authored path, resolved
+  // against the current mount the same way RouteIdentityPanel's "All routes" backlink does
+  // (its `#routes` counterpart on the reports homepage) — bare `/reports` rather than an
+  // anchor, since this just needs to land on the landing page, not a specific band on it.
+  const reportsHomeHref = resolveMountPath('/reports', mountBaseUrl, siteRootPaths);
+
+  const canEdit = Boolean(editPageMode);
   const d = state?.display || {};
 
   const set = (key, value) => setState?.(draft => {
@@ -85,16 +221,33 @@ export default function ReportPageHeader({ isEdit: sectionEditorOpen }) {
   // click that LEAVES edit mode (editPageMode true → false); entering edit mode is a plain
   // navigate, same as before.
   const handleEditToggle = async () => {
+    // Carry the current query string (route_ids, dates, any `useSearchParams` filter) across
+    // the Edit/Done toggle — both view.jsx and edit/index.jsx re-derive pageState.filters from
+    // the URL on mount (updatePageStateFiltersOnSearchParamChange), so dropping it here would
+    // reset the viewer's routes/date-range picks the moment they entered or left edit mode.
+    const search = location.search || '';
+    // editPath/publicPath are site-absolute (`/edit/<slug>`, `/<slug>`) — resolve against the
+    // current mount's baseUrl (e.g. /npmrds) the same way ReportPickerModal/Card/TableCell/
+    // ButtonNode do, so Edit/Done stay on the mount the report was opened from.
     if (editPageMode) {
       await publish(user, item, apiUpdate);
-      navigate(publicPath);
+      navigate(resolveMountPath(`${publicPath}${search}`, mountBaseUrl, siteRootPaths));
     } else {
-      navigate(editPath);
+      navigate(resolveMountPath(`${editPath}${search}`, mountBaseUrl, siteRootPaths));
     }
   };
 
   return (
     <div className={t.wrapper}>
+      <a
+        href={reportsHomeHref}
+        className={t.backLink}
+        onClick={(e) => { e.preventDefault(); navigate(reportsHomeHref); }}
+      >
+        <Icon icon="ArrowLeft" className={t.backIcon} />
+        All reports
+      </a>
+
       <div className={t.kickerRow}>
         {canEdit ? (
           <input
@@ -128,7 +281,21 @@ export default function ReportPageHeader({ isEdit: sectionEditorOpen }) {
 
       <div className={t.titleRow}>
         <div className={t.titleCol}>
-          <h1 className={t.h1}>{item?.title}<span className={t.h1Dot}>.</span></h1>
+          {canEdit ? (
+            <input
+              className={`${t.h1} ${t.inlineInput} w-full`}
+              value={titleDraft}
+              placeholder="Report title"
+              onChange={e => setTitleDraft(e.target.value)}
+              onBlur={commitTitle}
+              onKeyDown={e => {
+                if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); }
+                if (e.key === 'Escape') { setTitleDraft(item?.title ?? ''); e.currentTarget.blur(); }
+              }}
+            />
+          ) : (
+            <h1 className={t.h1}>{item?.title}<span className={t.h1Dot}>.</span></h1>
+          )}
           {canEdit ? (
             <textarea
               className={`${t.purpose} ${t.inlineTextarea}`}
@@ -144,11 +311,6 @@ export default function ReportPageHeader({ isEdit: sectionEditorOpen }) {
 
         <div className={t.actionCol}>
           <div className={t.actionRow}>
-            {(canEdit || d.dataHref) && Button ? (
-              <Button activeStyle="compact" disabled={!d.dataHref} onClick={() => d.dataHref && window.open(d.dataHref, '_blank')}>
-                <Icon icon="Download" className={t.actionIcon} /><span className={t.actionLabel}>Data</span>
-              </Button>
-            ) : null}
             {Button ? (
               <Button activeStyle="compact" onClick={handleShare}>
                 <Icon icon="LinkSquare" className={t.actionIcon} /><span className={t.actionLabel}>{shareCopied ? 'Copied' : 'Share'}</span>
@@ -166,45 +328,58 @@ export default function ReportPageHeader({ isEdit: sectionEditorOpen }) {
             ) : null}
           </div>
           {canEdit ? (
-            <div className={t.dataHrefRow}>
-              <span className={t.inlineFieldLabel}>Data link</span>
-              <input
-                className={`${t.inlineInput} text-[11px] flex-1 min-w-[160px]`}
-                value={d.dataHref ?? ''}
-                placeholder="https://…"
-                onChange={e => set('dataHref', e.target.value)}
-              />
+            <div className={t.tagsRow}>
+              <TagsEditor tags={reportTags} onChange={persistReportTags} user={user} Icon={Icon} theme={t} inline />
             </div>
           ) : null}
         </div>
       </div>
 
-      {canEdit ? (
-        <div className={t.freshnessEditRow}>
-          <span className={t.inlineFieldLabel}>Data source</span>
-          <input className={`${t.inlineInput} text-[10.5px]`} value={d.freshnessLabel ?? ''} placeholder="npmrds speeds" onChange={e => set('freshnessLabel', e.target.value)} />
-          <span className={t.inlineFieldLabel}>complete through</span>
-          <input className={`${t.inlineInput} text-[10.5px]`} value={d.freshnessComplete ?? ''} placeholder="jun 2026" onChange={e => set('freshnessComplete', e.target.value)} />
-          <span className={t.inlineFieldLabel}>partial</span>
-          <input className={`${t.inlineInput} text-[10.5px]`} value={d.freshnessPartial ?? ''} placeholder="jul 2026 partial" onChange={e => set('freshnessPartial', e.target.value)} />
-          <span className={t.inlineFieldLabel}>since</span>
-          <input className={`${t.inlineInput} text-[10.5px]`} value={d.freshnessSince ?? ''} placeholder="since jan 2017" onChange={e => set('freshnessSince', e.target.value)} />
-        </div>
-      ) : (d.freshnessLabel || d.freshnessComplete || d.freshnessPartial || d.freshnessSince) ? (
-        <div className={t.freshnessWrapper}>
-          {d.freshnessLabel ? <span className={t.freshnessDotWrap}><span className={t.freshnessDot} />{d.freshnessLabel}</span> : null}
-          {d.freshnessComplete ? <>{d.freshnessLabel ? <span className={t.freshnessSep}>·</span> : null}<span>complete through <span className={t.freshnessValue}>{d.freshnessComplete}</span></span></> : null}
-          {d.freshnessPartial ? <><span className={t.freshnessSep}>·</span><span>{d.freshnessPartial}</span></> : null}
-          {d.freshnessSince ? <><span className={t.freshnessSep}>·</span><span>{d.freshnessSince}</span></> : null}
+      {usesTodayAnchor && baseDateFilter ? (
+        <div className={t.asOfRow}>
+          <label className={t.asOfLabel} htmlFor="report-page-header-as-of-date">Viewing as of</label>
+          <input
+            id="report-page-header-as-of-date"
+            type="date"
+            className={t.asOfInput}
+            value={anchorDateStr}
+            onChange={(e) => handleAsOfChange(e.target.value)}
+          />
+          {asOfOverride && asOfOverride !== latestAvailableDate ? (
+            <button
+              type="button"
+              className={t.asOfReset}
+              title={`Data isn't published in real time — the latest available date is ${latestAvailableDate}.`}
+              onClick={() => handleAsOfChange(null)}
+            >
+              Use latest available ({latestAvailableDate})
+            </button>
+          ) : (
+            <span className={t.asOfHint}>latest available</span>
+          )}
         </div>
       ) : null}
 
       {routeGroups.length > 0 ? (
         <div className={t.routesWrapper}>
-          <button type="button" className={t.routesToggle} onClick={() => setRoutesOpen((open) => !open)}>
-            <Icon icon={routesOpen ? 'ChevronDown' : 'ChevronRight'} className={t.routesToggleIcon} />
-            <span>{routeGroups.length} route{routeGroups.length === 1 ? '' : 's'} in this report</span>
-          </button>
+          <div className={t.routesToggleRow}>
+            <button type="button" className={t.routesToggle} onClick={() => setRoutesOpen((open) => !open)}>
+              <Icon icon={routesOpen ? 'ChevronDown' : 'ChevronRight'} className={t.routesToggleIcon} />
+              <span>{routeGroups.length} route{routeGroups.length === 1 ? '' : 's'} in this report</span>
+            </button>
+            {isDynamicReport ? (
+              <button
+                type="button"
+                className={t.changeRoutesBtn}
+                disabled={!routeSourceInfo}
+                title={routeSourceInfo ? undefined : 'Route catalog still loading…'}
+                onClick={() => setIsRouteSwapOpen(true)}
+              >
+                <Icon icon="RefreshCw" className={t.changeRoutesIcon} />
+                Change routes
+              </button>
+            ) : null}
+          </div>
           {routesOpen ? (
             <div className={t.routesGroupList}>
               {routeGroups.map((group) => {
@@ -231,6 +406,19 @@ export default function ReportPageHeader({ isEdit: sectionEditorOpen }) {
             </div>
           ) : null}
         </div>
+      ) : null}
+
+      {isDynamicReport ? (
+        <RouteTagBrowserModal
+          open={isRouteSwapOpen}
+          setOpen={setIsRouteSwapOpen}
+          apiLoad={apiLoad}
+          routeSourceInfo={routeSourceInfo}
+          selectionMode="exact"
+          requiredCount={routeGroups.length}
+          initialSelectedRoutes={swapInitialRoutes}
+          onConfirm={handleRouteSwapConfirm}
+        />
       ) : null}
     </div>
   );

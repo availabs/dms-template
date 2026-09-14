@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Recipe: a Congestion Management Process · NPMRDS · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="recipe" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">NPMRDS · recipe</div>
+          <h1 class="doc-title">Recipe: a Congestion Management Process.</h1>
+          <p class="doc-lede">How an MPO runs the roadway side of a Congestion Management Process (CMP) on this platform: each CMP action, the tool that serves it, the measure to use and what it produces. Rewritten from the 2024 CMP discussion draft for the current tools. Assumes you know your region's CMP network and objectives.</p>
+          <div class="stamps">
+            <span class="type">recipe</span>
+            <span>applies to · NPMRDS</span>
+            <span>last reviewed · 2026-09-07</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="the-question">The question</h2>
+          <p>"Where is congestion in our region, how bad is it, is it getting worse, and did what we built help?" A CMP is the federally required answer for every Transportation Management Area, an MPO serving more than 200,000 people (23 CFR 450.322). FHWA's guidebook lays it out as eight actions. This platform serves five of them with probe travel-time data on every monitored segment, refreshed as the data arrives, with no field deployment. The other three, objectives, strategy identification and programming, are your process, not a tool's.</p>
+          <p>The 2024 draft of this discussion promised results from the Mid-Hudson Valley CMP and from the Syracuse Metropolitan Transportation Council's follow-on work. Those results were never published, and this page does not restate them. What it keeps is the draft's one lasting recommendation: <strong>rank segments by TED per mile, report them by TED total.</strong></p>
+
+          <h2 id="what-you-need">What you need</h2>
+          <ul>
+            <li>The <a href="npmrds--macro_view.html">Macro View</a> and its <a href="npmrds--macro_view--download.html">download</a>, for the regional pass. No sign-in.</li>
+            <li><a href="npmrds--routes--create.html">Route Creation</a> and <a href="npmrds--reports--build.html">Reports</a>, for corridors. Sign-in, to save routes and reports.</li>
+            <li>The <a href="npmrds--map21.html">MAP-21 PM3 pages</a>, for the federal figures your CMP document cites next to its own.</li>
+            <li>A spreadsheet, if you want a composite ranking; see <a href="npmrds--recipes--composite_score.html">the composite score recipe</a>.</li>
+            <li>Other modes from other sources. The platform holds roadway probe data for all vehicles, trucks and passenger vehicles. Transit, bicycle and pedestrian measures come from elsewhere.</li>
+          </ul>
+          <div class="callout basis"><span class="k">basis</span>The regional pass is one PM3 year, the MPO chosen under <span class="ui">Geography</span>, every monitored segment, the analytical series. Corridor work is the 5-minute observations on saved routes over the dates you set. Federal figures are CY, NHS, statewide.</div>
+
+          <h2 id="steps">Steps</h2>
+          <p>One row per CMP action. The steps below the table are the order of a first pass.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>CMP action</th><th>Tool</th><th>Measure</th><th>What you produce</th></tr></thead>
+            <tbody>
+              <tr><td>1 · Develop regional objectives</td><td>Your process</td><td>—</td><td>The objectives the measures below will be read against</td></tr>
+              <tr><td>2 · Define the CMP network</td><td>Macro View · <span class="ui">Geography</span></td><td>—</td><td>The MPO, or its counties, as the filter on every map, ranking and download</td></tr>
+              <tr><td>3 · Develop multimodal performance measures</td><td>The measure pages</td><td><a href="measures_and_data--measures--ted.html">TED</a> per mile to rank, TED total to report; <a href="measures_and_data--measures--lottr.html">LOTTR</a> and <a href="measures_and_data--measures--tttr80.html">TTTR₈₀</a> for recurrent bottlenecks; <a href="measures_and_data--measures--phed.html">PHED</a> for the peaks</td><td>A short measure list with definitions, copied from the measure pages</td></tr>
+              <tr><td>4 · Collect data and monitor system performance</td><td>Macro View download · <a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a></td><td>Every measure above, plus <a href="measures_and_data--measures--coverage.html">Data coverage</a></td><td>One CSV or GeoPackage per PM3 year for the network, with its README</td></tr>
+              <tr><td>5 · Analyze congestion problems and needs</td><td>Macro View · <span class="ui">Worst 25 segments</span> · the composite score</td><td>TED per mile (ranking) · LOTTR (recurrence)</td><td>A ranked list of segments, then corridors</td></tr>
+              <tr><td>6 · Identify and assess strategies</td><td>Reports on the ranked corridors</td><td>Speed, travel time, hours of delay by time of day</td><td>One report per corridor from the <a href="npmrds--reports--templates.html#snapshot">Snapshot</a> template</td></tr>
+              <tr><td>7 · Program and implement strategies</td><td>Your process</td><td>—</td><td>The TIP</td></tr>
+              <tr><td>8 · Evaluate strategy effectiveness</td><td>Reports · Difference mode</td><td>Hours of Delay, Travel Time, before and after</td><td><a href="npmrds--recipes--before_and_after.html">A before/after study</a> per project</td></tr>
+            </tbody>
+          </table></div>
+          <ol class="steps">
+            <li>Open <span class="ui">Macro View</span>. Under <span class="ui">Geography</span>, pick your MPO under <span class="ui">MPOs</span>, or its counties under <span class="ui">Counties</span>. Pick the latest <span class="ui">Year</span>.<span class="result">The map shows the segments the CMP network can draw on. Segments the probe feed does not cover are not there.</span></li>
+            <li>Switch <span class="ui">Measure</span> to <span class="ui">Coverage · data completeness</span> and read the distribution. Segments with thin data will inflate reliability and deflate delay; decide your screen now (the composite recipe uses 30 % of bins reporting).</li>
+            <li>Switch to <span class="ui">TED</span> with <span class="ui">Threshold</span> on <span class="ui">Free-flow · fixed reference</span> and <span class="ui">Unit</span> on <span class="ui">Vehicle Hours</span>. Open <span class="ui">Worst 25 segments</span>.<span class="result">The 25 segments with the most vehicle-hours lost in the year, drawn as points on the map. This is a total, so long, busy segments lead.</span></li>
+            <li>Build the download with <span class="ui">Current filters</span>, adding the LOTTR and TTTR₈₀ columns, the coverage columns and, if you will rank per mile, plan the length join. <a href="npmrds--recipes--composite_score.html">The composite score recipe</a> takes it from here to a ranked table.</li>
+            <li>Read TED per mile for the ranking and TED total for the report. Per mile says where a mile of road is worst; total says how much the region loses on that segment. Both go in the document, in separate columns.</li>
+            <li>For recurrent bottlenecks, rank by PM-peak LOTTR or TTTR₈₀ as well. A segment high on both delay and reliability is congested every day; high on delay alone is busy; high on reliability alone is fragile.</li>
+            <li>Group the top segments into corridors and save each as a route in <a href="npmrds--routes--create.html">Route Creation</a>, tagged with your agency tag.</li>
+            <li>Open each route in the <span class="ui">Snapshot</span> template for an average day, and <span class="ui">Year Over Year</span> for the trend. Save the reports and tag them.</li>
+            <li>For the federal frame, quote the region's row from the <a href="npmrds--map21.html">MAP-21 PM3</a> MPO table beside your own figures, naming it as the federal family.</li>
+            <li>Each year, repeat steps 1 to 5 on the new PM3 year, and run <a href="npmrds--recipes--before_and_after.html">a before/after study</a> on every project that opened.</li>
+          </ol>
+
+          <h2 id="reading-the-result">Reading the result</h2>
+          <p><strong>TED per mile ranks; TED total reports.</strong> A three-mile freeway segment and a quarter-mile arterial segment cannot be compared on totals. Divide by length to rank them, then report the total so a reader knows the size of what is lost. Because a floored delay figure on an arterial is about 90 % floor, a ranking that mixes freeways and arterials should use the relative (unfloored) variant; <a href="measures_and_data--which_measure.html">Which measure should I use?</a> says when.</p>
+          <p><strong>Reliability and delay answer different questions.</strong> LOTTR is blind to volume; TED scales with it. Thin data moves them in opposite directions. When they disagree across years, check coverage first.</p>
+          <p><strong>Trends need the same yardstick.</strong> The anchored free-flow reference exists so that a deterioration shows as one. Between years the network map, the coverage era and the AADT vintage all move; the download's README names each for its year. A CMP trend table should carry the era tag per year.</p>
+          <p><strong>Corridors, not segments, are the unit a strategy acts on.</strong> The regional pass finds candidates; the corridor reports say when in the day and which part of the corridor. A signalised arterial reads differently from a freeway: its travel times rise and fall with the signals, so read its averages over months, not days.</p>
+
+          <h2 id="variations">Variations</h2>
+          <ul>
+            <li><strong>A county CMP or a small MPO.</strong> Same steps with <span class="ui">Counties</span>. Fewer segments clear the coverage screen, so read the row count before you rank.</li>
+            <li><strong>Freight.</strong> Rank truck TED (<span class="ui">Traffic type</span> · <span class="ui">All Trucks</span>) and TTTR₈₀. Truck coverage is thinner and its eras move more.</li>
+            <li><strong>Peak periods only.</strong> Use PHED, with its own PM window of 15:00 to 18:59, in person-hours.</li>
+            <li><strong>Many corridors at once.</strong> Route Comparison, a draft tool, will put every corridor against every year in one table; until it is released, a report with a Table card and <span class="ui">Route Compare</span> gives one row per route. See <a href="npmrds--route_comparison.html">Compare routes across periods</a>.</li>
+            <li><strong>Earlier plans used the Travel Time Index.</strong> TTI is not currently computed. For a comparison with a floating-car era plan, use percentile speed at the 50th and 85th percentiles and say the basis changed.</li>
+          </ul>
+
+          <h2 id="sample-output">Sample output</h2>
+          <p>The CMP's data appendix, as this recipe produces it. One block per action the platform serves.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Block</th><th>Contents</th><th>Source and citation</th></tr></thead>
+            <tbody>
+              <tr><td>Network definition</td><td>The geography chosen, the PM3 year, the segment count from <span class="ui">Download N rows</span>, the coverage screen applied</td><td>Macro View, geography and year; README era line</td></tr>
+              <tr><td>Measure list</td><td>TED (anchored, vehicle-hours, total and per mile) · LOTTR PM peak · TTTR₈₀ PM peak · coverage, each with its one-sentence definition</td><td>The measure pages</td></tr>
+              <tr><td>Ranked segments</td><td>Top N by TED per mile, with TED total, LOTTR, TTTR₈₀, length, coverage, road and county</td><td>Macro View download of the stated date, joined to the TMC network for names and length</td></tr>
+              <tr><td>Corridor profiles</td><td>One Snapshot and one Year Over Year report per corridor, with the route's segment count and miles</td><td>Report addresses; the analytical series</td></tr>
+              <tr><td>Federal context</td><td>The MPO's row from the MAP-21 table, the statewide targets, the calendar year</td><td>MAP-21 PM3 page, named as the federal family</td></tr>
+              <tr><td>Project evaluations</td><td>One before/after table per completed project</td><td>The before/after recipe</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Legacy NPMRDS documentation, Discussions, the Congestion Management Process page, marked as a draft (2024): the outline (Define CMP Network · Develop Multi-Modal Performance Measures · Collect Data · Monitor System Performance · Analyze Congestion Problems and Needs · Evaluate Strategy Effectiveness), the recommendation "TED Per Mile to rank segments by congestion and TED Total to report", TTI/TTTR/LOTTR or a composite for recurrent bottlenecks, the promised Mid-Hudson Valley and SMTC results (not published). Its Bottlenecks infobox, .SHP download and legacy geography list are replaced above.</li>
+            <li>23 CFR 450.322, Congestion management process in transportation management areas; FHWA, Congestion Management Process: A Guidebook (2011), the eight actions.</li>
+            <li><a href="npmrds--macro_view.html">Macro View: how to use</a>: <span class="ui">Geography</span> groups, <span class="ui">Worst 25 segments</span>, the delay controls, the short-segment and volume cautions.</li>
+            <li><a href="measures_and_data--which_measure.html">Which measure should I use?</a>: reliability against delay, the variant table, the coverage-first rule.</li>
+            <li><a href="npmrds.html">NPMRDS hub</a>: what the data is good at and not, including signalised segments and the two-year AADT lag.</li>
+            <li><a href="npmrds--route_comparison.html">Compare routes across periods</a>: draft status of Route Comparison.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2024 published as a discussion draft · 2026-09-07 rewritten as a recipe (phase 4b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="npmrds--recipes--composite_score.html">Recipe: a composite bottleneck score</a>
+          <a href="npmrds--recipes--before_and_after.html">Recipe: a before/after study</a>
+          <a href="measures_and_data--which_measure.html">Which measure should I use?</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

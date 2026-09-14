@@ -199,27 +199,6 @@ export const ScheduleGridView = ({ isEdit }) => {
     })
   }
 
-  /* Open on whatever is PUBLISHED, not on the saved binding.
-   *
-   * The section's stored `externalSource.view_id` is whichever version it was authored
-   * against, which drifts the first time anyone publishes; opening there shows the
-   * programme director a week the public site is not serving. `liveInfo` already carries
-   * the answer, so the grid just follows it — once per mount, guarded by a ref so it
-   * cannot fight a manual pick from the selector or bounce after a publish.
-   *
-   * Skipped when the public sections disagree with each other (`mixed`): there is no
-   * single published version to open on, and the chip says so. */
-  const didOpenOnLive = React.useRef(false)
-  React.useEffect(() => {
-    if (didOpenOnLive.current) return
-    if (!liveInfo || liveInfo === "none") return
-    didOpenOnLive.current = true
-    if (display.openOnPublishedVersion === false) return
-    if (liveInfo.mixed || !liveInfo.view_id) return
-    if (Number(liveInfo.view_id) === Number(viewId)) return
-    switchVersion(liveInfo.view_id)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [liveInfo])
 
   const openNameDialog = (mode) => {
     setCreateError(null)
@@ -326,6 +305,33 @@ export const ScheduleGridView = ({ isEdit }) => {
   const [publishError, setPublishError] = React.useState(null)
   const [publishedNote, setPublishedNote] = React.useState(null)
   const [progress, setProgress] = React.useState(null)
+
+  /* NB: this effect has to sit BELOW the `liveInfo` state above — its dependency
+   * array reads `liveInfo` during render, and a `const` declared later in the
+   * function body is in its temporal dead zone at that point. The merge of
+   * 2026-09-13 had it 100 lines up, which threw `Cannot access 'liveInfo' before
+   * initialization` on every render and blanked the admin schedule page. */
+  /* Open on whatever is PUBLISHED, not on the saved binding.
+   *
+   * The section's stored `externalSource.view_id` is whichever version it was authored
+   * against, which drifts the first time anyone publishes; opening there shows the
+   * programme director a week the public site is not serving. `liveInfo` already carries
+   * the answer, so the grid just follows it — once per mount, guarded by a ref so it
+   * cannot fight a manual pick from the selector or bounce after a publish.
+   *
+   * Skipped when the public sections disagree with each other (`mixed`): there is no
+   * single published version to open on, and the chip says so. */
+  const didOpenOnLive = React.useRef(false)
+  React.useEffect(() => {
+    if (didOpenOnLive.current) return
+    if (!liveInfo || liveInfo === "none") return
+    didOpenOnLive.current = true
+    if (display.openOnPublishedVersion === false) return
+    if (liveInfo.mixed || !liveInfo.view_id) return
+    if (Number(liveInfo.view_id) === Number(viewId)) return
+    switchVersion(liveInfo.view_id)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [liveInfo])
 
   /* Load ONE row by id.
    *

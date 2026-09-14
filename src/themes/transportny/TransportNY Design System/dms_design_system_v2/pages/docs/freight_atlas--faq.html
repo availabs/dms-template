@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Freight Atlas FAQ · Freight Atlas · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="faq" data-applies-to="freight_atlas">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Freight Atlas · faq</div>
+          <h1 class="doc-title">Freight Atlas FAQ.</h1>
+          <p class="doc-lede">Real questions about the Freight Atlas map, the Maps Gallery, Data &amp; Downloads and the plan pages, in the words people asked them, with a short answer and the page that answers in full. Platform-wide questions are in the <a href="start--faq.html">Platform FAQ</a>.</p>
+          <div class="stamps">
+            <span class="type">faq</span>
+            <span>applies to · Freight Atlas (www/freightatlas)</span>
+            <span>last reviewed · 2026-09-07</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="albany-international-airport-is-not-listed">Albany International Airport is not listed on the legend and not identified on the map. Appears the Schenectady Airport is listed as "other". <small>ticket 2192902</small></h2>
+          <p>By the plan's reckoning, neither is a freight airport. The <span class="ui">Air Cargo Facilities</span> layer draws the plan's dataset of major cargo airports, from Bureau of Transportation Statistics 2022 tonnage, and its legend names the ten the plan counted, with everything else as <span class="ui">Other</span>. Albany is not in that set and Schenectady County falls to <span class="ui">Other</span>. The layer reproduces the plan's Figure 47; adding an airport would mean the plan's data changing, not the map. See <a href="freight_atlas--layers.html#freight-facilities">Freight Facilities</a> in the Layer reference.</p>
+
+          <h2 id="air-cargo-facilities-should-be-named-consistently">Air Cargo Facilities should be named consistently in legend. In legend this layer is called Major Airports. <small>ticket 2192901</small></h2>
+          <p>Fixed on 2026-07-16: the legend block is now titled <span class="ui">Air Cargo Facilities</span> like the layer. The dataset behind it keeps its catalog name, Major Airports NY, which is what you see on its source page. A few other legend blocks are still titled with their dataset's inner name rather than the panel name; <a href="freight_atlas--map.html#limits-and-gotchas">Use the map</a> lists them.</p>
+
+          <h2 id="i-only-see-7-themes-in-the-maps-gallery">I only see 7 "themes" in the Maps Gallery page, but the instructions seem to indicate that there should be 8? <small>ticket 2191404</small></h2>
+          <p>Seven is right. The gallery has eight categories in its dataset, but a category with no live map is not rendered, and the counts beside the titles count live figures only. The eighth, <span class="ui">2050 Outlook</span>, holds the plan's four 2021-to-2050 change maps, which the map cannot draw yet. It appears by itself when its first figure goes live. No page on the site says "8 themes". See <a href="freight_atlas--gallery.html#why-a-category-can-be-hidden">Why a category can be hidden</a>.</p>
+
+          <h2 id="s-and-p-transearch-2023-may-make-viewers-misunderstand-the-base-year">"S&amp;P TRANSEARCH 2023" may make viewers misunderstand the base year for the data used... <small>ticket 2197830</small></h2>
+          <p>Agreed, and reworded on 2026-07-31. TRANSEARCH is S&amp;P Global's commodity-flow database. The plan uses its 2023 release, whose data describes the 2021 base year with a 2050 forecast. The home's card now reads "S&amp;P TRANSEARCH 2021 Base Year". The right way to write it is "TRANSEARCH 2021 base year (2023 release)"; 2023 is when the data was released, not what it describes. See <a href="freight_atlas--the_plan.html#how-the-freight-atlas-relates-to-the-plan">How the Freight Atlas relates to the plan</a>.</p>
+
+          <h2 id="cant-deselect-layer">Can't deselect layer <small>ticket 2190960</small></h2>
+          <p>Three controls turn a layer off: its checkbox under <span class="ui">Add layers</span>, <span class="ui">Remove from map</span>, the <span class="ui">×</span> in its <span class="ui">Active map</span> row, and <span class="ui">Clear all</span>. The July 2026 report could not be reproduced. The likeliest explanation is the question below: one layer was on by default in the stored map and drew whatever you did, and no control could remove it because none had turned it on. That is fixed. See <a href="freight_atlas--map.html#i-cannot-turn-a-layer-off">I cannot turn a layer off</a>.</p>
+
+          <h2 id="yellow-lines-that-appear-to-be-roads">When I bring up ONLY the Dairy Cow Inventory by County under the network and commodity data, I'm getting a yellow lines that appear to be roads but aren't specified <small>ticket 2192575 · ticket 2210866</small></h2>
+          <p>The lines were the <span class="ui">New York State Freight Core Highway Network</span>. It was switched on by default in the stored map, so it drew under every gallery figure and every shared address while appearing in neither the panel nor the legend, which show only what you selected. It was turned off for gallery links on 2026-07-16 and for the published map on 2026-08-24. All 39 layers now start off. A stray yellow line and a black fill bundled inside the dairy layer were removed at the same time. See <a href="freight_atlas--map.html#a-layer-draws-that-i-did-not-turn-on">A layer draws that I did not turn on</a>.</p>
+
+          <h2 id="version-numbers-are-included-in-two-rail-network-layers">Version numbers are included in two Rail Network layers. I think we should remove them so people won't be curious about the other versions <small>ticket 2197855</small></h2>
+          <p>Agreed. <span class="ui">2024 Core Rail Freight Network v2</span> and <span class="ui">Core Rail Freight Network by Class v4</span> were renamed without the suffixes on 2026-07-31, in the map's draft. The published map still shows them until the page is published. The suffixes told drafts of the same drawing apart; they never meant different data, and both layers read the same core rail dataset. See <a href="freight_atlas--layers.html#names-suffixes-and-recent-changes">Names, suffixes and recent changes</a>.</p>
+
+          <h2 id="last-mile-is-shown-in-black">As per the legend of the 2024 Core Rail Freight Network, the "Last Mile" is shown in black. And this black line is all over the map. Not sure then what "last mile" means since black lines occupy so much of this map. <small>ticket 2192904</small></h2>
+          <p>The colours were the wrong way round and were fixed on 2026-07-16. <span class="ui">National</span> corridors are now bold navy, <span class="ui">Statewide</span> blue, and <span class="ui">Last Mile</span> light, so the backbone reads as the backbone. The three are the corridor types of the State Freight Core Rail Network as the plan's Figure 39 draws them. What the plan means by a last-mile corridor is marked for verification in the <a href="freight_atlas--layers.html#vocabulary">Vocabulary</a>.</p>
+
+          <h2 id="none-of-the-roads-are-named-with-route-numbers">None of the roads are named with route numbers. The expectation is that when someone zooms in they can identify the roadway. <small>ticket 2192573</small></h2>
+          <p>Route shields and road names come from the basemap, not from any layer, and appear at street zooms. On 2026-07-16 the default basemap was switched to a road-oriented style with highway shields and labels for this reason. Zoom in. If you have picked <span class="ui">Satellite</span> or <span class="ui">Blank</span> under <span class="ui">Change base map</span>, pick <span class="ui">Default</span> or <span class="ui">Streets</span>. See <a href="freight_atlas--map.html#the-roads-have-no-route-numbers">The roads have no route numbers</a>.</p>
+
+          <h2 id="this-looks-to-aadt-rename-layer">This looks to AADT, rename layer <small>ticket 2195642</small></h2>
+          <p>Renamed on 2026-07-27. The layer once called "Road Performance Measures" holds no performance measures; it colours the HPMS road network by traffic volume and road attributes, AADT by default and six other views under <span class="ui">Show</span>. It is now <span class="ui">Traffic Volume &amp; Road Attributes</span> and sits under <span class="ui">Road Network</span>. See <a href="freight_atlas--layers.html#road-network">Road Network</a> in the Layer reference.</p>
+
+          <h2 id="left-nav-platform-home-option-what-does-that-do">left nav "platform home" option....what does that do??? <small>ticket 2197822</small></h2>
+          <p>It takes you back to the TransportNY landing page, the front door that lists the three products. <span class="ui">Platform home</span> is the last row of the product switcher at the top of every side navigation, under <span class="ui">NPMRDS</span>, <span class="ui">TSMO</span> and <span class="ui">Freight Atlas</span>. The label does not say where it goes, which is the fair complaint. See <a href="start--navigating.html#platform-home-what-does-that-do">"Platform home": what does that do?</a>.</p>
+
+          <h2 id="does-this-link-to-the-nysdot-page">Does this link to the NYSDOT page and obtain a fresh download ORRRRRRRRRR Is this a copy you got last week/year/month that might not have edits that have been done since then...... <small>ticket 2197823</small></h2>
+          <p>It links to NYSDOT now. Until 2026-08-05 the <span class="ui">About &amp; The Plan</span> page offered five hosted copies of the plan documents. NYSDOT decided to replace them with one link to its own reports page, dot.ny.gov/freight-plan/reports, and the copies were removed from the site's data manager. Every download is therefore the current version. See <a href="freight_atlas--the_plan.html#the-report-library">The report library</a>.</p>
+
+          <h2 id="some-of-the-data-does-not-have-a-download-button">Some of the data does not have a download button. <small>ticket 2195719</small></h2>
+          <p>Fixed on 2026-07-27. A source page shows <span class="ui">Download</span> only for a version that has a generated file. Twenty-three Freight Atlas versions had none, so their pages showed no button. All 23 were generated that day as <span class="ui">CSV</span>, <span class="ui">ESRI Shapefile</span> and <span class="ui">GPKG</span>, and every Freight Atlas version now has a download. If you still meet a version without one, report it with the dataset and version name. See <a href="freight_atlas--downloads.html#a-dataset-has-no-download-button">A dataset has no Download button</a>.</p>
+
+          <h2 id="public-front-door-links-to-two-sign-in-walled-destinations">Public front door links to two sign-in-walled destinations <small>ticket 2197778</small></h2>
+          <p>At the 2026-07-29 check, <span class="ui">Data &amp; Downloads</span> and the landing page's <span class="ui">Data Sources</span> showed the sign-in page to visitors without an account, although both are meant to be public and the home says "No login". The cause was traced to the catalog's permission check, not to a decision to gate it. The record closes without a decision on whether the catalog stays public. Until that changes, sign in, or ask for a file through Help and feedback. See <a href="freight_atlas--downloads.html#what-needs-a-login">What needs a login</a>.</p>
+
+          <h2 id="always-refer-to-this-as-the-freight-atlas-not-atlas">Also, in text under, and always, refer to this as the "Freight Atlas" not "Atlas" <small>ticket 2197828</small></h2>
+          <p>Applied on 2026-07-31 across the home, the gallery and the plan page: fifteen strings, the gallery's <span class="ui">open in Freight Atlas →</span> links, and the side navigation's heading, which now reads <span class="ui">Freight Atlas</span>. The About page's title became "Freight Atlas and NYS Freight Plan" as requested, while the navigation item stays <span class="ui">About &amp; The Plan</span> for fit. The plan's own proper noun, "Freight Web Atlas", was left as written. This documentation follows the same rule. See <a href="freight_atlas.html">Freight Atlas</a>.</p>
+
+          <h2 id="values-in-the-atlas-agree-exactly-with-the-values-in-the-freight-plan">lets create a static version of the mode graph based on the data available in the freight plan instead of using the live transearch data so that the values in the atlas agree exactly with the values in the freight plan. <small>ticket 2214651</small></h2>
+          <p>Done on 2026-08-25, and it became the rule. The home's mode-share chart had computed shares from the TRANSEARCH table and disagreed with the plan; it now reads the plan's five published shares, truck 68.6 % of tons and 75.9 % of value down to air 0.3 % and 3.0 %, under the caption "2024 NYS Freight Plan · 2021 base year · figures as published". The map layers still draw the underlying data, and the <span class="ui">Growth to 2050</span> chart still computes from TRANSEARCH. See <a href="freight_atlas--downloads.html#the-figures-agree-with-the-plan">The figures agree with the plan</a>.</p>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-07 created (phase 5)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="freight_atlas--map.html">Use the map</a>
+          <a href="start--faq.html">Platform FAQ</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

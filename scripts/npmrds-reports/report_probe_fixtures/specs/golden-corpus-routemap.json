@@ -1,6 +1,5 @@
 {
   "title": "Golden Corpus - Route Map",
-  "slug": "converted_reports/golden_corpus_routemap",
   "description": "Golden-corpus representative page for Map/Route Map (report_probe.mjs batch mode). Kept live intentionally, not disposable — see report-probe-expect-and-golden-corpus.md.",
   "graphs": [
     {

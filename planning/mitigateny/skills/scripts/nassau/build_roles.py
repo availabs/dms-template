@@ -208,6 +208,13 @@ def main():
                 phone=(c.get("phone") or "").strip(),
                 address=", ".join(c.get("address") or []),
                 hm_rep=(c.get("is_hazard_mitigation_representative") or "").strip(),
+                # An annex point of contact IS a required stakeholder (owner, 2026-09-09).
+                # Previously `required` came only from the base-plan roster's
+                # `core_planning_group` flag, and the annex POCs are not in that roster -- so a
+                # jurisdiction's own named hazard-mitigation representative came out BLANK while
+                # four ordinary committee members read "Yes". Found by eye at Gate 3 on Long
+                # Beach, where the blank row was the designated HM representative.
+                required="Yes",
                 slot=c.get("slot"), src="annex", _row=i))
 
     # ---------------------------------------------------------------- base-plan roster
@@ -244,15 +251,17 @@ def main():
             if prev is None:
                 best[k] = r
             elif prev["src"] == "roster" and r["src"] == "annex":
-                # Annex wins: it has email/phone/address. Keep the roster's extra facts.
+                # Annex wins: it has email/phone/address. Keep the roster's extra facts --
+                # but NOT `required`: an annex POC is a required stakeholder regardless of
+                # whether the roster happened to flag them, so copying the roster's value here
+                # would undo that for exactly the people it matters most for.
                 r = dict(r)
-                r["required"] = prev.get("required", "No")
                 best[k] = r
                 dropped += 1
             else:
                 # Roster duplicate of an annex contact -- carry its facts across, drop the row.
-                if r["src"] == "roster":
-                    prev.setdefault("required", r.get("required", "No"))
+                # `required` is deliberately not carried: the annex row already says Yes, and
+                # a roster "No" must not downgrade it.
                 dropped += 1
 
         out = []

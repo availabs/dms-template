@@ -1,0 +1,23 @@
+{
+ "assets/screens/macro-06-download-builder.png": "https://availabs-bucket.files.availabs.org/img/npmrdsv5+dev2/platform_docs/macro-06-download-builder.avif",
+ "assets/screens/docs/start/navigating-01-landing.png": "https://availabs-bucket.files.availabs.org/img/npmrdsv5+dev2/platform_docs/navigating-01-landing.avif",
+ "assets/screens/docs/npmrds/start-01-route-creation-4-tmcs.png": "https://availabs-bucket.files.availabs.org/img/npmrdsv5+dev2/platform_docs/start-01-route-creation-4-tmcs.avif",
+ "assets/screens/docs/npmrds/start-02-report-edit-line-graph.png": "https://availabs-bucket.files.availabs.org/img/npmrdsv5+dev2/platform_docs/start-02-report-edit-line-graph.avif",
+ "assets/screens/docs/npmrds/routes-create-01-markers.png": "https://availabs-bucket.files.availabs.org/img/npmrdsv5+dev2/platform_docs/routes-create-01-markers.avif",
+ "assets/screens/docs/npmrds/reports-find-01-search-787.png": "https://availabs-bucket.files.availabs.org/img/npmrdsv5+dev2/platform_docs/reports-find-01-search-787.avif",
+ "assets/screens/docs/npmrds/reports-build-01-before-after-edit.png": "https://availabs-bucket.files.availabs.org/img/npmrdsv5+dev2/platform_docs/reports-build-01-before-after-edit.avif",
+ "assets/screens/macro-01-overview.png": "https://availabs-bucket.files.availabs.org/img/npmrdsv5+dev2/platform_docs/macro-01-overview.avif",
+ "assets/screens/macro-02-measure-menu.png": "https://availabs-bucket.files.availabs.org/img/npmrdsv5+dev2/platform_docs/macro-02-measure-menu.avif",
+ "assets/screens/macro-03-phed-controls.png": "https://availabs-bucket.files.availabs.org/img/npmrdsv5+dev2/platform_docs/macro-03-phed-controls.avif",
+ "assets/screens/macro-04-coverage.png": "https://availabs-bucket.files.availabs.org/img/npmrdsv5+dev2/platform_docs/macro-04-coverage.avif",
+ "assets/screens/macro-05-worst-segments.png": "https://availabs-bucket.files.availabs.org/img/npmrdsv5+dev2/platform_docs/macro-05-worst-segments.avif",
+ "assets/screens/docs/npmrds/route_comparison-01-draft.png": "https://availabs-bucket.files.availabs.org/img/npmrdsv5+dev2/platform_docs/route_comparison-01-draft.avif",
+ "assets/screens/docs/npmrds/recipes-before-after-01-hourly-difference.png": "https://availabs-bucket.files.availabs.org/img/npmrdsv5+dev2/platform_docs/recipes-before-after-01-hourly-difference.avif",
+ "assets/screens/docs/tsmo/start-01-2025-home.png": "https://availabs-bucket.files.availabs.org/img/npmrdsv5+dev2/platform_docs/start-01-2025-home.avif",
+ "assets/screens/docs/tsmo/congestion-01-2025-statewide.png": "https://availabs-bucket.files.availabs.org/img/npmrdsv5+dev2/platform_docs/congestion-01-2025-statewide.avif",
+ "assets/screens/docs/tsmo/reliability-01-2025-statewide.png": "https://availabs-bucket.files.availabs.org/img/npmrdsv5+dev2/platform_docs/reliability-01-2025-statewide.avif",
+ "assets/screens/docs/tsmo/incidents-01-2025-statewide.png": "https://availabs-bucket.files.availabs.org/img/npmrdsv5+dev2/platform_docs/incidents-01-2025-statewide.avif",
+ "assets/screens/docs/tsmo/work_zones-01-2025-statewide.png": "https://availabs-bucket.files.availabs.org/img/npmrdsv5+dev2/platform_docs/work_zones-01-2025-statewide.avif",
+ "assets/screens/docs/freight_atlas/start-01-maritime-system.png": "https://availabs-bucket.files.availabs.org/img/npmrdsv5+dev2/platform_docs/start-01-maritime-system.avif",
+ "assets/screens/docs/admin/map_editor-01-graduated-style.png": "https://availabs-bucket.files.availabs.org/img/npmrdsv5+dev2/platform_docs/map_editor-01-graduated-style.avif"
+}

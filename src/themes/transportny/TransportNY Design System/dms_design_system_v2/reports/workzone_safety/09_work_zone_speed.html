@@ -1,0 +1,1369 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Work Zone Speed Impact &middot; TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <style>
+    /* TransportNY design-system v2 surface utilities.
+     * Inlined (not linked) so this document opens standalone, exactly as
+     * ./05_recommendation_report.html does. Values copied verbatim from
+     * dms_design_system_v2/design-system/_shared.css — do not diverge. */
+    .font-display, .font-oswald { font-family: "Oswald", "Bebas Neue", sans-serif; }
+    .font-proxima { font-family: "Source Sans 3", system-ui, sans-serif; }
+    body { font-family: "Source Sans 3", system-ui, sans-serif; background: #ECEEF2; }
+    .tny-pane      { background: #ECEEF2; }
+    .tny-pane-tint { background: #E4E8EE; }
+    .tny-card {
+      background: #fff;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 8px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 0 rgba(15, 23, 42, 0.02);
+    }
+    .tny-card-tint { background: #FAFBFC; }
+    .tny-card-bone { background: #F5F1E8; }
+    .tny-card-ink  { background: #0F2D4D; color: #fff; }
+    .tny-link      { color: #1F3F8F; text-decoration: underline; text-underline-offset: 2px; }
+    .tny-link:hover{ color: #16307A; }
+    .tny-card-ink .tny-link { color: #BFD3F2; }
+    .tny-mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.92em; padding: 1px 5px;
+      background: rgba(15, 23, 42, 0.05);
+      border: 1px solid rgba(15, 23, 42, 0.06);
+      border-radius: 3px; color: #37576B; white-space: nowrap;
+    }
+    .tny-card-ink .tny-mono { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); color: #DCE6F5; }
+    .tny-hero-topo {
+      background:
+        radial-gradient(circle at 25% 30%, rgba(15, 23, 42, 0.04), transparent 40%),
+        radial-gradient(circle at 75% 70%, rgba(15, 23, 42, 0.05), transparent 50%),
+        repeating-linear-gradient(28deg, transparent 0 30px, rgba(15, 23, 42, 0.035) 30px 31px, transparent 31px 60px),
+        repeating-linear-gradient(-30deg, transparent 0 36px, rgba(15, 23, 42, 0.028) 36px 37px, transparent 37px 70px),
+        #EEF1F3;
+    }
+    .bar { height: 8px; border-radius: 2px; background: #37576B; }
+    .bar-warn { background: #CA8A04; }
+    .bar-bad  { background: #B45309; }
+    .bar-ok   { background: #10B981; }
+    .bar-track { background: rgba(15,23,42,0.06); border-radius: 2px; height: 8px; }
+    .barv { width: 100%; border-radius: 2px 2px 0 0; background: #37576B; }
+    .barv-warn { background: #CA8A04; }
+    table.tny { border-collapse: collapse; width: 100%; }
+    table.tny th {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em;
+      color: #64748b; text-align: right; padding: 6px 8px;
+      border-bottom: 1px solid rgba(15,23,42,0.12); white-space: nowrap;
+    }
+    table.tny th:first-child, table.tny td:first-child { text-align: left; }
+    table.tny td {
+      font-size: 13px; padding: 7px 8px; text-align: right;
+      border-bottom: 1px solid rgba(15,23,42,0.05);
+      font-variant-numeric: tabular-nums;
+      vertical-align: top;
+    }
+    table.tny td.txt { text-align: left; font-variant-numeric: normal; line-height: 1.5; }
+    table.tny th.txt { text-align: left; }
+    table.tny tr:last-child td { border-bottom: none; }
+    table.tny tr.total td { font-weight: 600; border-top: 1px solid rgba(15,23,42,0.18); background: rgba(15,23,42,0.02); }
+    .step-n {
+      font-family: "Oswald", sans-serif; font-weight: 600; font-size: 13px;
+      width: 26px; height: 26px; border-radius: 4px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #37576B; color: #fff; flex: none;
+    }
+    .cite { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10.5px; color:#64748b; }
+    .pill { display:inline-flex; align-items:center; height:22px; padding:0 8px; border-radius:4px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:10px; text-transform:uppercase; letter-spacing:.12em; white-space:nowrap; }
+    .pill-ok   { background:#E6F7EF; color:#0B6B44; border:1px solid #B7E3CC; }
+    .pill-warn { background:#FBF3DB; color:#8A5A00; border:1px solid #EAD59A; }
+    .pill-bad  { background:#FBE9E0; color:#8A3B0C; border:1px solid #F0C9B4; }
+    .pill-ink  { background:#0F2D4D; color:#fff; }
+    .kpi { font-family:"Oswald",sans-serif; font-weight:600; font-size:30px; line-height:1; color:#0F1722; letter-spacing:-0.01em; }
+    .kpi-sm { font-family:"Oswald",sans-serif; font-weight:600; font-size:22px; line-height:1; color:#0F1722; }
+    .lbl { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:0.16em; color:#64748b; }
+  </style>
+</head>
+<body class="tny-pane">
+
+<!--
+  WORK ZONE SPEED IMPACT — phase 3 of the work_zone data-type pipeline
+  Deliverable of planning/transportny/tasks/current/workzone-performance-data-type-pipeline.md (phase 3).
+  GENERATED by scratchpad/gen_report09.py from speed_report_data.json — do not hand-edit figures;
+  re-run the query script and the generator instead.
+  PRIMARY MEASURE: m1_posted — share of observed active time below max(20, posted limit − 10 mph),
+  capped at the posted limit. DAMA source 2206 (`wz_speed`) on npmrds2, nine vintages CY2018–CY2026,
+  built by dms-template/data-types/work_zone stage "speed" from sources 2193/2194, npmrds ClickHouse
+  view 982, the npmrds_geometry meta view (posted limits) and pm3 source 2135 (comparator percentiles).
+  Figures are on the CONFLATED window basis (window_source = '2799') unless stated. Queried 2026-09-09.
+-->
+
+<div class="max-w-[1180px] mx-auto px-6 lg:px-10">
+
+  <nav class="flex flex-wrap items-center gap-x-4 gap-y-1 pt-4 font-mono text-[10.5px] uppercase tracking-[0.14em] text-slate-500">
+    <span class="text-[#0f1722]">work zone speed impact</span>
+    <a class="hover:text-[#1F3F8F]" href="./00_README.md">00 index</a>
+    <a class="hover:text-[#1F3F8F]" href="./05_recommendation_report.html">05 recommendation</a>
+    <a class="hover:text-[#1F3F8F]" href="./06_work_zone_universe.html">06 the universe</a>
+    <a class="hover:text-[#1F3F8F]" href="./08_work_zone_exposure.html">08 exposure</a>
+    <a class="hover:text-[#1F3F8F]" href="../npmrds-data-quality-report.html">npmrds data quality</a>
+    <a class="hover:text-[#1F3F8F]" href="../../design-system/theme.html">design system</a>
+  </nav>
+
+  <header class="tny-hero-topo -mx-6 lg:-mx-10 px-6 lg:px-10 pt-9 pb-9 border-b border-zinc-950/10 mt-4">
+    <div class="flex items-center gap-2 mb-3">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// work_zone pipeline &middot; phase 3</span>
+      <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+    </div>
+    <h1 class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">
+      Work Zone Speed Impact<span class="text-[#CA8A04]">.</span>
+    </h1>
+    <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-3 max-w-[880px]">
+      The federal rule names one example mobility measure by title, and New York's declared form of it is
+      <span class="text-[#0f1722] font-medium">the percent of active work-zone hours in which the average
+      speed within the zone falls more than 10 mph below the posted limit</span>, never below 20 mph.
+      This phase computed that measure, and computed it three other ways alongside so the threshold stays
+      reviewable. The finding that matters most is not the number: it is that
+      <span class="text-[#0f1722] font-medium">the measure only means anything when it is reported against
+      the same road's own history, on a named set of projects.</span>
+    </p>
+    <div class="flex flex-wrap items-center gap-2 mt-5 font-mono text-[10.5px] uppercase tracking-[0.14em]">
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] bg-[#37576B] text-white">DAMA source 2206 &middot; wz_speed</span>
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] bg-[#0F2D4D] text-white">M1 threshold: posted &minus; 10, floor 20</span>
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white text-slate-600">CY2018 &ndash; CY2026 &middot; 9 vintages</span>
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white text-slate-600">queried 2026-09-09</span>
+    </div>
+  </header>
+
+  <section class="pt-8">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">M1, as the rule defines it</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2024 &middot; significant candidates</span>
+    </div>
+
+    <div class="tny-card tny-card-ink p-6">
+      <div class="font-mono text-[11px] uppercase tracking-[0.16em] text-[#BFD3F2]">the measure</div>
+      <p class="font-display font-medium text-[19px] leading-[1.35] mt-2 max-w-[860px]">
+        Percent of active work-zone <span style="color:#F5D67B">hours</span> in which the
+        <span style="color:#F5D67B">average speed within the zone</span> falls below the threshold.
+      </p>
+      <p class="font-proxima text-[13px] leading-[1.7] text-white/75 mt-3 max-w-[860px]">
+        Both highlighted phrases are load-bearing. The unit of time is an <b>hour</b>, classified once as
+        below threshold or not &mdash; not a five-minute period. The unit of space is the <b>zone</b>, so
+        the speed is the whole extent's average: total distance travelled divided by total travel time.
+        That average is a harmonic one, which means it is pulled toward the congested part of a zone
+        &mdash; correctly, because that is where drivers spend their time.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 mt-4">
+      <div class="tny-card tny-card-bone p-4">
+        <div class="lbl">M1 &middot; during the work</div>
+        <div class="kpi mt-1.5">20.5<span class="text-[18px]">%</span></div>
+        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">of active zone-hours below posted&minus;10</div>
+      </div>
+      <div class="tny-card p-4">
+        <div class="lbl">The same hours, a year before</div>
+        <div class="kpi mt-1.5">7.0<span class="text-[18px]">%</span></div>
+        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">same segments, same hours of day</div>
+      </div>
+      <div class="tny-card tny-card-ink p-4">
+        <div class="lbl" style="color:#BFD3F2">The work zones' contribution</div>
+        <div class="kpi mt-1.5" style="color:#fff">+13.4<span class="text-[18px]">pts</span></div>
+        <div class="font-proxima text-[11.5px] text-white/60 mt-1">2.9&times; the pre-construction rate</div>
+      </div>
+      <div class="tny-card p-4">
+        <div class="lbl">Active hours measured</div>
+        <div class="kpi mt-1.5">11,619</div>
+        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">2,376 of them below threshold</div>
+      </div>
+      <div class="tny-card p-4">
+        <div class="lbl">Projects in the measure</div>
+        <div class="kpi mt-1.5">216</div>
+        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">of 220 significant candidates</div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+      <div class="tny-card p-5">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">Executive reading</div>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-2">
+          Across New York's 220 significant work-zone candidates in 2024, traffic ran more than 10 mph
+          below the posted speed limit for
+          <span class="font-medium text-[#0f1722]">2,376 of 11,619 active hours &mdash; 20.5% of the
+          time</span>. On the same road segments, in the same hours of the day, a year earlier, the figure
+          was <span class="font-medium text-[#0f1722]">7.0%</span>.
+        </p>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-2">
+          The work therefore multiplied the time these corridors spent well below their posted speed by
+          <span class="font-medium text-[#0f1722]">2.9&times;</span>. That difference &mdash; not the 20.5%
+          on its own &mdash; is the programme's mobility impact.
+        </p>
+        <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 mt-2 pt-2 border-t border-zinc-950/8">
+          <b>It replicates on an independent year.</b> The same computation on CY2023's 271 significant
+          candidates gives 24.1% during against 9.1% before &mdash; 2.6&times;, against 2.9&times; for CY2024 &mdash;
+          and again slightly more than half the individual projects came in better than their own
+          baseline. Two years, two independent zone sets, the same answer.
+        </p>
+      </div>
+      <div class="tny-card tny-card-tint p-5">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">The aggregate and the typical project disagree</div>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-2">
+          The programme total rose 2.9&times; &mdash; but
+          <span class="font-medium text-[#0f1722]">112 of 216 individual projects came in BETTER
+          than their own baseline</span>, against 99 that came in worse. 101 never dropped below the
+          threshold at all, and the median project sits at 2.2%.
+        </p>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-2">
+          A small number of large impacts carries the total. Both figures are true and they support
+          opposite headlines, which is exactly why neither should be published alone.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">Three thresholds, two universes, as measures</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2024 &middot; M1 at the zone-hour grain</span>
+    </div>
+    <div class="tny-card p-5">
+      <table class="tny">
+        <thead>
+          <tr>
+            <th class="txt" rowspan="2">Threshold</th>
+            <th colspan="4">216 significant candidates &middot; 11,619 hours</th>
+            <th colspan="4" style="border-left:1px solid rgba(15,23,42,0.14)">2,968 zones active a week or more &middot; 344,995 hours</th>
+          </tr>
+          <tr>
+            <th>Before</th><th>During</th><th>Change</th><th>Ratio</th>
+            <th style="border-left:1px solid rgba(15,23,42,0.14)">Before</th><th>During</th><th>Change</th><th>Ratio</th>
+          </tr>
+        </thead>
+        <tbody>
+            <tr>
+              <td class="txt">Posted limit &minus; 10 mph<br><span class="cite">floored at 20 mph &middot; NYSDOT</span></td>
+              <td>7.0%</td><td>20.5%</td>
+              <td><span class="pill pill-bad">+13.4</span></td>
+              <td>2.9&times;</td>
+              <td style="border-left:1px solid rgba(15,23,42,0.14)">27.5%</td><td>31.3%</td>
+              <td><span class="pill pill-warn">+3.8</span></td>
+              <td>1.1&times;</td>
+            </tr>
+            <tr>
+              <td class="txt">35 mph absolute<br><span class="cite">Ohio ODOT policy threshold</span></td>
+              <td>4.7%</td><td>15.2%</td>
+              <td><span class="pill pill-bad">+10.5</span></td>
+              <td>3.2&times;</td>
+              <td style="border-left:1px solid rgba(15,23,42,0.14)">34.5%</td><td>34.6%</td>
+              <td><span class="pill pill-ok">+0.1</span></td>
+              <td>1.0&times;</td>
+            </tr>
+            <tr>
+              <td class="txt">60% of the 85th-percentile speed<br><span class="cite">pre-construction reference</span></td>
+              <td>3.9%</td><td>13.7%</td>
+              <td><span class="pill pill-bad">+9.8</span></td>
+              <td>3.5&times;</td>
+              <td style="border-left:1px solid rgba(15,23,42,0.14)">12.7%</td><td>13.9%</td>
+              <td><span class="pill pill-warn">+1.2</span></td>
+              <td>1.1&times;</td>
+            </tr>
+        </tbody>
+      </table>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-x-8 gap-y-4 mt-5 pt-5 border-t border-zinc-950/8">
+        <div>
+          <div class="font-display font-medium text-[14.5px] text-[#0f1722]">As a LEVEL, the measure inverts the answer</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+            On the week-plus universe the 35 mph threshold reports
+            <span class="font-medium text-[#0f1722]">34.6% during</span> &mdash; more than double the
+            significant candidates' 15.2% &mdash; and would rank those zones the worse performers. But the
+            same segments read 34.5% <em>before</em> any work began. The actual impact is
+            <span class="font-medium text-[#0f1722]">+0.1 points</span>: essentially nil. The level was
+            reporting chronic congestion on slow roads, not work zones.
+          </p>
+        </div>
+        <div>
+          <div class="font-display font-medium text-[14.5px] text-[#0f1722]">As a DIFFERENCE, the threshold barely matters</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+            On the significant candidates all three thresholds agree on direction and rough magnitude
+            &mdash; ratios of 2.9&times;, 3.2&times; and 3.5&times;. The threshold debate is far less consequential than it
+            looks, <span class="font-medium text-[#0f1722]">provided the measure is reported against a
+            baseline</span>. It only dominates the answer when a bare level is published.
+          </p>
+        </div>
+        <div>
+          <div class="font-display font-medium text-[14.5px] text-[#0f1722]">Posted&minus;10 detects real change on slow roads</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+            On the mixed-facility week-plus universe, posted&minus;10 still finds +3.8 points of added
+            slow time where the fixed 35 mph threshold finds +0.1. Because it is calibrated to each
+            road's own limit it can still see a change on roads that are slow to begin with &mdash; which
+            is the strongest argument for it over the alternatives.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">How this should be reported</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">from Ohio, FHWA and Illinois practice</span>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="tny-card p-5 lg:col-span-2">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">Our work-zone universe is not the one peers report on</div>
+        <table class="tny mt-3">
+          <thead>
+            <tr><th class="txt">&nbsp;</th><th class="txt">Ohio</th><th class="txt">Illinois</th><th class="txt">New York (CY2024)</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="txt">Zones counted</td><td class="txt">25-30 key projects per season</td>
+                <td class="txt">1,673 per year</td><td class="txt"><b>42,688</b></td></tr>
+            <tr><td class="txt">Derived from</td><td class="txt">lane-closure permits</td>
+                <td class="txt">GIS project extents</td><td class="txt">TRANSCOM <b>event</b> records</td></tr>
+            <tr><td class="txt">Median duration</td><td class="txt">major projects</td>
+                <td class="txt">projects</td><td class="txt"><b>6.0 hours</b></td></tr>
+            <tr><td class="txt">Reported unit</td><td class="txt">hours below 35 mph, per project, per month</td>
+                <td class="txt">veh-hrs delay, total and per project</td><td class="txt">to be declared</td></tr>
+            <tr><td class="txt">Baseline</td><td class="txt">same location, two prior years</td>
+                <td class="txt">pre-construction</td><td class="txt">same segments, same hours, prior year</td></tr>
+          </tbody>
+        </table>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-4 max-w-[780px]">
+          32,918 of our 42,688 zones &mdash; 77.1% &mdash; last under twelve hours. They are work
+          <em>shifts</em>, not projects. Illinois counts 1,673 work zones a year from project records that
+          explicitly include temporary maintenance; Ohio monitors 25-30. A statewide percentage over our
+          universe is therefore not comparable to any figure a peer publishes, and it is dominated by
+          short maintenance activity.
+        </p>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-2 max-w-[780px]">
+          The comparable sets are our <span class="font-medium text-[#0f1722]">220 significant
+          candidates</span> (the tier the rule's programmatic review actually covers, and the analogue of
+          Ohio's monitored projects) and our <span class="font-medium text-[#0f1722]">3,275 zones active a
+          week or more</span> (roughly twice Illinois's project count).
+        </p>
+      </div>
+      <div class="tny-card tny-card-bone p-5">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">What Ohio actually publishes</div>
+        <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+          Not a statewide share. ODOT's central office runs speed analysis on
+          <span class="font-medium text-[#0f1722]">25-30 key projects a season</span> and charts
+          <span class="font-medium text-[#0f1722]">the number of hours below 35 mph, per project, per
+          month</span>, with reference lines for the same months in the two years before construction, and
+          annotations for incidents, weather and events. Monthly cadence, plus a speed heatmap by month
+          and time of day.
+        </p>
+        <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 mt-2">
+          FHWA's own NPMRDS guidance (HOP-20-029) reports the same shape: a count of underperforming
+          hours, a per-month rate so unequal periods compare, a baseline row computed identically, a
+          per-month breakdown, and the average severity during the bad hours.
+        </p>
+      </div>
+    </div>
+
+    <div class="tny-card p-5 mt-4">
+      <div class="flex items-baseline gap-3">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">The recommended form &mdash; worked on our own data</div>
+        <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2024 significant candidates, largest added impact</span>
+      </div>
+      <table class="tny mt-3">
+        <thead>
+          <tr><th class="txt">Project</th><th>Active hrs</th><th>Before</th><th>During</th><th>Added</th>
+              <th>Speed before</th><th>Speed during</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+              <td class="txt">I-678<br><span class="cite">ORI1237720084 &middot; Queens</span></td>
+              <td>53</td>
+              <td>26.9%</td>
+              <td>100.0%</td>
+              <td><span class="pill pill-bad">+73.1</span></td>
+              <td>44.1</td>
+              <td>21.5</td>
+            </tr>
+            <tr>
+              <td class="txt">I-690<br><span class="cite">ORI1237646655 &middot; Onondaga</span></td>
+              <td>132</td>
+              <td>1.5%</td>
+              <td>62.9%</td>
+              <td><span class="pill pill-bad">+61.4</span></td>
+              <td>56.8</td>
+              <td>30.6</td>
+            </tr>
+            <tr>
+              <td class="txt">I-690<br><span class="cite">ORI1237696688 &middot; Onondaga</span></td>
+              <td>54</td>
+              <td>1.4%</td>
+              <td>59.3%</td>
+              <td><span class="pill pill-bad">+57.9</span></td>
+              <td>59.7</td>
+              <td>39.3</td>
+            </tr>
+            <tr>
+              <td class="txt">I-678<br><span class="cite">ORI1237458076 &middot; Queens</span></td>
+              <td>459</td>
+              <td>29.4%</td>
+              <td>86.9%</td>
+              <td><span class="pill pill-bad">+57.6</span></td>
+              <td>40.1</td>
+              <td>19.2</td>
+            </tr>
+            <tr>
+              <td class="txt">I-678<br><span class="cite">ORI1237671325 &middot; Queens</span></td>
+              <td>132</td>
+              <td>31.0%</td>
+              <td>87.9%</td>
+              <td><span class="pill pill-bad">+56.9</span></td>
+              <td>39.4</td>
+              <td>17.8</td>
+            </tr>
+        </tbody>
+      </table>
+      <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-4 max-w-[900px]">
+        This is the table that communicates. Each row names a project, says how long it was measured for,
+        and puts its slow time beside the same segments' slow time in the same hours a year earlier. No
+        threshold argument is needed to read it: on I-678 in Queens, traffic that already ran below the
+        line 29% of the time ran below it 87% of the time during the work, and the zone's average speed
+        halved from 40.1 to 19.2 mph.
+      </p>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
+        <div>
+          <div class="lbl mb-2">and the other end of the distribution</div>
+          <table class="tny">
+            <thead><tr><th class="txt">Project</th><th>Active hrs</th><th>Before</th><th>During</th><th>Change</th></tr></thead>
+            <tbody>
+            <tr>
+              <td class="txt">I-690<br><span class="cite">ORI1237612675</span></td>
+              <td>50</td>
+              <td>84.0%</td>
+              <td>42.0%</td>
+              <td><span class="pill pill-ok">-42.0</span></td>
+            </tr>
+            <tr>
+              <td class="txt">I-678<br><span class="cite">ORI1237630339</span></td>
+              <td>24</td>
+              <td>15.1%</td>
+              <td>0.0%</td>
+              <td><span class="pill pill-ok">-15.1</span></td>
+            </tr>
+            <tr>
+              <td class="txt">I-95<br><span class="cite">ORI1237472076</span></td>
+              <td>24</td>
+              <td>16.2%</td>
+              <td>12.5%</td>
+              <td><span class="pill pill-ok">-3.7</span></td>
+            </tr>
+            </tbody>
+          </table>
+          <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 mt-2">
+            Publishing only the worst rows would be as misleading as publishing only the average. 112
+            of 216 significant projects came in better than their own baseline.
+          </p>
+        </div>
+        <div class="tny-card tny-card-tint p-5">
+          <div class="font-display font-medium text-[15px] text-[#0f1722]">Five rules for reporting M1</div>
+          <ol class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-2 space-y-1.5 list-decimal pl-5">
+            <li><span class="font-medium text-[#0f1722]">Never publish a level alone.</span> A bare
+                percentage reports the road as much as the work, and on one of our universes it reverses
+                the ranking entirely.</li>
+            <li><span class="font-medium text-[#0f1722]">Always name the universe</span> and its zone
+                count. "31.8% of work-zone hours" over 38,000 mostly-six-hour shifts is not the same
+                statement as "20.5% over 216 significant projects".</li>
+            <li><span class="font-medium text-[#0f1722]">Pair the share with a count of hours.</span>
+                2,376 hours below threshold is actionable; a percentage alone hides whether that is three
+                hours or three thousand.</li>
+            <li><span class="font-medium text-[#0f1722]">Report the aggregate and the typical project
+                together</span>, because they disagree here and each supports a different headline.</li>
+            <li><span class="font-medium text-[#0f1722]">Report per project, monthly</span>, for the
+                significant tier &mdash; Ohio's and FHWA's form. The statewide series over 216 zones is
+                too small to be stable: it moved between 7% and 35% across our nine vintages purely on
+                composition.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <div class="tny-card tny-card-bone p-5 mt-4">
+      <div class="font-display font-medium text-[15px] text-[#0f1722]">One caution on the posted-limit threshold, on the record</div>
+      <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-2 max-w-[900px]">
+        <b>NCHRP Synthesis 482</b> (Work Zone Speed Management) warns that comparing observed speeds to
+        the posted limit alone is confounded, and the state-practice review found that among peers
+        <b>nobody uses the posted limit as the sole reference</b> &mdash; all of them compare against
+        pre-construction conditions on the same segments. The confound is that work zones frequently
+        carry a <em>reduced</em> posted limit, so "below the posted limit" can measure compliance with a
+        temporary restriction rather than mobility impact.
+      </p>
+      <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-2 max-w-[900px]">
+        Our posted limits come from the roadway inventory, which carries each segment's
+        <em>normal</em> limit, not the temporary work-zone limit. So posted&minus;10 here measures
+        "traffic ran more than 10 mph below what this road is normally posted for" &mdash; a defensible
+        impact measure, and the one of the three that best survives being applied across facility types.
+        It is not a compliance measure, and it should not be described as one.
+        <span class="font-medium text-[#0f1722]">Reporting it against the pre-construction baseline, as
+        above, neutralises the confound</span>: whatever the posted limit does or does not represent, it
+        is the same number on both sides of the comparison.
+      </p>
+    </div>
+  </section>
+
+  <section class="pt-8">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">The evidence underneath: five years of observed speed</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2021&ndash;CY2025 &middot; share of five-minute periods, per segment</span>
+    </div>
+    <div class="tny-card tny-card-bone p-4 mb-3">
+      <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 max-w-[900px]">
+        <b>These are not M1.</b> Everything below this line is the observation layer the measure is built
+        from: the share of individual five-minute periods, on individual segments, that fell below each
+        threshold. It is finer in both time and space than M1, it answers "where and when inside a zone
+        was the slow time", and it is what phase 6's speed-differential work will read. M1 itself &mdash;
+        active zone-<em>hours</em> classified on the <em>zone's</em> average speed &mdash; is the section
+        above.
+      </p>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div class="tny-card tny-card-bone p-4">
+        <div class="lbl">Periods below posted &minus; 10</div>
+        <div class="kpi mt-1.5">30.4<span class="text-[18px]">%</span></div>
+        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">of observed active time</div>
+      </div>
+      <div class="tny-card p-4">
+        <div class="lbl">Work zones measured</div>
+        <div class="kpi mt-1.5">183,718</div>
+        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">across 15,401 road segments</div>
+      </div>
+      <div class="tny-card p-4">
+        <div class="lbl">Segment-hours observed</div>
+        <div class="kpi mt-1.5">1.93 M</div>
+        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">23.1 M five-minute observations</div>
+      </div>
+      <div class="tny-card p-4">
+        <div class="lbl">Mean speed / mean threshold</div>
+        <div class="kpi mt-1.5">45.5</div>
+        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">mph, against a 40.5 mph threshold</div>
+      </div>
+      <div class="tny-card p-4">
+        <div class="lbl">Comparators</div>
+        <div class="font-proxima text-[12.5px] leading-[1.5] text-slate-600 mt-2">
+          32.4% below 35 mph<br>
+          16.0% below 60% of free flow<br>
+          19.5% below the federal PHED anchor
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-4">
+    <div class="tny-card tny-card-ink p-6">
+      <div class="font-display font-semibold text-[17px] uppercase tracking-tight">What the measure says</div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-x-8 gap-y-4 mt-3">
+        <div>
+          <div class="font-display font-medium text-[14px] text-white/95">Just under a third of work-zone time is more than 10 mph down</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-white/75 mt-1">
+            Across the five comparable years, 30.4% of observed work-zone time ran more
+            than 10 mph below the posted limit &mdash; mean observed speed
+            45.5 mph against a mean threshold of 40.5.
+            Measured on the road's own limit, the number is a statement about work zones rather than about
+            which roads happened to be worked on.
+          </p>
+        </div>
+        <div>
+          <div class="font-display font-medium text-[14px] text-white/95">It halves the distortion a fixed threshold creates</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-white/75 mt-1">
+            A fixed 35 mph line makes off-Interstate work zones look
+            <span class="text-white font-medium">4.5&times;</span> worse
+            than Interstate ones. Against the posted limit that falls to
+            <span class="text-white font-medium">2.2&times;</span>,
+            on roads whose observed speeds differ by
+            0.7&times;. Most of what the fixed threshold was
+            measuring was the speed limit.
+          </p>
+        </div>
+        <div>
+          <div class="font-display font-medium text-[14px] text-white/95">Night work is 2.3&times; cheaper</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-white/75 mt-1">
+            Work at 04:00 runs below threshold
+            <span class="text-white font-medium">16.0%</span> of the time against
+            <span class="text-white font-medium">36.4%</span> at
+            08:00 &mdash; yet active hours peak at 15:00.
+            Phase 2 could not see this at all; it spread every zone's hours evenly across the day.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">Why the threshold follows the road</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2024 &middot; conflated windows</span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="tny-card p-5 lg:col-span-2">
+        <table class="tny">
+          <thead>
+            <tr>
+              <th class="txt">CY2024 work zones</th><th>Zones</th><th>Segment-hrs</th>
+              <th>Mean speed</th><th>Mean threshold</th>
+              <th>&lt; posted&minus;10</th><th>&lt; 35 mph</th><th>&lt; 60% FF</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="txt">Not Interstate</td><td>22,464</td><td>250,782</td>
+              <td>37.8</td><td>35.3</td>
+              <td><span class="pill pill-warn">38.4%</span></td>
+              <td>46.6%</td><td>18.5%</td>
+            </tr>
+            <tr>
+              <td class="txt">Interstate</td><td>15,929</td><td>162,354</td>
+              <td>56.8</td><td>49.2</td>
+              <td><span class="pill pill-warn">17.3%</span></td>
+              <td>10.3%</td><td>9.4%</td>
+            </tr>
+            <tr class="total">
+              <td class="txt">Ratio, off-Interstate to Interstate</td><td>&mdash;</td><td>&mdash;</td>
+              <td>0.7&times;</td><td>0.7&times;</td>
+              <td><span class="pill pill-ok">2.2&times;</span></td>
+              <td><span class="pill pill-bad">4.5&times;</span></td><td>2.0&times;</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-4 max-w-[760px]">
+          Read the bottom row. The two kinds of road differ by 0.7&times; in what they are posted for and
+          0.7&times; in the speed actually observed. A fixed 35 mph line turns that into a
+          <span class="font-medium text-[#0f1722]">4.5&times;</span> difference in measured performance;
+          the posted&minus;10 threshold turns it into
+          <span class="font-medium text-[#0f1722]">2.2&times;</span>. The closer that ratio is to the
+          0.7&times; the roads actually differ by, the more of what is left is work zones rather than
+          speed limits.
+        </p>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-2 max-w-[760px]">
+          That is the whole argument for reporting against the posted limit. A fixed threshold sits far
+          below normal on an Interstate and right on top of normal on an arterial, so it cannot be compared
+          across facility types, Regions, or years in which the mix of work changes. Asking
+          &ldquo;did traffic drop more than 10 mph below what this road is posted for&rdquo; asks the same
+          question everywhere.
+        </p>
+      </div>
+      <div class="flex flex-col gap-4">
+        <div class="tny-card tny-card-ink p-5">
+          <div class="font-display font-medium text-[15px]">The threshold in one line</div>
+          <div class="font-mono text-[13px] mt-3 leading-[1.7] text-white/90">
+            max(20,&nbsp;posted&nbsp;&minus;&nbsp;10)
+          </div>
+          <p class="font-proxima text-[12.5px] leading-[1.6] text-white/70 mt-2">
+            Capped at the posted limit itself, so a segment posted below 20 mph cannot be measured against
+            a threshold above its own limit.
+          </p>
+          <p class="font-proxima text-[12.5px] leading-[1.6] text-white/70 mt-2">
+            The 20 mph floor is the same one FHWA's congestion measure uses, and it is not a rounding
+            detail: it binds on
+            <span class="text-white font-medium">18,247 of 251,143 cells</span>
+            &mdash; every segment posted at or below 30 mph.
+          </p>
+        </div>
+        <div class="tny-card tny-card-tint p-5">
+          <div class="font-display font-medium text-[15px] text-[#0f1722]">Why the statewide totals look alike</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+            Statewide, posted&minus;10 (30.1%) and the fixed 35 mph
+            (32.3%) land within a point of each other, because the average posted limit
+            is around 48 mph and so the average threshold is around 38. The two measures differ in
+            <em>where</em> they find slow time, not in how much they find &mdash; which is why the facility
+            split above, not the total, is the reason to prefer one.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">The zones the rule cares about</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2024 &middot; significant candidates</span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="tny-card p-5 lg:col-span-2">
+        <table class="tny">
+          <thead>
+            <tr><th class="txt">CY2024</th><th>Zones</th><th>Segment-hrs</th><th>Mean speed</th><th>Mean threshold</th>
+                <th>&lt; posted&minus;10</th><th>&lt; 35 mph</th><th>&lt; 60% FF</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="txt">Significant candidates</td><td>220</td><td>11,134</td>
+                <td>52.6</td><td>46.8</td>
+                <td>20.5%</td><td>13.7%</td><td>12.5%</td></tr>
+            <tr><td class="txt">All measured work zones</td><td>38,393</td><td>413,136</td>
+                <td>45.3</td><td>40.7</td>
+                <td>30.1%</td><td>32.3%</td><td>14.9%</td></tr>
+            <tr class="total"><td class="txt">Significant, as a share of the statewide figure</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td>
+                <td><span class="pill pill-warn">0.68&times;</span></td>
+                <td><span class="pill pill-bad">0.42&times;</span></td>
+                <td>0.83&times;</td></tr>
+          </tbody>
+        </table>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-4 max-w-[760px]">
+          The rule's programmatic review covers a documented sample of significant work zones. New York's
+          significance rule makes those zones Interstate by construction &mdash; so on a fixed 35 mph
+          threshold they score
+          <span class="font-medium text-[#0f1722]">0.42&times;
+          the statewide figure</span>, i.e. they look like the best-performing part of the network. Reported
+          that way, the sample would flatter the programme.
+        </p>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-2 max-w-[760px]">
+          Measuring against the posted limit narrows that to
+          <span class="font-medium text-[#0f1722]">0.68&times;</span>.
+          It does not close it, and it should not: Interstates genuinely do have fewer slow periods than
+          arterials, so part of the remaining gap is real performance rather than an artefact. The residual
+          is small enough to report honestly with a note; the 0.42&times;
+          on a fixed threshold was not.
+        </p>
+      </div>
+      <div class="tny-card tny-card-bone p-5">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">220 zones, 11,134 hours</div>
+        <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+          The significant-candidate population is
+          2.7% of measured work-zone hours. Phase 1
+          found the rule is driven by lane-closure reporting, which varies from 92% of work zones in one
+          Region to 25% in another &mdash; so this sample is shaped as much by paperwork as by the road.
+        </p>
+        <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+          The validation cases below make the point concretely: a Queens zone that ran well below its
+          threshold for two and a half days is not in this sample, and a Northway zone that held
+          52.6-ish mph is.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">What the 20 mph floor is for</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2024 &middot; conflated windows</span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="tny-card p-5 lg:col-span-2">
+        <table class="tny">
+          <thead>
+            <tr><th class="txt">CY2024 cells</th><th>Zones</th><th>Segment-hrs</th><th>Mean threshold</th>
+                <th>Mean speed</th><th>&lt; posted&minus;10</th><th>&lt; 35 mph</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="txt">Threshold above the floor</td><td>35,652</td><td>382,176</td>
+                <td>41.7</td><td>47.1</td>
+                <td>29.3%</td><td>28.0%</td></tr>
+            <tr><td class="txt">Threshold held at the 20 mph floor</td><td>2,741</td><td>30,960</td>
+                <td>20.0</td><td>23.6</td>
+                <td><span class="pill pill-warn">39.6%</span></td>
+                <td><span class="pill pill-bad">86.1%</span></td></tr>
+          </tbody>
+        </table>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-4 max-w-[760px]">
+          The bottom row is the clearest single argument in this report. These are
+          2,741 work zones on streets posted at or below 30 mph, whose
+          <span class="font-medium text-[#0f1722]">normal operating speed is
+          23.6 mph</span>. A fixed 35 mph threshold flags
+          <span class="font-medium text-[#0f1722]">86.1%</span> of their active time as an
+          exceedance &mdash; it is measuring the street, not the work zone. Held at the 20 mph floor, the
+          same time reads 39.6%.
+        </p>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-2 max-w-[760px]">
+          Where the floor does not bind, the two thresholds are close (29.3% against
+          28.0%) because the mean threshold there, 41.7 mph, is not far
+          from 35. Nearly all of the difference between the two measures statewide comes from this one
+          band of slow roads.
+        </p>
+      </div>
+      <div class="tny-card tny-card-bone p-5">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">Why not let it go lower</div>
+        <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+          Without a floor, a street posted at 25 mph would be measured against 15 mph &mdash; a speed at
+          which traffic is stopped rather than delayed &mdash; and the measure would fall silent exactly
+          where local work is most disruptive to the people living on it.
+        </p>
+        <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+          The floor is also capped at the posted limit itself, so a segment posted below 20 mph is never
+          measured against a threshold above its own limit. That affects four segments statewide, and
+          without the cap each would have reported every observation as an exceedance.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">When the work happens, and when it hurts</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2024 &middot; by hour of day &middot; share of five-minute periods</span>
+    </div>
+    <div class="tny-card p-5">
+      <div class="grid gap-[3px] items-end" style="grid-template-columns:repeat(24,minmax(0,1fr)); height:150px;">
+        <div class="flex flex-col justify-end h-full" title="00:00 &mdash; 18.7% below posted&minus;10, 2,764 segment-hours"><div class="barv" style="height:51.2%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="01:00 &mdash; 19.1% below posted&minus;10, 3,126 segment-hours"><div class="barv" style="height:52.3%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="02:00 &mdash; 18.1% below posted&minus;10, 4,559 segment-hours"><div class="barv" style="height:49.6%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="03:00 &mdash; 17.6% below posted&minus;10, 6,781 segment-hours"><div class="barv" style="height:48.3%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="04:00 &mdash; 16.0% below posted&minus;10, 9,607 segment-hours"><div class="barv" style="height:43.8%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="05:00 &mdash; 17.3% below posted&minus;10, 12,387 segment-hours"><div class="barv" style="height:47.5%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="06:00 &mdash; 25.2% below posted&minus;10, 14,164 segment-hours"><div class="barv" style="height:69.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="07:00 &mdash; 32.7% below posted&minus;10, 14,558 segment-hours"><div class="barv-warn" style="height:89.8%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="08:00 &mdash; 36.4% below posted&minus;10, 12,926 segment-hours"><div class="barv-warn" style="height:100.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="09:00 &mdash; 33.7% below posted&minus;10, 8,625 segment-hours"><div class="barv-warn" style="height:92.4%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="10:00 &mdash; 29.6% below posted&minus;10, 7,933 segment-hours"><div class="barv" style="height:81.3%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="11:00 &mdash; 29.4% below posted&minus;10, 15,382 segment-hours"><div class="barv" style="height:80.7%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="12:00 &mdash; 30.5% below posted&minus;10, 21,799 segment-hours"><div class="barv" style="height:83.8%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="13:00 &mdash; 32.2% below posted&minus;10, 32,691 segment-hours"><div class="barv-warn" style="height:88.2%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="14:00 &mdash; 33.0% below posted&minus;10, 41,714 segment-hours"><div class="barv-warn" style="height:90.5%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="15:00 &mdash; 33.9% below posted&minus;10, 44,934 segment-hours"><div class="barv-warn" style="height:93.1%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="16:00 &mdash; 34.7% below posted&minus;10, 44,733 segment-hours"><div class="barv-warn" style="height:95.3%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="17:00 &mdash; 34.3% below posted&minus;10, 41,998 segment-hours"><div class="barv-warn" style="height:94.2%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="18:00 &mdash; 29.3% below posted&minus;10, 32,560 segment-hours"><div class="barv" style="height:80.5%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="19:00 &mdash; 26.3% below posted&minus;10, 19,261 segment-hours"><div class="barv" style="height:72.3%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="20:00 &mdash; 21.6% below posted&minus;10, 10,116 segment-hours"><div class="barv" style="height:59.2%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="21:00 &mdash; 19.1% below posted&minus;10, 5,331 segment-hours"><div class="barv" style="height:52.5%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="22:00 &mdash; 17.6% below posted&minus;10, 2,793 segment-hours"><div class="barv" style="height:48.2%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="23:00 &mdash; 16.8% below posted&minus;10, 2,395 segment-hours"><div class="barv" style="height:46.1%"></div></div>
+      </div>
+      <div class="grid gap-[3px] mt-1.5 font-mono text-[9.5px] text-slate-500" style="grid-template-columns:repeat(24,minmax(0,1fr));">
+        <div class="text-center">0</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">3</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">6</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">9</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">12</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">15</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">18</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">21</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+      </div>
+      <div class="lbl mt-2">Share of active time below posted &minus; 10 mph, by hour of day &mdash; gold bars are the worst hours</div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-3 mt-5 pt-5 border-t border-zinc-950/8">
+        <div>
+          <div class="font-display font-medium text-[14.5px] text-[#0f1722]">Night work is 2.3&times; cheaper</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+            The worst hour is 08:00 at
+            <span class="font-medium text-[#0f1722]">36.4%</span>; the quietest is
+            04:00 at
+            <span class="font-medium text-[#0f1722]">16.0%</span>. On the
+            free-flow-relative comparator the contrast is sharper still &mdash;
+            21.4% at 08:00 against
+            5.9% at 21:00, a factor of
+            3.6.
+          </p>
+        </div>
+        <div>
+          <div class="font-display font-medium text-[14.5px] text-[#0f1722]">But the work is in the afternoon</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+            Active segment-hours peak at 15:00
+            (44,934 h) &mdash; inside the afternoon plateau &mdash; against only
+            2,395 h in the 23:00 hour. New York is doing most
+            of its work-zone hours in one of the worst windows of the day.
+          </p>
+        </div>
+        <div>
+          <div class="font-display font-medium text-[14.5px] text-[#0f1722]">What it is worth</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+            Mean observed speed runs 50.3 mph in the quietest hour against
+            42.4 mph in the worst, on segments whose free-flow reference barely
+            moves (53.9 to 52.4). The difference is
+            congestion, not geometry &mdash; the part a scheduling decision can change.
+          </p>
+        </div>
+      </div>
+      <p class="font-proxima text-[12px] leading-[1.6] text-slate-500 mt-4 pt-4 border-t border-zinc-950/8">
+        Phase 2 could not see any of this: exposure spread every work zone's active hours evenly across the
+        day, and flagged that as a known over-statement for night work. This is the grain that closes it.
+      </p>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">Most zones are fine; a third are not</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2024 &middot; 35,460 measurable zones &middot; share of five-minute periods</span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="tny-card p-5 lg:col-span-2">
+        <table class="tny">
+          <thead>
+            <tr><th class="txt">Share of active time below posted &minus; 10</th><th>Zones</th><th>Share</th><th class="txt" style="width:34%"></th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="txt">Never below threshold</td><td>9,223</td><td>26.0%</td><td><div class="bar-track"><div class="bar bar-ok" style="width:26.0%"></div></div></td></tr>
+            <tr><td class="txt">Up to 10% of the time</td><td>7,479</td><td>21.1%</td><td><div class="bar-track"><div class="bar " style="width:21.1%"></div></div></td></tr>
+            <tr><td class="txt">10&ndash;25%</td><td>4,259</td><td>12.0%</td><td><div class="bar-track"><div class="bar " style="width:12.0%"></div></div></td></tr>
+            <tr><td class="txt">25&ndash;50%</td><td>4,568</td><td>12.9%</td><td><div class="bar-track"><div class="bar bar-warn" style="width:12.9%"></div></div></td></tr>
+            <tr><td class="txt">More than half the time</td><td>9,931</td><td>28.0%</td><td><div class="bar-track"><div class="bar bar-bad" style="width:28.0%"></div></div></td></tr>
+          </tbody>
+        </table>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-4 max-w-[760px]">
+          The distribution is <span class="font-medium text-[#0f1722]">bimodal, not bell-shaped</span>:
+          9,223 zones never drop below threshold, 9,931 are below it more
+          than half the time, and only 16,306 sit anywhere in between. The median zone is at
+          13.2% while the 90th percentile is 94.6%. A mean across all
+          zones &mdash; any mean &mdash; describes almost none of them.
+        </p>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-2 max-w-[760px]">
+          For reporting, that argues for a count of zones over a line rather than an average share. It also
+          means the 9,931 zones in the bottom band are a tractable, nameable list &mdash;
+          which is what a programmatic review of significant projects actually needs.
+        </p>
+      </div>
+      <div class="flex flex-col gap-4">
+        <div class="tny-card p-5">
+          <div class="lbl">Median zone &middot; posted &minus; 10</div>
+          <div class="kpi-sm mt-1">13.2%</div>
+          <div class="lbl mt-3">90th percentile &middot; posted &minus; 10</div>
+          <div class="kpi-sm mt-1">94.6%</div>
+          <div class="lbl mt-3">Median &middot; below 35 mph</div>
+          <div class="kpi-sm mt-1">9.3%</div>
+          <div class="lbl mt-3">Median &middot; below 60% free flow</div>
+          <div class="kpi-sm mt-1">4.8%</div>
+        </div>
+        <div class="tny-card tny-card-bone p-5">
+          <div class="font-display font-medium text-[15px] text-[#0f1722]">By activity</div>
+          <table class="tny mt-2">
+            <thead><tr><th class="txt">&nbsp;</th><th>Segment-hrs</th><th>&lt; posted&minus;10</th></tr></thead>
+            <tbody>
+              <tr><td class="txt">Construction</td><td>402,727</td><td>29.8%</td></tr>
+              <tr><td class="txt">Maintenance</td><td>9,485</td><td>39.8%</td></tr>
+              <tr><td class="txt">Utility</td><td>924</td><td>51.0%</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">By Region</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2024 &middot; conflated windows</span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="tny-card p-5 lg:col-span-2">
+        <table class="tny">
+          <thead>
+            <tr><th class="txt">Region</th><th>Zones</th><th>Segment-hrs</th><th>&lt; posted&minus;10</th><th>&lt; 35 mph</th><th>&lt; 60% FF</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="txt">8 &mdash; Hudson Valley</td><td>6,364</td><td>101,838</td><td>31.8%</td><td>41.7%</td><td>14.6%</td></tr>
+            <tr><td class="txt">3 &mdash; Central New York</td><td>2,776</td><td>82,495</td><td>21.4%</td><td>14.4%</td><td>5.8%</td></tr>
+            <tr><td class="txt">11 &mdash; New York City</td><td>12,417</td><td>80,158</td><td>47.0%</td><td>51.2%</td><td>32.4%</td></tr>
+            <tr><td class="txt">1 &mdash; Capital District</td><td>5,014</td><td>41,874</td><td>26.7%</td><td>27.4%</td><td>12.0%</td></tr>
+            <tr><td class="txt">4 &mdash; Genesee Valley</td><td>2,290</td><td>30,285</td><td>18.8%</td><td>22.6%</td><td>7.6%</td></tr>
+            <tr><td class="txt">10 &mdash; Long Island</td><td>5,370</td><td>23,729</td><td>34.9%</td><td>33.7%</td><td>17.2%</td></tr>
+            <tr><td class="txt">2 &mdash; Mohawk Valley</td><td>1,033</td><td>18,822</td><td>33.2%</td><td>40.1%</td><td>14.4%</td></tr>
+            <tr><td class="txt">6 &mdash; Southern Tier/Central New York</td><td>1,324</td><td>17,767</td><td>18.5%</td><td>17.5%</td><td>7.0%</td></tr>
+            <tr><td class="txt">5 &mdash; Western New York</td><td>1,531</td><td>8,323</td><td>14.2%</td><td>7.0%</td><td>3.8%</td></tr>
+            <tr><td class="txt">9 &mdash; Southern Tier</td><td>250</td><td>7,704</td><td>12.3%</td><td>9.9%</td><td>5.3%</td></tr>
+            <tr><td class="txt">7 &mdash; North Country</td><td>24</td><td>142</td><td>6.3%</td><td>5.8%</td><td>3.5%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="flex flex-col gap-4">
+        <div class="tny-card tny-card-tint p-5">
+          <div class="font-display font-medium text-[15px] text-[#0f1722]">Hudson Valley carries the most hours</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+            101,838 segment-hours across 6,364 zones, at
+            31.8% below the posted&minus;10 threshold. Regions are ordered by hours
+            here rather than by score, because a Region's share is only meaningful against how much work
+            it actually did.
+          </p>
+        </div>
+        <div class="tny-card tny-card-bone p-5">
+          <div class="font-display font-medium text-[15px] text-[#0f1722]">The smallest Regions cannot be reported</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+            Region 7 - North Country has 24 zones and 142
+            segment-hours in a whole year &mdash; its 6.3% is a statement about a
+            handful of road segments, not about the Region. Most of its work zones are off the probe
+            network entirely. The same caution applies to the next smallest.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">Three zones, checked one at a time</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2024 &middot; named events</span>
+    </div>
+    <div class="tny-card p-5">
+      <table class="tny">
+        <thead>
+          <tr><th class="txt">Work zone</th><th class="txt">Window</th><th>Segment-hrs</th><th>Mean</th><th>Threshold</th><th>Min</th>
+              <th>&lt; posted&minus;10</th><th>&lt; 35</th><th>&lt; 60% FF</th><th class="txt">Significant?</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="txt">I-495, Queens<br><span class="cite">ORI1237584671 &middot; Queens &middot; Region 11</span></td>
+            <td class="txt">2024-07-13 &rarr; 2024-07-15</td>
+            <td>55.7</td><td>41.3</td><td>40.0</td><td>6.0</td>
+            <td><span class="pill pill-bad">38.9%</span></td>
+            <td>35.5%</td><td>35.5%</td>
+            <td class="txt"><span class="pill pill-warn">no</span></td>
+          </tr>
+          <tr>
+            <td class="txt">I-87 Northway<br><span class="cite">ORI1237674447 &middot; Saratoga &middot; Region 1</span></td>
+            <td class="txt">2024-09-24 &rarr; 2024-10-19</td>
+            <td>124.3</td><td>60.4</td><td>45.0</td><td>3.0</td>
+            <td><span class="pill pill-warn">8.6%</span></td>
+            <td>4.4%</td><td>7.2%</td>
+            <td class="txt"><span class="pill pill-ink">yes</span></td>
+          </tr>
+          <tr>
+            <td class="txt">I-81, rural<br><span class="cite">ORI1237605713 &middot; Oswego &middot; Region 3</span></td>
+            <td class="txt">2024-08-05 &rarr; 2024-09-21</td>
+            <td>314.5</td><td>71.9</td><td>55.0</td><td>22.0</td>
+            <td><span class="pill pill-ok">0.2%</span></td>
+            <td>0.1%</td><td>0.1%</td>
+            <td class="txt"><span class="pill pill-warn">no</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-3 mt-5 pt-5 border-t border-zinc-950/8">
+        <div>
+          <div class="font-display font-medium text-[14px] text-[#0f1722]">The one with an impact isn't flagged</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+            The Queens zone ran at 41.3 mph against a
+            40.0 mph threshold, dropping to 6.0 mph, and it
+            is <em>not</em> a significant candidate &mdash; because no lane closure was reported for three
+            consecutive days. Phase 1 found that the significance rule is driven by lane-count reporting;
+            this is what that costs in measured terms.
+          </p>
+        </div>
+        <div>
+          <div class="font-display font-medium text-[14px] text-[#0f1722]">The one that is flagged scores 8.6%</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+            The Northway zone is a textbook significant project &mdash; Interstate, metropolitan, a month
+            long &mdash; and it held 60.4 mph against a
+            45.0 mph threshold. Its 3.0 mph minimum says
+            something happened at some point; its 8.6% says it was rare. Both facts are
+            in the dataset at the hour grain.
+          </p>
+        </div>
+        <div>
+          <div class="font-display font-medium text-[14px] text-[#0f1722]">The rural one is a floor check</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+            315 segment-hours of rural I-81 at
+            71.9 mph against a
+            55.0 mph threshold,
+            0.2% below it. A weeks-long Interstate work zone with
+            no measurable speed effect is the expected result on a rural mainline &mdash; a measure that
+            scored it otherwise would be wrong.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">The series is five years, not nine</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">and the reason matters more than the numbers</span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="tny-card p-5 lg:col-span-2">
+        <table class="tny">
+          <thead>
+            <tr><th class="txt">Vintage</th><th>Zones</th><th>Segment-hrs</th><th>&lt; posted&minus;10</th><th>&lt; 35 mph</th><th>Conflated share of hours</th></tr>
+          </thead>
+          <tbody>
+            <tr><td class="txt">CY2018</td><td>1,822</td><td>17,646</td><td>42.9%</td><td>47.0%</td><td><span class="pill pill-bad">2.3%</span></td></tr>
+            <tr><td class="txt">CY2019</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td><span class="pill pill-bad">0%</span></td></tr>
+            <tr><td class="txt">CY2020</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td><span class="pill pill-bad">0%</span></td></tr>
+            <tr><td class="txt">CY2021</td><td>36,536</td><td>452,440</td><td>32.5%</td><td>34.5%</td><td><span class="pill pill-ok">68.0%</span></td></tr>
+            <tr><td class="txt">CY2022</td><td>35,831</td><td>394,909</td><td>28.4%</td><td>32.6%</td><td><span class="pill pill-ok">63.9%</span></td></tr>
+            <tr><td class="txt">CY2023</td><td>37,212</td><td>333,271</td><td>30.6%</td><td>33.2%</td><td><span class="pill pill-ok">69.3%</span></td></tr>
+            <tr><td class="txt">CY2024</td><td>38,393</td><td>413,136</td><td>30.1%</td><td>32.3%</td><td><span class="pill pill-ok">72.9%</span></td></tr>
+            <tr><td class="txt">CY2025</td><td>35,746</td><td>331,332</td><td>30.0%</td><td>28.2%</td><td><span class="pill pill-ok">77.7%</span></td></tr>
+            <tr><td class="txt">CY2026 <span class="cite">to 31 Aug</span></td><td>18,583</td><td>142,943</td><td>27.9%</td><td>28.3%</td><td><span class="pill pill-warn">41.0%</span></td></tr>
+          </tbody>
+        </table>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-4 max-w-[760px]">
+          The active window &mdash; when a work zone was actually working, to the five minutes &mdash; comes
+          from TRANSCOM's event-to-segment conflation, and that conflation
+          <span class="font-medium text-[#0f1722]">has no rows at all for 2019 or 2020</span> and only
+          9,070 events in 2018 against 134,337 in 2024. Nothing in the work-zone inventory is missing for
+          those years; what is missing is the sub-daily window.
+        </p>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-2 max-w-[760px]">
+          Those years are still published, using each zone's own reported start and end times as the
+          window, and every row records which source it used. The fallback is sound in the middle and badly
+          wrong in the tail: on CY2024, where both bases exist side by side, the median zone gets 5.3
+          active hours against the conflated 4.8 &mdash; but the 90th percentile is
+          <span class="font-medium text-[#0f1722]">218.6 hours against 16.0</span>, because the fallback
+          window is the whole chain's span rather than a per-segment one, so a recurring chain claims weeks
+          it was not working. The two bases are not interchangeable and this report does not blend them.
+        </p>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-2 max-w-[760px]">
+          On the five comparable years this evidence share moves from
+          32.5% in 2021 to 30.0% in 2025. CY2026 is
+          partial and its conflation is still filling in.
+        </p>
+      </div>
+      <div class="flex flex-col gap-4">
+        <div class="tny-card tny-card-bone p-5">
+          <div class="font-display font-medium text-[15px] text-[#0f1722]">CY2020 is a sanity check that passed</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+            On the fallback basis, CY2020 is the lowest year on every threshold &mdash;
+            22.3% on the posted&minus;10 threshold against
+            27.3% in 2019 and 28.9% in 2021.
+            Nothing in the pipeline knows about the pandemic; a speed-exceedance measure simply ought to
+            bottom out in the year traffic collapsed, and it does.
+          </p>
+        </div>
+        <div class="tny-card tny-card-tint p-5">
+          <div class="font-display font-medium text-[15px] text-[#0f1722]">CY2021's baseline could not be cleaned</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+            The context baseline removes days on which a segment carried any other work zone. CY2021's
+            baseline year is 2020 &mdash; where the conflation has no rows &mdash; so nothing could be
+            excluded. That leaves its baseline slightly slow. It does not touch the threshold measures, which
+            reads the posted limit and never the baseline.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">What can and cannot be measured</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2024</span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="tny-card p-5 lg:col-span-2">
+        <table class="tny">
+          <thead><tr><th class="txt">From the CY2024 inventory to a measured zone</th><th>Zones</th><th>Of 42,688</th></tr></thead>
+          <tbody>
+            <tr><td class="txt">Work zones in the CY2024 inventory</td><td>42,688</td><td>100%</td></tr>
+            <tr><td class="txt">&hellip; with any speed observation while active</td><td>41,036</td><td>96.1%</td></tr>
+            <tr><td class="txt">&hellip; on a conflated (per-segment) active window</td><td>38,393</td><td>89.9%</td></tr>
+            <tr class="total"><td class="txt">&hellip; and measurable &mdash; at least 12 observations</td><td>35,460</td><td>83.1%</td></tr>
+          </tbody>
+        </table>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-4 max-w-[760px]">
+          1,652 work zones (3.9%) have no
+          speed observation at all while active &mdash; they sit on segments the probe network does not
+          cover, or their active window fell entirely in a gap. A further 2,933 clear that
+          bar but not the twelve-observation floor, which exists so a zone seen for ten minutes cannot
+          report a 0% or 100% share as though it were a measurement.
+        </p>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-2 max-w-[760px]">
+          <span class="font-medium text-[#0f1722]">Every measurable cell has a posted speed limit</span> and
+          therefore a posted&minus;10 threshold &mdash; 0 cells statewide lack one. The mean
+          threshold is 40.1 mph, and it sits at the 20 mph floor on
+          18,247 cells (7.3% of them). Only
+          16 cells lack a context baseline.
+        </p>
+      </div>
+      <div class="flex flex-col gap-4">
+        <div class="tny-card p-5">
+          <div class="lbl">Observation confidence, by five-minute period</div>
+          <table class="tny mt-2">
+            <tbody>
+              <tr><td class="txt">A &mdash; highest</td><td>68.8%</td></tr>
+              <tr><td class="txt">B</td><td>20.0%</td></tr>
+              <tr><td class="txt">C &mdash; lowest</td><td>11.3%</td></tr>
+            </tbody>
+          </table>
+          <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 mt-2">
+            Density C is <span class="font-medium">included</span>, by decision, and counted on every row so
+            a C-heavy zone stays identifiable. Excluding it would drop an eighth of the observations and
+            bias the measure toward busy segments.
+          </p>
+        </div>
+        <div class="tny-card tny-card-bone p-5">
+          <div class="font-display font-medium text-[15px] text-[#0f1722]">Missing periods are dropped, not filled</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+            A measurable cell averages 19.7 observations &mdash; never the
+            288 a full day would hold, because the probe data has gaps. The denominator is what was
+            observed. AVAIL's congestion work interpolates absent periods from free flow; for a
+            share-of-time measure that would invent the answer, so this phase reports the coverage instead.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+  <!-- ── how it was computed ──────────────────────────────────────────── -->
+  <section class="pt-9 pb-4">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">How the measure was computed</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">work_zone pipeline &middot; stage &ldquo;speed&rdquo;</span>
+    </div>
+
+    <div class="tny-card p-6">
+      <p class="font-proxima text-[13.5px] leading-[1.7] text-slate-700 max-w-[920px]">
+        No new data was acquired for this phase. It joins the work-zone inventory from phase 1 to the
+        5-minute probe speeds New York already licenses through the National Performance Management
+        Research Data Set, and to the speed percentiles AVAIL already computes from them for the federal
+        performance measures.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5 mt-6">
+        <div class="flex items-start gap-3">
+          <span class="step-n">1</span>
+          <div>
+            <div class="font-display font-medium text-[14.5px] text-[#0f1722]">Work out when each zone was actually working</div>
+            <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+              Not when it was open on the calendar &mdash; when it was active, to the five minutes. Each
+              work zone's reported window is expanded onto the day grid, so a zone running four nights is
+              measured on four nights and not on the daytimes between them, and a shift that crosses
+              midnight is measured on both sides of it.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="step-n">2</span>
+          <div>
+            <div class="font-display font-medium text-[14.5px] text-[#0f1722]">Measure only the segments being worked on</div>
+            <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+              A work zone's record also names the segments downstream where congestion was attributed to
+              it. Those are excluded, exactly as in the exposure phase: including them would count the
+              queue a work zone causes as part of the work zone, and would make every zone look slower
+              than it is.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="step-n">3</span>
+          <div>
+            <div class="font-display font-medium text-[14.5px] text-[#0f1722]">Turn travel times into speeds</div>
+            <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+              The probe data records how long vehicles took to traverse a segment, not how fast they were
+              going, so every speed is derived from the segment's length &mdash; and therefore from the
+              right year's roadway inventory. Five-minute periods with no observation are left out of the
+              denominator rather than filled in: the measure is a share of time, and inventing the missing
+              periods would invent the answer.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="step-n">4</span>
+          <div>
+            <div class="font-display font-medium text-[14.5px] text-[#0f1722]">Compare against the road's own posted limit</div>
+            <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+              The reported measure asks whether traffic dropped more than 10 mph below what the road is
+              posted for, with the threshold never allowed below 20 mph &mdash; the same floor the federal
+              congestion measure uses, because below that traffic is stopped rather than delayed. Three
+              other thresholds are computed on every row as comparators, so the choice can be revisited
+              from the evidence without rebuilding the dataset.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-3 mt-5 pt-5 border-t border-zinc-950/8">
+        <span class="step-n">5</span>
+        <div>
+          <div class="font-display font-medium text-[14.5px] text-[#0f1722]">Keep the hour of day</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1 max-w-[920px]">
+            Results are stored per work zone, per segment, per hour of day &mdash; pooling every active day
+            into 24 buckets rather than keeping every date. That is what lets the same dataset answer
+            &ldquo;how bad was this zone&rdquo; and &ldquo;is night work actually cheaper&rdquo; without
+            storing a row per five minutes, and it is the grain the speed-differential measure will need.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pb-4">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div class="tny-card tny-card-bone p-5">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">What NYSDOT still needs to decide</div>
+        <ol class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-2 space-y-1.5 list-decimal pl-5">
+          <li><span class="font-medium text-[#0f1722]">The drop, and the floor.</span> Ten mph below posted,
+              floored at 20, is the chosen threshold and it is what this report leads with. Both numbers are
+              parameters &mdash; every run stamps the values that produced its figures, so a different drop
+              is a re-run, not a redesign.</li>
+          <li><span class="font-medium text-[#0f1722]">A share, or a count of zones over a line.</span> The
+              distribution is bimodal, so no average describes a typical zone.
+              &ldquo;9,931 work zones spent more than half their active time below
+              threshold&rdquo; is both truer and more actionable than any mean.</li>
+          <li><span class="font-medium text-[#0f1722]">Whether the significance rule stays as it is.</span>
+              Significant candidates score 20.5% against a statewide
+              30.1%, and a Queens zone that ran well below its threshold is not flagged
+              at all. Measuring the rule's own sample will not describe the programme.</li>
+          <li><span class="font-medium text-[#0f1722]">Whether to ask TRANSCOM for the 2019&ndash;2020
+              conflation.</span> It is the only thing standing between a five-year series and a nine-year
+              one, and the underlying events are already held.</li>
+        </ol>
+      </div>
+      <div class="tny-card tny-card-tint p-5">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">Where it lives</div>
+        <ul class="font-proxima text-[13px] leading-[1.75] text-slate-700 mt-2 space-y-1">
+          <li><span class="tny-mono">source 2206</span> &mdash; <span class="tny-mono">wz_speed</span>, one row
+              per work zone &times; segment &times; hour of day, 9 vintages CY2018&ndash;CY2026</li>
+          <li><b>M1 itself is not a column on this table.</b> It is a zone-hour measure, so it lives on
+              each view as <span class="tny-mono">metadata.m1</span> (statewide) and
+              <span class="tny-mono">metadata.m1_by_tier</span> (all / week_plus / significant /
+              interstate)</li>
+          <li>the table's <span class="tny-mono">m1_posted</span>, <span class="tny-mono">m1_absolute</span>,
+              <span class="tny-mono">m1_relative</span> and <span class="tny-mono">m1_fhwa</span> are the
+              per-cell <b>epoch shares</b> &mdash; the evidence layer, not M1 &mdash; with
+              <span class="tny-mono">posted_threshold_speed</span> and
+              <span class="tny-mono">posted_speed_drop_mph</span> making every row self-describing</li>
+          <li>the epoch-level rollup is <span class="tny-mono">metadata.statewide_m1</span>; it and
+              <span class="tny-mono">metadata.m1</span> deliberately differ, and an integration test
+              asserts they do</li>
+          <li><span class="tny-mono">window_source</span> distinguishes the conflated window from the
+              fallback &mdash; filter on it before aggregating across years</li>
+          <li>carries phase 6's speed-differential columns already, unfilled, so the next measure needs no
+              new dataset</li>
+          <li>pgEnv <span class="tny-mono">npmrds2</span>, schema <span class="tny-mono">work_zone</span>;
+              built by <span class="tny-mono">dms-template/data-types/work_zone</span>, stage
+              <span class="tny-mono">speed</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="font-proxima text-[11.5px] leading-[1.6] text-slate-500 mt-6 border-t border-zinc-950/10 pt-4">
+      Compiled 2026-09-09 for phase 3 of
+      <span class="tny-mono">planning/transportny/tasks/current/workzone-performance-data-type-pipeline.md</span>,
+      generated from a live query of DAMA source 2206 on <span class="tny-mono">npmrds2</span> rather than
+      hand-assembled, so it can be regenerated after any rebuild.
+      <b>M1 is the share of active work-zone HOURS in which the ZONE's average speed &mdash; total distance
+      over total travel time across its whole extent &mdash; fell below max(20, posted speed limit
+      &minus; 10 mph)</b>, capped at the posted limit. The 20 mph floor binds on every segment posted at or
+      below 30 mph and matches the floor FHWA's own PHED threshold uses. <b>The sections from &ldquo;the
+      evidence underneath&rdquo; onward are NOT M1</b>: they report the share of individual five-minute
+      periods on individual segments, which is finer in both time and space and answers where and when
+      inside a zone the slow time fell.
+      Figures are on the conflated active-window basis
+      (<span class="tny-mono">window_source = '2799'</span>) unless stated; CY2019 and CY2020 exist only on
+      the fallback basis and CY2026 covers 1 January to 31 August 2026 only. Speeds are derived from NPMRDS
+      travel times as <span class="tny-mono">miles &times; 3600 / travel_time</span> for all vehicle classes,
+      at the segment's metadata length for that year. Posted limits come from the
+      <span class="tny-mono">npmrds_geometry</span> meta view in Postgres, not from the ClickHouse copy of
+      the field, which is empty &mdash; the existing 2021&ndash;2025 excessive-delay series was computed
+      against that empty field and effectively used a uniform 20 mph threshold, so it is not directly
+      comparable. Free-flow comparators are the PM3 85th-percentile speeds (DAMA source 2135), AVAIL's own
+      PM3 computation rather than the federally submitted MAP-21 product.
+    </p>
+  </section>
+
+</div>
+</body>
+</html>

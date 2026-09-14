@@ -1,0 +1,303 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Approach &amp; Method · Detour · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="_shared.css"/>
+</head>
+<body class="tny-pane">
+
+<!--
+  DETOUR · APPROACH & METHOD — methodology sub-page of bridge-detour-report.html, sibling to
+  detour-coverage-methodology.html (that page covers closure-DENSITY candidate picking; this one
+  covers the SIMPLE detour mode's whole pipeline: endpoint picking, route finalization, the
+  widen-and-retry expansion when the first pair fails, and how "no legal detour" gets verified).
+  ════════════════════════════════════════════════════════════════════════════
+  Built following designing-a-dms-design-system.md: DMS-shaped (Layout → LayoutGroup →
+  Section → Component), plain HTML + Tailwind CDN + this theme's _shared.css. Structure/sidenav/
+  breadcrumb/footer reused verbatim from detour-coverage-methodology.html, its sibling page.
+  Registered in ../ds-nav.js under the `detour` section.
+
+  Content transcribed from the live DMS page (sandbox2 pattern, npmrdsv5+dev2, slug
+  approach_method, page id 2215226) - the 6-section pipeline the live page's own lexical sections
+  already document: (01) same routing engine as the live map, (02) walk-to-first-branch endpoint
+  picking, (03) open-vs-closed route comparison, (04) widen-and-retry expansion on failure,
+  (05) independent no-legal-detour verification, (06) why it's built this way.
+-->
+
+<div class="bg-[#ECEEF2]" data-dms-layout="app">
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+    <div class="flex-1 flex flex-col items-stretch max-w-full min-w-0 min-h-screen lg:ml-64">
+      <div class="flex flex-1 items-start min-w-0">
+
+        <!-- SIDENAV (verbatim from detour-coverage-methodology.html) -->
+        <aside class="fixed inset-y-0 left-0 w-64 max-lg:hidden">
+          <div class="flex flex-col w-64 h-full z-20 bg-[#12181F]">
+
+            <div class="@container h-16 w-full flex px-4 py-3 items-center justify-start gap-2 bg-[#12181F]"><a href="landing.html" class="flex-shrink-0"><img class="h-10 w-auto" src="../assets/nys_logo_white.svg" alt="NPMRDS"/></a><button class="flex flex-1 items-center gap-2 min-w-0"><span class="flex-1 min-w-0 text-left text-white font-display font-semibold text-[18px] tracking-wide uppercase truncate">NPMRDS</span><!-- icon: CaretDown --><svg class="size-4 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg></button></div>
+
+            <div class="flex-1 py-4 overflow-y-auto">
+              <a href="npmrds-home.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: House --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="m3 10.5 9-7 9 7M5 9v11h14V9"/></svg><span class="flex-1">Home</span></a>
+              <a href="npmrds-reports.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Report --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 32 32" fill="currentColor"><path d="M31,31.36H1c-0.199,0-0.36-0.161-0.36-0.36V1c0-0.199,0.161-0.36,0.36-0.36h30c0.199,0,0.36,0.161,0.36,0.36 v30C31.36,31.199,31.199,31.36,31,31.36z M1.36,30.64h29.28V9.869L17.255,23.255c-0.142,0.141-0.369,0.141-0.509,0L10,16.509 l-8.64,8.64C1.36,25.149,1.36,30.64,1.36,30.64z M1.36,9.36v14.771l8.386-8.385c0.141-0.141,0.368-0.141,0.509,0L17,22.491 L30.131,9.36H1.36z M1.36,8.64h29.28V1.36H1.36V8.64z"/></svg><span class="flex-1">Reports</span></a>
+              <a href="bridge-detour-report.html" class="font-proxima font-[500] text-[15px] group flex items-center px-4 py-2.5 bg-[#1e2530] text-white border-l-[3px] border-[#FACC15] transition-all"><!-- icon: Route --><svg class="size-5 mr-3 text-[#FACC15] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="flex-1">Bridge detour</span></a>
+              <a href="map-21.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Activity --><svg class="size-5 mr-3 text-slate-400 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg><span class="flex-1">MAP-21 PM3</span></a>
+            </div>
+
+            <div class="border-t border-[#2a3545] pt-2">
+              <a href="../pages/datasets-catalog.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Database --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/></svg><span class="flex-1">Data Sources</span></a>
+              <a href="docs-overview.html" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: Pages --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg><span class="flex-1">Docs</span></a>
+              <div class="mx-4 my-2 border-t border-white/10"></div>
+              <a href="#" class="font-proxima font-[400] text-[15px] group flex items-center px-4 py-2.5 hover:bg-[#1e2530] text-slate-300 border-l-[3px] border-transparent transition-all"><!-- icon: AlertTriangle --><svg class="size-5 mr-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 9v4m0 3h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg><span class="flex-1">Report an issue</span></a>
+            </div>
+
+            <div class="border-t border-[#2a3545] py-2 px-3 flex items-center gap-2">
+              <div class="size-8 border border-[#E0EBF0]/30 rounded-full flex items-center justify-center flex-shrink-0 text-slate-300"><!-- icon: User --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="8" r="4"/><path d="M4 21v-1a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v1"/></svg></div>
+              <div class="flex-1 min-w-0">
+                <div class="font-proxima text-[12px] font-light tracking-tight text-slate-200 truncate">amuro@albany.edu</div>
+                <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 truncate">NYSDOT</div>
+              </div>
+              <a href="#" title="Edit this page" class="size-8 flex items-center justify-center text-slate-400 hover:text-[#FACC15] flex-shrink-0"><!-- icon: PencilEdit --><svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M16.86 4.49a2.12 2.12 0 1 1 3 3L8.5 18.85 4 20l1.15-4.5L16.86 4.49Z"/></svg></a>
+            </div>
+          </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col h-full bg-[#ECEEF2] min-w-0">
+
+          <!-- ═════════ BREADCRUMBS ═════════ -->
+          <div class="w-full bg-white border-b border-zinc-950/05" data-dms-group="breadcrumbs">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-2.5" data-dms-section="crumbs">
+              <nav class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 flex items-center gap-1 flex-wrap">
+                <a href="npmrds-home.html" class="hover:text-[#0f1722]">NPMRDS</a>
+                <span class="text-slate-300 px-1">/</span>
+                <a href="bridge-detour-report.html" class="hover:text-[#0f1722]">Bridge detour</a>
+                <span class="text-slate-300 px-1">/</span>
+                <span class="text-[#0f1722]">Approach &amp; method</span>
+              </nav>
+            </div>
+          </div>
+
+          <!-- HERO -->
+          <div class="w-full tny-hero-topo border-b border-zinc-950/10" data-dms-group="hero">
+            <div class="mr-auto w-full max-w-[720px] px-8 py-14" data-dms-section="page-header">
+              <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// approach &amp; method</span>
+              <h1 class="mt-2 font-display font-semibold text-[44px] leading-[1.05] tracking-tight text-[#0F1722]">How the routing is computed<span class="text-[#CA8A04]">.</span></h1>
+              <p class="mt-3 font-proxima text-[15.5px] text-slate-600 leading-[1.65]">The method behind every number in the report: how a detour&rsquo;s start and end points are chosen, how the route itself is finalized, and how a &ldquo;no legal detour&rdquo; finding is confirmed rather than assumed.</p>
+            </div>
+          </div>
+
+          <!-- Content with prose container + sticky TOC -->
+          <div class="w-full bg-[#ECEEF2] py-12" data-dms-group="content">
+            <div class="mr-auto w-full max-w-[1280px] pl-12 pr-8 grid grid-cols-12 gap-6">
+
+              <!-- Prose (size 8) -->
+              <article class="col-span-12 md:col-span-8 max-w-[720px] rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-10" data-dms-section="prose">
+
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01</span>
+                <h2 id="engine" class="font-display font-semibold text-[26px] leading-[1.1] text-[#0F1722] mt-1 mb-3">How this analysis works</h2>
+                <div class="font-display uppercase text-[12px] tracking-wide text-slate-600 mb-1">The same routing engine behind the live detour tool</div>
+                <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mb-8">Every route in this report is computed by the identical turn-restriction-aware routing engine that powers TransportNY&rsquo;s live detour map: the same road network, the same legal-movement rules, and the same distance-and-time model. Nothing here is a simplified or approximate stand-in for what the live tool would show for the same bridge.</p>
+
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02</span>
+                <h2 id="endpoints" class="font-display font-semibold text-[26px] leading-[1.1] text-[#0F1722] mt-1 mb-3">Deciding where a detour starts and ends</h2>
+                <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mb-4">A detour isn&rsquo;t measured from the bridge itself. A driver approaching a closed bridge doesn&rsquo;t stop at the exact structure; they carry on to the nearest real decision point and choose a different way from there. So for every bridge, the analysis first locates the bridge on the road network, then walks outward from each side until it reaches the first point that actually offers a real choice of direction.</p>
+
+                <div class="rounded-md p-4 border-2 border-dashed border-amber-300 tny-card-bone mb-4">
+                  <div class="font-display uppercase font-bold text-[12px] tracking-wide text-slate-900 border-b-2 border-amber-400 inline-block pb-0.5">Why not just start at the bridge?</div>
+                  <p class="font-proxima text-[13.5px] leading-[1.6] text-slate-700 mt-2">Starting the search exactly at the closed structure would force every route through whichever single road happens to touch the bridge, even when a driver would obviously peel off earlier at a nearby intersection. Walking out to the first real branch point produces a start and end that match how a detour is actually driven.</p>
+                </div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-slate-50 p-4 mb-8">
+                  <div class="font-display uppercase text-[11px] tracking-wide text-slate-600 mb-1">A sensible limit on how far it looks</div>
+                  <p class="font-proxima text-[13.5px] leading-[1.6] text-slate-700">The outward walk is capped, so it won&rsquo;t wander for miles down an empty road looking for an intersection. If no branch point turns up within that distance, the search simply uses the furthest point it reached, and that becomes the starting point for the next stage instead.</p>
+                </div>
+
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span>
+                <h2 id="finalize" class="font-display font-semibold text-[26px] leading-[1.1] text-[#0F1722] mt-1 mb-3">Finalizing the route</h2>
+                <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mb-5">Once a start and end point are chosen, the routing engine is asked the same question twice for each direction of travel: what&rsquo;s the best legal route between these two points with the network as it normally is, and what&rsquo;s the best legal route with this one bridge removed? Every route respects the same rules a driver actually has to follow, including posted turn restrictions, not just physical road geometry.</p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-10">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white p-4">
+                    <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-[#1F3F8F]">step 1</span>
+                    <div class="font-display font-semibold text-[14px] text-[#0F1722] mt-1 mb-1">Route with the bridge open</div>
+                    <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600">The normal, everyday route between the two points. This is the baseline every detour is measured against.</p>
+                  </div>
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white p-4">
+                    <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-[#1F3F8F]">step 2</span>
+                    <div class="font-display font-semibold text-[14px] text-[#0F1722] mt-1 mb-1">Route with the bridge closed</div>
+                    <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600">The same search, but with that one bridge removed from the network. This is the actual detour a driver would have to take.</p>
+                  </div>
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white p-4">
+                    <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-[#1F3F8F]">step 3</span>
+                    <div class="font-display font-semibold text-[14px] text-[#0F1722] mt-1 mb-1">Compare the two</div>
+                    <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-600">The difference in distance and travel time between the two routes is the reported detour impact, calculated for both directions of travel independently.</p>
+                  </div>
+                </div>
+
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 04</span>
+                <h2 id="widen" class="font-display font-semibold text-[26px] leading-[1.1] text-[#0F1722] mt-1 mb-3">When the first pair of points doesn&rsquo;t work</h2>
+                <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mb-4">Only one bridge is ever closed at a time, so somewhere along that road a legal route to the other side should generally exist. A closed bridge on an isolated dead-end is the exception, not the rule. Rather than reporting &ldquo;no route&rdquo; the moment the first attempt fails, the analysis treats that as a sign the starting points themselves need to move, not that no detour exists.</p>
+
+                <div class="rounded-[8px] border border-zinc-950/10 bg-slate-50 p-4 mb-3">
+                  <div class="font-display uppercase text-[11px] tracking-wide text-slate-600 mb-1">The points move further apart, together</div>
+                  <p class="font-proxima text-[13.5px] leading-[1.6] text-slate-700">If either direction fails to find a legal route, the analysis pushes that side&rsquo;s starting point further out along the same road it was already following, continuing outward and never doubling back toward the closure, and tries again. Both directions of travel are re-tested together against the updated pair each time, so the two directions always agree on the same pair of points.</p>
+                </div>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-slate-50 p-4 mb-8">
+                  <div class="font-display uppercase text-[11px] tracking-wide text-slate-600 mb-1">A bounded, repeatable process</div>
+                  <p class="font-proxima text-[13.5px] leading-[1.6] text-slate-700">This widen-and-retry cycle repeats up to several rounds. It stops as soon as both directions succeed against the same pair of points, and that pair becomes the final answer for that bridge. If a side genuinely runs out of road to expand into, the process stops and the bridge is reported as having no legal detour, rather than forcing a route that doesn&rsquo;t reflect reality.</p>
+                </div>
+
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 05</span>
+                <h2 id="verify" class="font-display font-semibold text-[26px] leading-[1.1] text-[#0F1722] mt-1 mb-3">Making sure &ldquo;no legal detour&rdquo; is a real finding</h2>
+                <div class="rounded-md p-4 border-2 border-dashed border-amber-300 tny-card-bone mb-8">
+                  <div class="font-display uppercase font-bold text-[12px] tracking-wide text-slate-900 border-b-2 border-amber-400 inline-block pb-0.5">// verification &middot; a second, independent check for every closure with no legal detour</div>
+                  <p class="font-proxima text-[13.5px] leading-[1.6] text-slate-700 mt-2">A bridge that comes back with no legal detour could mean one of two very different things: the two sides of the closure are genuinely cut off from each other on the road network, or a legal route exists but every path to it happens to be blocked by a turn restriction along the way. Those call for different conclusions, so every no-route result is checked a second way, with a plain connectivity check that ignores turn restrictions entirely, confirming whether the two sides are physically connected at all before the finding is reported.</p>
+                </div>
+
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 06 &middot; decisions</span>
+                <h2 id="decisions" class="font-display font-semibold text-[26px] leading-[1.1] text-[#0F1722] mt-1 mb-4">Why it&rsquo;s built this way.</h2>
+
+                <div class="space-y-4 mb-4">
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white p-4">
+                    <div class="font-display font-semibold text-[14.5px] text-[#0F1722] mb-1">One consistent identity per bridge</div>
+                    <p class="font-proxima text-[13.5px] leading-[1.6] text-slate-700">Every bridge is tracked throughout by its own Bridge Identification Number, so results for a given bridge stay traceable and filterable everywhere the analysis references it. The report, the map, and the underlying data all agree on the same identity.</p>
+                  </div>
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white p-4">
+                    <div class="font-display font-semibold text-[14.5px] text-[#0F1722] mb-1">Real routing, not an estimate</div>
+                    <p class="font-proxima text-[13.5px] leading-[1.6] text-slate-700">Every distance and time figure comes from an actual computed route on the real road network, respecting real turn restrictions. It is never a straight-line estimate or a simplified stand-in for the true driving distance.</p>
+                  </div>
+                  <div class="rounded-[8px] border border-zinc-950/10 bg-white p-4">
+                    <div class="font-display font-semibold text-[14.5px] text-[#0F1722] mb-1">&ldquo;No legal detour&rdquo; is reported honestly</div>
+                    <p class="font-proxima text-[13.5px] leading-[1.6] text-slate-700">Bridges that remain unroutable after the search has been widened as far as it reasonably can go are reported plainly as having no legal detour, rather than the record being hidden or a route being forced that doesn&rsquo;t reflect what a driver could actually do.</p>
+                  </div>
+                </div>
+
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 07 &middot; improvements</span>
+                <h2 id="improvements" class="font-display font-semibold text-[26px] leading-[1.1] text-[#0F1722] mt-1 mb-3">What we improved</h2>
+                <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mb-6">A review of an earlier version of this analysis flagged three bridges where the reported detour was visibly wrong. Tracing all three back to their root cause led to three separate, general-purpose fixes, and each one was then re-verified against every bridge in the batch, not just the three that were originally flagged.</p>
+
+                <div class="font-display uppercase text-[12px] tracking-wide text-slate-600 mb-1">1. Matching the bridge to the correct road, not the road it crosses</div>
+                <p class="font-proxima text-[14px] leading-[1.65] text-slate-700 mb-2">Every bridge point has to be matched to the specific stretch of road it represents in the network graph before anything can be computed. The natural approach, matching to whichever road segment is geographically nearest, fails in one specific and fairly common situation. At an overpass, the bridge deck and the road it crosses sit directly on top of each other in two dimensional coordinates, even though one is at grade and the other is elevated. A nearest match can pick the wrong one entirely, matching a small local road onto the interstate passing beneath it. When that happens, the resulting "detour" tries to route traffic onto a highway with no legal way to get on or off at that location, which is an impossible route, not just an inconvenient one.</p>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-slate-50 p-4 mb-8">
+                  <div class="font-display uppercase text-[11px] tracking-wide text-slate-600 mb-1">The fix</div>
+                  <p class="font-proxima text-[13.5px] leading-[1.6] text-slate-700">Matching now runs in two passes. The first pass looks only at local class roads, excluding interstates and other limited access highways, and only falls back to an unrestricted, any class match if nothing local is close enough. There is one exception: if the bridge's own official road classification says it genuinely carries an interstate or freeway, the restriction is skipped, so a real interstate bridge isn't incorrectly forced onto a side road. Run again against the full statewide set of candidate bridges, this corrected dozens of similar mismatches with no new errors introduced.</p>
+                </div>
+
+                <div class="font-display uppercase text-[12px] tracking-wide text-slate-600 mb-1">2. Closing the whole physical structure, not just one mapped segment</div>
+                <p class="font-proxima text-[14px] leading-[1.65] text-slate-700 mb-2">The digital road network doesn't always represent a bridge as one clean segment. Sometimes the same physical bridge is drawn as several separate one directional pieces, without the matching reverse direction piece that a normal two way road would have. If the analysis only closes the one segment it matched to, the rest of that same physical structure is left open in the network, and the route search happily "detours" straight back across the other, still open half of the very bridge that was supposed to be closed. Depending on exactly how the pieces are arranged, this produced two different failure patterns: a detour reported as having zero impact even though the bridge was a genuine dead end, and a detour whose start and end points collapsed onto essentially the same spot.</p>
+                <div class="rounded-md p-4 border-2 border-dashed border-amber-300 tny-card-bone mb-8">
+                  <div class="font-display uppercase font-bold text-[12px] tracking-wide text-slate-900 border-b-2 border-amber-400 inline-block pb-0.5">The fix, refined over several iterations</div>
+                  <p class="font-proxima text-[13.5px] leading-[1.6] text-slate-700 mt-2">The closure logic identifies every one directional segment that belongs to the same physical structure as the matched segment and closes all of them together, not just the one. Getting the boundary of "the same physical structure" right took several corrections in practice. Closing an entire mapped road by name over-reached on long corridors that only partly correspond to the actual bridge. Closing every disconnected segment statewide could wander for miles down an unrelated stretch of the same road. The fix that finally held up bounds the closure at real intersections and caps its overall size, so it reliably captures the bridge itself without spreading into unrelated road segments. This logic also now recognizes a bridge from two independent signals rather than one: a structure explicitly tagged as a bridge in the source map data, or a structure independently confirmed as a bridge through this analysis's own bridge inventory. That way, a real bridge that happens to be missing the first signal is still caught by the second.</p>
+                </div>
+
+                <div class="font-display uppercase text-[12px] tracking-wide text-slate-600 mb-1">3. Reporting "no detour" honestly, distinct from "no impact"</div>
+                <p class="font-proxima text-[14px] leading-[1.65] text-slate-700 mb-2">A bridge that is a genuine dead end, where closing it leaves absolutely no other way across, is a fundamentally different finding from a bridge with a real, working, low impact detour. Collapsing the two together, for example by reporting a numeric detour distance of zero for both, makes a true dead end indistinguishable from a bridge that simply has a very good nearby alternate route.</p>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white p-4 mb-8">
+                  <div class="font-display uppercase text-[11px] tracking-wide text-slate-600 mb-1">The fix</div>
+                  <p class="font-proxima text-[13.5px] leading-[1.6] text-slate-700">Every direction of every bridge now gets an explicit outcome: a real computed route with real numbers, or an explicit "no detour found" outcome with no numeric distance at all. There is never a placeholder zero standing in for either case. A "no detour" outcome only gets reported after the search has been widened as far as it reasonably can go, as described in the previous sections, and every such outcome is individually reviewed rather than accepted automatically. Most trace to a genuine, confirmed gap in the road network reachable from that bridge. Some are still open follow up items. Any that turn out to reflect a data or method limitation rather than a real dead end are documented as exactly that, rather than being silently counted alongside the confirmed dead ends.</p>
+                </div>
+
+                <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 08 &middot; data reference</span>
+                <h2 id="columns" class="font-display font-semibold text-[26px] leading-[1.1] text-[#0F1722] mt-1 mb-3">Column reference</h2>
+                <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mb-6">The output is organized as three related tables, joined by Bridge Identification Number: one row per bridge, one row per direction of travel per bridge, and one row per resolved detour endpoint per bridge.</p>
+
+                <div class="font-display uppercase text-[12px] tracking-wide text-slate-600 mb-2">Bridge table, one row per bridge</div>
+                <div class="rounded-[8px] border border-zinc-950/10 overflow-hidden mb-6">
+                  <table class="w-full text-left text-[13px]">
+                    <thead><tr class="font-mono text-[10px] uppercase tracking-[0.14em] text-slate-500 border-b border-zinc-950/10 bg-slate-50"><th class="px-3 py-2 font-normal">Column</th><th class="px-3 py-2 font-normal">Meaning</th></tr></thead>
+                    <tbody class="font-proxima text-slate-700">
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12px]">BIN</td><td class="px-3 py-2">Bridge Identification Number, the primary key joining all three tables.</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12px]">CARRIED</td><td class="px-3 py-2">The road carried by the bridge.</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12px]">CROSSED</td><td class="px-3 py-2">The feature the bridge crosses (waterway, rail, another road).</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12px]">COUNTY</td><td class="px-3 py-2">County the bridge is located in.</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12px]">FHWA_CONDITION_STATUS</td><td class="px-3 py-2">Federal condition rating category (e.g. Good, Fair, Poor).</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12px]">ConditionRating</td><td class="px-3 py-2">Numeric condition rating.</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12px]">AADT</td><td class="px-3 py-2">Annual average daily traffic on the carried road.</td></tr>
+                      <tr><td class="px-3 py-2 font-mono text-[12px]">match_distance_m</td><td class="px-3 py-2">Distance, in meters, between the bridge's recorded location and the road network segment it was matched to. This serves as a quality check on the match itself.</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="font-display uppercase text-[12px] tracking-wide text-slate-600 mb-2">Detour table, one row per direction of travel per bridge</div>
+                <div class="rounded-[8px] border border-zinc-950/10 overflow-hidden mb-6">
+                  <table class="w-full text-left text-[13px]">
+                    <thead><tr class="font-mono text-[10px] uppercase tracking-[0.14em] text-slate-500 border-b border-zinc-950/10 bg-slate-50"><th class="px-3 py-2 font-normal">Column</th><th class="px-3 py-2 font-normal">Meaning</th></tr></thead>
+                    <tbody class="font-proxima text-slate-700">
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12px]">direction</td><td class="px-3 py-2">Which of the two directions of travel this row describes.</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12px]">status</td><td class="px-3 py-2">Whether a legal detour was found for this direction, or none exists.</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12px]">description</td><td class="px-3 py-2">A plain-language summary of the outcome for this row.</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12px]">open_miles / open_duration_s</td><td class="px-3 py-2">Distance and travel time with the bridge open (the baseline).</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12px]">closed_miles / closed_duration_s</td><td class="px-3 py-2">Distance and travel time on the actual detour, with the bridge closed.</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12px]">delta_miles / delta_duration_s</td><td class="px-3 py-2">The added distance and added time the detour represents.</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12px]">delta_miles_pct / delta_duration_pct</td><td class="px-3 py-2">The same added distance and time, expressed as a percentage increase.</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12px]">open_edge_count / closed_edge_count</td><td class="px-3 py-2">Number of individual road segments making up each route.</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12px]">expansion_attempts</td><td class="px-3 py-2">How many times the search had to widen its starting points before finding, or ruling out, a route. See the widen and retry section above.</td></tr>
+                      <tr><td class="px-3 py-2 font-mono text-[12px]">closed_segments_json</td><td class="px-3 py-2">The full road-by-road breakdown of the detour route.</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div class="font-display uppercase text-[12px] tracking-wide text-slate-600 mb-2">Endpoint table, one row per resolved detour endpoint per bridge</div>
+                <div class="rounded-[8px] border border-zinc-950/10 overflow-hidden mb-6">
+                  <table class="w-full text-left text-[13px]">
+                    <thead><tr class="font-mono text-[10px] uppercase tracking-[0.14em] text-slate-500 border-b border-zinc-950/10 bg-slate-50"><th class="px-3 py-2 font-normal">Column</th><th class="px-3 py-2 font-normal">Meaning</th></tr></thead>
+                    <tbody class="font-proxima text-slate-700">
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12px]">role</td><td class="px-3 py-2">Whether this point is the start or the end of the resolved detour.</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12px]">osm_id</td><td class="px-3 py-2">Road-network node identifier for this point.</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12px]">tmc / ris</td><td class="px-3 py-2">Traffic Message Channel / Roadway Inventory System codes for the road at this point, where available.</td></tr>
+                      <tr class="border-b border-zinc-950/05"><td class="px-3 py-2 font-mono text-[12px]">highway</td><td class="px-3 py-2">Functional class of the road at this point.</td></tr>
+                      <tr><td class="px-3 py-2 font-mono text-[12px]">hit_distance_cap</td><td class="px-3 py-2">Whether this endpoint was determined by hitting the maximum search distance rather than by reaching a real intersection.</td></tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-500 mt-8 pt-6 border-t border-zinc-950/05">
+                  This describes the analysis process behind every number in the report. It is not a simplified summary of it.
+                </p>
+              </article>
+
+              <!-- TOC aside (size 4) -->
+              <aside class="col-span-12 md:col-span-4 self-start sticky top-4" data-dms-section="toc">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                  <div class="font-display uppercase text-[11px] tracking-[0.16em] text-slate-500 mb-2">on this page</div>
+                  <a href="#engine" class="tny-toc-item active">How this analysis works</a>
+                  <a href="#endpoints" class="tny-toc-item">Deciding start &amp; end</a>
+                  <a href="#finalize" class="tny-toc-item">Finalizing the route</a>
+                  <a href="#widen" class="tny-toc-item">When points don&rsquo;t work</a>
+                  <a href="#verify" class="tny-toc-item">Verifying no legal detour</a>
+                  <a href="#decisions" class="tny-toc-item">Why it&rsquo;s built this way</a>
+                  <a href="#improvements" class="tny-toc-item">What we improved</a>
+                  <a href="#columns" class="tny-toc-item">Column reference</a>
+                </div>
+                <div class="mt-4 rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                  <div class="font-display uppercase text-[11px] tracking-[0.16em] text-slate-500 mb-2">related</div>
+                  <a class="block py-1 font-proxima text-[13px] text-[#1F3F8F] hover:text-[#16307A]" href="bridge-detour-report.html">&rarr; Bridge candidates &middot; report</a>
+                  <a class="block py-1 font-proxima text-[13px] text-[#1F3F8F] hover:text-[#16307A]" href="bridge-detour-route.html">&rarr; Bridge candidates &middot; route</a>
+                  <a class="block py-1 font-proxima text-[13px] text-[#1F3F8F] hover:text-[#16307A]" href="detour-coverage-methodology.html">&rarr; Coverage points &middot; methodology</a>
+                </div>
+              </aside>
+            </div>
+          </div>
+
+          <footer class="w-full bg-white border-t border-zinc-950/10" data-dms-group="footer">
+            <div class="mr-auto w-full max-w-[1480px] pl-12 pr-8 py-4 flex items-center justify-between">
+              <div class="flex gap-6 font-mono text-[10.5px] uppercase tracking-[0.16em] text-slate-500">
+                <a href="bridge-detour-report.html" class="hover:text-slate-900">bridge candidates · report</a>
+                <a href="bridge-detour-route.html" class="hover:text-slate-900">bridge candidates · route</a>
+                <a href="../design-system/components.html" class="hover:text-slate-900">design system</a>
+              </div>
+              <span class="font-mono text-[11px] text-slate-500">&copy; NYSDOT &middot; TransportNY DMS v0.2</span>
+            </div>
+          </footer>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="../ds-nav.js"></script>
+</body>
+</html>

@@ -1,6 +1,6 @@
 import { useEffect, useCallback } from "react";
 import { get, set } from "lodash-es";
-import { SHAPEFILE_LAYER_KEY } from "../constants";
+import { SHAPEFILE_LAYER_KEY, CLICK_TOLERANCE_PX } from "../constants";
 
 export const useMapTmcHandler = (map, state, setState, pluginDataPath, symbPath, isActive) => {
   const shapefileLayerId = get(
@@ -45,9 +45,14 @@ export const useMapTmcHandler = (map, state, setState, pluginDataPath, symbPath,
     if (!map || !shapefileLayerId || !isActive) return;
 
     const MAP_CLICK = (e) => {
-      const features = map.queryRenderedFeatures(e.point, {
-        layers: [shapefileLayerId],
-      });
+      // A single-pixel hit test against a ~1-2px line (paint.js) is exactly as hard to
+      // hit as it looks - widen to a small box around the click so a near-miss still
+      // resolves to the nearest segment, same fix as useMapHoverHandler's hover box.
+      const { x, y } = e.point;
+      const features = map.queryRenderedFeatures(
+        [[x - CLICK_TOLERANCE_PX, y - CLICK_TOLERANCE_PX], [x + CLICK_TOLERANCE_PX, y + CLICK_TOLERANCE_PX]],
+        { layers: [shapefileLayerId] }
+      );
       const featId = features?.[0]?.properties?.tmc;
 
       if (featId) {

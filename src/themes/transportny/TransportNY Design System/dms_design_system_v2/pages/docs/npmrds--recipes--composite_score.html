@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Recipe: a composite bottleneck score · NPMRDS · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="recipe" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">NPMRDS · recipe</div>
+          <h1 class="doc-title">Recipe: a composite bottleneck score.</h1>
+          <p class="doc-lede">Rank every segment in a county or region by several measures at once. Export one PM3 year from the Macro View, screen out thin data, normalise each measure to a 1 to 5 scale, weight them and rank the sum in a spreadsheet. Rewritten from the 2024 Composite Score Tutorial for the current download builder. Assumes you can use Excel tables and structured references.</p>
+          <div class="stamps">
+            <span class="type">recipe</span>
+            <span>applies to · NPMRDS</span>
+            <span>last reviewed · 2026-09-07</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="the-question">The question</h2>
+          <p>"Which segments in my region are the worst bottlenecks, taking reliability and delay together?" One measure answers one question. LOTTR finds the segments whose bad days are far worse than their typical days. TED finds the segments that lose the most vehicle-hours. A ranking by either alone will surprise you: a short ramp tops the reliability list, a long freeway tops the delay list. A composite score puts the measures on one scale, lets you say how much each matters, and ranks the sum.</p>
+
+          <h2 id="what-you-need">What you need</h2>
+          <ul>
+            <li>The <a href="npmrds--macro_view.html">Macro View</a> and its <a href="npmrds--macro_view--download.html">download builder</a>. No sign-in.</li>
+            <li>A spreadsheet that supports tables and <code>MIN</code>, <code>MAX</code> and <code>RANK</code>. The formulas below are Excel's, with structured references such as <code>[@[lottr_amp_lottr]]</code>.</li>
+            <li>A geography and a PM3 year. This recipe uses Albany County and the latest published year; the 2024 tutorial used Albany County and 2019.</li>
+            <li>Segment lengths, if you want delay per mile. The Macro View dataset carries no length, so you join it from the <a href="measures_and_data--data--tmc_network.html">TMC network</a> table or read it from the GeoPackage's geometry in GIS.</li>
+          </ul>
+          <div class="callout basis"><span class="k">basis</span>One PM3 year · one geography from the <span class="ui">Geography</span> control · all vehicles for LOTTR and TED, freight trucks for TTTR₈₀ · every monitored segment in the geography · the analytical series, not the federal figures.</div>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Open <span class="ui">Macro View</span>. Under <span class="ui">Geography</span>, type the county and pick it under <span class="ui">Counties</span>. Pick the <span class="ui">Year</span>. Set <span class="ui">Measure</span> to <span class="ui">LOTTR</span> and <span class="ui">Peak period</span> to <span class="ui">PM Peak</span>.<span class="result">The map, the distribution and the row count in <span class="ui">Download N rows</span> narrow to the county.</span></li>
+            <li>Select <span class="ui">Download N rows</span>. Keep <span class="ui">Scope</span> on <span class="ui">Current filters</span> and set <span class="ui">Format</span> to <span class="ui">csv</span>.</li>
+            <li>Under <span class="ui">Columns you'll get</span>, the PM-peak LOTTR column is already listed with the identity columns. Use <span class="ui">Add measure column</span> to add the other measures you will score and the coverage columns you will screen on: the AM and midday LOTTR ratios, TTTR₈₀ for the PM peak, TED against the fixed free-flow reference in vehicle-hours (<code>ted_freeflow_anchored_all_xdelay_vhrs</code>), and the share of bins reporting for the AM, midday and PM periods (<code>coverage_all_vehicles_amp_pct_bins_reporting</code> and its midday and PM counterparts). Coverage columns begin with coverage_ and name the stream and period; the truck 80th-percentile ratio is the tttr_p80 column with its period suffix. Read the exact names from the download's header row.</li>
+            <li>Select <span class="ui">Build N rows · csv</span>, wait for <span class="ui">Download N rows · csv</span>, and save the zip. Open <code>PM3_README.txt</code> and note the coverage era line; you will quote it.</li>
+            <li>Open the CSV, select all, and insert a table with headers. Move the identity columns (<code>tmc</code>, county, region, MPO) to the left if you want; the formulas use column names, so order does not matter.</li>
+            <li>Screen for data quality. Add a column <code>Above Threshold</code> with <code>=MAX([@[coverage_all_vehicles_amp_pct_bins_reporting]],[@[…midd…]],[@[…pmp…]])&gt;30</code>. Coverage is on a 0 to 100 scale, so the 2024 tutorial's <code>&gt;0.3</code> becomes <code>&gt;30</code>. Filter to <code>FALSE</code>, delete those table rows, then clear the filter.<span class="result">Every remaining segment had at least 30 % of its 15-minute bins reporting in at least one daytime period.</span></li>
+            <li>If you want delay per mile, add a <code>miles</code> column joined from the TMC network on <code>tmc</code>, then <code>ted_per_mi</code> as <code>=[@[ted_freeflow_anchored_all_xdelay_vhrs]]/[@miles]</code>. The download already carries miles among its segment attributes, so no separate network export is needed.</li>
+            <li>Normalise each measure to 1 to 5. For each measure column add a <code>NORM</code> column: <div class="formula">=1+4*(([@[lottr_pmp_lottr]])-MIN([lottr_pmp_lottr]))/(MAX([lottr_pmp_lottr])-MIN([lottr_pmp_lottr]))<span class="var">The lowest value in the column becomes 1, the highest 5, the rest in proportion. Repeat for TTTR₈₀ and for TED or TED per mile.</span></div></li>
+            <li>Rank each measure with <code>=RANK([@[lottr_pmp_lottr]],[lottr_pmp_lottr],0)</code>. The trailing <code>0</code> ranks descending, so rank 1 is the worst segment on that measure.</li>
+            <li>Add <code>Composite Score</code> as the weighted sum of the normalised columns, for example <code>=([@lottrNORM]*0.5)+([@tttr80NORM]*0.25)+([@tedNORM]*0.25)</code>. Change the weights to state what matters to your process. The 2024 tutorial weighted three measures at 0.5 each.</li>
+            <li>Add <code>Composite Rank</code> as <code>=RANK([@[Composite Score]],[Composite Score],0)</code> and sort the table by it, smallest first.<span class="result">Row 1 is the segment that scores worst across the measures you chose, at the weights you chose.</span></li>
+          </ol>
+
+          <h2 id="reading-the-result">Reading the result</h2>
+          <p>The rank is only as good as its inputs, so read three things before you act on it. <strong>Length.</strong> 24.3 % of segments are under 0.05 miles, and those are flagged unreliable 7.7 times more often than long ones. Keep the <code>miles</code> column visible and treat a very short segment at the top as a signal about its neighbours, not itself. <strong>Which delay variant.</strong> The anchored free-flow TED is the default because its yardstick does not move between years; for a ranking that crosses functional classes, add the relative (unfloored) variant instead, because a floored figure on an arterial is about 90 % floor. <a href="measures_and_data--which_measure.html">Which measure should I use?</a> has the table. <strong>Coverage.</strong> The 30 % screen removes the thinnest segments, but a segment at 31 % is still thin. Add the coverage column to the sheet and glance at it for the top rows.</p>
+          <p>A composite score is a ranking device, not a measure. Report the individual measures for each top segment, and say the weights. Two analysts with different weights will produce different top tens from the same file, and both are right about their own question.</p>
+
+          <h2 id="variations">Variations</h2>
+          <ul>
+            <li><strong>Peak hours only.</strong> Replace TED with PHED, whose window is the weekday AM and PM peaks, in person-hours. Note that PHED's PM peak is 15:00 to 18:59 while LOTTR's is 16:00 to 19:59; keep them in separate columns.</li>
+            <li><strong>Freight.</strong> Score TTTR₈₀ alone, or add the truck TED column (<span class="ui">Traffic type</span> · <span class="ui">All Trucks</span> when you add the column). Truck coverage runs 8 % to 23.5 % of bins by era, so the screen matters more.</li>
+            <li><strong>A region or an MPO.</strong> Pick it under <span class="ui">Regions</span> or <span class="ui">MPOs</span> instead of a county. The download's row count tells you the size before you build.</li>
+            <li><strong>Two years.</strong> Export each year separately, keep both READMEs, and compare ranks rather than values. The era tags and the AADT vintage move between years; <a href="measures_and_data--concepts--coverage_eras_and_comparability.html">Coverage eras and comparability</a> says when a comparison holds.</li>
+            <li><strong>The 2024 measure set.</strong> The tutorial used LOTTR, the Travel Time Index (TTI) and TED per mile. TTI is not currently computed; <a href="measures_and_data--measures--retired.html">Measures that used to be here</a> names the substitutes.</li>
+          </ul>
+
+          <h2 id="sample-output">Sample output</h2>
+          <p>The finished sheet, one row per segment, sorted by <code>Composite Rank</code>. Values are yours to compute; the table shows what each column holds.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Column</th><th>Source or formula</th><th>What it tells you</th></tr></thead>
+            <tbody>
+              <tr><td><code>tmc</code> · county · region · MPO</td><td>Identity columns from the download</td><td>Which segment; join key to the TMC network for the road name</td></tr>
+              <tr><td><code>lottr_pmp_lottr</code> · <code>lottrNORM</code> · <code>lottrRANK</code></td><td>Download · normalise · <code>RANK(…,0)</code></td><td>PM-peak reliability; 1.50 and above is unreliable in the federal test</td></tr>
+              <tr><td>TTTR₈₀ PM · <code>tttr80NORM</code> · <code>tttr80RANK</code></td><td>Download · normalise · rank</td><td>Freight reliability that is estimable per segment</td></tr>
+              <tr><td><code>ted_freeflow_anchored_all_xdelay_vhrs</code> · <code>ted_per_mi</code> · <code>tedNORM</code> · <code>tedRANK</code></td><td>Download · ÷ <code>miles</code> · normalise · rank</td><td>Vehicle-hours lost in the year, and per mile so long segments do not win by length</td></tr>
+              <tr><td>coverage AM · midday · PM · <code>Above Threshold</code></td><td>Download · <code>MAX(…)&gt;30</code></td><td>How much data the row rests on; the screen you applied</td></tr>
+              <tr><td><code>Composite Score</code> · <code>Composite Rank</code></td><td>Weighted sum of the NORM columns · <code>RANK(…,0)</code></td><td>The ranking; rank 1 is the worst at your weights</td></tr>
+            </tbody>
+          </table></div>
+          <p>Cite the file as the download page says: measure and variant as the column reads, the PM3 year, the geography, the download date and the README's era line, and add your weights. Example: "Composite of PM-peak LOTTR (0.5), PM-peak TTTR₈₀ (0.25) and anchored TED per mile (0.25), PM3 year 2025, Albany County, TransportNY Macro View download of 2026-09-07, segments with under 30 % bins reporting in every daytime period removed."</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs"><li>pm3 download manifest: column families (coverage_ prefix, tttr_p80, era_ tags, precision columns) and the segment attributes carried in the file (county, region_code, mpo_name, urban_code, f_system, miles, directionalaadt).</li>
+            <li>Legacy NPMRDS documentation, Regional Analysis, "Composite Score Tutorial" (2024; republished 2026-08-28): Albany County 2019, the 30 % reporting screen <code>=MAX(O2,P2,Q2)&gt;0.3</code>, the normalisation <code>=1+4*((x)-MIN)/(MAX-MIN)</code>, <code>=RANK(x,col,0)</code>, the weighted composite at 0.5 each, sort by composite rank. Its download steps (the Data Downloader, TTI, TED per mile, RIS metadata) describe the earlier tool and are replaced above.</li>
+            <li><a href="npmrds--macro_view--download.html">Download data from the Macro View</a>: builder controls, the column-name scheme (<code>lottr_amp_lottr</code>, <code>ted_freeflow_anchored_all_xdelay_vhrs</code>, <code>coverage_all_vehicles_amp_pct_bins_reporting</code>), identity columns, no road name, length or AADT on the dataset, how to cite.</li>
+            <li><a href="measures_and_data--measures--coverage.html">Data coverage</a>: two percentages on a 0 to 100 scale; truck bins 8.0 % to 23.5 % by era.</li>
+            <li><a href="measures_and_data--measures--lottr.html">LOTTR</a> known limits: 24.3 % of segments under 0.05 mi, flagged unreliable 7.7 times more often.</li>
+            <li><a href="measures_and_data--which_measure.html">Which measure should I use?</a>: anchored variant for change over time, relative variant across functional classes, the PM-peak label trap.</li>
+            <li><a href="measures_and_data--data--tmc_network.html">TMC network</a> datasheet: the <code>miles</code> field and the Data Manager as its distribution.</li>
+            <li><a href="measures_and_data--measures--retired.html">Measures that used to be here</a>: TTI not currently computed.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2024 published as the Composite Score Tutorial · 2026-09-07 rewritten as a recipe (phase 4b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="npmrds--macro_view--download.html">Download data from the Macro View</a>
+          <a href="measures_and_data--which_measure.html">Which measure should I use?</a>
+          <a href="npmrds--recipes.html">Recipes</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Federal PM3 and what this site publishes · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="concept" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · concept</div>
+          <h1 class="doc-title">Federal PM3 and what this site publishes.</h1>
+          <p class="doc-lede">Two measure families share the names LOTTR, TTTR and PHED. One is what New York submits to the Federal Highway Administration. The other is the platform's own analytical series. This page tells them apart and says which to cite where. Read it before you quote a reliability figure.</p>
+          <div class="stamps">
+            <span class="type">concept</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="two-families-one-set-of-names">Two families, one set of names</h2>
+          <p><strong>If you are filling in a federal form, use the MAP-21 PM3 pages. Everything else on the platform is the analytical series and is not the compliant figure.</strong></p>
+          <p>The Moving Ahead for Progress in the 21st Century Act (MAP-21) created the national performance measures. The third performance-measure rule, known as PM3, defines three travel-time measures in 23 CFR 490. They are Level of Travel Time Reliability (LOTTR), Truck Travel Time Reliability (TTTR) and Peak Hour Excessive Delay (PHED). New York submits all three to the Federal Highway Administration (FHWA) every year.</p>
+          <p>The platform also computes an analytical version of the same measures. It uses the same probe feed and the same segments, with deliberately different choices. Questions the federal formula cannot answer can then be answered honestly. The two are separate pipelines that no longer move together. Their numbers will not always agree, and that is by design.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th></th><th>MAP-21 / PM3 (federal)</th><th>The analytical series</th></tr></thead>
+            <tbody>
+              <tr><td>Measures</td><td>LOTTR, TTTR and PHED, and nothing else</td><td>Those three plus TTTR₈₀, Total Excessive Delay (TED), the delay threshold variants, percentile speed and data coverage</td></tr>
+              <tr><td>Rules</td><td>Fixed by 23 CFR 490. Frozen. It does not change</td><td>Free to improve on the evidence. Every change is dated in <a href="measures_and_data--methodology_changes.html">Methodology changes</a></td></tr>
+              <tr><td>Roll-up</td><td>Statewide share of person-miles on reliable segments (LOTTR), a length-weighted Interstate index (TTTR), person-hours per capita per urbanized area (PHED)</td><td>One value per segment, per period, per calendar year. You choose the geography</td></tr>
+              <tr><td>Road system</td><td>The National Highway System (NHS): Interstate and non-Interstate</td><td>Every monitored segment, including the expanded network NYSDOT licenses beyond the NHS</td></tr>
+              <tr><td>Use it for</td><td>Anything reported to FHWA: targets, significant progress, performance periods</td><td>Analysis, prioritisation, corridor and regional work</td></tr>
+              <tr><td>Where to get it</td><td><a href="npmrds--map21.html">MAP-21 PM3 reporting pages</a> and the <a href="tsmo--reliability.html">TSMO Reliability dashboard</a></td><td><a href="npmrds--macro_view.html">Macro View</a>, <a href="npmrds--reports--start_from_template.html">Reports</a>, the <a href="npmrds--segment.html">Segment (TMC) page</a></td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="why-the-two-diverge">Why the two diverge</h2>
+          <p>The analytical series forked from the federal computation so that it could change. The federal formula follows the rule and stays frozen. The analytical series may redefine a step whenever the measurement shows a better choice. Five differences account for most of the gap you will see.</p>
+          <ul>
+            <li><strong>Truck data.</strong> The federal TTTR reads the truck stream. The analytical TTTR substitutes an all-vehicle travel time where a bin has no truck value. About 37 % of AM-peak bins carry a substituted value, and removing the substitution moves TTTR by 1.06 %. See <a href="measures_and_data--measures--tttr.html">TTTR</a>.</li>
+            <li><strong>The delay threshold.</strong> The federal excessive-delay threshold is the greater of 20 mph and 60 % of the posted speed limit. The analytical default is 60 % of a free-flow speed anchored to a fixed window, and an unfloored relative variant is published beside it. See <a href="measures_and_data--measures--phed.html#the-four-variants">the four threshold variants</a>.</li>
+            <li><strong>Roll-up.</strong> The federal LOTTR figure is the share of person-miles on reliable segments, weighting each segment by AADT, an occupancy of 1.7 and length. The Macro View shows the per-segment ratio for one period. A statewide percentage and a per-segment ratio are different quantities.</li>
+            <li><strong>What is published beside the value.</strong> The analytical series carries a precision band, a minimum-sample bar, coverage percentages and coverage-era tags on every row. The federal submittal carries the value.</li>
+            <li><strong>The network.</strong> The analytical series covers every monitored segment, including the expanded network NYSDOT licenses beyond the NHS. The federal figures cover the NHS.</li>
+          </ul>
+          <p>Because the analytical series changes on evidence, a figure from it always carries its methodology date. The federal figure carries only its calendar year.</p>
+
+          <h2 id="the-cy-2025-statewide-reliability-figures">The CY 2025 statewide reliability figures</h2>
+          <div class="callout basis"><span class="k">basis</span>CY 2025 · statewide · all vehicles for LOTTR, freight trucks for TTTR · Interstate or non-Interstate NHS as named · scored against the statewide targets (Interstate LOTTR ≥ 75 %, non-Interstate LOTTR ≥ 70 %, Interstate TTTR ≤ 2.00).</div>
+          <p>Two live pages publish the federal family for CY 2025, and they use two bases. Both are the federal measure. One is computed on the platform from the MAP-21 dataset. The other is the figure in the file New York resubmitted to FHWA. Cite the value the page you are pointing at shows, and name which it is.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Live page</th><th>Basis</th><th class="num">Interstate LOTTR</th><th class="num">Non-Interstate LOTTR</th><th class="num">Interstate TTTR</th></tr></thead>
+            <tbody>
+              <tr><td><a href="npmrds--map21.html">MAP-21 PM3 reporting pages</a></td><td>Computed on the platform from the MAP-21 dataset. The page scores each column "against the statewide target (Interstate ≥ 75%, Non-Interstate ≥ 70%, TTTR ≤ 2.0)"</td><td class="num">79.8 %</td><td class="num">83.2 %</td><td class="num">1.46</td></tr>
+              <tr><td><a href="tsmo--start.html">TSMO home</a></td><td>The FHWA Highway Performance Monitoring System (HPMS) Travel Time Metrics resubmission for CY 2025</td><td class="num">80.0 %</td><td class="num">83.3 %</td><td class="num">1.46</td></tr>
+              <tr><td>TSMO Reliability dashboard</td><td>Computed on the platform from the MAP-21 dataset, the same query as the MAP-21 pages ("reports these exactly as FHWA defines them", Data &amp; Methodology page)</td><td class="num">79.8 %</td><td class="num">83.2 %</td><td class="num">1.46</td></tr>
+            </tbody>
+          </table></div>
+          <p>The two bases differ by 0.2 and 0.1 percentage points on LOTTR and agree on TTTR. The difference comes from how the two datasets are assembled, and <a href="measures_and_data--data--pm3_and_map21.html">PM3 and MAP-21 datasets</a> owns the explanation. Both clear every target. Older handoff copy carried CY 2025 figures that match neither basis. They were a mixed-vintage snapshot that reproduces from no dataset, and they are withdrawn.</p>
+          <p>Never write a reliability percentage without its calendar year, its system (Interstate or non-Interstate NHS) and its target. "83.2 % reliable" means nothing on its own. "83.2 % of non-Interstate NHS person-miles were reliable in CY 2025, against a 70 % target" is a citable fact.</p>
+
+          <h2 id="which-to-cite-where">Which to cite where</h2>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>If you are writing…</th><th>Cite</th><th>Say</th></tr></thead>
+            <tbody>
+              <tr><td>A federal report, a target-setting memo or a transportation improvement program (TIP)</td><td>The <a href="npmrds--map21.html">MAP-21 PM3 reporting pages</a></td><td>"MAP-21 / PM3", the calendar year, the system and the target</td></tr>
+              <tr><td>A regional briefing from a TSMO dashboard</td><td>The <a href="tsmo--reliability.html">TSMO Reliability dashboard</a> for the region and year</td><td>That the targets are statewide floors, so a dense region can sit below them while the state clears</td></tr>
+              <tr><td>A corridor study, a bottleneck ranking or a before-and-after comparison</td><td>The <a href="npmrds--macro_view.html">Macro View</a> or <a href="npmrds--reports--start_from_template.html">Reports</a></td><td>"The analytical series", the methodology date, the period and the geography. Never call it federal</td></tr>
+              <tr><td>Anything a reader should be able to reproduce</td><td>The MAP-21 annual download for the federal figure, the Macro View download for the analytical one</td><td>The download date. A shared link is live and can change</td></tr>
+            </tbody>
+          </table></div>
+          <p>The measure pages state both forms where both exist. <a href="measures_and_data--measures--lottr.html">LOTTR</a>, <a href="measures_and_data--measures--tttr.html">TTTR</a> and <a href="measures_and_data--measures--phed.html">PHED</a> each document the analytical computation and then say how the federal roll-up reads the same ratio.</p>
+
+          <h2 id="where-this-matters">Where this matters</h2>
+          <p>Half of the questions users file about a number are about which family it belongs to. A dashboard value and a submittal value for the same year will differ, and neither is wrong. When you quote one, say which it is, on what basis, and from which page. <a href="measures_and_data--which_measure.html">Which measure should I use?</a> routes each analytical question to its measure. <a href="measures_and_data--concepts--geography.html">Geography</a> explains why a region's figure is not scored against a regional target.</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>23 CFR 490, subparts E (LOTTR), F (TTTR) and G (PHED): the federal definitions, periods and roll-ups.</li>
+            <li>Measures &amp; Methodology page, published 2026-08-28, §01 "Federal PM3, and what this site publishes": the two-family table.</li>
+            <li>pm3 provenance record, §9: "Federal submittal: use map21, not pm3. map21 is frozen and is the compliant path."</li>
+            <li>MAP-21 PM3 reporting page, CY 2025: the computed statewide figures and the target wording quoted above.</li>
+            <li>TSMO home, data revision 2026-06-12: the FHWA HPMS Travel Time Metrics resubmission figures for CY 2025.</li>
+            <li>TSMO Data &amp; Methodology page, source catalog: "The Reliability dashboard reports these exactly as FHWA defines them."</li><li>TSMO Reliability page build record (July 2026): the §01 cards render 79.8 % · 83.2 % · 1.46 from the MAP-21 dataset, the same computation as the MAP-21 pages.</li><li>TSMO Reliability page build record (2026-07): the §01 cards render 79.8 % · 83.2 % · 1.46 from the MAP-21 dataset, the same computation as the MAP-21 pages.</li>
+            <li>TTTR measure page and pm3 provenance §5: the 37 % substitution share and the 1.06 % effect.</li>
+            <li>Macro View measure reference: the road-system statement (Interstate, non-Interstate NHS and the expanded network NYSDOT licenses).</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 2a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data.html">Measures &amp; Data</a>
+          <a href="measures_and_data--which_measure.html">Which measure should I use?</a>
+          <a href="npmrds--map21.html">MAP-21 PM3 reporting pages</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

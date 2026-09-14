@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Download data from the Macro View · NPMRDS · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">NPMRDS · how-to</div>
+          <h1 class="doc-title">Download data from the Macro View.</h1>
+          <p class="doc-lede">Export one PM3 year of a measure for every segment in a geography, as a CSV or a GeoPackage, with a README that says how to read it. The download builder gives you exactly what the map is drawing. This page assumes you have set a measure, a year and a geography on the Macro View.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · NPMRDS</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="before-you-start">Before you start</h2>
+          <p>Open <span class="ui">Macro View</span> and set the view you want to export: the measure and its controls, the <span class="ui">Year</span>, and a <span class="ui">Geography</span> if you want less than the state. No sign-in is needed. The bottom bar names the data behind the map and holds the <span class="ui">Download N rows</span> button; the count is the number of segment rows the current filter would export. Decide whether you need geometry. A GeoPackage carries the segment shapes for GIS; a CSV is for spreadsheets and code.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Select <span class="ui">Download N rows</span> in the bottom bar.<span class="result">The <span class="ui">Download measure data</span> builder opens over the map.</span></li>
+            <li>Under <span class="ui">Scope</span>, keep <span class="ui">Current filters</span> to export the geography on the map, or pick <span class="ui">Statewide, &lt;year&gt;</span> for every segment in the year. Each option shows its row count, and a line under them names the geography or reads <span class="ui">no geography filter</span>.</li>
+            <li>Under <span class="ui">Format</span>, pick <span class="ui">csv</span> or <span class="ui">gpkg</span>.</li>
+            <li>Under <span class="ui">Include</span>, select <span class="ui">+ geometry</span> to add the segment shapes. The button then reads <span class="ui">− geometry</span> and <code>wkb_geometry</code> joins the column list.<span class="result">A CSV with geometry carries the shape as text in that column. A GeoPackage needs geometry to be a map layer.</span></li>
+            <li>Read <span class="ui">Columns you'll get</span>. The measure the map is drawing is highlighted; the identity columns are listed with it. Select a chip to remove that column.</li>
+            <li>To add columns, open <span class="ui">Add metadata column</span> for identity fields or <span class="ui">Add measure column</span> for other measures, variants, coverage, precision or era columns, and select what you need.</li>
+            <li>Select <span class="ui">Build N rows · csv</span> (or <span class="ui">· gpkg</span>).<span class="result">The builder closes and the bottom-bar button reads <span class="ui">Preparing download…</span> while the file is built. A statewide export can take a while.</span></li>
+            <li>When the button reads <span class="ui">Download N rows · csv</span>, select it.<span class="result">The browser saves a zip holding the data file and <code>PM3_README.txt</code>.</span></li>
+            <li>Open <code>PM3_README.txt</code> first and read its coverage and reference notes before you difference anything.</li>
+          </ol>
+
+          <figure class="shot">
+            <img src="../../assets/screens/macro-06-download-builder.png" alt="The download builder open, showing scope, format, include geometry, and the list of columns that will be exported."/>
+            <figcaption>Figure 1 · the download builder open, before any column is added. Captured 2026-08-27.</figcaption>
+          </figure>
+
+          <h2 id="what-the-package-contains">What the package contains</h2>
+          <p>The data file has one row per segment for the year, and the columns you chose. Column names follow the dataset's own scheme: the measure, the variant, the period and the unit joined by underscores. The LOTTR AM-peak ratio is <code>lottr_amp_lottr</code>; TED against the fixed free-flow reference, all traffic, in vehicle-hours, is <code>ted_freeflow_anchored_all_xdelay_vhrs</code>; the share of AM-peak bins reporting is <code>coverage_all_vehicles_amp_pct_bins_reporting</code>. The identity columns include the TMC code, the year, the county, the region, the MPO and the urban area. Each measure the package can carry has its own page: <a href="measures_and_data--measures--lottr.html">LOTTR</a>, <a href="measures_and_data--measures--tttr.html">TTTR</a>, <a href="measures_and_data--measures--tttr80.html">TTTR₈₀</a>, <a href="measures_and_data--measures--phed.html">PHED</a>, <a href="measures_and_data--measures--ted.html">TED</a>, <a href="measures_and_data--measures--percentile_speed.html">percentile speed</a> and <a href="measures_and_data--measures--coverage.html">coverage</a>.</p>
+          <p><code>PM3_README.txt</code> is written for the year you exported, so two years' packages read differently. It states:</p>
+          <ul>
+            <li><strong>The export.</strong> The dataset, the year, the format, the scope, the row filter and the exact column list.</li>
+            <li><strong>The coverage era.</strong> Which all-vehicle and truck coverage eras the year falls in, with a warning when the year crosses an era boundary, and a note if no era column was exported. See <a href="measures_and_data--concepts--coverage_eras_and_comparability.html">Coverage eras and comparability</a>.</li>
+            <li><strong>The free-flow reference window.</strong> The fixed window the anchored delay threshold is taken from, whether the exported year overlaps it, and the <code>anchor_fallback</code> rows to exclude from any trend.</li>
+            <li><strong>Delay columns.</strong> Which variant answers which question, the 20 mph floor and the share of delay it governs, and the AADT vintage warning when the year sits on a revision boundary. See <a href="measures_and_data--which_measure.html">Which measure should I use?</a> and <a href="measures_and_data--concepts--aadt_and_vintage.html">AADT and its vintage</a>.</li>
+            <li><strong>Reliability columns.</strong> That nothing is suppressed for being imprecise, how to read the precision columns, and that <code>pmp</code> names a different window for the delay measures than for LOTTR and TTTR.</li>
+            <li><strong>If you compare years.</strong> A checklist, and the statement that the file is not for federal submittal.</li>
+          </ul>
+
+          <h2 id="how-to-cite-a-download">How to cite a download</h2>
+          <p>Cite the analytical series, never a federal figure, and give enough for someone to rebuild the file: the measure and variant as the column name reads, the PM3 year, the scope, the download date, and the README's coverage era line. A shared Macro View address is live and can change; the export is fixed. Example: "TED, fixed free-flow reference, all traffic, vehicle-hours (<code>ted_freeflow_anchored_all_xdelay_vhrs</code>), PM3 year 2025, Albany County, TransportNY Macro View download of 2026-09-05." For the federal figure use the <a href="npmrds--map21.html#the-annual-download">MAP-21 annual download</a> instead.</p>
+
+          <h2 id="settings">Settings</h2>
+          <p>The builder's controls.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Control</th><th>What it does</th><th>Values</th><th>Default</th></tr></thead>
+            <tbody>
+              <tr><td><span class="ui">Scope</span></td><td>Which rows</td><td><span class="ui">Current filters</span> · <span class="ui">Statewide, &lt;year&gt;</span>, each with a row count</td><td><span class="ui">Current filters</span></td></tr>
+              <tr><td><span class="ui">Format</span></td><td>The file type</td><td><span class="ui">csv</span> · <span class="ui">gpkg</span></td><td><span class="ui">gpkg</span></td></tr>
+              <tr><td><span class="ui">Include</span></td><td>Adds or removes the geometry column</td><td><span class="ui">+ geometry</span> · <span class="ui">− geometry</span></td><td>Not included</td></tr>
+              <tr><td><span class="ui">Columns you'll get</span></td><td>The column list; select a chip to drop it</td><td>The drawn measure plus identity columns, and what you add</td><td>Measure and identity columns</td></tr>
+              <tr><td><span class="ui">Add metadata column</span> · <span class="ui">Add measure column</span></td><td>Adds one column from the dataset</td><td>Every column of the year's dataset not yet chosen</td><td>—</td></tr>
+              <tr><td><span class="ui">Build N rows · csv</span></td><td>Asks the server for the file; disabled with no columns</td><td>Becomes <span class="ui">Download N rows · csv</span> when ready</td><td>—</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul>
+            <li>Two formats only. JSON was removed on 2026-08-24 because the export pipeline cannot write it; GeoJSON is refused as a matter of policy. A Shapefile is accepted by the server but not offered in the builder.</li>
+            <li>The two scopes are the geography on the map and the whole state. There is no "one region, all measures" export; add measure columns to the current filter instead.</li>
+            <li>The dataset behind the map carries no road name. Join the TMC code to the <a href="measures_and_data--data--tmc_network.html">TMC network</a> datasheet's fields for names, lengths and AADT.</li>
+            <li>A delay export without its <code>anchor_fallback</code> and precision columns cannot be screened for trend use; the README says so when they are missing. Add them before you build a series.</li>
+            <li>Values are the analytical series. The README ends with "not for federal submittal". <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a> explains.</li>
+            <li>The download gives the year on the map. To compare years, export each year and read both READMEs' era lines first.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="nothing-happened-after-build">Nothing happened after Build</h3>
+          <p>Reported on 2026-08-24. The cause was found and fixed in the code: the request and the poll for the finished file used different keys, so the file was built but never offered. The fix is pending deployment, together with the server change it needs. Until it is deployed the button can still fail silently. If it does, <a href="help.html">report it</a> with the year, the scope and the time.</p>
+          <h3 id="the-builder-shows-a-message-under-the-button">The builder shows a message under the button</h3>
+          <p>The line under <span class="ui">Build</span> normally reads "Values are exactly what the map is drawing". When the server refuses a request, an unknown column, an unsupported format or a bad geography filter, its own message replaces that line. Remove the column or change the format and build again.</p>
+          <h3 id="the-row-count-reads-a-dash">The row count reads a dash</h3>
+          <p>The count has not loaded yet, or the map has no measure column. Wait for the map to colour, then reopen the builder.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="npmrds--macro_view.html">Macro View: how to use</a></li>
+            <li><a href="npmrds--recipes--composite_score.html">Recipe: a composite bottleneck score</a></li>
+            <li><a href="measures_and_data--data--pm3_and_map21.html">PM3 and MAP-21 datasets</a></li>
+            <li><a href="measures_and_data--concepts--coverage_eras_and_comparability.html">Coverage eras and comparability</a></li>
+            <li><a href="npmrds--reports--share_and_print.html">Share, print and publish a report</a></li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Download builder code (downloadBuilder.jsx, 2026-08-24): <span class="ui">Download measure data</span>, <span class="ui">Scope</span> with <span class="ui">Current filters</span> · <span class="ui">Statewide, &lt;year&gt;</span>, <span class="ui">Format</span> csv · gpkg, <span class="ui">Include</span> ± geometry, <span class="ui">Columns you'll get</span>, <span class="ui">Add metadata column</span> · <span class="ui">Add measure column</span>, <span class="ui">Build N rows · csv</span> / <span class="ui">Download N rows · csv</span>, the note under the button, JSON removed and GeoJSON refused 2026-08-24, Shapefile accepted but not drawn.</li>
+            <li>Bottom bar code (mapChrome.jsx, 2026-08-24): <span class="ui">Download N rows</span>, <span class="ui">Preparing download…</span>.</li>
+            <li>PM3 download route and manifest (data-types/pm3/download.js, downloadManifest.js, 2026-08-24): supported formats, the zip's <code>PM3_README.txt</code> and its sections.</li>
+            <li>Macro View filter code (updateFilters.jsx): the column-name scheme.</li>
+            <li>PM3 provenance notes (PROVENANCE.md §5, §6, §9, §10): the caveats the README restates.</li>
+            <li>Ticket 2214580 (2026-08-24, "No response after I clicked the BUILD button"), verified 2026-08-25: code fix present, deployment absent. Tickets 2211480 (no road name, length or AADT on the dataset) and 2211482 (2024 segment count).</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 4b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="npmrds.html">NPMRDS hub</a>
+          <a href="npmrds--macro_view.html">Macro View: how to use</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

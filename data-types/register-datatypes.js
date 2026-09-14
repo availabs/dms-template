@@ -26,7 +26,8 @@ const PLUGINS = [
   ['actions_cleaned', './mny/actions_cleaned'],
   ['TMAS_volume_uploader', './traffic_counts/TMAS/volume'],
   ['TMAS_station_uploader', './traffic_counts/TMAS/stations'],
-  ['routing', './routing']
+  ['routing', './routing'],
+  ['work_zone', './work_zone']
 ];
 
 module.exports = function registerExtra({ registerDatatype }) {

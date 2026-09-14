@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Bulk downloads and formats · Developers · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  developers--downloads_and_formats.html · IA page 84 · type reference. Phase 6a, 2026-09-08.
+  Sources: data-types/pm3/download.js + downloadManifest.js + index.js (formats CSV · GPKG · ESRI Shapefile, GeoJSON refused, json never
+  producible, PM3_README.txt sections, the AADT-vintage and coverage warnings, POST /dama-admin/:pgEnv/pm3/create-download);
+  npmrds--macro_view--download.html (agreed with); npmrds--map21.html §the annual download; freight_atlas--downloads.html (agreed with);
+  datasets ExternalVersionControls.jsx OUTPUT_FILE_TYPES and overview.jsx (metadata.download); skills uploading-download-files.md (S3
+  urls, dl_url public, ~450 MB cap) and uploading-gis-and-tabular-datasets.md (ogr2ogr); tickets 2195719 (23 versions generated
+  2026-07-27) and 2195637 (the per-year CSV zip; Downloads & API band re-linked); npmrds--reports--share_and_print.html (Data link);
+  the datasheets' Distribution sections; npmrds--route_comparison.html and tsmo--congestion.html (no download of their own).
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="reference" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Developers · reference</div>
+          <h1 class="doc-title">Bulk downloads and formats.</h1>
+          <p class="doc-lede">Every route on the platform that hands you a file: what the file holds, its format, and whether the route asks for sign-in. Then what each package contains, how per-version exports are generated, and what is not downloadable at all. For anyone who would rather have a file than a query.</p>
+          <div class="stamps">
+            <span class="type">reference</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-08</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="every-download-route">Every download route</h2>
+          <p>Eight routes. The first five are pages with a download control; the last three are files or APIs you address directly. "Sign-in?" says what the route asked for at the last check named in the row's section below.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Route</th><th>What you get</th><th>Format</th><th>Sign-in?</th></tr></thead>
+            <tbody>
+              <tr><td>NPMRDS › <span class="ui">Macro View</span> › <span class="ui">Download N rows</span></td><td>One PM3 year of the drawn measure for every segment in the geography on the map or statewide, the columns you choose, and <code>PM3_README.txt</code></td><td>CSV or GPKG, zipped</td><td>No</td></tr>
+              <tr><td>NPMRDS › <span class="ui">MAP-21 PM3</span> › <span class="ui">Annual data · HPMS Travel Time Metrics</span></td><td>New York's HPMS Travel Time Metrics submission file for the selected year, one row per reporting segment</td><td>CSV, per the button's label; not served at the 2026-09-08 check</td><td>No</td></tr>
+              <tr><td>TSMO › <span class="ui">Data &amp; Methodology</span> › <span class="ui">Downloads &amp; API</span> › <span class="ui">open data source →</span></td><td>The excessive-delay series source page; its <span class="ui">Download</span> is one zip holding a CSV per year</td><td>CSV, zipped</td><td>The source page may; the file link does not</td></tr>
+              <tr><td>Freight Atlas › <span class="ui">Data &amp; Downloads</span> › source page › <span class="ui">Versions</span> › <span class="ui">Download</span></td><td>One version of one dataset, as generated for it</td><td>CSV · ESRI Shapefile · GeoJSON · GPKG, each zipped</td><td>Asked at the 2026-07-29 check</td></tr>
+              <tr><td>Freight Atlas › <span class="ui">About &amp; The Plan</span> › report library</td><td>The 2024 State Freight Plan documents: main report, executive summary, appendices, meeting decks, the 2019 archive</td><td>PDF · ZIP</td><td>No</td></tr>
+              <tr><td>NPMRDS › <span class="ui">Reports</span> › <span class="ui">Data</span></td><td>Whatever file the report's author linked; the button appears only when a link is set</td><td>As linked</td><td>No</td></tr>
+              <tr><td><a href="developers--data_manager_api.html">Data Manager API</a></td><td>The rows of any published view, page by page, filtered</td><td>JSON Graph</td><td>No, for public reads</td></tr>
+              <tr><td><a href="developers--batch_reports_api.html">Batch Reports API</a></td><td>Speed, travel time and hours of delay per route and period</td><td>JSON</td><td>The endpoint checks none; its pages require sign-in</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="the-macro-view-package">The Macro View package</h2>
+          <p>The builder on the Macro View exports exactly what the map is drawing: one row per segment for the PM3 year, with the measure the map shows, the identity columns, and any columns you add. Two formats, <span class="ui">csv</span> and <span class="ui">gpkg</span>; geometry is optional in the CSV and required for the GeoPackage to be a map layer. JSON was removed on 2026-08-24 because the export pipeline cannot write it, and GeoJSON is refused as a matter of policy. A Shapefile is accepted by the server but not offered in the builder. The steps are on <a href="npmrds--macro_view--download.html">Download data from the Macro View</a>.</p>
+          <p>Column names follow the dataset's scheme: measure, variant, period and unit joined by underscores, as in <code>lottr_amp_lottr</code> and <code>ted_freeflow_anchored_all_xdelay_vhrs</code>. The identity columns include the TMC code, the year, the county, the region, the MPO and the urban area. The dataset carries no road name; join the TMC code to the <a href="measures_and_data--data--tmc_network.html">TMC network</a> for names, lengths and AADT.</p>
+          <p><code>PM3_README.txt</code> is written for the year exported, so two years' packages read differently. Its sections: the export (source, year, format, scope, row filter, column list); the coverage era of the year for the all-vehicle and truck streams, with a warning when the year crosses an era boundary; the fixed free-flow reference window, whether the year overlaps it, and the <code>anchor_fallback</code> rows to exclude from a trend; the delay columns, which variant answers which question, the 20 mph floor and the share of delay it governs, and an AADT-vintage warning when the year sits on a revision boundary; the reliability columns and their precision fields; and a checklist for comparing years that ends "not for federal submittal". The warnings are computed from the year, not pasted in.</p>
+
+          <h2 id="the-map-21-annual-file">The MAP-21 annual file</h2>
+          <p>The file under <span class="ui">Annual data · HPMS Travel Time Metrics</span> on the MAP-21 pages is the submission NYSDOT files with FHWA each June 15: one row per reporting segment, both directions, with the per-period LOTTR and TTTR ratios and percentile travel times, PHED hours, and the segment's system, length and directional AADT. The <span class="ui">Year</span> selector switches the file. The button reads <span class="ui">Download CSV</span>; at the 2026-09-08 check its address was a placeholder that did not resolve, so the file is not yet served. This file, not a Macro View download, reproduces a federal figure. See <a href="npmrds--map21.html#the-annual-download">The annual download</a> and the <a href="measures_and_data--data--pm3_and_map21.html">PM3 and MAP-21 datasets</a> datasheet for its columns.</p>
+
+          <h2 id="the-tsmo-data-and-methodology-downloads">The TSMO Data &amp; Methodology downloads</h2>
+          <p>The page's <span class="ui">Downloads &amp; API</span> band has two cards. <span class="ui">open data source →</span> leads to the excessive-delay series source page, whose <span class="ui">Download</span> hands you one zip holding a CSV per year: 4,927,052 rows over 9 year files, about 143 MB, generated on 2026-07-27 without the geometry column. The API card leads to the API guide. The band's copy names "CSV / Parquet"; the generated file is CSV. Both cards replaced links that did not work, reported in July 2026 and fixed on 2026-07-27. The <a href="measures_and_data--data--excessive_delay_series.html">Excessive-delay series</a> datasheet says which years the file holds; the dashboards themselves have no download control.</p>
+
+          <h2 id="source-page-exports-and-how-they-are-generated">Source-page exports and how they are generated</h2>
+          <p>Every dataset in Data &amp; Downloads has a source page, and every version of it can carry generated files. A download exists only where a file was generated for that version. Administrators generate them: a request names the view, the columns and the formats, and a server job writes each format with the GDAL <code>ogr2ogr</code> tool and records the file addresses on the view. The four formats the job can write are <span class="ui">CSV</span>, <span class="ui">ESRI Shapefile</span>, <span class="ui">GeoJSON</span> and <span class="ui">GPKG</span>, GPKG being the GeoPackage. On 2026-07-27 the 23 Freight Atlas versions without a file were generated as CSV, Shapefile and GPKG, so every Freight Atlas version now has a download; the 28 that already had files carry GeoJSON as well. The catalog's design listed XLSX; no code writes it.</p>
+          <p>The files sit in object storage at <code>https://availabs-bucket.files.availabs.org/…</code> and the addresses are plain: a file that has been generated can be fetched without a token, and each of the 23 was verified fetchable. The source page that lists them is another matter: at the 2026-07-29 check the catalog showed the sign-in page to visitors without an account. <a href="freight_atlas--downloads.html#what-needs-a-login">What needs a login</a> carries the record. Through the API, a view's <code>metadata</code> attribute holds the same addresses under <code>download</code>, keyed by format. Uploaded documents, such as the plan library's PDFs, follow the same rule: the file address is public even where the page is not.</p>
+
+          <h2 id="report-data-links">Report Data links</h2>
+          <p>A report's header shows a <span class="ui">Data</span> button only when its author set a Data link; it opens that address in a new tab. What it points to is the author's choice, so its format is whatever they linked. A report's own address reproduces the view but does not freeze the numbers; for a figure you must defend, take the file behind <span class="ui">Data</span> or export the measure from the Macro View. See <a href="npmrds--reports--share_and_print.html">Share, print and publish a report</a>.</p>
+
+          <h2 id="what-is-not-downloadable">What is not downloadable</h2>
+          <ul>
+            <li><strong>The raw 5-minute travel-time table.</strong> No page offers a file. The Macro View package carries computed measures per segment and year, not epochs. The <a href="measures_and_data--data--npmrds_travel_times.html">NPMRDS travel times</a> datasheet says what the table holds.</li>
+            <li><strong>The routes table.</strong> No page offers a download of saved routes. A route's address loads it for anyone; see <a href="measures_and_data--data--routes_data.html">Routes data</a>.</li>
+            <li><strong>The Route Comparison matrix.</strong> The draft tool does not yet offer a download of its own. Copy the cells, or build the question as a report.</li>
+            <li><strong>The TSMO dashboards.</strong> No dashboard has a download control. The data behind them is the per-year CSV above.</li>
+            <li><strong>Any format a job did not write.</strong> A source page offers only the formats generated for that version; the Macro View offers CSV and GPKG only.</li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Macro View download route and manifest (data-types/pm3: <code>download.js</code>, <code>downloadManifest.js</code>, <code>index.js</code>): <code>SUPPORTED_FILE_TYPES = ['CSV', 'GPKG', 'ESRI Shapefile']</code>; "GeoJSON is refused as a matter of pm3 policy (stated 2026-08-24)"; "json was never producible. ogr2ogr emits no plain-JSON driver"; <code>PM3_README.txt</code> and its sections; the AADT-vintage and coverage warnings; the shared <code>gis/create-download</code> worker; mounted at <code>/dama-admin/:pgEnv/pm3/</code>.</li>
+            <li><a href="npmrds--macro_view--download.html">Download data from the Macro View</a> (this documentation): the builder's controls, column scheme and limits; <a href="npmrds--map21.html">MAP-21 PM3 reporting pages</a>: the annual download; <a href="freight_atlas--downloads.html">Download freight data</a>: formats, the 2026-07-27 generation, the sign-in wall.</li>
+            <li>Datasets pattern code: <code>ExternalVersionControls.jsx</code>, <code>OUTPUT_FILE_TYPES = ["CSV", "ESRI Shapefile", "GeoJSON", "GPKG"]</code>; <code>overview.jsx</code>, a Download button per generated format from <code>metadata.download</code>.</li>
+            <li>Skills: <code>uploading-download-files.md</code> (S3-backed absolute <code>https://availabs-bucket.files.availabs.org/…</code> urls; "the dl_url itself is public"; the Freight Atlas report library); <code>uploading-gis-and-tabular-datasets.md</code> (ogr2ogr).</li>
+            <li>Ticket 2195719 (resolved 2026-07-27): 23 of 23 missing downloads generated as CSV, ESRI Shapefile and GPKG, GeoJSON skipped, coverage 53 of 53, "every zip was verified fetchable". Ticket 2195637 (resolved 2026-07-27): the Downloads &amp; API band's two cards; the excessive-delay download of 4,927,052 rows over 9 year files, 149,482,429 bytes, geometry excluded; "CSV / Parquet · per year · NY extract" as the card's copy. Ticket 2197778 (2026-07-29): the sign-in wall.</li>
+            <li><a href="npmrds--reports--share_and_print.html">Share, print and publish a report</a>: the <span class="ui">Data</span> button; <a href="npmrds--route_comparison.html">Compare routes across periods</a>: "does not yet offer a download of its own"; <a href="tsmo--congestion.html">Congestion dashboard</a>: "The dashboard has no download control".</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-08 created (phase 6a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="developers.html">Developers hub</a>
+          <a href="npmrds--macro_view--download.html">Download data from the Macro View</a>
+          <a href="freight_atlas--downloads.html">Download freight data</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

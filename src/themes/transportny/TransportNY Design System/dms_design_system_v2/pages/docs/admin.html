@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Admin · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  admin.html · IA page 87 · type hub. Phase 6b, 2026-09-08.
+  Sources: docs-dump 1496528 (Administrator Guidance, 2025-09-30) for the scope of the hub; the datasets, mapeditor and auth
+  patterns in dms-template (the build being deployed) for every control and permission named; datasets.format.js
+  (the nine access permissions); docs-dump 1496547 for the three earlier authority levels.
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="hub" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Admin · hub</div>
+          <h1 class="doc-title">Admin.</h1>
+          <p class="doc-lede">Six procedures for the people who put data on the platform: uploading a dataset, curating it, building a map from it, putting that map on a page, rebuilding the MAP-21 and analytical datasets each year, and managing accounts. Everything here needs an administrator account. Readers need none of it.</p>
+          <div class="stamps">
+            <span class="type">hub</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-08</span>
+            <span>owner · —</span>
+            <span class="gated">requires an administrator account</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="who-this-is-for">Who this is for</h2>
+          <p>NYSDOT staff and the platform team who administer the platform's data. You are in the right place if you upload files that become datasets, write the descriptions and column names the public reads, build the maps the products draw, or add and remove accounts. Every task on these six pages is invisible to a signed-out reader, and most of the controls do not appear at all until your account carries the permission the task needs.</p>
+          <p>If you only want the data, you are in the wrong hub. Read <a href="freight_atlas--downloads.html">Download freight data</a> for the catalog, <a href="developers--quickstart.html">the developer quick start</a> for the API, and <a href="npmrds--macro_view--download.html">Download data from the Macro View</a> for a measure export.</p>
+
+          <h2 id="what-is-here">What is here</h2>
+          <p>Six pages. Two on datasets, two on maps, one on the yearly MAP-21 and analytical rebuild, one on accounts.</p>
+          <div class="hubgrid">
+            <a class="hubcard" href="admin--upload_data.html"><div class="t">Upload a dataset</div><div class="d">Create a source, upload a GIS or tabular file, map its columns, publish it, and watch the load finish. Also the flat-file path for a PDF or a download bundle.</div><div class="n">how-to · read first</div></a>
+            <a class="hubcard" href="admin--manage_data.html"><div class="t">Manage a dataset</div><div class="d">The description, categories and update interval; column display names; a new version; a version's download files; who can see it; and the two kinds of delete.</div><div class="n">how-to</div></a>
+            <a class="hubcard" href="admin--map_editor.html"><div class="t">Map Editor</div><div class="d">Open or create a saved map, add a layer from a dataset version, style it, write its legend, and save. Including how to point a saved map at a newer version.</div><div class="n">how-to</div></a>
+            <a class="hubcard" href="admin--add_map_to_page.html"><div class="t">Add a saved map to a page</div><div class="d">Put a Map section on a page, choose the saved map and its layer, set height, legend and page-variable binding, and publish.</div><div class="n">how-to</div></a>
+            <a class="hubcard" href="admin--map21_pm3_sources.html"><div class="t">Create the map21 / pm3 sources</div><div class="d">The once-a-year rebuild behind the MAP-21 PM3 pages and the analytical series, run before the June 15 federal filing.</div><div class="n">how-to · yearly</div></a>
+            <a class="hubcard" href="admin--users_and_permissions.html"><div class="t">Users and permissions</div><div class="d">The Users and Groups pages: add someone by email, change the groups they belong to, send a password reset, and what each permission lets a group do.</div><div class="n">how-to</div></a>
+          </div>
+
+          <h2 id="how-authority-works">How authority works</h2>
+          <p>Three things decide what you can do. First, you sign in, exactly as a reader would; see <a href="start--accounts_and_sessions.html">Sign in, sessions and accounts</a>. Second, your account belongs to one or more <strong>groups</strong>, which is the only account attribute the Users page edits. Third, each dataset carries an <strong>Access</strong> list that grants named permissions — <span class="ui">View source</span>, <span class="ui">Download source</span>, <span class="ui">Update source</span>, <span class="ui">Create version</span>, <span class="ui">Manage downloads</span>, <span class="ui">View source API</span>, <span class="ui">Delete source</span>, <span class="ui">Edit permissions</span>, <span class="ui">All (*)</span> — to a group or to one person. A control appears when the permission behind it is granted and stays hidden when it is not, which is why two administrators can see different buttons on the same dataset. <a href="admin--users_and_permissions.html">Users and permissions</a> is the reference; each page below names the permission its task needs under <em>Before you start</em>.</p>
+          <div class="callout note"><span class="k">note</span>The earlier administrator guidance described three numeric authority levels — 1 view only, 2 view and download, 10 full access. The named permissions above are what this build grants and check; <a href="admin--users_and_permissions.html#the-three-earlier-levels">the mapping</a> is on the users page.</div>
+
+          <h2 id="the-yearly-and-the-occasional-tasks">The yearly and the occasional tasks</h2>
+          <p>Only one job on this hub is on a calendar. The rest happen when data arrives or a page changes.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Task</th><th>When</th><th>Page</th></tr></thead>
+            <tbody>
+              <tr><td>Rebuild the MAP-21 dataset for the completed calendar year, and add the year to the analytical dataset</td><td>Once a year, in time for the June 15 federal filing</td><td><a href="admin--map21_pm3_sources.html">Create the map21 / pm3 sources</a></td></tr>
+              <tr><td>Load a new TMC network vintage, a new HPMS attribute year, or a freight dataset</td><td>When the file arrives</td><td><a href="admin--upload_data.html">Upload a dataset</a></td></tr>
+              <tr><td>Add a version to an existing dataset, or generate its download files</td><td>When new data is published, or when a reader asks for a format that is missing</td><td><a href="admin--manage_data.html">Manage a dataset</a></td></tr>
+              <tr><td>Restyle a map, or point one at a newer version</td><td>After a dataset gets a new version, or a review asks for a change</td><td><a href="admin--map_editor.html">Map Editor</a></td></tr>
+              <tr><td>Put a map on a page, or refresh the copy a page holds</td><td>When a page is built or a saved map is restyled</td><td><a href="admin--add_map_to_page.html">Add a saved map to a page</a></td></tr>
+              <tr><td>Grant an account access, change someone's groups, send a password reset</td><td>On request</td><td><a href="admin--users_and_permissions.html">Users and permissions</a></td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="start-here">Start here</h2>
+          <ul>
+            <li><a href="admin--upload_data.html">Upload a dataset</a> · the flow every other page assumes you have seen once: name, type, file, columns, publish.</li>
+            <li><a href="admin--users_and_permissions.html#what-a-permission-gates">What a permission gates</a> · read this before you wonder why a button is missing.</li>
+            <li><a href="freight_atlas--downloads.html">Download freight data</a> · the reader's view of a dataset you administer. Build the page a reader will actually meet.</li>
+          </ul>
+
+          <h2 id="common-tasks">Common tasks</h2>
+          <ul>
+            <li><a href="admin--upload_data.html#steps">Upload a GeoPackage or a CSV as a new dataset</a>.</li>
+            <li><a href="admin--upload_data.html#a-flat-file-instead-of-a-dataset">Upload a PDF or a zip for download</a>, which becomes a dataset whose versions are files.</li>
+            <li><a href="admin--manage_data.html#steps">Write a dataset's description and column display names</a> — the data dictionary readers see.</li>
+            <li><a href="admin--manage_data.html#versions-and-downloads">Generate a version's download files</a> in CSV, ESRI Shapefile, GeoJSON and GPKG. <a href="developers--downloads_and_formats.html">Bulk downloads and formats</a> is the catalogue of what exists.</li>
+            <li><a href="admin--map_editor.html#steps">Build a map from a dataset version</a> and <a href="admin--add_map_to_page.html#steps">put it on a page</a>.</li>
+            <li><a href="admin--map21_pm3_sources.html#steps">Create this year's MAP-21 dataset</a>.</li>
+            <li><a href="admin--users_and_permissions.html#steps">Add someone by email and put them in a group</a>.</li>
+          </ul>
+
+          <h2 id="reference">Reference</h2>
+          <ul>
+            <li><a href="measures_and_data--data--pm3_and_map21.html">PM3 and MAP-21 datasets</a> · what the yearly rebuild produces, and the CY 2025 federal correction.</li>
+            <li><a href="measures_and_data--data--freight_atlas_sources.html">Freight Atlas sources</a> · the datasets the Freight Atlas layers draw, with their vintages.</li>
+            <li><a href="developers--data_manager_api.html">Data Manager API</a> · how a dataset reads back once it is published.</li>
+            <li><a href="developers--downloads_and_formats.html">Bulk downloads and formats</a> · how a per-version export is generated and what is not downloadable.</li>
+            <li><a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a> · the spans and cadences you are maintaining.</li>
+          </ul>
+
+          <h2 id="what-is-not-here">What is not here</h2>
+          <ul>
+            <li><strong>Not the pipeline code.</strong> The measures, the loaders and the yearly workers are code, not screens. These pages document the buttons that start them and the log that reports them. What the code does is on the datasheets in <a href="measures_and_data.html">Measures &amp; Data</a>.</li>
+            <li><strong>Not server administration.</strong> Hosts, storage, backups, deployment and the database are outside these pages and not documented here.</li>
+            <li><strong>Not the command line.</strong> Every procedure here is the browser one. A command-line path exists for scripted loads; it is not documented here.</li>
+            <li><strong>Not page authoring in general.</strong> One page covers the map section. Building the rest of a page, its filters and its cards, is not documented here.</li>
+            <li><strong>No approval queue for sign-up requests.</strong> The Users page in this build adds an account by email; it does not list pending requests. See <a href="admin--users_and_permissions.html#what-these-pages-do-not-do">What these pages do not do</a>.</li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Administrator Guidance (docs pages, 2025-09-30 to 2026-03-04): the scope of the hub — data uploading, dataset management, metadata configuration, field labelling, permissions — and the three authority levels 1 / 2 / 10 on the Managing Data page.</li>
+            <li>Datasets pattern (the build being deployed): the catalog, the Create Dataset page, the source page's tabs, the Overview edit controls, the Admin tab, the Tasks list, and the version download controls.</li>
+            <li>Source access vocabulary (datasets source format): the nine permissions named above, with their labels as the Access editor shows them.</li>
+            <li>Map editor pattern: saved maps (symbologies), the layer manager and the layer editor. Page pattern's Map section: the settings that choose a saved map and publish it on a page.</li>
+            <li>Auth pattern: the sign-in, sign-up and password routes, and the Users and Groups management pages.</li>
+            <li>MAP-21 and analytical data types (map21, pm3): the create panels behind the yearly rebuild, and the federal June 15 cycle recorded on <a href="measures_and_data--data--pm3_and_map21.html">PM3 and MAP-21 datasets</a>.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-08 created (phase 6b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="index.html">Documentation home</a>
+          <a href="start--accounts_and_sessions.html">Sign in, sessions and accounts</a>
+          <a href="developers.html">Developers</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

@@ -230,6 +230,9 @@ if (fixCard) {
   providers.push({ functionId: 'delete_publish', enabled: true, paramKey: 'song_added' });
   ed.display = { ...ed.display, allowDelete: true, deleteItemLabel: 'Delete track', closeModalOnDelete: 'edit_song',
     _functions: { ...(ed.display._functions || {}), providers } };
+  // The row must carry its primary key for delete (and the live-edit save) to target it.
+  if (!ed.columns.some((c) => c.name === 'id')) ed.columns.push({ name: 'id', show: true, selectOnly: true });
+  ed.data = [];
   write(`fix-track card ${fixCard.id}: allowDelete + delete_publish`,
     ['section', 'update', String(fixCard.id), '--data', JSON.stringify(withED(fixCard, ed))]);
 }

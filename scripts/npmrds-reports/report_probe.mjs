@@ -35,8 +35,10 @@
 //                     scratchpad/npmrds-sub/.dms-auth-token — refresh it by having
 //                     Ryan run scratchpad/npmrds-sub/mint_token.sh). Needed for
 //                     edit-mode probes; a stale token silently degrades to anon.
-//   --host <origin>   page origin (default http://npmrds.localhost:5173 — subdomain matters,
-//                     bare localhost routes to the wrong pattern)
+//   --host <origin>   page origin (default http://www.localhost:5173/npmrds — the npmrds_sub
+//                     pattern's subdomain mount was retired 2026-09-02 in favor of this
+//                     path-mounted one; bare localhost or the old npmrds.localhost subdomain
+//                     both route to the wrong pattern now)
 //   --api <origin>    dms-server origin to capture (default http://localhost:3001)
 //   --viewport WxH    default 1600x1000
 //   --out <dir>       output dir (default scratchpad/npmrds-sub/tmp)
@@ -80,7 +82,7 @@ const opts = {
   bodies: false,
   section: null,
   eval: null,
-  host: 'http://npmrds.localhost:5173',
+  host: 'http://www.localhost:5173/npmrds',
   api: 'http://localhost:3001',
   viewport: { width: 1600, height: 1000 },
   out: path.join(repoRoot, 'scratchpad/npmrds-sub/tmp'),

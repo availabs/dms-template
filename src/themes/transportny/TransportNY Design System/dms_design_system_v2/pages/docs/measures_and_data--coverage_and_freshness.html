@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Coverage and freshness · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="reference" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · reference</div>
+          <h1 class="doc-title">Coverage and freshness.</h1>
+          <p class="doc-lede">What each data source covers, how far behind it runs, how often it refreshes and where the gaps are. Read this before you compare two years, quote a partial year, or wonder why a month shows nothing. It assumes you know which product you are looking at.</p>
+          <div class="stamps">
+            <span class="type">reference</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="the-coverage-table">The coverage table</h2>
+          <p>Five sources stand behind every figure on the platform. Each row states its span, its lag behind today, its refresh cadence and its known gaps. Every dated figure names the data revision it was read at, and the live pages recompute.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Source</th><th>Span</th><th>Lag</th><th>Cadence</th><th>Gaps</th></tr></thead>
+            <tbody>
+              <tr><td><a href="measures_and_data--data--npmrds_travel_times.html">NPMRDS travel times</a></td><td>January 2017 to present. 14.0 billion 5-minute records through May 2026 at the June 2026 data revision</td><td>About 2 weeks</td><td>Daily batch</td><td>Completeness moves in nine eras. Across the published years all-vehicle bins reporting runs 36.3 % to 51.5 % and truck bins 8.0 % to 23.5 %. Overnight is thin. No record below 2 mph reaches the platform</td></tr>
+              <tr><td><a href="measures_and_data--data--transcom_events.html">TRANSCOM events</a></td><td>2015 to present per the Data &amp; Methodology page. The TSMO home dates the store from 2014, its first events falling in October 2014. 3.7 million events, multi-state, filtered to New York</td><td>None: live feed</td><td>Continuous</td><td>Timestamps are sparse (see below). A delay footprint exists on 18.5 % of events. Secondary crashes are not tracked</td></tr>
+              <tr><td><a href="measures_and_data--data--excessive_delay_series.html">Excessive-delay series</a> (June 2026 revision)</td><td>2018 to present. 2017 has no rows. 2019 and 2020 are not computed. At the August 2026 review the bound data ran from January 2018 to June 2026. The refresh-cadence table on the TSMO Data &amp; Methodology page is the live authority for the latest month loaded.</td><td>Batch. A month appears when its run lands</td><td>Batch recompute, monthly target</td><td>2019–2020 shown as an explicit gap. Partial years show partial totals. Not comparable with figures published before June 2026</td></tr>
+              <tr><td><a href="measures_and_data--data--pm3_and_map21.html">PM3 and MAP-21 datasets</a></td><td>Calendar years. CY 2025 is the latest, computed in February 2026</td><td>Computed after the year closes</td><td>Annual, on the federal cycle</td><td>The Macro View's 2024 dataset holds 22,754 segments against 52,127 for 2025 (see below). 2024 spans three coverage eras</td></tr>
+              <tr><td><a href="measures_and_data--data--tmc_network.html">TMC network</a></td><td>One map per year: 52,029 segments for 2024, 52,157 for 2025, 52,473 for 2026, per the NPMRDS home design header</td><td>—</td><td>Annual conflation</td><td>The network grew from about 36,000 segments in 2017 to 46,000 in 2019 and about 52,000 today, so a multi-year series is not a fixed panel</td></tr>
+              <tr><td><a href="measures_and_data--data--freight_atlas_sources.html">Freight Atlas sources</a></td><td>Each dataset carries its own base year, stated on its source page</td><td>Per dataset</td><td>Per dataset</td><td>The 2024 State Freight Plan's figures are fixed at their publication base years</td></tr>
+            </tbody>
+          </table></div>
+          <p>The TSMO Data &amp; Methodology page counts 54,249 TMC segments in its network table, against 52,473 on the 2026 map. The two counts have different bases: one year's map against the network table, which accumulates every segment that has ever carried data. The TMC network datasheet documents both.</p>
+
+          <h2 id="how-the-pages-show-freshness">How the pages show freshness</h2>
+          <p>Freshness is asymmetric on purpose. Events are live, speeds run about two weeks behind, and derived tables are batch. So every panel carries its own data-as-of badge instead of one sitewide date.</p>
+          <ul>
+            <li><strong>NPMRDS pages</strong> carry a freshness strip in the form "npmrds speeds · since Jan 2017 · complete through <em>month</em> · <em>next month</em> partial". At its page revision of 2026-08-24 the Route Comparison strip read "since jan 2017 · jun 2026 · jul 2026 partial". A month is marked partial while its data is still arriving.</li>
+            <li><strong>TSMO pages</strong> carry a data-as-of badge on each panel. The TSMO home's <span class="ui">Data Freshness</span> band shows "Latest: <em>date</em>" per source. The <span class="ui">Data &amp; Methodology</span> page's refresh-cadence table lists each source with its cadence and last update.</li>
+            <li><strong>The Macro View's</strong> <span class="ui">Year</span> list is the set of published annual computations, not a free date range. Each year is complete.</li>
+            <li><strong>Downloads</strong> carry a manifest that restates the coverage eras the requested years touch and flags a year range that straddles an AADT revision.</li>
+          </ul>
+
+          <h2 id="partial-years-show-partial-totals">Partial years show partial totals</h2>
+          <p>A year with four months of data shows four months of delay, in the same card as a full year. The TSMO <span class="ui">Year</span> filter offers every year with any data. At the August 2026 review it offered 2024, holding one month, and 2026, holding four months, beside 2025, the only complete year. Selecting either produced a partial-year total presented as an annual figure.</p>
+          <p>The decision taken is to expose only complete years, from the data side. Until that lands, check the months a year holds before you quote its total, and label a partial year partial: "2026, January to April". The Congestion dashboard's own caption states the rule: "Partial years show partial totals."</p>
+
+          <h2 id="why-a-month-or-a-region-shows-0-or-nothing">Why a month or a region shows $0 or nothing</h2>
+          <ul>
+            <li><strong>The month has not been run.</strong> A month with no data shows nothing, not zero. In November 2025 the Congestion dashboard's month options showed nothing for October and November 2025 while every earlier month had data. Blank means not yet computed.</li>
+            <li><strong>No attributed events in that region and month.</strong> Incident cost is the sum of per-event footprints, and a footprint exists on about 18.5 % of events. A region-month whose events carry no footprint shows a cost of $0. The legacy tracker recorded Region 2, August 2025, showing $0 on the Incidents dashboard, which is the shape this produces.</li>
+            <li><strong>A chart threshold hides small regions.</strong> A bar chart with an axis floor of 0.1 million vehicle-hours shows no bar for a region below it. The missing bar is not a missing year.</li>
+            <li><strong>Grey on the Macro View is no data, not zero.</strong> A segment with no AADT or no speed limit carries no delay and is left uncoloured. Read the "no data" count in the right panel before reading a delay map as coverage of the state.</li>
+            <li><strong>2019 and 2020 are a gap in the excessive-delay series.</strong> Trend charts show the gap rather than interpolating.</li>
+          </ul>
+
+          <h2 id="segment-counts-change-with-the-year">Segment counts change with the year</h2>
+          <p>The Macro View's 2024 dataset holds 22,754 segment rows. Its 2025 dataset holds 52,127. Switching the <span class="ui">Year</span> control therefore changes the size of the network being mapped, not only its values. Whether the 2024 run is incomplete or the network changed is an open data question. Until it is answered, do not read a 2024-to-2025 change on the Macro View as a change in traffic. State both segment counts if you must compare.</p>
+          <p>Separately, the TMC network is re-cut every year. A segment may not exist in every vintage, and the 2019 expansion added about 10,000 segments. <a href="measures_and_data--concepts--tmc_network_and_vintages.html">The TMC network and its vintages</a> covers what that does to a multi-year series.</p>
+
+          <h2 id="what-is-not-computed">What is not computed</h2>
+          <ul>
+            <li>Three Macro View measures: free-flow speed, emissions and attributes. See <a href="measures_and_data--measures--in_development.html">Measures in development</a>.</li>
+            <li>Excessive delay for 2019 and 2020, in the current series.</li>
+            <li>Roadway clearance time for any event missing either of its two timestamps (see the table below).</li>
+            <li>Secondary crashes, which the event feed does not identify.</li>
+            <li>A delay footprint for the 81.5 % of events that are not delay-relevant. Event lists never imply that every event delayed traffic.</li>
+          </ul>
+
+          <h2 id="incident-timestamp-completeness">Incident timestamp completeness</h2>
+          <p>Traffic Incident Management (TIM) measures need pairs of timestamps, and most events do not carry them. Shares are of 3.7 million events, all categories, queried 2026-06-22. Each clearance panel restates the share it rests on as a badge.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Timestamp</th><th class="num">Share of events carrying it</th><th>What it gates</th></tr></thead>
+            <tbody>
+              <tr><td>All lanes reopened to traffic</td><td class="num">42.7 %</td><td>The end of roadway clearance time</td></tr>
+              <tr><td>Incident verified</td><td class="num">20.1 %</td><td>The start of roadway clearance time. Clearance is computed only where this and lanes-open both exist</td></tr>
+              <tr><td>Incident reported</td><td class="num">10.6 %</td><td>The response timeline on an incident page</td></tr>
+              <tr><td>Response arrives on scene</td><td class="num">0.3 %</td><td>The response timeline. Too sparse for a measure</td></tr>
+            </tbody>
+          </table></div>
+          <p>Because verification exists on one event in five, a region-year clearance median can rest on a few dozen events. <a href="measures_and_data--measures--incident_delay_and_clearance.html">Incident delay and clearance</a> explains why the dashboards headline the share cleared within 90 minutes rather than the median.</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>TSMO Data &amp; Methodology page: source catalog (54,249 TMCs, 14.0 billion records, 2017 to May 2026, about 2 weeks lag; 3.7 million events, 2015 to present; 2018 and 2021–2025), the coverage panel (2019–2020 not computed; footprint on 18.5 % of events; the TIM shares), the refresh-cadence table (CY 2025 computed February 2026; 2026 network).</li>
+            <li>TSMO home, data revision 2026-06-12, and its Incident Search card: 2014 to present; first events October 2014; 3.73 million events.</li>
+            <li>Route Comparison page, freshness strip at the page revision of 2026-08-24: "since jan 2017 · jun 2026 · jul 2026 partial".</li>
+            <li>NPMRDS home design header, 2026-07-29: 52,029 · 52,157 · 52,473 segments for the 2024, 2025 and 2026 maps.</li>
+            <li>Data coverage measure page: the nine eras, the 36.3–51.5 % and 8.0–23.5 % ranges, the 36,000 and 46,000 network sizes.</li>
+            <li>Congestion dashboard caption: "Partial years show partial totals"; the ticket on partial years in the Year filter (2214476, decision 2026-08-24) and its bound-data span, January 2018 to June 2026.</li>
+            <li>Legacy running fixes: 2172499 (2025 month options blank; October and November only, 2025-11-05) and 2172498 (Region 2, August 2025, incident cost $0).</li>
+            <li>Macro View quality records, 2026-08-12: 22,754 against 52,127 segment rows (2211482); three measures not computed (2211481).</li>
+            <li>Incidents dashboard: the 0.1 million vehicle-hour axis floor (ticket 2192555).</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 2a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data.html">Measures &amp; Data</a>
+          <a href="measures_and_data--measures--coverage.html">Data coverage</a>
+          <a href="measures_and_data--concepts--coverage_eras_and_comparability.html">Coverage eras and comparability</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

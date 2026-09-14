@@ -13,6 +13,7 @@ import TMASvolume from "../data-types/traffic_counts/TMAS/volume/pages/index.js"
 import TMASstations from "../data-types/traffic_counts/TMAS/stations/pages/index.js"
 
 import osm from '../data-types/osm/pages/index.jsx';
+import workZone from '../data-types/work_zone/pages/index.jsx';
 
 const dataTypesByApp = {
   'mitigat-ny-prod' : {
@@ -32,6 +33,23 @@ const dataTypesByApp = {
     transcom_event_tmc: { defaultPages: ['table'] },
     transcom_congestion: { defaultPages: ['table'] },
     excessive_delay: excessiveDelay,
+    // work_zone — one plugin, one output source per pipeline stage. Every
+    // stage-output type gets the plugin's stage-selector Create page (it
+    // preselects the stage that produces the type being created); wz_event_tmc
+    // is a side output of the spine stage, so it is table-only.
+    wz_event: workZone,
+    wz_event_tmc: { defaultPages: ['table'] },
+    wz_exposure: workZone,
+    wz_speed: workZone,
+    wz_queue: workZone,
+    nys_crashes_open: workZone,
+    nys_crashes_clear: workZone,
+    wz_crash: workZone,
+    wz_intrusions: workZone,
+    wz_qa_ratings: workZone,
+    nysdot_stip: workZone,
+    wz_significant_sample: workZone,
+    work_zone_measures: workZone,
     pm3,
     tmas_volume_uploader: TMASvolume,
     tmas_stations_uploader: TMASstations,

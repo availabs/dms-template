@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Using the filter bar · TSMO · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="tsmo">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">TSMO · how-to</div>
+          <h1 class="doc-title">Use the filter bar.</h1>
+          <p class="doc-lede">Every TSMO dashboard carries <span class="ui">Year</span> and <span class="ui">Region</span>. Incidents adds <span class="ui">Category</span>, Work Zones adds <span class="ui">Type</span>. How to set them, what a blank control means, and what each page leaves out by design.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · TSMO (www/tsmo)</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="before-you-start">Before you start</h2>
+          <p>Open any of the four dashboards. The filter bar sits under the page title. No account is needed. The address carries your selection, so a copied link reproduces the view.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Select the value box of <span class="ui">Year</span>, the box showing the year. The list opens from the value box, not from the label.<span class="result">You see the years that have data.</span></li>
+            <li>Pick a year.<span class="result">The pick replaces the previous year and the list closes. Every panel recomputes. One year at a time: the panels are single-year reads.</span></li>
+            <li>Select the value box of <span class="ui">Region</span> and pick a region. Regions are listed 1 to 11 in numeric order.<span class="result">The list closes and a <span class="ui">✕</span> appears beside the region. The headline card titles name the region.</span></li>
+            <li>To return to statewide, select the <span class="ui">✕</span> on <span class="ui">Region</span>.<span class="result">The region leaves the address and the page recomputes statewide.</span></li>
+            <li>Read the statewide label. The Reliability bar reads <span class="ui">no region selected = statewide</span>; its trend title reads <span class="ui">statewide unless a region is selected</span>. Congestion's headline titles read the region, or statewide.</li>
+            <li>On Incidents set <span class="ui">Category</span>; on Work Zones set <span class="ui">Type</span>. Both behave like <span class="ui">Region</span>.</li>
+          </ol>
+          <div class="callout basis"><span class="k">basis</span>A blank <span class="ui">Region</span> is statewide: every row in the dataset, including segments that belong to no region. It is deliberately not the sum of the 11 regions. Write "statewide" when you quote it.</div>
+
+          <h2 id="settings">Settings</h2>
+          <p>Every control on every TSMO page.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Control</th><th>Where · what it does</th><th>Values</th><th>Default</th></tr></thead>
+            <tbody>
+              <tr><td>Year chips</td><td>TSMO home · sets the year for every card</td><td>The years the delay series holds, partial years included</td><td>The latest complete year</td></tr>
+              <tr><td><span class="ui">Year</span></td><td>The four dashboards · sets the calendar year</td><td>Years with data, single-select</td><td>2025</td></tr>
+              <tr><td><span class="ui">Region</span></td><td>The four dashboards · one NYSDOT region</td><td>Region 1 to Region 11; single-select on Congestion, multi-select on Reliability, Incidents and Work Zones; clearable</td><td>None = statewide</td></tr>
+              <tr><td><span class="ui">Category</span></td><td>Incidents · one event category</td><td>Crash · Message · Other · Road Hazard · Special Event · Volume/Delay · Weather Hazard</td><td>None = all seven</td></tr>
+              <tr><td><span class="ui">Type</span></td><td>Work Zones · planned or emergency work</td><td>Construction · Maintenance · Emergency Operations</td><td>None = all three</td></tr>
+              <tr><td>Search facets</td><td>Incident Search · narrows the event list</td><td><span class="ui">Region</span> · <span class="ui">County</span> · <span class="ui">Year</span> · <span class="ui">Month</span> · <span class="ui">Category</span>, all multi-select, then the search box <span class="ui">Search · facility · description · category · county · id</span></td><td>None</td></tr>
+              <tr><td>Corridor picker</td><td>Corridor View · the road and the day</td><td><span class="ui">County</span> · <span class="ui">Corridor</span> · <span class="ui">Direction</span> · <span class="ui">Month</span></td><td>A default corridor</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="what-each-dashboard-leaves-out-by-design">What each dashboard leaves out by design</h2>
+          <ul>
+            <li><strong>Incidents</strong> excludes Construction, Maintenance and Emergency Operations, which belong to Work Zones. Since 2026-07-28 the two do not overlap.</li>
+            <li><strong>Work Zones</strong> holds only those three categories.</li>
+            <li><strong>Incident Search</strong> searches the whole feed, construction included.</li>
+            <li><strong>Reliability</strong> has no system or vehicle-class filter. LOTTR is all-vehicle and TTTR is truck by federal definition; the two systems are separate cards.</li>
+            <li><strong>Every dashboard</strong> filters by region only. There is no county or MPO filter. Counties are in <a href="tsmo--corridor_view.html">Corridor View</a> and <a href="tsmo--incident_search.html">Incident Search</a>.</li>
+          </ul>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul>
+            <li>The list opens from the value box. Selecting the label does nothing.</li>
+            <li><span class="ui">Year</span> is single-select on every dashboard. <span class="ui">Region</span> is single-select on Congestion since July 2026 and still accepts several regions on Reliability, Incidents and Work Zones. Incident Search keeps multi-select on every facet because it is a query tool.</li>
+            <li>A blank <span class="ui">Region</span> or <span class="ui">Category</span> means all of it.</li>
+            <li>The reliability trend shows every year regardless of <span class="ui">Year</span>: the measure is annual.</li>
+            <li>Partial years are offered, and show <a href="measures_and_data--coverage_and_freshness.html#partial-years-show-partial-totals">partial totals</a>.</li>
+            <li>The region does not follow you into Corridor View, which is county-keyed. Pick the county there.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="i-cannot-see-where-to-select-a-region">I cannot see where to select a region</h3>
+          <p>Every control has had a visible border since 2026-07-20. Select the value box beside the <span class="ui">Region</span> label. If you see no box at all, reload the page.</p>
+          <h3 id="i-picked-a-region-but-a-title-still-says-statewide">I picked a region but a title still says statewide</h3>
+          <p>The numbers always followed the region; until 2026-07-20 some titles were fixed text. If a title still reads statewide with a region selected, <a href="help.html">report it</a> with the page and region.</p>
+          <h3 id="the-page-went-blank-after-i-picked-a-category">The page went blank after I picked a category</h3>
+          <p>Until 2026-07-28 <span class="ui">Category</span> on Incidents offered Construction, which the page excludes, so picking it returned zero rows. The list now holds the seven reactive categories. If a panel is blank, clear <span class="ui">Category</span>.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="measures_and_data--concepts--geography.html#what-statewide-means">What statewide means</a></li>
+            <li><a href="tsmo--congestion.html">Congestion dashboard</a></li>
+            <li><a href="tsmo--incident_search.html">Find an incident</a></li>
+            <li><a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a></li>
+            <li><a href="tsmo--faq.html">TSMO FAQ</a></li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>TSMO Reliability dashboard, published 2026-07-17: filter-bar label <span class="ui">no region selected = statewide</span>; trend title; the removed System filter (feedback record 2191485).</li>
+            <li>Filter decisions of July 2026, feedback records 2191408 · 2194890 · 2191406 · 2195000 · 2195002 · 2194779 · 2195003 · 2195387 · 2195001 · 2192571 · 2191486.</li>
+            <li>TSMO Incident Search page, published 2026-07-17: facets by region, county, time period, category or keyword.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 2b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="tsmo.html">TSMO</a>
+          <a href="measures_and_data--concepts--geography.html">Geography</a>
+          <a href="glossary.html">Glossary</a>
+          <a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

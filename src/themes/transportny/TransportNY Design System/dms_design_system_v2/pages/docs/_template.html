@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <!-- TITLE: "<page title> · <Hub> · TransportNY docs" -->
+  <title>Page title · Hub · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  TransportNY documentation page — SHELL TEMPLATE (copy this file; do not link to it).
+  Task: planning/transportny/tasks/current/platform-documentation-build.md · style: STYLE.md · tree: _docs-nav.js
+
+  How to use: (1) copy to <hub>--<slug>.html (name from DOCS_TREE); (2) set <title>, data-doc-type, the header block;
+  (3) write the body with the vocabulary in _docs.css (h2 with ids · ol.steps · .callout · table.docs in .tablewrap ·
+  dl.defs · .formula · figure.shot with a capture spec · mark.verify); (4) fill the footer's related links;
+  (5) set status:'written' for the page in _docs-nav.js; (6) run  node _lint.mjs <file>.
+  data-doc-type ∈ start · how-to · screens · measure · data · concept · recipe · faq · hub · log · reference · glossary
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="product">
+        <div class="crumbs" id="docsCrumbs"></div>
+
+        <!-- ── header block · the "telescope": identical on every page ── -->
+        <header>
+          <div class="doc-kicker">Hub name · page type</div>
+          <h1 class="doc-title">Page title as the user's goal.</h1>
+          <p class="doc-lede">One or two sentences: what this page is for and what the reader will have at the end. Who it assumes.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · NPMRDS (www/npmrds)</span>
+            <span>last reviewed · 2026-09-04</span>
+            <span>owner · —</span>
+            <!-- optional: <span class="upcoming">describes an upcoming release</span> · <span class="gated">requires sign-in</span> -->
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <!-- how-to shape: Before you start (prerequisites + where) · Steps (ol.steps, ≤12, one action each, .result after key steps)
+               · Settings table (table.docs) · Limits and gotchas · Troubleshooting · What next.
+               measure shape: see STYLE.md §3 (header block · what it answers · how it is computed · parameters & edge rules ·
+               the choices made · how much to trust it · worked example · known limits · comparability · revision log · reproducibility · references). -->
+          <h2 id="before-you-start">Before you start</h2>
+          <p>Where you are, what you need, what you will have at the end.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Open <span class="ui">Reports</span> from the NPMRDS side navigation.<span class="result">You see the template shelf.</span></li>
+            <li>…</li>
+          </ol>
+
+          <div class="callout basis"><span class="k">basis</span>Geography · period · vehicle class · system stated for every number on this page.</div>
+
+          <figure class="shot" data-capture="www/npmrds/macro?year=2025&measure=lottr" data-alt="Macro View with LOTTR selected for 2025, statewide">
+            <div class="ph">Macro View · LOTTR · 2025 · statewide · right panel open</div>
+            <figcaption>Figure 1 · the state that produced this capture, and the capture date once taken.</figcaption>
+          </figure>
+
+          <h2 id="what-next">What next</h2>
+          <ul><li><a href="npmrds--reports--build.html">Build and edit a report</a></li></ul>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-04 created (phase N)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data.html">Measures &amp; Data</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

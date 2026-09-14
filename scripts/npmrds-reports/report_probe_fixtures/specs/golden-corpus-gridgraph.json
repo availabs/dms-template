@@ -1,6 +1,5 @@
 {
   "title": "Golden Corpus - Grid Graph",
-  "slug": "converted_reports/golden_corpus_gridgraph",
   "description": "Golden-corpus representative page for GridGraph (report_probe.mjs batch mode). Kept live intentionally, not disposable — see report-probe-expect-and-golden-corpus.md.",
   "graphs": [
     {

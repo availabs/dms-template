@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Find, edit, tag and share routes · NPMRDS · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">NPMRDS · how-to</div>
+          <h1 class="doc-title">Find, edit, tag and share routes.</h1>
+          <p class="doc-lede">Saved routes are found through the <span class="ui">Add Routes</span> dialog of a report, edited on the Route Creation page, grouped by tags, and shared by address. Folders no longer exist; tags replace them. Written for anyone who has saved a route or needs one a colleague saved.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · NPMRDS</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+            <span class="gated">requires sign-in to edit</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="before-you-start">Before you start</h2>
+          <p>There is no routes page. Routes are listed where they are used: the <span class="ui">Add Routes</span> dialog in a report's Routes rail, and the picker of the draft Route Comparison tool. To open that dialog you need a report of your own in edit mode, so sign in and either create one or open one you own. Editing a saved route itself happens on Route Creation, by address.</p>
+          <p>Two things are both called a route. The <strong>saved route</strong> is the segment list with its name and tags. The <strong>route row</strong> in a report is a reference to it plus a date window and a colour. Renaming or re-dating the row does not change the saved route.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Open a report you own, select <span class="ui">Edit</span>, then <span class="ui">Add Route</span> in the Routes rail.<span class="result">The <span class="ui">Add Routes</span> dialog opens on <span class="ui">All Routes</span> with a search box, a <span class="ui">Browse by tag</span> row and a ranked list.</span></li>
+            <li>Type part of a name in <span class="ui">Search routes by name…</span>.<span class="result">The list narrows as you type. Each row shows the name, the segment count, an ownership badge (<span class="ui">Mine</span>, <span class="ui">Curated</span> or <span class="ui">Auto-generated</span>) and its tag chips.</span></li>
+            <li>Or browse. Select <span class="ui">County</span>, <span class="ui">Region</span> or <span class="ui">Agency</span>, then a value.<span class="result">The breadcrumb reads <span class="ui">All Routes</span> / County / Dutchess, for example, and the list holds routes carrying that tag. <span class="ui">Other tags</span> searches free-text tags such as a project number.</span></li>
+            <li>Narrow with the chips beside <span class="ui">narrow by</span>: <span class="ui">Mine</span> for routes you created, <span class="ui">Curated</span> to hide generated ones, <span class="ui">Auto-generated</span> to see only those.<span class="result">The count line reads "N routes". <span class="ui">clear</span> resets the chips.</span></li>
+            <li>If the route is a single segment, select <span class="ui">Show short segments too</span>. Single-segment routes are hidden in browse views because they are most of the catalogue.</li>
+            <li>Change the order with the <span class="ui">sort</span> control: <span class="ui">Best match</span>, <span class="ui">Recently updated</span> or <span class="ui">Name (A–Z)</span>.</li>
+            <li>Tick one or more routes and select <span class="ui">Add N Routes</span>.<span class="result">Each becomes a row in the rail. A route already on the report is flagged <span class="ui">Already on report</span> in targeted views and can be added again, for a second date window.</span></li>
+            <li>Edit the row in the rail: the pencil renames it for this report only; <span class="ui">From</span> and <span class="ui">To</span> set its dates; the colour dot opens the <span class="ui">identity colour</span> palette. These save at once, outside the page's draft.</li>
+            <li>To change the saved route, open <code>/route_creation?route_id=</code> and its number, edit segments, name, description or tags, and select <span class="ui">Update route</span>. Every report that uses it inherits the new name.</li>
+            <li>To share a route, copy that same address. Anyone can open it. Tell them not to save, because saving from that address overwrites your route.</li>
+          </ol>
+
+          <h2 id="how-tags-work">How tags work</h2>
+          <p>A tag is a short label on a route. Four kinds exist. <code>user:</code> followed by your id marks the routes you own and shows as the chip <span class="ui">You</span>. <code>agency:</code> followed by a code marks an agency or group, for example NYSDOT, CDTC or SMTC; you can only add agency tags for groups you belong to. <code>county:</code> and <code>region:</code> place the route; the dialog offers the 62 counties and the 11 regions by name. Anything else is free text and is found through <span class="ui">Other tags</span>. A new route is offered your own tag and your group tags as <span class="ui">+</span> chips.</p>
+          <p>Tags also decide what you see by default. Signed in, a picker shows routes you created, routes tagged with your user or agency tags, and the generated routes. <span class="ui">Show everyone's</span> widens it to the whole catalogue. For agency users the restricted view is the default; the wider view is the default only for the platform's own staff accounts.</p>
+
+          <h2 id="settings">Settings</h2>
+          <p>Every control in the <span class="ui">Add Routes</span> dialog.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Control</th><th>What it does</th><th>Values</th><th>Default</th></tr></thead>
+            <tbody>
+              <tr><td><span class="ui">Search routes by name…</span></td><td>Filters by name</td><td>Text</td><td>Empty</td></tr>
+              <tr><td><span class="ui">Browse by tag</span></td><td>Drills into one tag category, then one value</td><td><span class="ui">County</span> (62) · <span class="ui">Region</span> (11) · <span class="ui">Agency</span> (30); links <span class="ui">Auto-generated</span> · <span class="ui">Other tags</span></td><td>None</td></tr>
+              <tr><td><span class="ui">narrow by</span> chips</td><td>Ownership filters</td><td><span class="ui">Mine</span> · <span class="ui">Curated</span> · <span class="ui">Auto-generated</span> · <span class="ui">Show everyone's</span></td><td>None on; see above</td></tr>
+              <tr><td><span class="ui">sort</span></td><td>Orders the list</td><td><span class="ui">Best match</span> · <span class="ui">Recently updated</span> · <span class="ui">Name (A–Z)</span></td><td><span class="ui">Best match</span>: yours first, then size and recency</td></tr>
+              <tr><td><span class="ui">Show short segments too</span></td><td>Reveals single-segment routes in browse views</td><td>On · off</td><td>Hidden</td></tr>
+              <tr><td><span class="ui">Add N Routes</span> · <span class="ui">Cancel</span></td><td>Adds the ticked routes to the report</td><td>—</td><td>—</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul>
+            <li>Folders are gone. The earlier tool's folder tree, including <span class="ui">My Stuff</span> and the regional default folders, was not carried over. Tags carry the grouping. Two folder complaints from May 2026 are moot for this reason.</li>
+            <li>A route's name is shared. Renaming in the rail changes this report's label only; renaming on Route Creation changes it everywhere.</li>
+            <li>Most routes were generated by a service account, not drawn by a person; they carry the <span class="ui">Auto-generated</span> badge. The catalogue also holds duplicates, so the same route can appear twice.</li>
+            <li>Ownership is read from the signed-in account on your side only. It is a convenience, not a permission.</li>
+            <li>No page lists or downloads all routes. The <a href="measures_and_data--data--routes_data.html#distribution">Routes data</a> datasheet says what can be read another way.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="i-cannot-find-a-route-i-saved">I cannot find a route I saved</h3>
+          <p>Select <span class="ui">Mine</span>. If it is one segment long, select <span class="ui">Show short segments too</span>. If a colleague saved it, browse by their agency or turn on <span class="ui">Show everyone's</span>.</p>
+          <h3 id="i-cannot-add-an-agency-tag">I cannot add an agency tag</h3>
+          <p>The dialog refuses tags for groups you are not in and reads <span class="ui">You're not in X — ask an admin to add you to that group first.</span> Ask through <a href="help.html">Help and feedback</a>.</p>
+          <h3 id="a-colleague-opened-my-link-and-my-route-changed">A colleague opened my link and my route changed</h3>
+          <p>The address carries the route id, so their save overwrote it. Rebuild the segments and save again. To hand over a copy instead, ask them to clear the id from the address before saving.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="npmrds--routes--create.html">Create a route</a></li>
+            <li><a href="npmrds--reports--build.html">Build and edit a report</a></li>
+            <li><a href="npmrds--reports--find.html">Find a report</a> · the same facets and tag tree, for reports</li>
+            <li><a href="measures_and_data--data--routes_data.html">Routes data</a></li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Route picker dialog code (RouteTagBrowserModal, tagCategories, pickerScoring, 2026-09-03): title <span class="ui">Add Routes</span>, breadcrumb <span class="ui">All Routes</span>, the search placeholders, facet chips, sort options, badges, <span class="ui">Show short segments too</span>, the 62 · 11 · 30 tag values, the visibility allow-list and its AVAIL default.</li>
+            <li>Tags editor code (TagsEditor, 2026-09-02): suggestion chips, <span class="ui">Add a tag…</span>, the agency-membership refusal text, the <span class="ui">You</span> chip.</li>
+            <li>Report route rail code (ReportRouteList, RouteRow, 2026-09-01): rename, dates and colour saved at once to the report's own storage row.</li>
+            <li><a href="measures_and_data--data--routes_data.html">Routes data</a> datasheet: duplication (about 73,464 rows for 32,569 route ids, August 2026), service-account share, sharing by address, no folders or dates.</li>
+            <li>Legacy NPMRDS documentation, Quick Start (2024): the <span class="ui">My Stuff</span> and default folders that no longer exist.</li>
+            <li>Running fixes 2172513 and 2172490 (Folders, May 2026).</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 4a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="npmrds.html">NPMRDS hub</a>
+          <a href="measures_and_data--data--routes_data.html">Routes data</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

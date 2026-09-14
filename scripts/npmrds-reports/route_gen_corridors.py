@@ -56,6 +56,22 @@ def _normalize_county(s):
 
 _COUNTY_LOOKUP = {_normalize_county(c): c for c in NY_COUNTIES}
 
+# Route *names* used to carry the raw 2-digit-state + 3-digit-county FIPS code
+# (e.g. "36047") plus a "(2024)" TMC-shapefile-year suffix. Ryan, 2026-09-08:
+# drop both from the display name — every route here is a NYS road, so the
+# state digits are dead weight, and the year was cluttering names more than it
+# was helping. County was dropped too (not abbreviated — tried a 3-letter
+# abbreviation first, Ryan called it ugly and pointed out the `county:` tag
+# already carries that information for anyone who needs to filter/search by
+# it, so the name doesn't have to).
+#
+# Compass words shorten to a single character in the name. A handful of source
+# rows (Thruway ramp/exit segments) carry a descriptive `direction` value
+# instead of one of these four words (e.g. "I-87/NEW YORK STATE THRUWAY SB") —
+# `.get(direction, direction)` below leaves those untouched rather than
+# mangling them.
+DIRECTION_CHAR = {"NORTHBOUND": "N", "SOUTHBOUND": "S", "EASTBOUND": "E", "WESTBOUND": "W"}
+
 
 def canonical_county_tag(county_name):
     """Return 'county:{ExactUiCasing}', or None if county_name doesn't map
@@ -91,6 +107,24 @@ def gen_year(year, regions):
         # produced 2+ rows with byte-identical names — confirmed live: all 731
         # duplicate-name groups audited that day had 0 identical-geometry
         # matches, i.e. every one was this bug, not a real duplicate route.
+        #
+        # Deliberately kept scoped to county here even though county no longer
+        # appears in the *name* (2026-09-08) — tmclinear is NOT globally
+        # unique across counties: a single continuous corridor commonly spans
+        # several counties under the very same tmclinear id (confirmed live,
+        # e.g. I-278 EASTBOUND tmclinear 127 = Richmond+Kings+New York+Bronx,
+        # 624 (tmclinear,road,direction) triples do this statewide for 2024).
+        # Keying on bare (road, direction) would "disambiguate" those with
+        # `#{tmclinear}` — but since they all share the same tmclinear, every
+        # one would get the *same* suffix, producing several identically-named
+        # rows that look disambiguated but aren't. Scoping to county avoids
+        # that: within one county, two rows sharing (road, direction) really
+        # do have different tmclinear values (the park/road-class-change
+        # case), so the suffix there is genuinely unique. Cross-county
+        # same-road-same-direction rows are left as plain duplicate names —
+        # accepted (Ryan, 2026-09-08): there's no uniqueness constraint on
+        # `name` in the DB, a duplicate is a UX/search concern only, and the
+        # `county:` tag already lets a user tell those apart.
         name_counts = {}
         for (tmclinear, road, county_code, county_name, direction) in grouped:
             name_counts[(road, county_code, direction)] = name_counts.get(
@@ -107,17 +141,26 @@ def gen_year(year, regions):
             county_tag = canonical_county_tag(county_name)
             if county_tag:
                 tags.append(county_tag)
-            name = f"{road} {county_code} {direction} ({year})"
+            dir_display = DIRECTION_CHAR.get(direction, direction)
+            name = f"{road} {dir_display}"
             if name_counts[(road, county_code, direction)] > 1:
-                # Disambiguate with the tmclinear id itself — stable, already
-                # unique per group by construction, and traceable straight
-                # back to the source data if someone asks "what is this."
-                name = f"{road} {county_code} {direction} #{tmclinear} ({year})"
+                # Disambiguate with the tmclinear id itself — unique within
+                # this (road, county, direction) group by construction, and
+                # traceable straight back to the source data if someone asks
+                # "what is this." (NOT unique across counties — see above.)
+                name = f"{road} {dir_display} #{tmclinear}"
             routes.append({
-                # Year in the name: this is a distinct row per (corridor, year)
-                # by design (Ryan's call, 2026-08-03) — without it, every
-                # year's regeneration of the same real-world corridor would
-                # share one ambiguous name in every route picker/search.
+                # Name carries no state/county FIPS digits (every route here
+                # is a NYS road, and the `county:` tag above already carries
+                # county for anyone filtering/searching by it), no
+                # TMC-shapefile year, and a 1-character direction — Ryan's
+                # call, 2026-09-08, reversing the 2026-08-03 decision to keep
+                # year in the name. Known, accepted tradeoff: a future year's
+                # regeneration of the same real-world corridor can now
+                # produce an identical name to this one (year is still in
+                # `description` below, just not in the display name) — that's
+                # a problem for whenever a re-run actually happens, not
+                # solved here.
                 "name": name,
                 "description": f"Auto-generated route from TMC Linear: {tmclinear} ({year})",
                 "tmcs": ordered,

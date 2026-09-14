@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Measures in development · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="reference" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · reference</div>
+          <h1 class="doc-title">Measures in development.</h1>
+          <p class="doc-lede">Three measures are declared in the Macro View's measure reference but not yet computed: free-flow speed, emissions and attributes. This page says what each will be, what blocks it, and how the tool shows the gap. It assumes you know the Macro View.</p>
+          <div class="stamps">
+            <span class="type">reference</span>
+            <span>applies to · NPMRDS Macro View (www/npmrds)</span>
+            <span class="upcoming">describes measures not yet live</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="how-the-macro-view-shows-a-measure-that-is-not-computed">How the Macro View shows a measure that is not computed</h2>
+          <p>The Macro View declares ten measures. Seven are computed and appear in the <span class="ui">Measure</span> menu: LOTTR, TTTR, TTTR₈₀, TED, PHED, percentile speed and data coverage. Three are declared but not computed. They stay out of the menu, so you cannot select one and get an empty map. They still appear in the page's own measure reference with the state <span class="ui">not yet computed</span>, so the gap is visible rather than silent.</p>
+          <p>An absent measure and a measure of zero are different claims. Nothing on the platform shows a zero for a measure it has not computed. When one of the three is computed, it enters the menu and gets a measure page here. The change is dated in <a href="measures_and_data--methodology_changes.html">Methodology changes</a>.</p>
+
+          <h2 id="the-three-measures">The three measures</h2>
+          <p>The descriptions are the tool's own text. The blockers are as stated on the Measures &amp; Methodology page and in the Macro View's quality record of August 2026.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Measure</th><th>What it will answer</th><th>Unit and controls</th><th>What blocks it</th></tr></thead>
+            <tbody>
+              <tr><td>Free-flow speed</td><td>How fast the road runs when nothing is in the way</td><td>mph · no extra controls</td><td>Computed internally as the reference behind the delay family, not yet published as a column of its own</td></tr>
+              <tr><td>Emissions</td><td>What the traffic on this segment puts into the air</td><td>tons per year · pollutant, fuel type, AADT source, peak period</td><td>Confirmation of the emission-rate table with NYSDOT</td></tr>
+              <tr><td>Attributes</td><td>Network metadata itself: functional class, AADT, ownership</td><td>varies · attribute</td><td>The network fields are not yet joined into the published dataset</td></tr>
+            </tbody>
+          </table></div>
+
+          <h3 id="free-flow-speed">Free-flow speed</h3>
+          <p>"How fast the road runs when nothing is in the way. The 85th percentile of off-peak observed speed." It sits in the speed group beside <a href="measures_and_data--measures--percentile_speed.html">percentile speed</a>.</p>
+          <p>The quantity already exists inside the pipeline. The delay family's free-flow reference is the 15th-percentile travel time of a segment, which is the 85th-percentile speed, the standard convention. <a href="measures_and_data--measures--phed.html#the-four-variants">The four threshold variants</a> describe how that reference is anchored. What is missing is publication: the reference is not written out as a measure you can colour the map by. Until it is, read a segment's 85th-percentile speed from percentile speed for the period you need.</p>
+
+          <h3 id="emissions">Emissions</h3>
+          <p>"What the traffic on this segment puts into the air. A speed-binned emission rate applied to the segment's vehicle-miles travelled." Six pollutants are planned. The controls will be pollutant, fuel type, AADT source and peak period, and the unit is tons per year.</p>
+          <p>The measure is blocked on confirming the emission-rate table with NYSDOT. An emission rate depends on the vehicle fleet, so the rate curve is fleet-dependent. When the measure is published, the fleet year the rates represent will be published alongside every value. No emission figure exists anywhere on the platform today, so do not derive one from a speed and a volume.</p>
+
+          <h3 id="attributes">Attributes</h3>
+          <p>"Network metadata itself — functional class, AADT, ownership. Coloured straight from a field joined off the network table; no measure controls." The single control will be the attribute to colour by. The unit varies with the field.</p>
+          <p>This is the intended home for the Roadway Inventory System (RIS) attributes the 2024 documentation listed, such as posted speed and the AADT variants. <a href="measures_and_data--measures--retired.html">Measures that used to be here</a> lists them. The fields are not yet joined into the published dataset the Macro View reads. Until they are, AADT still enters every delay figure as a volume, as <a href="measures_and_data--measures--ted.html">TED</a> describes, and <a href="measures_and_data--data--hpms_ris_attributes.html">HPMS / RIS attributes</a> documents the source.</p>
+
+          <h2 id="what-this-means-for-your-analysis">What this means for your analysis</h2>
+          <ul>
+            <li>For an uncongested reference speed, use the 85th percentile from <a href="measures_and_data--measures--percentile_speed.html">percentile speed</a> for the period you need. State the period.</li>
+            <li>For the reference the delay measures actually use, read the anchored window named in the <a href="npmrds--macro_view--download.html">Macro View download</a> package, not a percentile speed.</li>
+            <li>For emissions, there is no platform figure to cite.</li>
+            <li>For network attributes, the download carries AADT and functional class beside every measure value.</li>
+          </ul>
+
+          <h2 id="where-this-appears">Where this appears</h2>
+          <div class="where">
+            <a href="npmrds--macro_view.html">Macro View · measure reference</a>
+            <a href="measures_and_data--measures--retired.html">Measures that used to be here</a>
+            <a href="measures_and_data--methodology_changes.html">Methodology changes</a>
+          </div>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Macro View measure record: the verbatim descriptions, units and controls above; the <code>available</code> flag and the "not yet computed" state.</li>
+            <li>Measures &amp; Methodology page, published 2026-08-28, §06 "In development": the blockers for free-flow speed and emissions.</li>
+            <li>Macro View quality record, 2026-08-12: the three measures have no columns in the published dataset and are excluded from the measure select rather than shown empty.</li>
+            <li>pm3 provenance record, §3: the free-flow reference is the 15th-percentile travel time, equivalent to the 85th-percentile speed.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 2a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data.html">Measures &amp; Data</a>
+          <a href="measures_and_data--measures--retired.html">Measures that used to be here</a>
+          <a href="npmrds--macro_view.html">Macro View: how to use</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

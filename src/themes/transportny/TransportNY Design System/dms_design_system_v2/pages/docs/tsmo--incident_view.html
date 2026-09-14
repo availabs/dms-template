@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Read an incident page · TSMO · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="tsmo">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">TSMO · how-to</div>
+          <h1 class="doc-title">Read an incident page.</h1>
+          <p class="doc-lede">One event end to end: what it was, how the response was recorded, how much delay it added and where, and its place on the map. How to get there, how to read each panel, and what a map with a pin but no segment means.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · TSMO (www/tsmo)</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="before-you-start">Before you start</h2>
+          <p>The incident page, titled <span class="ui">Incident View</span>, is not in the side navigation. Reach it from a result row's view link in <a href="tsmo--incident_search.html">Incident Search</a>, or from the <span class="ui">Recent &amp; major events</span> table on the Incidents dashboard Each row carries a <span class="ui">view →</span> link that opens the incident page.. The address carries the event id, so the page can be shared.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Read the header: the event's facility, category, and when and where it happened. The <span class="ui">Event facts</span> card carries identity, lanes and location straight from the TRANSCOM record.</li>
+            <li>Read <span class="ui">Location &amp; affected segment</span>. Two layers: <span class="ui">Event location</span>, a pin, and <span class="ui">Affected segment</span>, the segments that carried delay.<span class="result">A pin with highlighted segments means a measured footprint. A pin alone means no affected segments were recorded for this event.</span></li>
+            <li>Read <span class="ui">Response timeline</span>. Its steps are the Traffic Incident Management (TIM) timestamps: reported, verified, response on scene, all lanes reopened. Only a recorded timestamp gets a check; a missing step is muted <span class="ui">not recorded</span>. Nothing is interpolated.<span class="result">Across the feed, all-lanes-reopened exists on 42.7 % of events, verified on 20.1 %, reported on 10.6 %, response-on-scene on 0.3 %. Expect gaps.</span></li>
+            <li>Read <span class="ui">Congestion footprint</span>: the delay this event added above the recurrent baseline, in vehicle-hours, its cost at an interim $20 per vehicle-hour, and the count of affected segments.</li>
+            <li>Read <span class="ui">Corridors</span>. Delay is rolled up by corridor and each corridor is labelled by its road names. The highlighted row is the page's active corridor, which defaults to the corridor carrying the most delay.<span class="result">Select another row to make it the active corridor. The per-segment table and the grid re-scope to it.</span></li>
+            <li>Read the per-segment table. One row per segment of the active corridor, in road order upstream to downstream, labelled by segment and cross street.</li>
+            <li>Read <span class="ui">Congestion grid</span>. Rows are the top 20 segments by delay; columns are 5-minute slices across the affected window. A coloured cell means the segment was inside its affected window then, shaded by attributed delay.<span class="result">You can see when and where the queue formed. A speed-against-free-flow version of the grid is not built.</span></li>
+            <li>Read <span class="ui">How one incident is measured</span>, the method note at the foot of the page.</li>
+          </ol>
+
+          <h2 id="what-each-panel-shows">What each panel shows</h2>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Panel</th><th>What it shows</th><th>Basis</th></tr></thead>
+            <tbody>
+              <tr><td><span class="ui">Event facts</span></td><td>Identity, lanes, location</td><td>The TRANSCOM event record, filtered to New York</td></tr>
+              <tr><td><span class="ui">Location &amp; affected segment</span></td><td>Pin and affected segments</td><td>Event point; segments with attributed delay</td></tr>
+              <tr><td><span class="ui">Response timeline</span></td><td>Recorded TIM timestamps</td><td>Only timestamps present; see <a href="measures_and_data--measures--incident_delay_and_clearance.html#how-it-is-computed">Incident delay and clearance</a></td></tr>
+              <tr><td><span class="ui">Congestion footprint</span></td><td>Vehicle-hours, cost, segments</td><td>Delay above the recurrent baseline; $20 per vehicle-hour interim; see <a href="measures_and_data--measures--delay_attribution.html#how-it-is-computed">Delay attribution</a></td></tr>
+              <tr><td><span class="ui">Corridors</span> and the segment table</td><td>Delay by corridor, then by segment</td><td>The active corridor; road order</td></tr>
+              <tr><td><span class="ui">Congestion grid</span></td><td>Affected window per segment, shaded by delay</td><td>Top 20 segments; 5-minute slices</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul>
+            <li>About 18.5 % of events have a footprint. For the rest the footprint panel, the corridors and the grid have nothing to show.</li>
+            <li>Duration on the event is an estimate entered at the time, clustered at round values.</li>
+            <li>Cost is the interim flat $20 basis. See <a href="measures_and_data--measures--cost_of_congestion.html#which-pages-show-which-basis">Which pages show which basis</a>.</li>
+            <li>A list of nearby or similar events was removed in July 2026.</li>
+            <li>The feed is multi-state. An out-of-state event has no New York segment to match, so it can never have a footprint.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="the-map-shows-a-pin-but-no-segment">The map shows a pin but no segment</h3>
+          <p>No affected segments were recorded for this event. The map centres on the pin instead. At a measurement on 2026-07-28, 77.5 % of events since 2026-06-01 had no footprint, and part of that share was out-of-state events. It is not a broken map.</p>
+          <h3 id="the-timeline-is-mostly-not-recorded">The timeline is mostly "not recorded"</h3>
+          <p>Most events carry few TIM timestamps. The page shows only what exists. Clearance measures on the Incidents dashboard are computed on the timestamped subset and badged with its size.</p>
+          <h3 id="the-corridors-table-and-grid-are-empty">The corridors table and grid are empty</h3>
+          <p>The event has no footprint, so there is no delay to roll up. Check the footprint panel: it shows a dash.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="tsmo--incident_search.html">Find an incident</a></li>
+            <li><a href="tsmo--corridor_view.html">Explore a corridor over time</a> · the same road through a whole day</li>
+            <li><a href="measures_and_data--coverage_and_freshness.html#incident-timestamp-completeness">Incident timestamp completeness</a></li>
+            <li><a href="measures_and_data--measures--delay_attribution.html">Delay attribution</a></li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>TSMO Incident View page, published 2026-07-29: panel titles, captions ("Rows follow road order along the active corridor", "The highlighted row is the page's active corridor"), map layers <span class="ui">Affected segment</span> and <span class="ui">Event location</span>, the method note.</li>
+            <li>TSMO Data &amp; Methodology page: TIM timestamp completeness 42.7 / 20.1 / 10.6 / 0.3 %; footprint on 18.5 % of events.</li>
+            <li>Feedback records: bare basemap for events without a footprint, 77.5 % measured 2026-07-28 (2196812) · map verified (2195391) · nearby events removed 2026-07-17 (incident-view design header).</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 2b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="tsmo.html">TSMO</a>
+          <a href="tsmo--incident_search.html">Find an incident</a>
+          <a href="measures_and_data--measures--incident_delay_and_clearance.html">Incident delay and clearance</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

@@ -16,9 +16,13 @@ the UI reads back.
 
   HOC       general_vulnerability / other_comments  declared `lexical`, stored PLAIN STRING
   HOC       vulnerability checkboxes                stored "Yes" / "No"
-  HOC       hazard                                  stored DISPLAY LABEL ("Ice storm",
-                                                    "Flooding"), NOT the declared lowercase
-                                                    codes ("icestorm", "riverine")
+  HOC       hazard                                  stores the DECLARED CODES ("icestorm",
+                                                    "riverine") as of 2026-09-08. It stored
+                                                    DISPLAY LABELS ("Ice storm", "Flooding")
+                                                    until then; all 1,190 Nassau rows were
+                                                    migrated 1:1 in between, ids unchanged.
+                                                    build_hoc.py keeps labels as its internal
+                                                    vocabulary and converts at the boundary.
   HOC       geoid_county                            bare INT;  geoid_juris  list[str]
   HOC       likelihood                              probability band, no source -> never set
   CAPS      checkboxes                              stored "x"  (NOT "Yes" -- differs from HOC)
@@ -96,21 +100,18 @@ GEOID_SCALAR = {
 }
 
 # ----------------------------------------------------------------------------------------
-# Columns whose DECLARED option list is stale, with the vocabulary that is actually stored.
+# Columns whose DECLARED option list disagrees with what is stored.
 #
-# HOC `hazard` declares 19 lowercase codes (`riverine`, `icestorm`, `other`) but every one
-# of the 1,190 seeded Nassau rows -- and the 20,000 rows Suffolk measured -- stores a
-# DISPLAY LABEL instead ("Flooding", "Ice storm", "Other"). Validating against the declared
-# list would reject every correct value. Validating against nothing would let a typo through,
-# so the observed vocabulary is written out here explicitly.
-STORED_VOCAB = {
-    ("hoc", "hazard"): [
-        "Avalanche", "Coastal Hazards", "Drought", "Earthquake", "Extreme Cold",
-        "Extreme Heat", "Flooding", "Hail", "Hurricane", "Ice storm", "Landslide",
-        "Lightning", "Snowstorm", "Tornado", "Tsunami/Seiche", "Wildfire", "Wind",
-        "Other",   # proven: 271 live rows, 10 of them seen during the Suffolk load
-    ],
-}
+# CURRENTLY EMPTY, and the reason is worth keeping. Until 2026-09-08 this held HOC `hazard`,
+# because every stored row used a DISPLAY LABEL ("Flooding", "Ice storm") while the schema
+# declared lowercase codes ("riverine", "icestorm") -- so validating against the declared list
+# rejected every correct value. Between 2026-08-25 and 2026-09-08 all 1,190 Nassau rows were
+# migrated to the codes, 1:1. The declared vocabulary is now authoritative and the override is
+# retired.
+#
+# The lesson survives the entry: a declared-vs-stored disagreement is a snapshot, not a
+# property. Re-measure it before each load rather than trusting a note from last month.
+STORED_VOCAB = {}
 
 _cache = {}
 

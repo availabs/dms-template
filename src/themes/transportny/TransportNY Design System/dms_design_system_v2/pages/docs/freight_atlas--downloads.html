@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Download freight data · Freight Atlas · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="freight_atlas">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Freight Atlas · how-to</div>
+          <h1 class="doc-title">Download freight data.</h1>
+          <p class="doc-lede">Every layer on the map draws a dataset in <span class="ui">Data &amp; Downloads</span>, the Freight Atlas catalog. How to find a dataset, read its source page, pick a version and a format, what still asks for a login, and the rule that keeps the site's figures in step with the plan.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · Freight Atlas (www/freightatlas)</span>
+            <span>last reviewed · 2026-09-07</span>
+            <span>owner · —</span>
+            <span class="gated">requires sign-in</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="before-you-start">Before you start</h2>
+          <p><span class="ui">Data &amp; Downloads</span> in the Freight Atlas side navigation opens the catalog filtered to the Freight Atlas category. It is meant to be public, but at the 2026-07-29 check a visitor without an account saw the sign-in page. See <a href="#what-needs-a-login">What needs a login</a>. From the map, the legend's info button lands on a dataset's source page directly.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Open <span class="ui">Data &amp; Downloads</span>.<span class="result">The catalog header counts what is listed, "N datasets · N categories". A rail on the left starts with <span class="ui">All datasets</span> and lists the categories with counts. The Freight Atlas category is selected and its sub-categories appear under it.</span></li>
+            <li>Narrow the list. Select a sub-category such as <span class="ui">Rail Network</span> or <span class="ui">Truck Parking</span>, or type a name in <span class="ui">Search datasources</span>.<span class="result">The list shows the matches. The sort button flips A to Z and Z to A. The view switcher offers cards, a grid, or a table with <span class="ui">Name</span>, <span class="ui">Type</span>, <span class="ui">Category</span> and <span class="ui">Description</span>.</span></li>
+            <li>Open a dataset by its name.<span class="result">Its source page opens on <span class="ui">Overview</span>. The tab bar reads <span class="ui">Overview</span> · <span class="ui">Table</span> · <span class="ui">Map</span>, with <span class="ui">Admin</span> for administrators. Overview shows <span class="ui">Description</span>, <span class="ui">At a glance</span> (<span class="ui">Type</span>, <span class="ui">Columns</span>, <span class="ui">Versions</span>, <span class="ui">Update interval</span>, <span class="ui">Created</span>, <span class="ui">Updated</span>), <span class="ui">Categories</span>, <span class="ui">Columns</span> and <span class="ui">Versions</span>.</span></li>
+            <li>Read the data dictionary. The <span class="ui">Columns</span> table lists every field with <span class="ui">Column</span>, <span class="ui">Type</span>, <span class="ui">Description</span> and <span class="ui">Req</span>.<span class="result">The provenance note in <span class="ui">Description</span> names the original source and its vintage.</span></li>
+            <li>Download. Under <span class="ui">Versions</span>, find the version you want and select <span class="ui">Download</span>.<span class="result">With one file it downloads at once; with several it opens a menu of formats: <span class="ui">CSV</span>, <span class="ui">ESRI Shapefile</span>, <span class="ui">GeoJSON</span>, <span class="ui">GPKG</span>. Each is a zip.</span></li>
+            <li>Look before you download. <span class="ui">Table</span> shows the rows; <span class="ui">Map</span> draws the geometry.<span class="result">On these two tabs a <span class="ui">version</span> selector appears and starts at the latest version.</span></li>
+          </ol>
+
+          <h2 id="settings">Settings</h2>
+          <p>Every control on the catalog and the source page.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Control</th><th>What it does</th><th>Values</th><th>Default</th></tr></thead>
+            <tbody>
+              <tr><td>Category rail</td><td>Filters the list to one category or sub-category; counts beside each</td><td><span class="ui">All datasets</span> · the categories · a selected category's sub-categories · <span class="ui">Uncategorized</span> when <span class="ui">Show all</span> is on</td><td>Freight Atlas, from the navigation link</td></tr>
+              <tr><td><span class="ui">Search datasources</span></td><td>Filters by name</td><td>Text</td><td>Empty</td></tr>
+              <tr><td>View switcher</td><td>Changes the list's shape</td><td>Cards · grid · table</td><td>—</td></tr>
+              <tr><td><span class="ui">Toggle Sort</span></td><td>Sorts by name</td><td>A to Z · Z to A</td><td>A to Z</td></tr>
+              <tr><td><span class="ui">Show all</span> · <span class="ui">Show filtered</span></td><td>Reveals datasets hidden from the default list</td><td>On · off</td><td>Off</td></tr>
+              <tr><td>Source page tabs</td><td>Switches between the views of one dataset</td><td><span class="ui">Overview</span> · <span class="ui">Table</span> · <span class="ui">Map</span> · <span class="ui">Admin</span> (administrators)</td><td><span class="ui">Overview</span></td></tr>
+              <tr><td><span class="ui">version</span></td><td>Picks the version <span class="ui">Table</span> and <span class="ui">Map</span> show</td><td>The dataset's versions</td><td>The latest</td></tr>
+              <tr><td><span class="ui">Download</span></td><td>Downloads one version in one format</td><td><span class="ui">CSV</span> · <span class="ui">ESRI Shapefile</span> · <span class="ui">GeoJSON</span> · <span class="ui">GPKG</span>, as generated for that version</td><td>—</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="what-needs-a-login">What needs a login</h2>
+          <p>Nothing, by design. In practice, at the 2026-07-29 check, opening the catalog without an account showed the sign-in page, from the Freight Atlas and from the landing page alike. The cause was found in the catalog's permission check, not in a decision to gate it, and the record closes without deciding whether the catalog stays public. Until that changes, sign in, or ask for the file through <a href="help.html">Help and feedback</a>. The map, the gallery and the plan pages are public. See <a href="start--accounts_and_sessions.html#data-and-downloads-asked-me-to-sign-in">Data &amp; Downloads asked me to sign in</a>.</p>
+
+          <h2 id="formats-and-what-was-generated">Formats and what was generated</h2>
+          <p>A download exists only where a file was generated for that version. On 2026-07-27 the 23 Freight Atlas versions without one were generated as <span class="ui">CSV</span>, <span class="ui">ESRI Shapefile</span> and <span class="ui">GPKG</span>; the 28 versions that already had files carry <span class="ui">GeoJSON</span> as well. Every Freight Atlas version now has a download. GPKG is the GeoPackage format. The catalog's design listed XLSX; the live source page does not offer it.</p>
+
+          <h2 id="the-api-for-developers">The API for developers</h2>
+          <p>The same catalog is readable through the Data Manager API, which the home names beside the download formats. Start with the developer <a href="developers--quickstart.html">Quick start</a> and the <a href="developers--data_manager_api.html">Data Manager API</a> reference. Both are planned pages.</p>
+
+          <h2 id="the-figures-agree-with-the-plan">The figures agree with the plan</h2>
+          <p>Where the 2024 State Freight Plan publishes a figure, the Freight Atlas shows the plan's figure. The rule dates from 2026-08-25, when the home's mode-share chart, computed from the TRANSEARCH table, disagreed with the plan and was replaced by the plan's own values. The layers and datasets still carry the underlying data. Quote a headline from the home or the plan; quote a layer's data from its dataset, with its version.</p>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul>
+            <li>Seven layers draw datasets with no public catalog entry: the state and national freight highway networks, STRAHNET, the two Transearch totals layers, and the two licensed layers. See <a href="measures_and_data--data--freight_atlas_sources.html#the-sources">The sources</a>.</li>
+            <li><span class="ui">Update interval</span> is blank on every Freight Atlas dataset: each is a one-time upload unless its description says otherwise. The catalog's modified dates are edit dates, not data vintages.</li>
+            <li>A dataset can have several versions. The download menu belongs to a version; check the version's name before you cite it.</li>
+            <li>The home says 52 datasets; the catalog header counts what its filter lists. Neither is the layer count, 39.</li>
+            <li>A bare <code>/freight_data</code> address, without the category, lists every dataset the catalog holds, Freight Atlas or not.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="a-dataset-has-no-download-button">A dataset has no Download button</h3>
+          <p>Until 2026-07-27, 23 Freight Atlas versions had no generated file, so their source pages showed no button. All were generated that day. If a version still shows none, <a href="help.html">report it</a> with the dataset and version name.</p>
+          <h3 id="a-category-shows-no-datasets">A category shows no datasets</h3>
+          <p>Until 2026-07-17 a category with an ampersand in its name, <span class="ui">Economy &amp; Demand</span>, <span class="ui">Environment &amp; Equity</span>, lost the rest of its name in the address and matched nothing. Fixed in the catalog. An empty category today means no dataset is filed under it.</p>
+          <h3 id="browse-the-catalog-did-nothing">"Browse the catalog" did nothing</h3>
+          <p>The button on the About page was a placeholder and was removed in July 2026. The way in is <span class="ui">Data &amp; Downloads</span> in the side navigation, on every Freight Atlas page.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="measures_and_data--data--freight_atlas_sources.html">Freight Atlas sources</a></li>
+            <li><a href="freight_atlas--layers.html">Layer reference</a></li>
+            <li><a href="freight_atlas--map.html">Use the map</a></li>
+            <li><a href="start--accounts_and_sessions.html">Sign in, sessions and accounts</a></li>
+            <li><a href="developers--quickstart.html">Developer quick start</a></li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Datasets catalog and source page code (the version being deployed): the labels quoted in <span class="ui">bold</span>; the tab set <span class="ui">Overview</span> · <span class="ui">Table</span> · <span class="ui">Map</span> · <span class="ui">Admin</span>; the <span class="ui">version</span> selector on the view-dependent tabs; the four download formats; the <span class="ui">Show all</span> mechanism.</li>
+            <li>Freight Atlas navigation configuration: <span class="ui">Data &amp; Downloads</span> opens the catalog at <code>/freight_data?cat=Freight%20Atlas</code>.</li>
+            <li>Feedback record 2195719 (resolved 2026-07-27): 23 versions generated as CSV, Shapefile and GPKG; coverage 53 of 53 versions. Record 2192554 (resolved 2026-07-17): ampersand categories. Record 2192251 (resolved 2026-07-16): the About page's catalog link removed. Record 2197778 (2026-07-29, closed without a recorded decision): the sign-in wall and its cause.</li>
+            <li>Record 2214651 (resolved 2026-08-25): the mode-share chart made static "so that the values in the atlas agree exactly with the values in the freight plan".</li>
+            <li>Freight Atlas home, published 2026-08-26: "data &amp; downloads · 52 datasets"; the download formats and "No login".</li>
+            <li>Datasets pattern design, source page: the XLSX format listed in the design only.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-07 created (phase 5)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--data--freight_atlas_sources.html">Freight Atlas sources</a>
+          <a href="start--accounts_and_sessions.html">Sign in, sessions and accounts</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

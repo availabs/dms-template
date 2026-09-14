@@ -736,6 +736,24 @@
                 </div>
               </div>
 
+              <!-- ════════ 15 · View toggle · swap content in place (proposal) ════════ -->
+              <div class="col-span-12 mt-6" id="toggle-swap" data-dms-section="toggle-swap">
+                <div class="mb-3 flex items-center gap-3">
+                  <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">15</span>
+                  <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+                  <h2 class="font-display font-semibold text-[28px] text-[#0F1722]">View toggle · swap content in place <span class="inline-flex items-center h-5 px-1.5 ml-1 rounded-[3px] border border-[#CA8A04]/30 bg-[#CA8A04]/8 font-mono text-[9.5px] uppercase tracking-[0.18em] text-[#8a5f03] align-middle">proposal</span></h2>
+                </div>
+                <p class="font-proxima text-[13.5px] text-slate-600 max-w-[820px] leading-[1.6] mb-4">Two peer views of one collection (a template shelf vs. a filtered table of the same library) sharing one header — clicking a two-way toggle swaps which content band renders below it, with no route change and no page remount. Today this pattern's toggle is a plain link between two pages (<a href="../pages/npmrds-reports.html" class="tny-link">npmrds-reports.html</a> ↔ <a href="../pages/npmrds-reports-list.html" class="tny-link">npmrds-reports-list.html</a>); this entry documents the in-place alternative and is <strong>not yet built</strong> — see <a href="../pages/npmrds-reports-combined.html" class="tny-link">npmrds-reports-combined.html</a> for the working mockup and its full expressibility note.</p>
+                <p class="font-proxima text-[13.5px] text-slate-600 max-w-[820px] leading-[1.6] mb-4"><strong>The closest native mechanism already exists, aimed at a different result.</strong> <span class="tny-mono">sectionGroup.jsx</span>'s <span class="tny-mono">isModal</span> + <span class="tny-mono">modalParamKey</span> gate (the same one <span class="tny-mono">modal-section-group.md</span> §6 documents for the search dialog) already mounts/unmounts a whole band based on <span class="tny-mono">pageState.filters</span>, set by a Card <span class="tny-mono">click_publish</span> provider, with <strong>no URL navigation</strong> — exactly this pattern's requirement. It falls short three ways: the gate checks whether the param is <em>present</em>, not what it <em>equals</em> (no N-way switch); the open state always renders as a <span class="tny-mono">bg-black/50</span> overlay (no inline/in-flow variant); and action params are deliberately in-memory only, so a specific view can't be bookmarked or shared as a link. <strong>Proposed smallest enrichment</strong> (not built): two additive keys beside <span class="tny-mono">isModal</span> — <span class="tny-mono">displayMode:'modal'|'inline'</span> (default <span class="tny-mono">'modal'</span>, so every existing group is unchanged) and <span class="tny-mono">condition:{searchKey,equals}</span> evaluated against any <span class="tny-mono">pageState.filters</span> entry, URL-synced or action. No new registry entry, no bespoke component — the same author-facing config shape an author already uses for the search dialog would build this page: one URL-synced <span class="tny-mono">view</span> page filter written by two toggle cells, two <span class="tny-mono">content</span> groups with <span class="tny-mono">displayMode:'inline'</span> and opposite <span class="tny-mono">condition</span> values. A real side benefit over the static mockup: an unmatched group renders <span class="tny-mono">null</span>, so only the visible band's sections would ever fetch — no double-fetching the template grid and the paginated table on every load.</p>
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm p-4">
+                  <div class="h-10 w-fit shrink-0 inline-flex items-stretch rounded-[6px] border border-zinc-950/15 bg-white overflow-hidden mb-3" role="group" aria-label="Reports view (static)">
+                    <span aria-current="page" class="px-3.5 inline-flex items-center bg-[#37576B] text-white font-display uppercase text-[12px] tracking-wide">Templates</span>
+                    <span class="px-3.5 inline-flex items-center border-l border-zinc-950/10 text-slate-500 font-display uppercase text-[12px] tracking-wide">All reports</span>
+                  </div>
+                  <p class="font-proxima text-[12.5px] leading-[1.55] text-slate-500">Same visual shape as today's link-based toggle — the difference is entirely in what the click does, not how it looks. Live, working example (click it, watch the URL): <a href="../pages/npmrds-reports-combined.html" class="tny-link">npmrds-reports-combined.html</a>.</p>
+                </div>
+              </div>
+
               </div><!-- /min-w-0 inner content grid -->
 
               <!-- TOC aside · sticky right rail -->
@@ -756,6 +774,7 @@
                   <a href="#map-workbench" class="tny-toc-item">Map workbench</a>
                   <a href="#report-canvas" class="tny-toc-item">Report canvas</a>
                   <a href="#preview-plate" class="tny-toc-item">Preview plate</a>
+                  <a href="#toggle-swap" class="tny-toc-item">View toggle · swap in place</a>
                 </div>
               </aside>
 

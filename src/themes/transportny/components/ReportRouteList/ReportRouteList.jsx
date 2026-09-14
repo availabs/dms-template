@@ -1,22 +1,98 @@
-import { useContext, useMemo, useState } from 'react';
+import { useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router';
-import { ComponentContext, PageContext } from "../../../../dms/packages/dms/src/patterns/page/context";
+import { CMSContext, ComponentContext, PageContext } from "../../../../dms/packages/dms/src/patterns/page/context";
 import { ThemeContext, getComponentTheme } from '../../../../dms/packages/dms/src/ui/useTheme'
-import { convertToUrlParams } from "../../../../dms/packages/dms/src/patterns/page/pages/_utils";
+import { convertToUrlParams, parseIfJSON } from "../../../../dms/packages/dms/src/patterns/page/pages/_utils";
 import { reportRouteListTheme } from './ReportRouteList.theme';
 import { useReportRow } from './useReportRow';
 import { useGraphPublish } from './useGraphPublish';
 import { useAddGraphSection } from './useAddGraphSection';
-import { useDynamicReportRoutes, distinctRouteSlotGroups } from './useDynamicReportRoutes';
+import { useDynamicReportRoutes, distinctRouteSlotGroups, routeSlotGroupKey, mergeSlotWithCatalogRow } from './useDynamicReportRoutes';
 import { useRouteMileage } from './useRouteMileage';
-import { resolveRouteDates, TODAY_ANCHOR_COMP_ID, defaultAnchorDate } from './relativeDateResolution';
+import { resolveRouteDates, TODAY_ANCHOR_COMP_ID, defaultAnchorDate, resolvedRouteLabel } from './relativeDateResolution';
+import { resolveReportDisplayText } from './resolveReportDisplayText';
+import { ROUTE_CATALOG_PARAM_KEY } from './useGraphPublish';
 import { formatDateShort } from './utils';
 import RouteRow from './RouteRow';
 import RouteTagBrowserModal from '../RouteTagBrowserModal/RouteTagBrowserModal';
 import AddGraphModal from '../AddGraphModal/AddGraphModal';
 
+// A static route's catalog-snapshot fields, baked in at add time (`useReportRow.js`'s `addRoutes`,
+// old-converter's `build_route_entry`) — stripped by `convertStaticToDynamic` below when turning a
+// route into a slot, since a slot re-resolves them live from `?routes=` at view time instead of
+// carrying a frozen copy (dynamic-reports-authoring-gaps.md sub-item 4). Deliberately does NOT
+// include `route_comp_ids` (the converter-era comp-merge compatibility field) — that one must
+// survive the conversion or an already-converted report's graphs bound to an absorbed comp id would
+// stop resolving; see that sub-item's own "Correction" note for the confirmed-live repro.
+const CATALOG_SNAPSHOT_FIELDS = [
+  'tmc_array', 'id', 'route_id', 'description', 'points', 'metadata',
+  'conflation_array', 'conflation_version', 'created_at', 'created_by', 'updated_at',
+  'isValid', 'graphIds',
+];
+
+// Dynamic → static (sub-item 4): freezes any live `%n`/`%y` substitution baked into a graph
+// SECTION's own title/caption — a completely different data location from routes[] (a section
+// row's `title` field and its `element['element-data']`-embedded `display.description`, not
+// anything RRL's own `routes` storage touches). Found live 2026-09-09 on the real
+// `bi_directional` template: every one of its 14 graph titles ("Hours of Delay - %n") went
+// permanently blank after "- " once converted to static — same root cause as the route-name
+// bug (the broadcast catalog's `catalogRouteName` no longer exists once static, so `%n`
+// silently substitutes to empty) but a different consumer that fix never touched. Reuses
+// `resolveReportDisplayText` — the SAME mechanism a live Dynamic Report already resolves
+// titles/captions through (see that file's own doc comment) — fed a `pageState`-shaped catalog
+// built from `resolvedList` instead of the live broadcast, so this needs no new substitution
+// logic of its own. A safe no-op for any section with no `%n`/`%y` token (every non-report
+// section, and any already-literal title/caption) by construction — `resolveReportDisplayText`
+// itself guarantees this. Operates on whichever `draft_sections`/`sections` array is handed in;
+// the two can carry genuinely different content (see `reference_draft_vs_published_sections_
+// different_ids.md`), so both must be checked independently rather than assumed in sync.
+function freezeSectionDisplayText(sectionList, catalog) {
+  const fakePageState = { filters: [{ searchKey: ROUTE_CATALOG_PARAM_KEY, type: 'action', values: catalog }] };
+  let changed = false;
+  const next = (sectionList || []).map((section) => {
+    const elementData = section?.element?.['element-data'];
+    if (typeof elementData !== 'string') return section;
+    let state;
+    try {
+      state = JSON.parse(elementData);
+    } catch (e) {
+      return section;
+    }
+    const display = state?.display;
+    const routeIds = display?._measurePick?.routeIds;
+    const invert = display?.comparisonSeries?.combine?.invert;
+    const isAutoDiffCaption = Boolean(display?._autoDiffCaption);
+    const newTitle = resolveReportDisplayText(section.title, { routeIds, invert, pageState: fakePageState });
+    const newDescription = isAutoDiffCaption
+      ? resolveReportDisplayText(undefined, { routeIds, invert, isAutoDiffCaption: true, pageState: fakePageState })
+      : resolveReportDisplayText(display?.description, { routeIds, invert, pageState: fakePageState });
+    const titleChanged = newTitle !== section.title;
+    // Auto-diff-caption: only freeze if it actually resolved (real anchor + compares found) —
+    // `null` means "can't resolve yet," and leaving `_autoDiffCaption`/no `description` alone in
+    // that case reproduces today's own "renders nothing" transient state rather than risking
+    // wiping a caption based on an incomplete catalog.
+    const descriptionChanged = isAutoDiffCaption ? newDescription != null : newDescription !== display?.description;
+    if (!titleChanged && !descriptionChanged) return section;
+    changed = true;
+    const nextState = {
+      ...state,
+      display: {
+        ...display,
+        ...(descriptionChanged ? { description: newDescription, _autoDiffCaption: false } : {}),
+      },
+    };
+    return {
+      ...section,
+      ...(titleChanged ? { title: newTitle } : {}),
+      element: { ...section.element, 'element-data': JSON.stringify(nextState) },
+    };
+  });
+  return { changed, sections: next };
+}
+
 export default function ReportRouteList() {
   const { apiLoad, apiUpdate, updateAttribute, pageState, setActionParam, clearActionParam, item, editPageMode } = useContext(PageContext) || {};
+  const { user } = useContext(CMSContext) || {};
   const { state: { join, externalSource } } = useContext(ComponentContext) || {};
   // `editPageMode` (from PageContext) is whichever sections array (`draft_sections` vs
   // `sections`) sibling components are ACTUALLY rendering from right now — that's what
@@ -36,29 +112,42 @@ export default function ReportRouteList() {
   // useEffect anymore, so the extra click stopped protecting anything.
   const canMutate = isEdit;
   const navigate = useNavigate();
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const { UI, theme: themeFromContext = {} } = useContext(ThemeContext) || {};
   const { Icon, ColorPicker, Switch, Popup } = UI || {};
   const t = { ...reportRouteListTheme, ...getComponentTheme(themeFromContext, 'reportRouteList') };
+  // Also doubles as "this row is in edit mode" (2026-09-04): the combined expand/edit toggle
+  // (RouteRow.jsx) opens name+dates editing in place for whichever rows are expanded — no more
+  // separate single-flight rename buffer (see gap #7 in report-route-ui-parity-gaps.md). Since
+  // 2026-09-05, an explicit Save/Discard commits or reverts each row's own edit buffer; toggling
+  // this same state off (Save, Discard, or the header's own Discard shortcut) collapses the row.
   const [expandedRoutes, setExpandedRoutes] = useState({});
   const [isRoutesExpanded, setIsRoutesExpanded] = useState(true);
-  const [editingRouteNameIndex, setEditingRouteNameIndex] = useState(null);
-  const [editNameValue, setEditNameValue] = useState('');
   // Report settings disclosure (2026-08-19, item 4A) — houses the Dynamic Report switch,
   // collapsed by default. See ReportRouteList.theme.js's settingsDisclosureWrapper comment for why.
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-  // Date editing (2026-08-19, item 4A) no longer has a parent-owned single-flight edit buffer —
-  // each RouteRow now owns its own live, always-editable date state and auto-saves (debounced)
-  // through `onUpdateDates` below, so several rows can be mid-edit at once. See RouteRow.jsx.
+  // Name + date editing (2026-09-05: explicit Save/Discard — see RouteRow.jsx's own doc comment
+  // for the full history, including the 2026-08-19/2026-09-04 auto-save designs this replaced) —
+  // no parent-owned edit buffer for either field; each RouteRow owns its own local buffer and
+  // calls `onUpdateRoute` exactly once, at an explicit Save click. Several rows can still be
+  // mid-edit (unsaved) at once. See RouteRow.jsx.
   // Rendering-only — filters which already-added routes are displayed, never the
   // underlying `routes` array that persistence/graph publishing operate on.
   const [searchQuery, setSearchQuery] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isAddGraphModalOpen, setIsAddGraphModalOpen] = useState(false);
+  // Sub-item 4 (dynamic-reports-authoring-gaps.md): blocking picker shown when an author flips
+  // Dynamic Report OFF but the current preview isn't fully resolved (some slot group has no real
+  // route picked yet) — see toggleDynamicReport/handleConvertToStaticConfirm below.
+  const [isConvertToStaticModalOpen, setIsConvertToStaticModalOpen] = useState(false);
   // Copy/paste a route's date span across routes — `from` is a route_comp_id (survives
   // reordering, unlike index). Design push #2 (2026-08-06) shrunk this to date-span only:
   // weekday mask/time-of-day moved off the route entirely (see useGraphPublish.js).
   const [clipboard, setClipboard] = useState(null);
+  // Dynamic Reports authoring gaps sub-item 2 (2026-09-08): which existing route-slot group
+  // "+ Add Route Slot" should join, if any — '' means "new distinct route" (today's unchanged
+  // default). Reset after every add so reuse is a deliberate per-click choice, not a sticky mode.
+  const [newSlotGroupChoice, setNewSlotGroupChoice] = useState('');
 
   // The route CATALOG binding — read-only, backs the "Add Route" tag-browser modal
   // (see `RouteTagBrowserModal`). Bound via the sectionMenu's "Add Join Source" slot rather
@@ -89,14 +178,14 @@ export default function ReportRouteList() {
     routes,
     saving,
     error,
-    setError,
     persistRoutes,
+    persistCounts,
     addRoutes,
     removeRoute,
     reorderRoutes,
     updateRoute,
     pasteWindowToRoutes,
-  } = useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit: canMutate });
+  } = useReportRow({ apiLoad, apiUpdate, item, externalSource, isEdit: canMutate, user });
 
   // `routes` above are this Dynamic Report's persisted SLOT PLACEHOLDERS (route_comp_id/color
   // assigned once at authoring time, no concrete tmc_array/dates yet) — resolve them against
@@ -123,6 +212,25 @@ export default function ReportRouteList() {
   // `routes.length`) for every Dynamic Report authored before this field existed.
   const routeSlotGroups = distinctRouteSlotGroups(routes);
   const needsRouteSelection = isDynamicReport && !isEdit && routeIds.length !== routeSlotGroups.length;
+  // Sub-item 4: whether every distinct group currently has a real, resolved catalog route behind
+  // it — `resolvedGroupRoutes` already drops any group whose URL id is missing OR stale/bad (never
+  // matched a real catalog row), so comparing its length against `routeSlotGroups.length` catches
+  // both cases, not just "is `?routes=` present" (a raw id-count match wouldn't catch a stale id —
+  // see that sub-item's own design note). Used by toggleDynamicReport below to decide whether
+  // switching to static can proceed directly or needs the blocking picker first.
+  const groupsFullyResolved = routeSlotGroups.length > 0 && resolvedGroupRoutes.length === routeSlotGroups.length;
+
+  // Dynamic Reports authoring gaps sub-item 2: options for the "reuse an existing route" select
+  // next to "+ Add Route Slot". Positional labels only ("Slot group 2 (3 views)") — at authoring
+  // time there's no `?routes=` yet, so no real catalogRouteName has resolved; a group's own slots
+  // may still carry the unresolved `%n (%y)` template literal, which would be a confusing label.
+  const routeSlotGroupOptions = useMemo(
+    () => routeSlotGroups.map((key, idx) => {
+      const count = routes.filter((rt) => routeSlotGroupKey(rt) === key).length;
+      return { key, label: `Slot group ${idx + 1} (${count} view${count === 1 ? '' : 's'})` };
+    }),
+    [routeSlotGroups, routes]
+  );
 
   // "Relative dates relative to today" follow-up (dynamic-reports-and-route-tags.md item 3): a
   // route can derive its date from a synthetic "Today (view time)" base exactly like it would
@@ -206,49 +314,264 @@ export default function ReportRouteList() {
     pageState,
     setActionParam,
     clearActionParam,
+    routeSourceInfo,
   });
-  const graphCountByCompId = useMemo(() => {
-    const counts = new Map();
-    graphs.forEach((g) => (g.routeIds || []).forEach((id) => counts.set(id, (counts.get(id) || 0) + 1)));
-    return counts;
-  }, [graphs]);
 
-  // Toggling Dynamic Report mode adds/removes the `routeSlots`-typed page-filter registration —
-  // the same optimistic-patch-then-persist pattern useAddGraphSection.js already uses for
-  // draft_sections. Does NOT retroactively convert any already-added concrete routes into slots —
-  // build a Dynamic Report starting from a blank routes list. Also registers the `baseDate`-typed
-  // filter (searchKey 'asOf') alongside `routeSlots` — inert unless some route is later wired to
-  // derive from the Today anchor, but registered unconditionally here so that capability is always
-  // available on a Dynamic Report without needing to re-toggle this switch off and on.
-  const toggleDynamicReport = async (enabled) => {
-    if (!canMutate || !apiUpdate || !item?.id) return;
-    const withoutDynamicFilters = (item.filters || []).filter(f => f.type !== 'routeSlots' && f.type !== 'baseDate');
-    const nextFilters = enabled
-      ? [
-          ...withoutDynamicFilters,
-          { id: 'dyn-report-routes', searchKey: 'routes', useSearchParams: true, values: '', type: 'routeSlots' },
-          { id: 'dyn-report-asof', searchKey: 'asOf', useSearchParams: true, values: '', type: 'baseDate' },
-        ]
-      : withoutDynamicFilters;
+  // Item 5 (2026-09-04, npmrds-reports-routes-feedback-triage.md Phase 2): keeps the "All
+  // Reports" list page's routes/graphs column (`graph_count`/`counts_label` on `reports_snap_2`)
+  // live for a hand-authored report — today those are only ever written once, at spec-build
+  // time, by report_build.mjs/the Python converter. `graphs` (from useGraphPublish, just above)
+  // is already a LIVE discovery off this page's own sections, so this effect re-fires and
+  // catches a graph SECTION being deleted via the normal section-menu too, not just RRL's own
+  // Add Graph flow. Uses raw `routes.length` (the authored/slot count), not
+  // `effectiveRoutes.length` — for a Dynamic Report the slot count is the meaningful catalog
+  // number, matching what a spec-built report's own `routes.length` means; `effectiveRoutes` can
+  // be transiently 0 in edit mode before a `?routes=` preview is picked.
+  // Gated on `reportRow?.id != null` — never fires before the row exists yet, so this can't
+  // race `persistRoutes`'s own `ensuringForRef` create sequence into a duplicate row (see
+  // `persistCounts`'s own guard in useReportRow.js).
+  const lastPersistedCountsRef = useRef(null);
+  useEffect(() => {
+    if (!canMutate || !reportRow?.id) return;
+    const nextGraphCount = graphs.length;
+    const nextCountsLabel = `${routes.length} routes · ${nextGraphCount} graphs`;
+    const last = lastPersistedCountsRef.current;
+    if (last && last.graphCount === nextGraphCount && last.countsLabel === nextCountsLabel) return;
+    if (reportRow.graphCount === nextGraphCount && reportRow.countsLabel === nextCountsLabel) {
+      lastPersistedCountsRef.current = { graphCount: nextGraphCount, countsLabel: nextCountsLabel };
+      return;
+    }
+    lastPersistedCountsRef.current = { graphCount: nextGraphCount, countsLabel: nextCountsLabel };
+    persistCounts({ graphCount: nextGraphCount, countsLabel: nextCountsLabel });
+  }, [canMutate, reportRow?.id, reportRow?.graphCount, reportRow?.countsLabel, routes.length, graphs.length, persistCounts]);
+
+  // Static → dynamic (sub-item 4): converts every currently-added route into a slot, grouping any
+  // that already share a real catalog id (a static report can already have 2+ routes sharing one
+  // id with different dates — the exact static-side equivalent of `route_slot_group`, per that
+  // sub-item's design note), strips the catalog-snapshot fields (CATALOG_SNAPSHOT_FIELDS above —
+  // a slot re-resolves those live instead), then immediately previews the SAME real routes via
+  // `?routes=` so the switch flip is visually a no-op. Ryan's explicit ask (2026-09-09): switching
+  // modes with routes already on the report must not lose or change anything.
+  const convertStaticToDynamic = async () => {
+    // Group by shared real catalog id ONLY for routes with no existing `route_slot_group` marker
+    // — an existing one is a deliberate signal (this report was already Dynamic once, converted
+    // to static, and is now converting back) that must be preserved verbatim, independent of
+    // whether the routes it names currently happen to share a real id. Found live 2026-09-09: the
+    // real `bi_directional` template's own NB (`$0`) and SB (`$1`) groups both temporarily
+    // referenced the same test route (from an earlier live-verification pass) — re-deriving
+    // grouping purely by shared id collapsed them into ONE group, silently discarding the NB/SB
+    // split (a real viewer would then only be asked to pick ONE route, showing identical data for
+    // both directions). Only a plain, never-been-dynamic static report (no route ever carries
+    // `route_slot_group`) needs the shared-id heuristic at all — this is the fallback for that
+    // case only, unchanged from before.
+    // Sub-item 4's own open question 3 ("static→dynamic naming: leave a static route's name
+    // exactly as authored, no auto-`%n`/`%y`") — reversed 2026-09-09 per Ryan's live bug report on
+    // a real converted route: a static route's literal name (e.g. "Ocean Pkwy," carried over from
+    // when it was picked via "+ Add Route") froze permanently into the new slot instead of
+    // templating, so it never re-resolved to whichever real route a viewer later picks, and showed
+    // that same stale literal name even fully unresolved. Every new slot now defaults to `"%n
+    // (%y)"`, identical to `handleAddRouteSlot`'s own default for a brand-new slot — converting a
+    // route into a slot now behaves exactly like it was always an untouched, freshly-added slot,
+    // not a special "keep the old name frozen" case. `%n`/`%y`-templated names are already exempt
+    // from the add-time dedup collision check (`useReportRow.js`'s `dedupeAgainst`) precisely
+    // because several slots literally named `"%n (%y)"` is the norm, not a collision — same as
+    // every catalog template's own multi-slot groups.
+    const seenIdToGroupCompId = new Map();
+    const slots = routes.map((r) => {
+      const realId = r.id ?? r.route_id;
+      const slot = { ...r, name: '%n (%y)' };
+      CATALOG_SNAPSHOT_FIELDS.forEach((f) => delete slot[f]);
+      if (r.route_slot_group == null && realId != null) {
+        if (seenIdToGroupCompId.has(realId)) {
+          slot.route_slot_group = seenIdToGroupCompId.get(realId);
+        } else {
+          seenIdToGroupCompId.set(realId, r.route_comp_id);
+        }
+      }
+      return slot;
+    });
+
+    await persistRoutes(slots);
+    // `item.filters` isn't guaranteed to already be a real array — on a fresh page load (not yet
+    // through a local `updateAttribute` round-trip) it can arrive as the raw JSON string the DB
+    // stores, same gotcha `getPageVariableRegistry`/`mergeFilters` already defensively handle via
+    // `parseIfJSON` for `pageState.filters`. Found live 2026-09-09: `bi_directional`, freshly
+    // loaded, threw `(item.filters || []).filter is not a function` here — `item.filters` was a
+    // string, not an array. `parseIfJSON` is a safe no-op when it's already a real array/object.
+    const withoutDynamicFilters = parseIfJSON(item.filters, []).filter(f => f.type !== 'routeSlots' && f.type !== 'baseDate');
+    const nextFilters = [
+      ...withoutDynamicFilters,
+      { id: 'dyn-report-routes', searchKey: 'routes', useSearchParams: true, values: '', type: 'routeSlots' },
+      { id: 'dyn-report-asof', searchKey: 'asOf', useSearchParams: true, values: '', type: 'baseDate' },
+    ];
     updateAttribute?.('', '', { filters: nextFilters });
     await apiUpdate({ data: { id: item.id, filters: nextFilters }, skipNavigate: true });
+
+    // Preview: one real id per DISTINCT GROUP, in group order — NOT one per distinct real id,
+    // since two distinct groups can legitimately share the same real id right now (the
+    // bi_directional case above). `distinctRouteSlotGroups`/`routeSlotGroupKey` are the same
+    // grouping helpers sub-item 2 already established as the canonical "how many distinct
+    // groups" source of truth. A blank report (no routes yet) has nothing to preview — leave the
+    // URL untouched, matching the original "start from a blank routes list" behavior.
+    const groups = distinctRouteSlotGroups(slots);
+    const idByGroupKey = new Map();
+    routes.forEach((r, i) => {
+      const key = routeSlotGroupKey(slots[i]);
+      const realId = r.id ?? r.route_id;
+      if (realId != null && !idByGroupKey.has(key)) idByGroupKey.set(key, realId);
+    });
+    const orderedIds = groups.map((key) => idByGroupKey.get(key)).filter((id) => id != null);
+    if (orderedIds.length > 0) {
+      const params = new URLSearchParams(search);
+      params.set('routes', orderedIds.map(String).join('|||'));
+      navigate(`${pathname}?${params.toString()}`);
+    }
+  };
+
+  // Dynamic → static (sub-item 4): builds the new static `routes[]` DIRECTLY from a fully-resolved
+  // list — either `effectiveRoutes` (already resolveRouteDates()'d against the current `?routes=`,
+  // when `groupsFullyResolved`) or the freshly-picked merge `handleConvertToStaticConfirm` below
+  // builds when it wasn't. Already the same `{...slot, ...catalogRow}` shape
+  // `useDynamicReportRoutes.js` produces, so this is close to a pass-through: only
+  // `catalogRouteName` (a resolution-only field, never part of the real static-route contract) is
+  // dropped. Any `dateFormula`/`derivedFromRoute` a slot had carries straight through unchanged —
+  // Mechanism B is identical on both sides, so a derived-date relationship stays live and derived,
+  // not frozen into a snapshot. `route_slot_group` is left in place too (inert on the static side,
+  // same as it already is on old converter-imported rows).
+  const convertDynamicToStatic = async (resolvedList) => {
+    // A slot's `name` may still carry unresolved `%n`/`%y` tokens (the default `"%n (%y)"` an
+    // author never customized) — freeze them into their CURRENTLY-resolved literal text now,
+    // since a static route has no live substitution mechanism to fill them in later. Found live
+    // 2026-09-09: leaving raw tokens baked into a permanent static name showed as a blank/broken
+    // label forever after (the header pill/chart legend read `" (2026)"` — `%n` silently
+    // substituted to empty, since `catalogRouteName` no longer exists once static).
+    // `resolvedRouteLabel` is a safe no-op for any name with no tokens (a custom literal name
+    // carries straight through unchanged). Must run BEFORE `catalogRouteName` is dropped below —
+    // that's the field `%n` substitutes from.
+    const newRoutes = resolvedList.map((r) => {
+      const { catalogRouteName, ...rest } = r;
+      return { ...rest, name: resolvedRouteLabel(r) };
+    });
+    await persistRoutes(newRoutes);
+
+    // Freeze any live %n/%y substitution baked into a graph SECTION's own title/caption too —
+    // see freezeSectionDisplayText's own doc comment above for the full story (a real bug found
+    // live on `bi_directional`, a different data location than routes[] above). Built from the
+    // SAME `resolvedList` the route-name freeze just used, in the exact field shape
+    // `useGraphPublish.js`'s live broadcast catalog carries — this is a build-time stand-in for
+    // that broadcast, not a new catalog shape.
+    //
+    // DRAFT ONLY, deliberately — found live 2026-09-09: a raw `sections` (published) overwrite is
+    // silently a no-op. Every other section edit in this codebase (sectionGroup.jsx's own
+    // updateSections(), useAddGraphSection.js) writes `draft_sections` exclusively; published
+    // section CONTENT only ever changes through the page's own explicit Publish action, which
+    // mints fresh published-row copies (confirmed: report_build.mjs's `--publish` step produces
+    // brand-new published ids, not an edit of the existing ones) — not something a generic
+    // attribute write can do. This matches how every OTHER edit on this page already behaves:
+    // draft changes need an explicit Publish to go live. The `routes[]` freeze above is the
+    // one exception, only because `reports_snap_2` has no draft/published split at all.
+    const catalog = resolvedList.map((r) => ({
+      route_comp_id: r.route_comp_id, name: r.name, dateFormula: r.dateFormula,
+      derivedFromRoute: r.derivedFromRoute, color: r.color, startDate: r.startDate,
+      endDate: r.endDate, tmc_array: r.tmc_array, catalogRouteName: r.catalogRouteName,
+    }));
+    const draftResult = freezeSectionDisplayText(item.draft_sections, catalog);
+
+    // See `convertStaticToDynamic`'s identical comment above — `item.filters` may be an
+    // unparsed JSON string on a fresh page load. Combined into one apiUpdate with the draft
+    // section freeze above (both write to this same page row) rather than two sequential calls.
+    const withoutDynamicFilters = parseIfJSON(item.filters, []).filter(f => f.type !== 'routeSlots' && f.type !== 'baseDate');
+    const patch = {
+      filters: withoutDynamicFilters,
+      ...(draftResult.changed ? { draft_sections: draftResult.sections } : {}),
+    };
+    updateAttribute?.('', '', patch);
+    await apiUpdate({ data: { id: item.id, ...patch }, skipNavigate: true });
+    // `?routes=`/`?asOf=` are no longer meaningful once static — strip just those two keys rather
+    // than the whole query string, so an unrelated sibling param survives (same raw-
+    // `location.search`-patch convention ReportPageHeader.jsx's "Change Routes"/"Viewing as of"
+    // controls already use).
+    const params = new URLSearchParams(search);
+    params.delete('routes');
+    params.delete('asOf');
+    const nextSearch = params.toString();
+    navigate(`${pathname}${nextSearch ? `?${nextSearch}` : ''}`);
+  };
+
+  // Fires when an author flips Dynamic Report OFF but the preview isn't fully resolved
+  // (`isConvertToStaticModalOpen`'s picker, opened by toggleDynamicReport below) — pre-populated
+  // with whatever's already resolved (`resolvedGroupRoutes`), so this only has to fill the
+  // still-missing group(s), exactly like the view-mode entry gate's own onConfirm.
+  const handleConvertToStaticConfirm = (selectedRoutes) => {
+    const rowById = new Map(selectedRoutes.map((r) => [r.id, r]));
+    // Groups whose already-resolved id is still selected keep that exact row; every other group
+    // (never resolved, resolved to a stale/bad id, or deliberately re-picked) is filled from
+    // whichever selected rows aren't already claimed, in selection order — keyed off actual row
+    // PRESENCE (rowById) rather than bare id truthiness, so a stale id can't silently claim a slot
+    // with no real row behind it.
+    const claimedIds = new Set();
+    const rowsByGroupIndex = routeSlotGroups.map((_, j) => {
+      const priorId = routeIds[j];
+      if (priorId != null && rowById.has(priorId)) {
+        claimedIds.add(priorId);
+        return rowById.get(priorId);
+      }
+      return null;
+    });
+    let cursor = 0;
+    const leftoverRows = selectedRoutes.filter((r) => !claimedIds.has(r.id));
+    const filled = rowsByGroupIndex.map((row) => row || leftoverRows[cursor++] || null);
+    if (filled.some((r) => !r)) return; // shouldn't happen — the modal's own requiredCount gate guarantees this
+    const groupKeyToRow = new Map(routeSlotGroups.map((key, j) => [key, filled[j]]));
+    const resolvedList = resolveRouteDates([
+      ...routes.map((slot) => mergeSlotWithCatalogRow(slot, groupKeyToRow.get(routeSlotGroupKey(slot)))).filter(Boolean),
+      todayAnchorEntry,
+    ]).filter((rt) => rt.route_comp_id !== TODAY_ANCHOR_COMP_ID);
+    setIsConvertToStaticModalOpen(false);
+    convertDynamicToStatic(resolvedList);
+  };
+
+  // Toggling Dynamic Report now runs the real bidirectional conversion (sub-item 4) instead of just
+  // adding/removing the `routeSlots`/`baseDate` page-filter registration. Switching ON converts
+  // every already-added route into a slot and previews the same routes immediately; switching OFF
+  // requires a fully-resolved preview first — if it isn't, this opens the SAME blocking route
+  // picker used elsewhere (with an explanatory message) instead of discarding anything (Ryan,
+  // 2026-09-09: "switching between the modes... doesn't do anything destructive"). `isDynamicReport`
+  // (derived from `pageState.filters`) doesn't change until a conversion actually persists, so the
+  // Switch itself stays visually "on" while the picker is open — the desired blocking behavior,
+  // with no separate pending/loading state needed.
+  const toggleDynamicReport = async (enabled) => {
+    if (!canMutate || !apiUpdate || !item?.id) return;
+    if (enabled) {
+      await convertStaticToDynamic();
+      return;
+    }
+    if (routeSlotGroups.length > 0 && !groupsFullyResolved) {
+      setIsConvertToStaticModalOpen(true);
+      return;
+    }
+    await convertDynamicToStatic(effectiveRoutes);
   };
 
   // "+ Add Route Slot" reuses addRoutes verbatim (already assigns route_comp_id/color/deduped
   // name to an arbitrary object) — a slot isn't a specific route, so there's no catalog to browse.
-  // `isPlaceholderName: true` marks this generated name as meaningless (see
-  // useDynamicReportRoutes.js's resolvedRoutes merge) — the ONE spot in this file that creates a
-  // name with nothing real behind it yet; cleared the moment a human renames it (onSaveEditName).
+  // Defaults to the literal template string `"%n (%y)"` (dynamic-reports-authoring-gaps.md item 1)
+  // — `resolvedRouteLabel` (relativeDateResolution.js) substitutes `%n`/`%y` for the resolved real
+  // route's name/year once the slot resolves at view time; an author who renames it to anything
+  // without those tokens gets that literal name back, forever (no separate "is this a placeholder"
+  // flag needed — the tokens' presence in the string is the whole signal).
   //
-  // Auto-expands the new slot (2026-08-19, item 4A) — `addRoutes` always appends, so the new
-  // row lands at today's `routes.length`; setting that BEFORE the async add resolves is safe
-  // since nothing else in this synchronous handler changes `routes.length` first. The next thing
-  // an author almost always does after adding a route is set its dates, so land there open
-  // instead of making that a 3rd click.
+  // Lands collapsed, in view mode (2026-09-08, Ryan's live feedback — REVERSES the 2026-08-19
+  // item 4A decision to auto-expand a newly added slot/route into edit mode; see the identical
+  // reversal note on handleConfirmAddRoutes below). No more `setExpandedRoutes` call here.
+  // `newSlotGroupChoice` (sub-item 2, 2026-09-08): '' reproduces the original behavior byte-for-
+  // byte (no `route_slot_group` set — `routeSlotGroupKey` falls back to the new slot's own,
+  // always-unique `route_comp_id`, i.e. a distinct group). A real choice threads `route_slot_group`
+  // straight through `addRoutes`' passthrough spread — no other mechanism-side change needed, the
+  // resolver/converter/spec layer already treat this field as a first-class grouping key.
   const handleAddRouteSlot = () => {
-    const newIndex = routes.length;
-    addRoutes([{ name: `Route Slot ${routes.length + 1}`, isPlaceholderName: true }]);
-    setExpandedRoutes((prev) => ({ ...prev, [newIndex]: true }));
+    addRoutes([{ name: '%n (%y)', ...(newSlotGroupChoice ? { route_slot_group: newSlotGroupChoice } : {}) }]);
+    setNewSlotGroupChoice('');
   };
 
   const toggleRoute = (index) => {
@@ -299,6 +622,40 @@ export default function ReportRouteList() {
     return map;
   }, [effectiveRoutes]);
 
+  // Dynamic Reports authoring gaps sub-item 2, extended 2026-09-08 per Ryan's live feedback: the
+  // original expand-only text disclosure wasn't legible ("even I don't know what that means") and
+  // was invisible while collapsed, so grouping needed an always-visible, glanceable cue instead.
+  // Per-row group info — the visual pairing for `route_slot_group` — is now a single map of
+  // `{ siblingNames, color }`, built off `effectiveRoutes` (not raw `routes`) so it works
+  // identically whether authoring raw slots or previewing a resolved view (`resolveRouteDates` is
+  // an identity-stable pass-through for every field it doesn't touch, so `route_slot_group`/
+  // `color` survive into `effectiveRoutes` unchanged). `color` is the group's earliest-added
+  // member's own identity colour, reused as a shared left-border accent on every member's row
+  // (RouteRow.jsx) rather than minting a second, unrelated palette — a group's anchor row's own
+  // colour dot and its border always match; every other member's border points back at it. Absent
+  // (`undefined`) for any row whose group has only 1 member — no visual noise for the common case.
+  const routeGroupInfoByCompId = useMemo(() => {
+    const byGroup = new Map();
+    effectiveRoutes.forEach((rt) => {
+      const key = routeSlotGroupKey(rt);
+      const list = byGroup.get(key) || [];
+      list.push(rt);
+      byGroup.set(key, list);
+    });
+    const map = new Map();
+    byGroup.forEach((members) => {
+      if (members.length < 2) return;
+      const color = members[0].color;
+      members.forEach((m) => {
+        map.set(m.route_comp_id, {
+          siblingNames: members.filter((s) => s.route_comp_id !== m.route_comp_id).map((s) => s.name),
+          color,
+        });
+      });
+    });
+    return map;
+  }, [effectiveRoutes]);
+
   // `id` (the row's own DMS id) is the universal identity — every catalog row has one
   // regardless of provenance. `route_id` only ever existed on legacy-imported rows, kept as a
   // fallback purely to still catch dupes among routes added to a report BEFORE this fix shipped
@@ -311,19 +668,13 @@ export default function ReportRouteList() {
     [routes]
   );
 
-  // Auto-expands every newly added route (2026-08-19, item 4A) — same reasoning as
-  // handleAddRouteSlot above, extended to a multi-select add: `addRoutes` appends the whole
-  // batch in the order `selectedRoutes` was given, so the new rows land at
-  // `[routes.length, routes.length + selectedRoutes.length - 1]`.
+  // Lands collapsed, in view mode (2026-09-08, Ryan's live feedback) — REVERSES the 2026-08-19
+  // item 4A decision to auto-expand every newly added route into edit mode. Ryan: a newly added
+  // route/slot should be added "in view mode," not edit mode. No more `setExpandedRoutes` call
+  // here or in `handleAddRouteSlot` above.
   const handleConfirmAddRoutes = async (selectedRoutes) => {
-    const startIndex = routes.length;
     try {
       await addRoutes(selectedRoutes);
-      setExpandedRoutes((prev) => {
-        const next = { ...prev };
-        selectedRoutes.forEach((_, j) => { next[startIndex + j] = true; });
-        return next;
-      });
     } catch (e) {
       // addRoutes already records the error in useReportRow's `error` state.
     }
@@ -427,6 +778,19 @@ export default function ReportRouteList() {
   return (
     <div className={t.wrapper}>
       {routeSelectionModal}
+      {isConvertToStaticModalOpen && (
+        <RouteTagBrowserModal
+          open={true}
+          setOpen={setIsConvertToStaticModalOpen}
+          apiLoad={apiLoad}
+          routeSourceInfo={routeSourceInfo}
+          selectionMode="exact"
+          requiredCount={routeSlotGroups.length}
+          initialSelectedRoutes={resolvedGroupRoutes}
+          message="Switching to a static report freezes today's picked routes in place — pick a route for every slot below first, or the un-picked ones will be lost."
+          onConfirm={handleConvertToStaticConfirm}
+        />
+      )}
       <div className={t.panelHead}>
         <Icon icon="Road" className={t.panelHeadIcon} />
         <span className={t.title}>Routes</span>
@@ -439,40 +803,63 @@ export default function ReportRouteList() {
         <>
           {canMutate && (
             <div className={t.actionsRow}>
-              {isDynamicReport ? (
-                <button type="button" className={t.addRouteBtn} onClick={handleAddRouteSlot}>
-                  <Icon icon="Plus" className={t.addBtnIcon} /><span className={t.addBtnLabel}>Add Route Slot</span>
-                </button>
-              ) : (
-                <>
-                  <button type="button" className={t.addRouteBtn} onClick={() => setIsAddModalOpen(true)}>
-                    <Icon icon="Plus" className={t.addBtnIcon} /><span className={t.addBtnLabel}>Add Route</span>
+              <div className={t.actionsRowButtons}>
+                {isDynamicReport ? (
+                  <button type="button" className={t.addRouteBtn} onClick={handleAddRouteSlot}>
+                    <Icon icon="Plus" className={t.addBtnIcon} /><span className={t.addBtnLabel}>Add Route Slot</span>
                   </button>
-                  <RouteTagBrowserModal
-                    open={isAddModalOpen}
-                    setOpen={setIsAddModalOpen}
-                    apiLoad={apiLoad}
-                    routeSourceInfo={routeSourceInfo}
-                    selectionMode="any"
-                    excludeRouteIds={excludeRouteIds}
-                    onConfirm={handleConfirmAddRoutes}
-                  />
-                </>
+                ) : (
+                  <>
+                    <button type="button" className={t.addRouteBtn} onClick={() => setIsAddModalOpen(true)}>
+                      <Icon icon="Plus" className={t.addBtnIcon} /><span className={t.addBtnLabel}>Add Route</span>
+                    </button>
+                    <RouteTagBrowserModal
+                      open={isAddModalOpen}
+                      setOpen={setIsAddModalOpen}
+                      apiLoad={apiLoad}
+                      routeSourceInfo={routeSourceInfo}
+                      selectionMode="any"
+                      excludeRouteIds={excludeRouteIds}
+                      onConfirm={handleConfirmAddRoutes}
+                    />
+                  </>
+                )}
+                <button type="button" className={t.addGraphBtn} onClick={() => setIsAddGraphModalOpen(true)}>
+                  <Icon icon="Plus" className={t.addGraphBtnIcon} /><span className={t.addBtnLabel}>Add Graph</span>
+                </button>
+                <AddGraphModal
+                  open={isAddGraphModalOpen}
+                  setOpen={setIsAddGraphModalOpen}
+                  routes={routes}
+                  // Gap #16 (2026-08-21): a SEPARATE prop from `routes` on purpose — `routes` (raw)
+                  // already drives the checklist's own display and Dynamic-Report placeholder
+                  // behavior; reliability's year resolution needs the already-resolveRouteDates()'d
+                  // `effectiveRoutes` instead, without changing what the checklist itself shows.
+                  allRoutesResolved={effectiveRoutes}
+                  onConfirm={handleConfirmAddGraph}
+                />
+              </div>
+              {/* Sub-item 2's group-reuse select, own line (2026-09-08 fix): sharing
+                  `actionsRowButtons`' single row with Add Route Slot/Add Graph squeezed both
+                  buttons' labels into wrapping, overlapping text in the narrow rail — found live,
+                  screenshotted by Ryan. On its own row it can't compete with the buttons for width.
+                  Only rendered once a group exists to reuse — the first slot is always new. */}
+              {isDynamicReport && routeSlotGroupOptions.length > 0 && (
+                <div className={t.addSlotGroupRow}>
+                  <span className={t.addSlotGroupLabel}>Add as</span>
+                  <select
+                    className={t.addSlotGroupSelect}
+                    value={newSlotGroupChoice}
+                    onChange={(e) => setNewSlotGroupChoice(e.target.value)}
+                    title="Reuse an already-added route as another date/settings view, or add a new distinct route"
+                  >
+                    <option value="">New route</option>
+                    {routeSlotGroupOptions.map((g) => (
+                      <option key={g.key} value={g.key}>{g.label}</option>
+                    ))}
+                  </select>
+                </div>
               )}
-              <button type="button" className={t.addGraphBtn} onClick={() => setIsAddGraphModalOpen(true)}>
-                <Icon icon="Plus" className={t.addGraphBtnIcon} /><span className={t.addBtnLabel}>Add Graph</span>
-              </button>
-              <AddGraphModal
-                open={isAddGraphModalOpen}
-                setOpen={setIsAddGraphModalOpen}
-                routes={routes}
-                // Gap #16 (2026-08-21): a SEPARATE prop from `routes` on purpose — `routes` (raw)
-                // already drives the checklist's own display and Dynamic-Report placeholder
-                // behavior; reliability's year resolution needs the already-resolveRouteDates()'d
-                // `effectiveRoutes` instead, without changing what the checklist itself shows.
-                allRoutesResolved={effectiveRoutes}
-                onConfirm={handleConfirmAddGraph}
-              />
             </div>
           )}
           {canMutate && (
@@ -559,59 +946,47 @@ export default function ReportRouteList() {
                 key={r.route_comp_id ?? i}
                 route={r}
                 miles={mileageByRouteCompId.get(r.route_comp_id)}
-                graphCount={graphCountByCompId.get(r.route_comp_id) || 0}
                 theme={t}
                 Icon={Icon}
                 ColorPicker={ColorPicker}
                 Popup={Popup}
                 onChangeColor={(c) => updateRoute({ index: i, updates: { color: c } })}
-                onCopyWindow={() => setClipboard({
+                // Buffer-based (2026-09-05, Save/Discard restructure): Copy reads whatever's
+                // CURRENTLY in this row's own edit buffer (not necessarily the persisted `r`,
+                // if the author is mid-edit) — RouteRow passes its own local start/end through.
+                // Paste hands the clipboard values back for RouteRow to drop into its buffer;
+                // it does NOT persist here (that's what the old direct `updateRoute` call did,
+                // before this row had a Save/Discard gate of its own).
+                onCopyWindow={(start, end) => setClipboard({
                   from: r.route_comp_id,
                   fromName: r.name,
-                  start: r.startDate,
-                  end: r.endDate,
+                  start,
+                  end,
                 })}
-                onPasteWindow={() => clipboard && updateRoute({
-                  index: i,
-                  updates: { startDate: clipboard.start, endDate: clipboard.end },
-                })}
+                onPasteWindow={() => clipboard ? { startDate: clipboard.start, endDate: clipboard.end } : null}
                 clipboard={clipboard}
                 isEdit={canMutate}
                 saving={saving}
                 isExpanded={!!expandedRoutes[i]}
                 onToggleExpand={() => toggleRoute(i)}
-                isEditingName={editingRouteNameIndex === i}
-                editNameValue={editNameValue}
-                onEditNameValueChange={setEditNameValue}
-                onStartEditName={() => { setEditingRouteNameIndex(i); setEditNameValue(r.name); }}
-                onSaveEditName={() => {
-                  // Unlike addRoute's auto-suffix (the name came from the catalog, not
-                  // typed by the user), a rename is an explicit user choice — block it
-                  // instead of silently rewriting what they typed. See the dedupeRouteName
-                  // comment in useReportRow.js for why names must stay unique at all.
-                  const collision = routes.some((rt, idx) => idx !== i && rt.name === editNameValue);
-                  if (collision) {
-                    setError(`A route named "${editNameValue}" already exists.`);
-                    return;
-                  }
-                  // A deliberate rename — even to something generic — is a real editorial
-                  // decision from here on; clears isPlaceholderName so a future Dynamic Report
-                  // resolution never overwrites it with the resolved route's own name again.
-                  updateRoute({ index: i, updates: { name: editNameValue, isPlaceholderName: false } });
-                  setEditingRouteNameIndex(null);
-                }}
-                onCancelEditName={() => setEditingRouteNameIndex(null)}
+                // Rename's uniqueness check (2026-09-04, replaces the old parent-owned
+                // single-flight rename buffer — see RouteRow.jsx's own doc comment and gap #7
+                // in report-route-ui-parity-gaps.md) now happens INSIDE RouteRow at Save time,
+                // so it just needs the sibling name list, not a callback.
+                siblingNames={routes.filter((rt, idx) => idx !== i).map((rt) => rt.name)}
                 derivedFromRouteName={r.dateFormula ? (r.derivedFromRoute === TODAY_ANCHOR_COMP_ID ? todayAnchorEntry.name : effectiveRoutes.find((rt) => rt.route_comp_id === r.derivedFromRoute)?.name) : null}
                 baseForNames={baseForNamesByCompId.get(r.route_comp_id) || []}
+                groupInfo={routeGroupInfoByCompId.get(r.route_comp_id)}
                 derivableSiblings={derivableSiblings}
-                // Date editing (2026-08-19, item 4A: removed the pencil/Save/Cancel gate — dates
-                // are always live-editable whenever the row is expanded, auto-saving through this
-                // one callback). RouteRow owns its own local buffer + debounce now (several rows
-                // can be mid-edit at once, unlike the old single-flight parent-owned buffer) and
-                // always sends a complete, atomic `updates` object here — for Derived mode that
-                // means `dateFormula`+`derivedFromRoute` together, matching the resolver's own
-                // requirement (relativeDateResolution.js only resolves when both are present).
-                onUpdateDates={(updates) => updateRoute({ index: i, updates })}
+                // Name + date editing (2026-09-05: explicit Save/Discard, reversing the prior
+                // auto-save-on-blur/debounce design — see RouteRow.jsx's own doc comment).
+                // RouteRow owns a purely local buffer for both fields and calls this ONE
+                // callback exactly once, at an explicit Save click, with a complete, atomic
+                // `updates` object — for Derived-mode dates that means `dateFormula`+
+                // `derivedFromRoute` together, matching the resolver's own requirement
+                // (relativeDateResolution.js only resolves when both are present). Several rows
+                // can still be mid-edit (unsaved) at once — each has its own buffer.
+                onUpdateRoute={(updates) => updateRoute({ index: i, updates })}
                 canMoveUp={i > 0}
                 canMoveDown={i < effectiveRoutes.length - 1}
                 onReorderUp={() => reorderRoutes(i, 'up')}

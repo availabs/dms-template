@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Recipes · NPMRDS · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="hub" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">NPMRDS · hub</div>
+          <h1 class="doc-title">Recipes.</h1>
+          <p class="doc-lede">A recipe is a deliverable a planner already recognises, a bottleneck ranking, a Congestion Management Process, a before-and-after study, worked end to end on this platform: the question, the tools, the steps, how to read the result, and what the output looks like. Three recipes so far. Written for MPO and county planners and NYSDOT program staff.</p>
+          <div class="stamps">
+            <span class="type">hub</span>
+            <span>applies to · NPMRDS</span>
+            <span>last reviewed · 2026-09-07</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-is-here">What is here</h2>
+          <p>Each recipe follows one shape: <strong>The question</strong> in a planner's words, <strong>What you need</strong> (tools, sign-in, data), <strong>Steps</strong>, <strong>Reading the result</strong>, <strong>Variations</strong>, and <strong>Sample output</strong>. The how-to pages say what each control does; a recipe says which controls to use, in which order, to produce one document.</p>
+          <div class="hubgrid">
+            <a class="hubcard" href="npmrds--recipes--composite_score.html"><div class="t">A composite bottleneck score</div><div class="d">Export one year of a region's segments from the Macro View, screen out thin data, normalise LOTTR, TTTR₈₀ and TED to a 1 to 5 scale, weight and rank them in a spreadsheet.</div><div class="n">recipe · Macro View download · Excel</div></a>
+            <a class="hubcard" href="npmrds--recipes--congestion_management_process.html"><div class="t">A Congestion Management Process</div><div class="d">Map each CMP step to the tool and measure that serves it: define the network, choose measures, collect data, monitor, analyse, evaluate strategies.</div><div class="n">recipe · Macro View · Reports · MAP-21</div></a>
+            <a class="hubcard" href="npmrds--recipes--before_and_after.html"><div class="t">A before/after study</div><div class="d">The Route 787 raised-intersections case made reproducible: one route, two date windows, a Difference graph of hours of delay, and a cost at a stated value of time.</div><div class="n">recipe · Route Creation · Reports</div></a>
+          </div>
+
+          <h2 id="start-here">Start here</h2>
+          <p>Pick the recipe by the document you owe. A <strong>ranking of where congestion is worst</strong> in a region is the composite score. A <strong>federally required congestion process</strong> for an MPO is the Congestion Management Process. A <strong>project evaluation</strong> is the before/after study. If you have never used the tools, do <a href="npmrds--start.html">the ten-minute start</a> first: every recipe assumes you can open the Macro View and build a report.</p>
+          <p>Two rules run through all three. Read <a href="measures_and_data--measures--coverage.html">Data coverage</a> before trusting a pattern, because thin data inflates reliability ratios and deflates delay. And keep the two measure families apart: recipes use the <strong>analytical series</strong> from the Macro View and Reports; a figure for a federal document comes only from the <a href="npmrds--map21.html">MAP-21 PM3 pages</a>.</p>
+
+          <h2 id="common-tasks">Common tasks</h2>
+          <ul>
+            <li><a href="npmrds--recipes--composite_score.html#steps">Rank a county's segments by several measures at once</a>, with weights you choose.</li>
+            <li><a href="npmrds--recipes--congestion_management_process.html#steps">Choose the measure for each CMP step</a>: TED per mile to rank segments, TED total to report them.</li>
+            <li><a href="npmrds--recipes--before_and_after.html#steps">Compare a corridor before and after a project</a> with two windows on one route.</li>
+            <li><a href="npmrds--recipes--before_and_after.html#reading-the-result">Turn hours of delay into a dollar figure</a>, and say which value of time you used.</li>
+            <li><a href="npmrds--macro_view--download.html#how-to-cite-a-download">Cite a download</a> so a reader can rebuild it.</li>
+            <li><strong>Propose a recipe.</strong> If your agency produces a document from these tools that is not here, describe it through <a href="help.html">Help and feedback</a>: the question, the tools you used, and what the finished output looked like. Recipes that more than one agency needs are added to this hub.</li>
+          </ul>
+
+          <h2 id="reference">Reference</h2>
+          <p>The tools and measures each recipe uses.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Recipe</th><th>Tools</th><th>Measures</th><th>Output</th></tr></thead>
+            <tbody>
+              <tr><td><a href="npmrds--recipes--composite_score.html">Composite bottleneck score</a></td><td><a href="npmrds--macro_view.html">Macro View</a> · <a href="npmrds--macro_view--download.html">download builder</a> · a spreadsheet</td><td><a href="measures_and_data--measures--lottr.html">LOTTR</a> · <a href="measures_and_data--measures--tttr80.html">TTTR₈₀</a> · <a href="measures_and_data--measures--ted.html">TED</a> · <a href="measures_and_data--measures--coverage.html">Data coverage</a></td><td>A ranked table of segments</td></tr>
+              <tr><td><a href="npmrds--recipes--congestion_management_process.html">Congestion Management Process</a></td><td>Macro View · <a href="npmrds--reports--start_from_template.html">Reports</a> · <a href="npmrds--map21.html">MAP-21 PM3</a></td><td>TED · <a href="measures_and_data--measures--phed.html">PHED</a> · LOTTR · TTTR₈₀ · the federal figures</td><td>A step-by-step process with a measure per step</td></tr>
+              <tr><td><a href="npmrds--recipes--before_and_after.html">Before/after study</a></td><td><a href="npmrds--routes--create.html">Route Creation</a> · <a href="npmrds--reports--build.html">a report</a></td><td>Hours of Delay, Travel Time (<a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a>) · <a href="measures_and_data--measures--cost_of_congestion.html">Cost of congestion</a></td><td>A Difference graph and a cost per year</td></tr>
+            </tbody>
+          </table></div>
+          <p><a href="measures_and_data--which_measure.html">Which measure should I use?</a> is the decision table behind every measure choice above.</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Legacy NPMRDS documentation, Discussions (2024): the Congestion Management Process draft and the 787 Raised Intersections write-up, the two use cases this hub rewrites; Regional Analysis (2024), Composite Score Tutorial.</li>
+            <li>Platform documentation plan, §08 rows 23 to 26: the recipe page type and the three recipes.</li>
+            <li>Documentation style guide, §3: the recipe shape (The question · What you need · Steps · Reading the result · Variations · Sample output).</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-07 created (phase 4b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="npmrds.html">NPMRDS</a>
+          <a href="measures_and_data--which_measure.html">Which measure should I use?</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

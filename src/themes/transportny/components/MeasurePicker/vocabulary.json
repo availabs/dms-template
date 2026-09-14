@@ -3,6 +3,8 @@
   "measures": {
     "speed": {
       "label": "Speed (mph)",
+      "units": "mph",
+      "titlePhrase": "average speed",
       "expr": "(arraySum(mapValues(maxMap(map(ds.tmc, table1.miles)))) * 3600) / arraySum(mapValues(avgMapIf(map(ds.tmc, toFloat64(ds.travel_time_all_vehicles)), ds.travel_time_all_vehicles != 0))) as speed",
       "fn": "exempt",
       "requiresJoin": [
@@ -12,6 +14,8 @@
     },
     "speedTruck": {
       "label": "Truck Speed (mph)",
+      "units": "mph",
+      "titlePhrase": "average truck speed",
       "expr": "(arraySum(mapValues(maxMap(map(ds.tmc, table1.miles)))) * 3600) / arraySum(mapValues(avgMapIf(map(ds.tmc, toFloat64(ds.travel_time_freight_trucks)), ds.travel_time_freight_trucks != 0))) as speed_truck",
       "fn": "exempt",
       "requiresJoin": [
@@ -21,6 +25,8 @@
     },
     "length": {
       "label": "Length (mi)",
+      "units": "mi",
+      "titlePhrase": "route length",
       "expr": "arraySum(mapValues(maxMap(map(ds.tmc, table1.miles)))) as length",
       "fn": "exempt",
       "requiresJoin": [
@@ -30,6 +36,8 @@
     },
     "aadt": {
       "label": "AADT",
+      "units": "vehicles/day",
+      "titlePhrase": "AADT",
       "expr": "arrayAvg(mapValues(maxMap(map(ds.tmc, table1.aadt)))) as aadt",
       "fn": "exempt",
       "requiresJoin": [
@@ -39,6 +47,8 @@
     },
     "travelTime": {
       "label": "Travel Time (min)",
+      "units": "min",
+      "titlePhrase": "average travel time",
       "expr": "arraySum(mapValues(avgMapIf(map(tmc, toFloat64(travel_time_all_vehicles)), travel_time_all_vehicles != 0))) / 60 as travel_time_all_vehicles",
       "fn": "exempt",
       "requiresJoin": [],
@@ -46,6 +56,8 @@
     },
     "hoursOfDelay": {
       "label": "Hours of Delay",
+      "units": "hours",
+      "titlePhrase": "total hours of delay",
       "expr": "(greatest(0, nullIf(ds.travel_time_all_vehicles, 0) - ((table1.miles / greatest(20, table1.avg_speedlimit * 0.6)) * 3600)) / 3600) * (nullIf(table1.aadt, 0) / (if(table1.faciltype > 1, 2, 1))) * arrayElement(table2.distributions, ds.epoch + 1) as hours_of_delay",
       "fn": "sum",
       "requiresJoin": [
@@ -56,6 +68,8 @@
     },
     "avgHoursOfDelay": {
       "label": "Avg. Hours of Delay",
+      "units": "hours",
+      "titlePhrase": "average hours of delay",
       "expr": "(sum((greatest(0, nullIf(ds.travel_time_all_vehicles, 0) - ((table1.miles / greatest(20, table1.avg_speedlimit * 0.6)) * 3600)) / 3600) * (nullIf(table1.aadt, 0) / (if(table1.faciltype > 1, 2, 1))) * arrayElement(table2.distributions, ds.epoch + 1)) / count(DISTINCT ds.date)) as avg_hours_of_delay",
       "fn": "exempt",
       "requiresJoin": [
@@ -65,7 +79,9 @@
       "reverseColors": true
     },
     "co2Emissions_passenger": {
-      "label": "CO2 Emissions (tonnes) \u2014 Passenger",
+      "label": "CO2 Emissions (tonnes) — Passenger",
+      "units": "tonnes",
+      "titlePhrase": "total CO₂ emissions — passenger",
       "expr": "((multiIf((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 5, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -335.3) + 2756, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 10, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -83.73) + 1498, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 15, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -28.08) + 942, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 20, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -14.25) + 734, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 25, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -9.466) + 639, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 30, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -8.471) + 614, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 35, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -3.775) + 473, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 40, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -2.259) + 420, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 45, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -1.685) + 397, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 50, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -1.131) + 372, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 55, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -0.473) + 339, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 60, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * 0.0686) + 309, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 65, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * 0.7814) + 267, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 70, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * 2.3722) + 163, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * 3.7348) + 68)) * (((table1.aadt - (table1.aadt_singl + table1.aadt_combi)) / if(table1.faciltype > 1, 2, 1) * arrayElement(table2.distributions, ds.epoch + 1)) * nullIf(table1.miles, 0)) / 1000000) as co2_emissions_passenger",
       "fn": "sum",
       "requiresJoin": [
@@ -75,7 +91,9 @@
       "reverseColors": true
     },
     "avgCo2Emissions_passenger": {
-      "label": "Avg. CO2 Emissions (tonnes) \u2014 Passenger",
+      "label": "Avg. CO2 Emissions (tonnes) — Passenger",
+      "units": "tonnes",
+      "titlePhrase": "average CO₂ emissions — passenger",
       "expr": "((multiIf((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 5, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -335.3) + 2756, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 10, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -83.73) + 1498, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 15, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -28.08) + 942, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 20, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -14.25) + 734, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 25, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -9.466) + 639, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 30, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -8.471) + 614, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 35, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -3.775) + 473, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 40, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -2.259) + 420, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 45, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -1.685) + 397, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 50, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -1.131) + 372, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 55, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -0.473) + 339, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 60, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * 0.0686) + 309, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 65, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * 0.7814) + 267, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 70, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * 2.3722) + 163, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_passenger_vehicles, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * 3.7348) + 68)) * (((table1.aadt - (table1.aadt_singl + table1.aadt_combi)) / if(table1.faciltype > 1, 2, 1) * arrayElement(table2.distributions, ds.epoch + 1)) * nullIf(table1.miles, 0)) / 1000000) as avg_co2_emissions_passenger",
       "fn": "avg",
       "requiresJoin": [
@@ -85,7 +103,9 @@
       "reverseColors": true
     },
     "co2Emissions_truck": {
-      "label": "CO2 Emissions (tonnes) \u2014 Truck",
+      "label": "CO2 Emissions (tonnes) — Truck",
+      "units": "tonnes",
+      "titlePhrase": "total CO₂ emissions — truck",
       "expr": "((multiIf((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 5, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -1508.86) + 11551.62, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 10, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -312) + 5567.34, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 15, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -78.35) + 3230.75, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 20, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -56.38) + 2901.32, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 25, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -34.75) + 2468.71, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 30, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -12.02) + 1900.28, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 35, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -48.01) + 2980.11, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 40, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -13.48) + 1771.60, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 45, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -10.71) + 1660.88, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 50, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -13.84) + 1801.47, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 55, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -12.68) + 1743.63, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 60, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * 7.60) + 1464.06, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 65, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * 11.17) + 337.87, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 70, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * 10.35) + 391.40, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * 15.37) + 40.07)) * (((table1.aadt_singl + table1.aadt_combi) / if(table1.faciltype > 1, 2, 1) * arrayElement(table2.distributions, ds.epoch + 1)) * nullIf(table1.miles, 0)) / 1000000) as co2_emissions_truck",
       "fn": "sum",
       "requiresJoin": [
@@ -95,7 +115,9 @@
       "reverseColors": true
     },
     "avgCo2Emissions_truck": {
-      "label": "Avg. CO2 Emissions (tonnes) \u2014 Truck",
+      "label": "Avg. CO2 Emissions (tonnes) — Truck",
+      "units": "tonnes",
+      "titlePhrase": "average CO₂ emissions — truck",
       "expr": "((multiIf((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 5, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -1508.86) + 11551.62, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 10, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -312) + 5567.34, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 15, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -78.35) + 3230.75, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 20, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -56.38) + 2901.32, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 25, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -34.75) + 2468.71, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 30, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -12.02) + 1900.28, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 35, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -48.01) + 2980.11, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 40, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -13.48) + 1771.60, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 45, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -10.71) + 1660.88, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 50, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -13.84) + 1801.47, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 55, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * -12.68) + 1743.63, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 60, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * 7.60) + 1464.06, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 65, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * 11.17) + 337.87, (table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) < 70, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * 10.35) + 391.40, ((table1.miles * (3600.0 / coalesce(nullIf(ds.travel_time_freight_trucks, 0), nullIf(ds.travel_time_all_vehicles, 0)))) * 15.37) + 40.07)) * (((table1.aadt_singl + table1.aadt_combi) / if(table1.faciltype > 1, 2, 1) * arrayElement(table2.distributions, ds.epoch + 1)) * nullIf(table1.miles, 0)) / 1000000) as avg_co2_emissions_truck",
       "fn": "avg",
       "requiresJoin": [

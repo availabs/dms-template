@@ -1,4 +1,4 @@
-# WCDB playlist & home — times/spacing, show-block navigator (public + admin), home stats card
+# WCDB public + admin pages — playlist, home stats, station info spacing
 
 **Project:** WCDB · **Topic:** content / themes · **Status:** IN PROGRESS (phase 1 published 2026-09-12; phase 2 in draft) · **Started:** 2026-09-12
 
@@ -224,3 +224,82 @@ fractions (`1/3`, `1/2`, `2/3`, `1`), which matched nothing at render and fell b
 Verified live: the admin band's Width menu lists 1…12 with 6 checked (screenshot). The two sections
 were reset to `size: "6"` via the CLI; their `padding.top: "0"` (the user's edit) was left as set —
 restore `top: "6"` on both for the original 24px gutter above the card.
+
+## Phase 8 — delete a track from the Fix modal; branded, right-aligned form buttons (2026-09-12, DRAFT)
+
+**Ask.** A DJ can delete a track from the edit popup; the buttons in the Add and Fix dialogs are
+right-aligned and padded.
+
+**Library (`src/dms`, see `planning/tasks/completed/card-allow-delete-and-form-action-row.md`).**
+The dataWrapper (`removeItem`), the client API (`requestType: 'delete'` → `uda.data.delete`) and
+the server (`deleteExternalRow`) already deleted rows; the Card had no button. Added
+`display.allowDelete` (two-step Delete → Confirm/Keep, no native dialog), `deleteItemLabel`,
+`closeModalOnDelete`, a `delete_publish` provider, per-button theme classes (`formSaveButton`,
+`formCancelButton`, `formAddButton`, `formDeleteButton`, `formDeleteConfirmButton`), and
+`col-span-full` on the two action-row wrappers so `justify-self-end` is the CARD's right edge
+(on the 2-column forms it used to be the middle).
+
+**Theme.** wcdb `dataCard` styles[0]: the action rows get `pt-6 pr-2 pb-2`; save/add = the brand's
+white pill, cancel = ghost, delete = ghost that turns the station red on the confirm step.
+
+**Content (seed + `upgrade-playlist-log.mjs` step 9).** Fix modal Card 1965759: `allowDelete`,
+label "Delete track", `closeModalOnDelete: 'edit_song'`, provider `delete_publish → song_added`
+(the log's existing refetch key). **Found along the way:** the Fix card's rows carried NO `id` —
+it selected only its six display columns, so `item.id` was undefined (which also means the
+live-edit save had nothing to key on). Added `{ name: 'id', show: true, selectOnly: true }`, the
+same trick the log card uses for its Edit action.
+
+**The real blocker (found 2026-09-12 evening).** The Delete button still did not render after the
+`id` column was added, because the row STILL had no `id`: `getData.js` requests an `id` attribute
+for an external source only when the SECTION's `externalSource.isEditable` is true — and its else
+branch strips an author-requested `id`. The dataWrapper gates `updateItem` / `addItem` /
+`removeItem` on the same flag. The seed's `pg()` binding never set it (the source picker sets it
+at bind time; only the hand-rebound schedule Add card had it), so **16 admin write-cards had been
+saving nothing**. All seven wcdb-dama sources carry `metadata.isEditable: true` (checked via the
+graph). Fixed: `lib.mjs` `pg()` now sets `isEditable: true`; new
+`scripts/wcdb-admin/flag-editable-bindings.mjs` (idempotent, `--dry-run`) stamped the 16 live
+drafts (events 2, djs 1, dj_profile 4, shows 2, schedule 1, playlist 2, posts 2, administrators 2).
+Every admin page now has a draft to publish.
+
+**Not in this phase.** The review-pill counts do not subscribe to `song_added`; a delete updates
+the log but not the "All · N" count until reload.
+
+**Verified end to end (Playwright, `/admin/edit/playlist`, 2026-09-13).** Added a throwaway row
+("ZZ Test Track (delete me)") through the Add dialog → it appeared in the log inside the live block
+→ its row Edit action opened it in the Fix dialog → Delete track → Confirm → the row left the log
+without a reload (`delete_publish → song_added`) and was still gone after a reload. No console
+errors. Both dialogs' primary buttons now sit at the card's right edge (x 1408 of 1416) with the
+dialog gutter; Delete track is a ghost pill that turns the station red on its confirm step.
+
+**Also fixed (library).** The first-paint "Error getting length" on the playlist: blank `gte/lt`
+range leaves reached Postgres before the navigator wrote `from`/`to`
+(`src/dms/planning/tasks/completed/blank-comparison-leaf-guard.md`).
+
+**Publish list.** Because of the editable-binding stamp, EVERY admin page now has a draft:
+playlist, schedule, djs, dj_profile, events, administrators, posts, shows — plus the public
+Playlist and Home drafts from earlier phases.
+
+## Phase 9 — Station Info: fused department cards had seams (2026-09-13, DRAFT)
+
+**Ask.** Odd padding gaps between sections meant to be one card; smoother padding overall.
+
+**Cause.** Each department is a fused pair — header lexical (`border top+left+right`, `radius
+tl+tr`) over a `tile` Card (`border left+right+bottom`, `radius bl+br`). The header carried
+`padding.bottom: "2"`, and a section's `padding` is the page gutter OUTSIDE its box, so every
+header opened an 8px strip of page background above its tiles. Card `padding.bottom: "6"` +
+header `padding.top: "6"` also put 48px between departments (mockup `mb-3`, 12px).
+
+**Fix (content, page 1506781 drafts, sections 1969044–1969055 + note 1969056).** Header
+`padding {top: "4", bottom: "0"}`; tile card `padding {top: "0", bottom: "0"}` with the inner
+spacing moved onto the card: `cardsGridPadding: "4px 24px 24px"` (tiles align with the header
+text's inset, ~24px; bottom matches the mockup's `p-7` minus the tile grid gap). The note
+lexical after the last card gets `padding.top: "4"` so it does not touch the card. Result: one
+continuous surface per department, 16px between departments.
+
+**Rule of thumb (this is the third time it bit).** Never give a fused section a bottom/top step
+on the shared edge; put inner spacing on the Card (`cardsGridPadding` / `cardsPadding` / the
+card style), and use section `padding` only for the gutter between cards.
+
+**Follow-up (same day).** The role tiles' text sat on the tiles' left edge: the six tile cards also
+carried `cardsPadding: 0`, which is emitted as inline `padding` on the element the `tile` style pads
+(`p-5`). Key removed; tiles now have their 20px inset on all sides.

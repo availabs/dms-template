@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback, useState } from "react";
 import { scaleLinear } from "d3-scale";
 import { set } from "lodash-es";
 import mapboxgl from "maplibre-gl";
+import { normalizeMarkerElement } from "../../../../../dms/packages/dms/src/ui/components/map/utils";
 import { resolveRouteFromPoints } from "./resolveRoute";
 import { MARKER_GRADIENT_COLORS } from "../constants";
 
@@ -12,15 +13,26 @@ export const useMapMarkerHandler = (map, setState, pluginDataPath, isActive, yea
   const pointsRef = useRef([]); // [{ lng, lat }, ...] - source of truth for marker positions
   const markersRef = useRef([]); // parallel array of live mapboxgl.Marker instances
   const [markerCount, setMarkerCount] = useState(0);
+  // The RouteEditor's TMC list goes blank while a route resolves (routing2.availabs.org
+  // is a real network round-trip, and Marker mode's tmc_array only ever appears/changes
+  // once it resolves) - surfaces that as an explicit loading state instead of the panel
+  // looking frozen/empty (2026-09-03 user report).
+  const [isResolving, setIsResolving] = useState(false);
 
   const resolve = useCallback(async (points) => {
     if (points.length < 2) {
+      setIsResolving(false);
       setState((draft) => set(draft, `${pluginDataPath}['tmc_array']`, []));
       return;
     }
-    const locations = points.map((p) => ({ lon: p.lng, lat: p.lat }));
-    const tmc_array = await resolveRouteFromPoints(locations, year);
-    setState((draft) => set(draft, `${pluginDataPath}['tmc_array']`, tmc_array));
+    setIsResolving(true);
+    try {
+      const locations = points.map((p) => ({ lon: p.lng, lat: p.lat }));
+      const tmc_array = await resolveRouteFromPoints(locations, year);
+      setState((draft) => set(draft, `${pluginDataPath}['tmc_array']`, tmc_array));
+    } finally {
+      setIsResolving(false);
+    }
   }, [setState, pluginDataPath, year]);
 
   // dragend handlers are bound once per marker (see rebuildMarkers) - route through a ref
@@ -38,9 +50,14 @@ export const useMapMarkerHandler = (map, setState, pluginDataPath, isActive, yea
     const scale = scaleLinear().domain([0, num * 0.5, num]).range(MARKER_GRADIENT_COLORS);
 
     markersRef.current = points.map((point, i) => {
-      const marker = new mapboxgl.Marker({ draggable: true, color: scale(i) })
-        .setLngLat(point)
-        .addTo(map);
+      // normalizeMarkerElement works around the app not loading maplibre-gl's own
+      // stylesheet - without it the marker wrapper has no `position` rule and renders
+      // as an invisible, full-width static block instead of a pin at the click point.
+      const marker = normalizeMarkerElement(
+        new mapboxgl.Marker({ draggable: true, color: scale(i) })
+          .setLngLat(point)
+          .addTo(map)
+      );
       marker.on("dragend", () => {
         const { lng, lat } = marker.getLngLat();
         pointsRef.current = pointsRef.current.map((p, pi) => (pi === i ? { lng, lat } : p));
@@ -69,6 +86,7 @@ export const useMapMarkerHandler = (map, setState, pluginDataPath, isActive, yea
     markersRef.current = [];
     pointsRef.current = [];
     setMarkerCount(0);
+    setIsResolving(false);
     setState((draft) => set(draft, `${pluginDataPath}['tmc_array']`, []));
   }, [setState, pluginDataPath]);
 
@@ -80,5 +98,5 @@ export const useMapMarkerHandler = (map, setState, pluginDataPath, isActive, yea
     return () => map.off("click", MAP_CLICK);
   }, [map, isActive, addPoint]);
 
-  return { markerCount, removeLastMarker, clearAllMarkers };
+  return { markerCount, removeLastMarker, clearAllMarkers, isResolving };
 };

@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Documentation · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  index.html · the documentation home (IA page 1 · type hub). Phase 0 version, 2026-09-04: hub cards from the
+  tree, a task index seeded from the user stories and the ticket clusters (research/docs-redesign), and the
+  "about these docs" conventions. Phase 1 revised the copy (2026-09-04); Phase 7 wires the What's new teaser and search.
+  Links to pages not yet written are allowed here (the sidebar mutes them); the lint reports them as warnings.
+  Seed content salvaged from _seed--docs-overview.html ("What this site is for", "Choosing the right tool").
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="hub" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">TransportNY · documentation</div>
+          <h1 class="doc-title">Documentation.</h1>
+          <p class="doc-lede">How to use the NPMRDS, TSMO and Freight Atlas tools, and how every number they show is made. Everything here is public. Sign in only to save routes and reports or to administer data.</p>
+          <div class="stamps">
+            <span class="type">hub</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-04</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-is-here">What is here</h2>
+          <p>Seven hubs. Three are the products, one is the shared methodology every product draws on, and three serve developers, administrators and everyone.</p>
+          <div class="hubgrid">
+            <a class="hubcard" href="start.html"><div class="t">Get started</div><div class="d">What TransportNY is, signing in and sessions, finding your way around, which tool answers your question, and the platform FAQ.</div><div class="n">5 pages</div></a>
+            <a class="hubcard" href="npmrds.html"><div class="t">NPMRDS</div><div class="d">Routes, reports, the Macro View, route comparison, the MAP-21 reporting pages and worked recipes.</div><div class="n">20 pages</div></a>
+            <a class="hubcard" href="tsmo.html"><div class="t">TSMO</div><div class="d">The congestion, reliability, incidents and work-zone dashboards, incident search and view, corridor view.</div><div class="n">11 pages</div></a>
+            <a class="hubcard" href="freight_atlas.html"><div class="t">Freight Atlas</div><div class="d">The map and its layers, the Maps Gallery, downloads, and the 2024 State Freight Plan.</div><div class="n">8 pages</div></a>
+            <a class="hubcard" href="measures_and_data.html"><div class="t">Measures &amp; Data</div><div class="d">One page per measure and per data source: what it answers, how it is computed, how much to trust it, what changed.</div><div class="n">31 pages · canonical</div></a>
+            <a class="hubcard" href="developers.html"><div class="t">Developers</div><div class="d">Quick start, the Data Manager API, worked examples, bulk downloads and formats, changelog.</div><div class="n">7 pages</div></a>
+            <a class="hubcard" href="admin.html"><div class="t">Admin</div><div class="d">Uploading and managing datasets, the Map Editor, publishing maps to pages, users and permissions.</div><div class="n">7 pages · requires sign-in</div></a>
+            <a class="hubcard" href="glossary.html"><div class="t">Glossary · What's new · Help</div><div class="d">Every term with where it appears. Dated release, data and methodology notes. How to report a problem.</div><div class="n">3 pages</div></a>
+          </div>
+
+          <h2 id="i-want-to">I want to…</h2>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>task</th><th>go to</th></tr></thead>
+            <tbody>
+              <tr><td>Sign in, or find out why the site signed me out</td><td><a href="start--accounts_and_sessions.html">Sign in, sessions and accounts</a></td></tr>
+              <tr><td>Move between the products, or get back to the landing page</td><td><a href="start--navigating.html">Navigating the platform</a></td></tr>
+              <tr><td>Choose the right tool for a question before I start</td><td><a href="start--which_tool.html">Which tool answers my question?</a></td></tr>
+              <tr><td>Find out how a number on a dashboard was computed</td><td><a href="measures_and_data.html">Measures &amp; Data</a> · every KPI card's <span class="ui">How it's computed →</span> also lands there</td></tr>
+              <tr><td>Understand what "statewide", a region, a county and an MPO mean in the filters</td><td><a href="measures_and_data--concepts--geography.html">Geography: regions, counties, MPOs, statewide</a> · the short answer is in the <a href="start--faq.html#what-is-actually-being-shown-when-there-is-no-filter-on-region">Platform FAQ</a></td></tr>
+              <tr><td>Change the year or region on a TSMO dashboard</td><td><a href="tsmo--filters.html">Using the filter bar</a></td></tr>
+              <tr><td>Build a route and put it in a report</td><td><a href="npmrds--start.html">NPMRDS start here</a></td></tr>
+              <tr><td>Compare a corridor before and after a change</td><td><a href="npmrds--recipes--before_and_after.html">Recipe: a before/after study</a></td></tr>
+              <tr><td>Compare many routes across periods in one table</td><td><a href="npmrds--route_comparison.html">Compare routes across periods</a></td></tr>
+              <tr><td>Colour the whole network by a measure for one year, then download it</td><td><a href="npmrds--macro_view.html">Macro View: how to use</a> · <a href="npmrds--macro_view--download.html">Download data from the Macro View</a></td></tr>
+              <tr><td>Read the federal MAP-21 reliability figures and targets</td><td><a href="npmrds--map21.html">MAP-21 PM3 reporting pages</a> · <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a></td></tr>
+              <tr><td>Look up one incident, or one corridor over a day</td><td><a href="tsmo--incident_search.html">Find an incident</a> · <a href="tsmo--corridor_view.html">Explore a corridor over time</a></td></tr>
+              <tr><td>Open a freight map, read its legend, share it</td><td><a href="freight_atlas--map.html">Use the map</a> · <a href="freight_atlas--gallery.html">Maps Gallery</a></td></tr>
+              <tr><td>Download a dataset, or query it from code</td><td><a href="freight_atlas--downloads.html">Download freight data</a> · <a href="developers--quickstart.html">Developers quick start</a></td></tr>
+              <tr><td>Know what the data covers and how fresh it is</td><td><a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a></td></tr>
+              <tr><td>Report a problem or ask a question</td><td><a href="help.html">Help and feedback</a></td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="about-these-docs">About these docs</h2>
+          <p>Every page carries the same header: its type, which product and version it applies to, when it was last reviewed, and who owns it. Pages that describe a release not yet live say so. Measure pages are the single source for definitions. The tools show a summary and link here. Figures are captured from the live tool and name the state that produced them.</p>
+          <p>Sources for every number are listed on the page that shows it. If a page and the tool disagree, either the tool is wrong or the page is stale. Both are bugs: use <a href="help.html">Help and feedback</a>.</p>
+          <div class="callout note"><span class="k">note</span>Some pages in the sidebar are dimmed. They are planned and not yet written. They are listed so the shape of the documentation is visible while it is built.</div>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-04 created (phase 0) · 2026-09-04 copy revised (phase 1)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="whats_new.html">What's new</a>
+          <a href="glossary.html">Glossary</a>
+          <a href="../landing.html">Back to TransportNY</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

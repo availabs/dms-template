@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>API changelog · Developers · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  developers--changelog.html · IA page 86 · type log. Phase 6a, 2026-09-08.
+  Sources: docs-dump section dates (281807 §APIs 2024-04-04; 489118 2024-07-23; 1436006 2025-08-27; 1458899 2025-09-10; 1481752 2025-09-24;
+  1715527 2026-02-04); npmrds--macro_view--download.html and data-types/pm3/download.js (2026-08-24 JSON removed, GeoJSON refused);
+  tickets 2195719 and 2195637 (2026-07-27); subdomain-to-path consolidation via measures_and_data--methodology_changes.html (2026-09-02);
+  createRequest.js `case 'uda'` comment (undated); avail-falcor batchreports/index.js (undated). No date invented: undated items sit
+  under the Undated heading.
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="log" data-applies-to="developers">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Developers · log</div>
+          <h1 class="doc-title">API changelog.</h1>
+          <p class="doc-lede">Dated changes to the two APIs, the download routes and the developer documentation, newest first. For anyone whose script stopped working, or who wants to know which form of a path is current.</p>
+          <div class="stamps">
+            <span class="type">log</span>
+            <span>applies to · Developers</span>
+            <span>last reviewed · 2026-09-08</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <p>Each entry carries one of three labels. <strong>Platform</strong>: sign-in, hosts or a page changed and no request grammar moved. <strong>API</strong>: an endpoint, a path, a parameter or a download format changed. <strong>Docs</strong>: a developer page was published or superseded. Changes with no sourced day sit under <em>Undated</em>; no day is invented. One change is planned and not yet dated: the Batch Reports API retires when Route Comparison is released, see <a href="developers--batch_reports_api.html#status">its status note</a>. Methodology changes to the numbers themselves are in <a href="measures_and_data--methodology_changes.html">Methodology changes</a>.</p>
+
+          <h2 id="2026-09-02-platform">2026-09-02 · Platform</h2>
+          <p>TSMO and the Freight Atlas moved onto the landing page's origin. One sign-in now carries across the products that share it; before, each product was a separate session. The sign-in token is scoped to the origin that issued it. NPMRDS keeps its own address until it moves. No API path changed. See <a href="start--accounts_and_sessions.html">Sign in, sessions and accounts</a>.</p>
+
+          <h2 id="2026-08-24-api">2026-08-24 · API</h2>
+          <p>The Macro View download route stopped offering JSON, which the export pipeline had never been able to write, and now refuses GeoJSON as a matter of policy. Both refusals are errors that name the format. CSV and GPKG remain; a Shapefile is accepted by the route but not offered by the builder. See <a href="developers--downloads_and_formats.html#the-macro-view-package">The Macro View package</a>.</p>
+
+          <h2 id="2026-07-27-platform">2026-07-27 · Platform</h2>
+          <p>Downloads were generated for the 23 Freight Atlas dataset versions that had none, as CSV, ESRI Shapefile and GPKG, so every Freight Atlas version has a file. The TSMO Data &amp; Methodology page's <span class="ui">Downloads &amp; API</span> band was relinked: its bulk-tables card now opens the excessive-delay series source page, whose download is a CSV per year, and its API card opens the API guide. A card that linked out to the raw NPMRDS provider was removed. See <a href="developers--downloads_and_formats.html">Bulk downloads and formats</a>.</p>
+
+          <h2 id="2026-02-04-docs">2026-02-04 · Docs</h2>
+          <p>The Batch Reports API reference was published: the endpoint <code>POST https://graph.availabs.org/batchreports/npmrds2/982</code>, the request and response bodies, four example calls, the column and source codes, and the two page routes that require sign-in. This documentation's <a href="developers--batch_reports_api.html">Batch Reports API</a> page carries it, with the retirement note.</p>
+
+          <h2 id="2025-09-24-docs">2025-09-24 · Docs</h2>
+          <p>The python client examples were published: installation from the client's repository and a script that saves the TRANSCOM events query to a CSV. See <a href="developers--examples.html#the-python-client">The python client</a>.</p>
+
+          <h2 id="2025-09-10-docs">2025-09-10 · Docs</h2>
+          <p>The worked example was published: the TRANSCOM events query against <code>https://graph.availabs.org/graph</code>, written with the <code>uda</code> root and the <code>viewsById</code> and <code>dataByIndex</code> casing that the site itself uses. It is the form this documentation treats as current. See <a href="developers--examples.html">Worked examples</a>.</p>
+
+          <h2 id="2025-08-27-docs">2025-08-27 · Docs</h2>
+          <p>The Data Manager API reference was published: Get Length by ViewId, Get Attributes By ViewId, and the options object with <code>filter</code>, <code>exclude</code>, <code>gt</code>/<code>gte</code>/<code>lt</code>/<code>lte</code>, <code>like</code>, <code>groupBy</code>, <code>orderBy</code> and <code>aggregatedLen</code>. It was written with the root <code>dama</code> and the casing <code>viewsbyId</code> and <code>databyIndex</code>, which this documentation records as the legacy form. See <a href="developers--data_manager_api.html#the-legacy-form">The legacy form</a>.</p>
+
+          <h2 id="2024-07-23-docs">2024-07-23 · Docs</h2>
+          <p>The Batch Reports tool page was published, with the format of the CSV the tool imported: no header row, four columns, TMCs joined with a pipe. See <a href="developers--batch_reports_api.html#the-legacy-pages">The legacy pages</a>.</p>
+
+          <h2 id="2024-04-04-docs">2024-04-04 · Docs</h2>
+          <p>The NPMRDS appendix's APIs section, marked draft, listed three services in one line each: an NPMRDS API "powering the reporting view", a PM3 API "powering macro view", and a RIS API with no description. The Developers hub supersedes it.</p>
+
+          <h2 id="undated-api">Undated · API</h2>
+          <ul>
+            <li>The <code>uda</code> root was added to the site's request builder as "a new route that can accept filter and calculate length". The code carries no date; the 2025-09-10 worked example is the earliest dated use.</li>
+            <li>The Batch Reports endpoint, <code>POST /batchreports/:pgEnv/:viewId</code>, was added to the data server. The code carries no date; its reference is dated 2026-02-04.</li>
+            <li>The per-version download generation, which writes CSV, ESRI Shapefile, GeoJSON and GPKG with <code>ogr2ogr</code> and records the addresses on the view, predates the 2026-07-27 generation pass. The code carries no date.</li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Documentation pages, by the date of their published section: NPMRDS appendix, APIs (2024-04-04); Batch Reports (2024-07-23); Data Manager API (2025-08-27); API request example (2025-09-10); Python client examples (2025-09-24); Batch Reports API (2026-02-04).</li>
+            <li>Macro View download route (data-types/pm3/download.js): JSON never producible; "GeoJSON is refused as a matter of pm3 policy (stated 2026-08-24)"; <a href="npmrds--macro_view--download.html">Download data from the Macro View</a>, Limits and gotchas.</li>
+            <li>Ticket 2195719 (resolved 2026-07-27): 23 versions generated, coverage 53 of 53. Ticket 2195637 (resolved 2026-07-27): the two <span class="ui">Downloads &amp; API</span> cards, the per-year CSV, the raw-provider card removed.</li>
+            <li><a href="measures_and_data--methodology_changes.html#2026-09-02-platform">Methodology changes, 2026-09-02</a> and the subdomain consolidation task record (complete 2026-09-02): origin-scoped sign-in token.</li>
+            <li>Site code: <code>api/createRequest.js</code>, <code>case 'uda'</code> and its comment, undated. Data server code: <code>batchreports/index.js</code>, undated; the <code>gis/create-download</code> worker named in <code>data-types/pm3/index.js</code>, undated.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-08 created (phase 6a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="developers.html">Developers hub</a>
+          <a href="measures_and_data--methodology_changes.html">Methodology changes</a>
+          <a href="whats_new.html">What's new</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

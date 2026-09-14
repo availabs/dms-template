@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NPMRDS FAQ · NPMRDS · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="faq" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">NPMRDS · faq</div>
+          <h1 class="doc-title">NPMRDS FAQ.</h1>
+          <p class="doc-lede">Real questions about the NPMRDS tools, in the words people asked them, with a short answer and the page that answers in full. Ticket and tracker ids are the trace. Platform-wide questions, sign-in and navigation among them, are in the <a href="start--faq.html">Platform FAQ</a>; the 2024 documentation's template questions are answered here against today's templates.</p>
+          <div class="stamps">
+            <span class="type">faq</span>
+            <span>applies to · NPMRDS</span>
+            <span>last reviewed · 2026-09-07</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="i-cant-find-the-tools-needed-to-create-a-new-route">I can't find the tools needed to create a new route. <small>ticket 2210869</small></h2>
+          <p>Route Creation is not in the side navigation. Open <span class="ui">Reports</span> and select <span class="ui">New route</span> in the page header. The map opens with the network drawn on it; click segments in order, or drop markers, then save with a name and tags. Sign in first, because saving writes to your account. The ticket was filed without naming a screen, so it sat unseen for two weeks; the answer above is where the tool is today. See <a href="npmrds--routes--create.html#before-you-start">Create a route</a>.</p>
+
+          <h2 id="where-did-route-comparison-go">Where did Route comparison go? It is not in the navigation any more.</h2>
+          <p>It was removed from the NPMRDS side navigation on 2026-09-02 because the tool is a draft. The <span class="ui">Route comparison.</span> section of the NPMRDS home still links to it, and its address is <code>/route_comparison</code>. Today only the route step drives the table; the period and metric steps of its builder are shells. For a comparison you can publish now, build a report and add a Table card with <span class="ui">Route Compare</span>. See <a href="npmrds--route_comparison.html#before-you-start">Compare routes across periods</a>.</p>
+
+          <h2 id="cannot-view-reports-without-logging-in">Cannot view reports without logging in, throws an error <small>running fix 2173158</small></h2>
+          <p>Reading is public on the rebuilt NPMRDS pages, reports included: the pages carry no sign-in requirement, and a report's address opens for anyone. Saving does need an account, whether a route, a report or an edit to either. If a report link still asks you to sign in, you have reached an address in edit mode, which contains <code>/edit/</code>; remove it and reload. The tracker row dates from May 2026, before the rebuilt report pages were published. See <a href="npmrds--reports--find.html#i-was-asked-to-sign-in-to-view-a-report">Find a report</a>.</p>
+
+          <h2 id="no-response-after-i-clicked-the-build-button">No response after I clicked the "BUILD..." button. <small>ticket 2214580</small></h2>
+          <p>Reported 2026-08-24 on the Macro View download builder. The cause was found and fixed in the code the next day: the request and the poll for the finished file used different keys, so the file was built and never offered. The fix waits on a server deployment that has to ship with it, so on the live site the button can still fail silently. Until it is deployed, report a silent failure with the year, the scope and the time. See <a href="npmrds--macro_view--download.html#nothing-happened-after-build">Download data from the Macro View</a>.</p>
+
+          <h2 id="download-not-functioning">Download not functioning · When downloading 2024 tmc data from Macro tool, county info shows as [object Object] <small>running fix 2172487 · running fix 2172523</small></h2>
+          <p>Both rows are from the earlier Macro tool at the legacy address. That tool's downloader is replaced by the Macro View's download builder, which exports exactly what the map draws as a CSV or a GeoPackage with a README, and names its columns by measure, variant, period and unit. The county column is plain text. The first row is still open against the old tool; the second was resolved in August 2025. See <a href="npmrds--macro_view--download.html">Download data from the Macro View</a>.</p>
+
+          <h2 id="unable-to-complete-your-request">"Unable to complete your request at the moment. Please try again later." <small>ticket 2217781</small></h2>
+          <p>Reported on the Macro View on 2026-09-03; the second attempt succeeded. Reload the page. If it repeats, report it with the time, because a repeat is a different problem from a first-load timeout. Nothing you set is lost: the Macro View keeps its state in the address, and a fresh view opens on the defaults. See <a href="npmrds--macro_view.html#the-page-showed-an-error-on-first-load">Macro View: how to use</a>.</p>
+
+          <h2 id="can-we-get-the-road-name-in-the-hover">the hover/click has the TMC listed but can we get the road name included? <small>ticket 2217782 · ticket 2211480</small></h2>
+          <p>Not yet. The dataset behind the Macro View carries the TMC code, the year, the county, the region, the MPO and the urban area, and no road name, length or AADT, so the hover cannot name the road. Adding it needs a join to the network table upstream, which is tracked as data work. Meanwhile, copy the TMC code from the hover and look it up in the TMC network table, or add the county and export: the download's <code>tmc</code> column joins to the network's road name and length. See <a href="npmrds--macro_view.html#reading-the-map-and-the-measure-panel">Reading the map and the measure panel</a>.</p>
+
+          <h2 id="pm3-2024-view-carries-less-than-half-the-segments">PM3 2024 view carries less than half the segments of 2025 — Year silently swaps coverage <small>ticket 2211482</small></h2>
+          <p>True, and unresolved. The Macro View's 2024 dataset holds 22,754 segment rows against 52,127 for 2025. Whether the 2024 run is incomplete or the network changed is an open data question, recorded 2026-08-12. Until it is answered, do not read a 2024-to-2025 change on the Macro View as a change in traffic, and export each year separately if you must compare. The MAP-21 pages are not affected; they read a different dataset. See <a href="measures_and_data--data--pm3_and_map21.html#the-2024-segment-count">The 2024 segment count</a>.</p>
+
+          <h2 id="three-of-the-eight-documented-measures-are-not-computed">Three of the eight documented measures are not computed [by the analytical series] <small>ticket 2211481</small></h2>
+          <p>Free-flow speed, emissions and roadway attributes were declared in the measure vocabulary and have no columns in the current dataset, so the Macro View keeps them out of its <span class="ui">Measure</span> menu rather than showing an empty map. Seven measures are available: LOTTR, TTTR, TTTR₈₀, TED, PHED, percentile speed and data coverage. Computing the three is data-pipeline work, tracked separately. See <a href="measures_and_data--measures--in_development.html">Measures in development</a>.</p>
+
+          <h2 id="the-home-page-description-says-nhs">The home page description says that the NPMRDS data is for the NHS system but NYSDOT purchases the expanded network so the data goes beyond just the NHS. <small>ticket 2211525</small></h2>
+          <p>Correct, and fixed on 2026-08-24. The home now reads "the NHS plus the expanded network NYSDOT licenses beyond it". Two other NHS mentions on the page were kept on purpose: they describe the MAP-21 measures, which are defined on the NHS by federal rule. The distinction is the one the reporter drew. The data extends beyond the NHS; the federal figures do not. The Macro View shows every monitored segment; the MAP-21 pages show the NHS. See <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a>.</p>
+
+          <h2 id="compare-years-mode-is-not-built">Compare-years mode is not built <small>ticket 2211483</small></h2>
+          <p>By design, for now. The Macro View's <span class="ui">View</span> control shows <span class="ui">Single year</span> selected and <span class="ui">Compare years</span> disabled, with a tooltip saying it is planned. A drawn mode that does nothing is worse than a visibly planned one. Building it needs a per-year-pair difference column from the data pipeline, because the map colours one column per year and two years are two tile sets. Until then, compare years by exporting each and reading both READMEs first. See <a href="npmrds--macro_view.html#geography-and-year">Geography and year</a>.</p>
+
+          <h2 id="could-additional-query-selection-options-be-added">Could additional query/selection options be added for what roadways to include? Such as NHS &amp; Non-NHS and/or Functional Classification. <small>ticket 2211536</small></h2>
+          <p>Not today. The Macro View filters by geography only: regions, MPOs, urban areas and counties. An NHS or functional-class filter needs those fields on the dataset behind the map, and they are not there yet; the request is parked pending that data decision, alongside the road-name request. The MAP-21 pages already separate Interstate from non-Interstate NHS, because the federal measures require it. See <a href="npmrds--macro_view.html#limits-and-gotchas">Limits and gotchas</a>.</p>
+
+          <h2 id="the-map-21-page-says-83-2-but-i-have-85-0">The MAP-21 page says 83.2 % non-Interstate reliability for 2025, but I have 85.0 % from an earlier version. Which is right? <small>design handoff note, 2026-07</small></h2>
+          <p>83.2 %, computed on the platform from the MAP-21 dataset, or 83.3 % from the file New York resubmitted to FHWA, which the TSMO home quotes. Both are the federal measure on two bases and both clear the 70 % target. The 85.0 % figure, and a TTTR of 1.42 that travelled with it, came from older handoff copy that reproduces from no dataset; both are withdrawn. Never quote a reliability percentage without its year, its system and its target. See <a href="npmrds--map21.html#reading-the-compliance-cards">Reading the compliance cards</a>.</p>
+
+          <h2 id="this-page-looks-to-need-some-cleanup">This page looks to need some cleanup <small>ticket 2216214</small></h2>
+          <p>The page reported is the Overview of the 2024 documentation, at the legacy documentation address. This documentation is written to replace those pages, one per live tool and one per measure, and the plan is to retire the 2024 pages once these are published on the site. Until then, start from the NPMRDS hub here rather than the old Overview. See <a href="npmrds.html">NPMRDS</a>.</p>
+
+          <h2 id="how-does-a-route-behave-differently-depending-on-time-of-year">How does a route behave differently depending on time of year? <small>Quick Start FAQ, 2024</small></h2>
+          <p>Open the <span class="ui">Seasonality</span> template with one route. It draws the current year and each season, winter, spring, summer and fall, as fixed calendar ranges, with a speed grid per season, a difference grid of each season against the year, and summary bars of speed and delay by season. Read the difference grids for shape and check segment lengths before calling a shift behaviour. See <a href="npmrds--reports--templates.html#seasonality">Template reference: Seasonality</a>.</p>
+
+          <h2 id="is-there-a-way-to-better-understand-and-evaluate-a-two-way-road">Is there a way to better understand and evaluate a two-way road? <small>Quick Start FAQ, 2024</small></h2>
+          <p>Open the <span class="ui">Bi-directional</span> template with two routes, one per direction, ideally where one's start is the other's end. Per direction it draws hours of delay and travel time by 5 minutes with one series per year, a Route Compare table of speed by year, a speed map, a segment-length table, and daily bars across the trailing three years. Today's compare column is a percent against the first row. See <a href="npmrds--reports--templates.html#bi-directional">Template reference: Bi-directional</a>.</p>
+
+          <h2 id="what-does-a-typical-week-look-like-for-a-particular-route">What does a typical week look like for a particular route? <small>Quick Start FAQ, 2024</small></h2>
+          <p>Open the <span class="ui">Weekly Average</span> template with one route. Two cards: a speed line by 5 minutes with one line per year for the current year and the two before it, and average speed by day of week. It is the smallest template and a good first look at a corridor. The 2024 documentation called it "Weekly Averages (Beginner)". See <a href="npmrds--reports--templates.html#weekly-average">Template reference: Weekly Average</a>.</p>
+
+          <h2 id="how-does-a-routes-monthly-behavior-compare">How does a routes monthly behavior compare with the previous month and the same month last year? <small>Quick Start FAQ, 2024</small></h2>
+          <p>Open <span class="ui">This Month vs. Last Month vs. Last Year</span> with one route and set <span class="ui">Viewing as of</span> inside the month you mean. It draws this month, last month, the same month last year and the trailing three years: paired 5-minute lines of travel time and average hours of delay against each comparison, maps, bars by day of week and a summary bar. Same month last year is the fair comparison; last month carries a season change. See <a href="npmrds--reports--templates.html#this-month-vs-last-month-vs-last-year">Template reference</a>.</p>
+
+          <h2 id="how-can-i-look-at-an-overview-of-congestion-on-a-particular-route">How can I look at an overview of congestion on a particular route? <small>Quick Start FAQ, 2024</small></h2>
+          <p>Open the <span class="ui">Monthly Congestion</span> template with one route and anchor in the year you want. Twelve bar graphs of hours of delay by day, one per calendar month, then a Route Compare table of speed for the year against the year before. A month of tall bars is seasonal; a single tall bar is an event. Hours of delay here is the report delay measure, against the greater of 20 mph and 60 % of the posted limit. See <a href="npmrds--reports--templates.html#monthly-congestion">Template reference: Monthly Congestion</a>.</p>
+
+          <h2 id="how-can-i-look-at-an-overview-of-speeds-on-a-particular-route">How can I look at an overview of Speeds on a particular route? <small>Quick Start FAQ, 2024</small></h2>
+          <p>Open <span class="ui">Monthly Speed Comparisons</span> with one route, anchored on the end of the latest full year. It compares the current year with a trailing six-year average: bars of speed and average hours of delay by 5 minutes, speed by month, a speed line, a segment grid, and speed and hours of delay by day of week. The six-year average is the baseline; the current year's departures are the finding. See <a href="npmrds--reports--templates.html#monthly-speed-comparisons">Template reference: Monthly Speed Comparisons</a>.</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Tickets 2210869 (2026-08-11, orphaned page key noted 2026-08-24), 2214580 (2026-08-24; verified 2026-08-25: code fix present, deployment absent), 2217781 and 2217782 (2026-09-03), 2211480, 2211481, 2211482 and 2211483 (2026-08-12; re-parked as data questions or by design 2026-08-24), 2211525 (resolved 2026-08-24), 2211536 (needs decision, 2026-08-24), 2216214 (2026-09-01).</li>
+            <li>Legacy tracker rows 2173158 (2026-05-27), 2172487 (2026-05-14, open) and 2172523 (resolved 2025-08-11).</li>
+            <li>Legacy NPMRDS documentation, Quick Start (2024), "Frequently Asked Transportation Planning Questions": the six template questions quoted verbatim.</li>
+            <li>NPMRDS design digest (2026-09-04): Route comparison removed from the live navigation 2026-09-02; the withdrawn 85.0 and 1.42 handoff figures.</li>
+            <li>Documentation style rulings of 2026-09-04: NPMRDS pages are public to read; the CY 2025 reliability figures.</li>
+            <li>Platform documentation plan and build task: the 2024 documentation pages are to be retired once these pages are migrated to the site (owner-gated).</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-07 created (phase 4b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="start--faq.html">Platform FAQ</a>
+          <a href="npmrds.html">NPMRDS</a>
+          <a href="help.html">Help and feedback</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

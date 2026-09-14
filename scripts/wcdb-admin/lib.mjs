@@ -157,8 +157,15 @@ export const band = ({ index, displayName, theme = 'admin', position = 'content'
  * names against) — an empty one renders a blank card. The per-section
  * projection is the section's own top-level `columns`.
  */
+// `isEditable: true` on every binding: it mirrors each source's `metadata.isEditable`
+// (all seven wcdb-dama sources carry it — confirmed via the graph 2026-09-12), and the
+// dataWrapper reads the SECTION's copy, not the source's: without it `updateItem` /
+// `addItem` / `removeItem` return before writing, and getData strips the row `id`
+// (external sources only get an `id` attribute when the binding says editable), so a
+// live-edit form saved nothing and a Delete had no key. The source picker sets this
+// flag when an author binds through the UI (useDataSource.js); a seed has to say it.
 const pg = (source_id, view_id, name, type, columns) => ({
-  source_id, view_id, isDms: false,
+  source_id, view_id, isDms: false, isEditable: true,
   env: 'wcdb-dama', srcEnv: 'wcdb-dama', baseUrl: '',
   type, name, view_name: '1',
   columns: columns.map(([n, t]) => ({ name: n, type: t, display_name: n })),

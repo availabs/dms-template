@@ -48,6 +48,17 @@ geoid,payload_row,existing_id,existing_row,score,j_action_name,j_description_of_
 3643335,Hazard Mitigation-Waste Water Treatment Plant (PW-433508 Emmie-00309),1099725,Hazard Mitigation-Waste Water Treatment Plant (PW-433508 Emmie-00309),1.0,1.0,1.0,1.0,applied
 3643335,Hazard Mitigation-Water Purification Plant (PW-4333509 Emmie-0293),1099724,Hazard Mitigation-Water Purification Plant (PW-4333509 Emmie-0293),1.0,1.0,1.0,1.0,applied
 3643335,Install Check Valves for Critical Infrastructure,1099723,Install Check Valves for Critical Infrastructure,1.0,1.0,1.0,1.0,applied
+3643335,Northshore Critical Infrastructure Protection Project - FEMA 404 Mitigation Project,1099722,Northshore Critical Infrastructure Protection Project - FEMA 404 Mitigation Project,1.0,1.0,1.0,1.0,applied
+3643335,Install and Raise Bulk Heading Along Reynolds Channel,2484509,Install and Raise Bulk Heading Along Reynolds Channel,1.0,1.0,1.0,1.0,applied
+3643335,Build City Command Center,2484511,Build City Command Center,1.0,1.0,1.0,1.0,applied
+3643335,Comprehensive Drainage Analysis of the City,2484512,Comprehensive Drainage Analysis of the City,1.0,1.0,1.0,1.0,applied
+3643335,Canal flood gates Along Reynolds Channel,2484513,Canal flood gates Along Reynolds Channel,1.0,1.0,1.0,1.0,applied
+3643335,City Wide Tree Maintenance and Pruning Program,2484514,City Wide Tree Maintenance and Pruning Program,1.0,1.0,1.0,1.0,applied
+3643335,Perform Routine Maintenance of City's Storm Drains,2484515,Perform Routine Maintenance of City's Storm Drains,1.0,1.0,1.0,1.0,applied
+3643335,Mitigation of Masonry Exterior. Installation of parapet walls and water-resistant material,2484517,Mitigation of Masonry Exterior. Installation of parapet walls and water-resistant material,1.0,1.0,1.0,1.0,applied
+3643335,Install Permanent Generator - installed at the Long Beach Medical Center,2484519,Install Permanent Generator - installed at the Long Beach Medical Center,1.0,1.0,1.0,1.0,applied
+3643335,"Install permanent generators at the Lido Complex, Lindell Elementary School & East Element",2484520,"Install permanent generators at the Lido Complex, Lindell Elementary School & East Element",1.0,1.0,1.0,1.0,applied
+3643335,Upgrade Exterior Envelope at Long Beach High School,2484521,Upgrade Exterior Envelope at Long Beach High School,1.0,1.0,1.0,1.0,applied
 3643874,Fire Station Emergency Generator,1093923,Fire Station Emergency Generator,1.0,1.0,1.0,1.0,applied
 3643874,Police Station Emergency Generator,1093922,Police Station Emergency Generator,1.0,1.0,1.0,1.0,applied
 3643874,Harden and Upgrade Cable Towers N53 and N54 to be Disaster-Resistant,1093924,Harden and Upgrade Cable Towers N53 and N54 to be Disaster-Resistant,1.0,1.0,1.0,1.0,applied
@@ -113,7 +124,7 @@ geoid,payload_row,existing_id,existing_row,score,j_action_name,j_description_of_
 3633139,Generator Replacement - Southside Fire House,1093831,Generator Replacement  - Jerusalem Ave. Fire House,0.829,0.571,1.0,1.0,REFUSED - discriminator conflict
 3682986,Implementation of first vision plan,1093523,Imlementaion of first vision plan,0.824,0.6,1.0,0.946,applied
 3641432,Frost Creek Inlet Restoration,1093915,Frost Creek Inlet Restoration,0.817,1.0,0.389,1.0,applied
-3643335,City of Long Beach Nassau County Waste Water Treatment Plant (WWTP) Diversion Project,1099721,City of Long Beach/Nassau County Waste Water Treatment Plant Diversion Project (FEMA 406 M,0.811,0.7,1.0,0.769,REFUSED - discriminator conflict
+3643335,City of Long Beach Nassau County Waste Water Treatment Plant (WWTP) Diversion Project,1099721,City of Long Beach/Nassau County Waste Water Treatment Plant Diversion Project (FEMA 406 M,0.811,0.7,1.0,0.769,applied
 3633139,Preventative Tree Trimming Program,1093828,Preventative Tree Trimming Program,0.809,1.0,1.0,0.362,applied
 3604803,Implementation of Continuity of Operations Plan,1094266,Implementation of Continuity of Operations Plan,0.806,1.0,1.0,0.353,applied
 3682986,Woodmere Boulevard S. Drainage,1093519,Woodmere Boulevard S. Drainage,0.806,1.0,0.909,0.444,applied
@@ -134,15 +145,12 @@ geoid,payload_row,existing_id,existing_row,score,j_action_name,j_description_of_
 3647636,Well 1 generator,1093885,Well 4 Generator,0.725,0.5,0.75,1.0,REFUSED - discriminator conflict
 3633139,Generator Installation - Kennedy Memorial Park,1093835,Generator Installation - Victory Fire House,0.7,0.25,1.0,1.0,skipped (already claimed)
 3633139,Generator Installation - Victory Fire House,1093834,Generator Installation - Kennedy Memorial Park,0.7,0.25,1.0,1.0,skipped (already claimed)
-3643335,Install Check Valves for Critical Infrastructure,1099723,Install Check Valves for Critical Infrastructure,0.7,1.0,0.0,1.0,skipped (already claimed)
-3605956000,Emergency Preparedness and Disaster Action Planning,1095231,Emergency Preparedness and Disaster Action Planning,0.696,1.0,0.792,0.196,skipped (already claimed)
 3633139,Generator Installation - East End Fire House,1093834,Generator Installation - Kennedy Memorial Park,0.689,0.222,1.0,1.0,REFUSED - discriminator conflict
 3633139,Generator Installation - Kennedy Memorial Park,1093827,Generator Installation - Weir Street Fire Facility,0.689,0.222,1.0,1.0,skipped (already claimed)
 3633139,Generator Installation - Kennedy Memorial Park,1093826,Generator Installation - West End Fire House,0.689,0.222,1.0,1.0,REFUSED - discriminator conflict
 3633139,Generator Installation - Kennedy Memorial Park,1093836,Generator Installation - East End Fire House,0.689,0.222,1.0,1.0,REFUSED - discriminator conflict
 3633139,Generator Installation - Weir Street Fire Facility,1093834,Generator Installation - Kennedy Memorial Park,0.689,0.222,1.0,1.0,skipped (already claimed)
 3633139,Generator Installation - West End Fire House,1093834,Generator Installation - Kennedy Memorial Park,0.689,0.222,1.0,1.0,REFUSED - discriminator conflict
-3643335,Northshore Critical Infrastructure Protection Project - FEMA 404 Mitigation Project,1099722,Northshore Critical Infrastructure Project (FEMA 404 Mitigation Project),0.664,0.833,1.0,0.103,applied
 3641432,Village Hall renovation,1093914,Village Hall renovation,0.633,1.0,0.226,0.55,applied
 3613618,Tree Maintenance Program,1094189,Tree Maintenance Program,0.629,1.0,0.591,0.172,applied
 3656011,Swiftreach System Mitigation Outreach Program,1093843,Swiftreach System,0.617,0.667,1.0,0.167,applied
@@ -156,12 +164,9 @@ Response Contingency Plan",0.585,0.714,0.579,0.419,applied
 3643335,Hazard Mitigation-Long Beach Ice Arena (PW-433532 Emmie-03978),1099715,Hazard Mitigation-Long Beach City Hall (PW-433520 Emmie-04066),0.553,0.364,1.0,0.36,REFUSED - discriminator conflict
 3645106,Manorhaven Sewer Force Main Replacement Study - Full Replacement,1093891,Sewer Force Main Replacement Study  -  Phase I,0.553,0.625,0.01,1.0,applied
 3645106,Manorhaven Sewer Restoration Project - Phase I-A and Phase I-B,1093887,Manorhaven Sewer  Restoration Project - Phase I-A and Phase I-B,0.531,1.0,0.097,0.34,applied
-3643335,Annual Event to promote Disaster Resistant Development,1099728,Annual Event to promote Disaster Resistant Development,0.527,1.0,0.071,0.353,skipped (already claimed)
 3605956000,Business Continuity Program,1095233,Business Continuity Program,0.523,1.0,0.032,0.378,applied
 3643335,Hazard Mitigation-Long Beach City Hall (PW-433520 Emmie-04066),1099726,Hazard Mitigation-Recreation and Senior Center (PW-433505 Emmie-04154),0.503,0.167,1.0,0.455,REFUSED - discriminator conflict
 3643335,Hazard Mitigation-Recreation and Senior Center (PW-433505 Emmie-04154),1099715,Hazard Mitigation-Long Beach City Hall (PW-433520 Emmie-04066),0.503,0.167,1.0,0.455,REFUSED - discriminator conflict
-3637847,"Bulkhead replacement at ""Little Beach""",1093950,"Bulkhead replacement at ""Little Beach""",0.5,1.0,0.0,0.333,skipped (already claimed)
-3628178,George Farber Center Back Up Generator,1094026,George Farber Center Back Up Generator,0.498,1.0,0.042,0.286,skipped (already claimed)
 3618597,Emergency SMS Alerting,1094188,Emergency SMS Texting,0.497,0.5,0.324,0.667,below threshold - review only
 3643874,Emergency generator power for critical village facilities,1093920,"Emergency generator
 power for critical village facilities",0.49,1.0,0.188,0.111,applied
@@ -169,7 +174,6 @@ power for critical village facilities",0.49,1.0,0.188,0.111,applied
 3605956000,Storm Water System Modeling and Analysis,1095235,Storm Water System Modeling and Analysis,0.477,1.0,0.062,0.196,applied
 3643335,Hazard Mitigation-MLK Center (PW-433529 Emmie-03901),1099726,Hazard Mitigation-Recreation and Senior Center (PW-433505 Emmie-04154),0.476,0.3,1.0,0.185,REFUSED - discriminator conflict
 3643335,Hazard Mitigation-Recreation and Senior Center (PW-433505 Emmie-04154),1099727,Hazard Mitigation-MLK Center (PW-433529 Emmie-03901),0.476,0.3,1.0,0.185,REFUSED - discriminator conflict
-3605956000,Muscle Wall Mitigation System,1095227,Muscle Wall Mitigation System,0.475,1.0,0.0,0.25,skipped (already claimed)
 3633139,Generator Installation - Victory Fire House,1093830,Generator Replacement  -Headquarters Fire House,0.471,0.429,0.0,1.0,below threshold - review only
 3633139,Generator Installation - Victory Fire House,1093829,Generator Replacement - Southside Fire House,0.471,0.429,0.0,1.0,REFUSED - discriminator conflict
 3633139,Generator Replacement -Headquarters Fire House,1093835,Generator Installation - Victory Fire House,0.471,0.429,0.0,1.0,below threshold - review only
@@ -201,8 +205,6 @@ power for critical village facilities",0.49,1.0,0.188,0.111,applied
 3633139,Generator Replacement - Jerusalem Ave. Fire House,1093826,Generator Installation - West End Fire House,0.433,0.333,0.0,1.0,REFUSED - discriminator conflict
 3633139,Generator Replacement - Jerusalem Ave. Fire House,1093836,Generator Installation - East End Fire House,0.433,0.333,0.0,1.0,REFUSED - discriminator conflict
 3605956000,Roadway Elevation / Lifeline Road Network,1095236,Roadway Elevation / Lifeline Road Network,0.432,1.0,0.038,0.067,applied
-3643874,Emergency generator power for critical village facilities,1093920,"Emergency generator
-power for critical village facilities",0.43,1.0,0.0,0.1,skipped (already claimed)
 3643335,Hazard Mitigation-Long Beach Ice Arena (PW-433532 Emmie-03978),1099726,Hazard Mitigation-Recreation and Senior Center (PW-433505 Emmie-04154),0.429,0.154,1.0,0.226,REFUSED - discriminator conflict
 3643335,Hazard Mitigation-Recreation and Senior Center (PW-433505 Emmie-04154),1099714,Hazard Mitigation-Long Beach Ice Arena (PW-433532 Emmie-03978),0.429,0.154,1.0,0.226,REFUSED - discriminator conflict
 3643335,Hazard Mitigation-Animal Shelter (PW-433524 Emmie-04134),1099715,Hazard Mitigation-Long Beach City Hall (PW-433520 Emmie-04066),0.423,0.182,1.0,0.167,REFUSED - discriminator conflict
@@ -218,7 +220,6 @@ power for critical village facilities",0.43,1.0,0.0,0.1,skipped (already claimed
 3643335,Hazard Mitigation-150 W. Pine St. Complex (PW-433528 Emmie-0449),1099715,Hazard Mitigation-Long Beach City Hall (PW-433520 Emmie-04066),0.409,0.154,1.0,0.158,REFUSED - discriminator conflict
 3643335,Hazard Mitigation-Long Beach City Hall (PW-433520 Emmie-04066),1099718,Hazard Mitigation-150 W. Pine St. Complex (PW-433528 Emmie-0449),0.409,0.154,1.0,0.158,REFUSED - discriminator conflict
 3645106,Manorhaven Sewer Restoration Project - Phase I-C,1093891,Sewer Force Main Replacement Study  -  Phase I,0.409,0.25,1.0,0.029,below threshold - review only
-3637847,"Rebuild existing infrastructure, including drainage, bulkhead outfalls and roadway elevati",1093945,"Rebuild existing infrastructure, including drainage, bulkhead outfalls, and roadway elevat",0.408,1.0,0.028,0.0,skipped (already claimed)
 3643335,Hazard Mitigation-Animal Shelter (PW-433524 Emmie-04134),1099716,"Hazard Mitigation-Fire Houses Station 1 Maple, Station 2 Indiana (PW-433525 Emmie-04134)",0.406,0.214,1.0,0.069,REFUSED - discriminator conflict
 3643335,"Hazard Mitigation-Fire Houses Station 1 Maple, Station 2 Indiana (PW-433525 Emmie-04134)",1099717,Hazard Mitigation-Animal Shelter (PW-433524 Emmie-04134),0.406,0.214,1.0,0.069,REFUSED - discriminator conflict
 3682117,Emergency Generator Installations,1093470,Emergency Generator Installations,0.4,1.0,0.0,0.0,applied
@@ -250,17 +251,17 @@ power for critical village facilities",0.43,1.0,0.0,0.1,skipped (already claimed
 3643335,Hazard Mitigation-MLK Center (PW-433529 Emmie-03901),1099725,Hazard Mitigation-Waste Water Treatment Plant (PW-433508 Emmie-00309),0.367,0.167,1.0,0.0,REFUSED - discriminator conflict
 3643335,Hazard Mitigation-Recreation and Senior Center (PW-433505 Emmie-04154),1099724,Hazard Mitigation-Water Purification Plant (PW-4333509 Emmie-0293),0.367,0.167,1.0,0.0,REFUSED - discriminator conflict
 3643335,Hazard Mitigation-Waste Water Treatment Plant (PW-433508 Emmie-00309),1099727,Hazard Mitigation-MLK Center (PW-433529 Emmie-03901),0.367,0.167,1.0,0.0,REFUSED - discriminator conflict
-3643335,Hazard Mitigation-Water Purification Plant (PW-4333509 Emmie-0293),1099715,Hazard Mitigation-Long Beach City Hall (PW-433520 Emmie-04066),0.367,0.167,1.0,0.0,REFUSED - discriminator conflict
 3643335,Hazard Mitigation-Water Purification Plant (PW-4333509 Emmie-0293),1099726,Hazard Mitigation-Recreation and Senior Center (PW-433505 Emmie-04154),0.367,0.167,1.0,0.0,REFUSED - discriminator conflict
+3643335,Hazard Mitigation-Water Purification Plant (PW-4333509 Emmie-0293),1099715,Hazard Mitigation-Long Beach City Hall (PW-433520 Emmie-04066),0.367,0.167,1.0,0.0,REFUSED - discriminator conflict
 3643335,Hazard Mitigation-150 W. Pine St. Complex (PW-433528 Emmie-0449),1099724,Hazard Mitigation-Water Purification Plant (PW-4333509 Emmie-0293),0.362,0.154,1.0,0.0,REFUSED - discriminator conflict
 3643335,Hazard Mitigation-Long Beach City Hall (PW-433520 Emmie-04066),1099725,Hazard Mitigation-Waste Water Treatment Plant (PW-433508 Emmie-00309),0.362,0.154,1.0,0.0,REFUSED - discriminator conflict
 3643335,Hazard Mitigation-Long Beach Ice Arena (PW-433532 Emmie-03978),1099724,Hazard Mitigation-Water Purification Plant (PW-4333509 Emmie-0293),0.362,0.154,1.0,0.0,REFUSED - discriminator conflict
 3643335,Hazard Mitigation-Recreation and Senior Center (PW-433505 Emmie-04154),1099725,Hazard Mitigation-Waste Water Treatment Plant (PW-433508 Emmie-00309),0.362,0.154,1.0,0.0,REFUSED - discriminator conflict
-3643335,Hazard Mitigation-Waste Water Treatment Plant (PW-433508 Emmie-00309),1099715,Hazard Mitigation-Long Beach City Hall (PW-433520 Emmie-04066),0.362,0.154,1.0,0.0,REFUSED - discriminator conflict
 3643335,Hazard Mitigation-Waste Water Treatment Plant (PW-433508 Emmie-00309),1099726,Hazard Mitigation-Recreation and Senior Center (PW-433505 Emmie-04154),0.362,0.154,1.0,0.0,REFUSED - discriminator conflict
+3643335,Hazard Mitigation-Waste Water Treatment Plant (PW-433508 Emmie-00309),1099715,Hazard Mitigation-Long Beach City Hall (PW-433520 Emmie-04066),0.362,0.154,1.0,0.0,REFUSED - discriminator conflict
 3643335,Hazard Mitigation-Water Purification Plant (PW-4333509 Emmie-0293),1099718,Hazard Mitigation-150 W. Pine St. Complex (PW-433528 Emmie-0449),0.362,0.154,1.0,0.0,REFUSED - discriminator conflict
 3643335,Hazard Mitigation-Water Purification Plant (PW-4333509 Emmie-0293),1099714,Hazard Mitigation-Long Beach Ice Arena (PW-433532 Emmie-03978),0.362,0.154,1.0,0.0,REFUSED - discriminator conflict
-3605956000,Permanent generators installed at 10 critical facilities and locations throughout the Town,1095226,Permanent Generators for Critical Community Facilities,0.361,0.444,0.111,0.5,REFUSED - discriminator conflict
+3605956000,Permanent generators installed at 10 critical facilities and locations throughout the Town,1095226,Permanent Generators for Critical Community Facilities,0.361,0.444,0.111,0.5,below threshold - review only
 3643335,"Hazard Mitigation-Fire Houses Station 1 Maple, Station 2 Indiana (PW-433525 Emmie-04134)",1099714,Hazard Mitigation-Long Beach Ice Arena (PW-433532 Emmie-03978),0.361,0.118,1.0,0.045,REFUSED - discriminator conflict
 3643335,Hazard Mitigation-Long Beach Ice Arena (PW-433532 Emmie-03978),1099716,"Hazard Mitigation-Fire Houses Station 1 Maple, Station 2 Indiana (PW-433525 Emmie-04134)",0.361,0.118,1.0,0.045,REFUSED - discriminator conflict
 3643335,Hazard Mitigation-150 W. Pine St. Complex (PW-433528 Emmie-0449),1099725,Hazard Mitigation-Waste Water Treatment Plant (PW-433508 Emmie-00309),0.357,0.143,1.0,0.0,REFUSED - discriminator conflict
@@ -278,50 +279,54 @@ power for critical village facilities",0.43,1.0,0.0,0.1,skipped (already claimed
 3633139,Generator Installation - Kennedy Memorial Park,1093829,Generator Replacement - Southside Fire House,0.344,0.111,0.0,1.0,REFUSED - discriminator conflict
 3633139,Generator Replacement -Headquarters Fire House,1093834,Generator Installation - Kennedy Memorial Park,0.344,0.111,0.0,1.0,below threshold - review only
 3633139,Generator Replacement - Southside Fire House,1093834,Generator Installation - Kennedy Memorial Park,0.344,0.111,0.0,1.0,REFUSED - discriminator conflict
-3643335,Drainage Improvement Project (GOSR),1099716,"Hazard Mitigation-Fire Houses Station 1 Maple, Station 2 Indiana (PW-433525 Emmie-04134)",0.343,0.0,1.0,0.143,REFUSED - discriminator conflict
-3643335,"Hazard Mitigation-Fire Houses Station 1 Maple, Station 2 Indiana (PW-433525 Emmie-04134)",1099720,Drainage Improvement Project (GOSR),0.343,0.0,1.0,0.143,REFUSED - discriminator conflict
+3643335,Drainage Improvement Project (GOSR),1099716,"Hazard Mitigation-Fire Houses Station 1 Maple, Station 2 Indiana (PW-433525 Emmie-04134)",0.343,0.0,1.0,0.143,below threshold - review only
+3643335,"Hazard Mitigation-Fire Houses Station 1 Maple, Station 2 Indiana (PW-433525 Emmie-04134)",1099720,Drainage Improvement Project (GOSR),0.343,0.0,1.0,0.143,below threshold - review only
 3633139,Generator Installation - Kennedy Memorial Park,1093831,Generator Replacement  - Jerusalem Ave. Fire House,0.34,0.1,0.0,1.0,below threshold - review only
 3633139,Generator Replacement - Jerusalem Ave. Fire House,1093834,Generator Installation - Kennedy Memorial Park,0.34,0.1,0.0,1.0,below threshold - review only
 3645106,Force Main Replacement - Phase II - A & Phase II - B,1093892,Manorhaven Sewer  Restoration Project - Phase I-C,0.339,0.125,0.714,0.25,below threshold - review only
 3645106,Manorhaven Sewer Restoration Project - Phase I-C,1093888,Force Main Replacement - Phase II - A & Phase II - B,0.339,0.125,0.714,0.25,below threshold - review only
 3610132,"Road and Traffic Symbol and Sign Maintenance Program, with GIS mapping component",1094250,Sign revitalization and GIS mapping,0.338,0.333,0.348,0.333,below threshold - review only
 3605956000,Reconstruction of Bay Constable Building,1095230,Enhancements to Bay Constable Building,0.334,0.6,0.083,0.231,below threshold - review only
-3643335,Hazard Mitigation-150 W. Pine St. Complex (PW-433528 Emmie-0449),1099723,Install Check Valves for Critical Infrastructure,0.325,0.0,1.0,0.083,REFUSED - discriminator conflict
-3643335,Install Check Valves for Critical Infrastructure,1099718,Hazard Mitigation-150 W. Pine St. Complex (PW-433528 Emmie-0449),0.325,0.0,1.0,0.083,REFUSED - discriminator conflict
+3643335,Hazard Mitigation-150 W. Pine St. Complex (PW-433528 Emmie-0449),1099723,Install Check Valves for Critical Infrastructure,0.325,0.0,1.0,0.083,below threshold - review only
+3643335,Install Check Valves for Critical Infrastructure,1099718,Hazard Mitigation-150 W. Pine St. Complex (PW-433528 Emmie-0449),0.325,0.0,1.0,0.083,below threshold - review only
 3664232,"Through various forms of aggressive community outreach, residents will be informed of crit",1093757,Community Outreach Emergency Information Service,0.325,0.154,0.043,0.833,below threshold - review only
 3605034,Adams Ave. Pump Station,1094231,Adams Avenue Pump Station Project,0.32,0.6,0.0,0.267,below threshold - review only
-3643335,Drainage Improvement Project (GOSR),1099715,Hazard Mitigation-Long Beach City Hall (PW-433520 Emmie-04066),0.317,0.0,1.0,0.056,REFUSED - discriminator conflict
-3643335,Drainage Improvement Project (GOSR),1099727,Hazard Mitigation-MLK Center (PW-433529 Emmie-03901),0.317,0.0,1.0,0.056,REFUSED - discriminator conflict
-3643335,Hazard Mitigation-Long Beach City Hall (PW-433520 Emmie-04066),1099720,Drainage Improvement Project (GOSR),0.317,0.0,1.0,0.056,REFUSED - discriminator conflict
-3643335,Hazard Mitigation-Long Beach City Hall (PW-433520 Emmie-04066),1099723,Install Check Valves for Critical Infrastructure,0.317,0.0,1.0,0.056,REFUSED - discriminator conflict
-3643335,Hazard Mitigation-MLK Center (PW-433529 Emmie-03901),1099720,Drainage Improvement Project (GOSR),0.317,0.0,1.0,0.056,REFUSED - discriminator conflict
-3643335,Hazard Mitigation-MLK Center (PW-433529 Emmie-03901),1099723,Install Check Valves for Critical Infrastructure,0.317,0.0,1.0,0.056,REFUSED - discriminator conflict
-3643335,Install Check Valves for Critical Infrastructure,1099715,Hazard Mitigation-Long Beach City Hall (PW-433520 Emmie-04066),0.317,0.0,1.0,0.056,REFUSED - discriminator conflict
-3643335,Install Check Valves for Critical Infrastructure,1099727,Hazard Mitigation-MLK Center (PW-433529 Emmie-03901),0.317,0.0,1.0,0.056,REFUSED - discriminator conflict
-3643335,Drainage Improvement Project (GOSR),1099726,Hazard Mitigation-Recreation and Senior Center (PW-433505 Emmie-04154),0.314,0.0,1.0,0.045,REFUSED - discriminator conflict
-3643335,Hazard Mitigation-Recreation and Senior Center (PW-433505 Emmie-04154),1099720,Drainage Improvement Project (GOSR),0.314,0.0,1.0,0.045,REFUSED - discriminator conflict
-3643335,Drainage Improvement Project (GOSR),1099714,Hazard Mitigation-Long Beach Ice Arena (PW-433532 Emmie-03978),0.312,0.0,1.0,0.042,REFUSED - discriminator conflict
-3643335,Hazard Mitigation-Long Beach Ice Arena (PW-433532 Emmie-03978),1099720,Drainage Improvement Project (GOSR),0.312,0.0,1.0,0.042,REFUSED - discriminator conflict
-3643335,Hazard Mitigation-Long Beach Ice Arena (PW-433532 Emmie-03978),1099723,Install Check Valves for Critical Infrastructure,0.312,0.0,1.0,0.042,REFUSED - discriminator conflict
-3643335,Install Check Valves for Critical Infrastructure,1099714,Hazard Mitigation-Long Beach Ice Arena (PW-433532 Emmie-03978),0.312,0.0,1.0,0.042,REFUSED - discriminator conflict
-3643335,Drainage Improvement Project (GOSR),1099717,Hazard Mitigation-Animal Shelter (PW-433524 Emmie-04134),0.309,0.0,1.0,0.031,REFUSED - discriminator conflict
-3643335,Hazard Mitigation-Animal Shelter (PW-433524 Emmie-04134),1099720,Drainage Improvement Project (GOSR),0.309,0.0,1.0,0.031,REFUSED - discriminator conflict
-3643335,Hazard Mitigation-Animal Shelter (PW-433524 Emmie-04134),1099723,Install Check Valves for Critical Infrastructure,0.309,0.0,1.0,0.031,REFUSED - discriminator conflict
-3643335,Install Check Valves for Critical Infrastructure,1099717,Hazard Mitigation-Animal Shelter (PW-433524 Emmie-04134),0.309,0.0,1.0,0.031,REFUSED - discriminator conflict
+3643335,Drainage Improvement Project (GOSR),1099727,Hazard Mitigation-MLK Center (PW-433529 Emmie-03901),0.317,0.0,1.0,0.056,below threshold - review only
+3643335,Drainage Improvement Project (GOSR),1099715,Hazard Mitigation-Long Beach City Hall (PW-433520 Emmie-04066),0.317,0.0,1.0,0.056,below threshold - review only
+3643335,Hazard Mitigation-Long Beach City Hall (PW-433520 Emmie-04066),1099723,Install Check Valves for Critical Infrastructure,0.317,0.0,1.0,0.056,below threshold - review only
+3643335,Hazard Mitigation-Long Beach City Hall (PW-433520 Emmie-04066),1099720,Drainage Improvement Project (GOSR),0.317,0.0,1.0,0.056,below threshold - review only
+3643335,Hazard Mitigation-MLK Center (PW-433529 Emmie-03901),1099723,Install Check Valves for Critical Infrastructure,0.317,0.0,1.0,0.056,below threshold - review only
+3643335,Hazard Mitigation-MLK Center (PW-433529 Emmie-03901),1099720,Drainage Improvement Project (GOSR),0.317,0.0,1.0,0.056,below threshold - review only
+3643335,Install Check Valves for Critical Infrastructure,1099727,Hazard Mitigation-MLK Center (PW-433529 Emmie-03901),0.317,0.0,1.0,0.056,below threshold - review only
+3643335,Install Check Valves for Critical Infrastructure,1099715,Hazard Mitigation-Long Beach City Hall (PW-433520 Emmie-04066),0.317,0.0,1.0,0.056,below threshold - review only
+3643335,Drainage Improvement Project (GOSR),1099726,Hazard Mitigation-Recreation and Senior Center (PW-433505 Emmie-04154),0.314,0.0,1.0,0.045,below threshold - review only
+3643335,Hazard Mitigation-Recreation and Senior Center (PW-433505 Emmie-04154),1099720,Drainage Improvement Project (GOSR),0.314,0.0,1.0,0.045,below threshold - review only
+3643335,Drainage Improvement Project (GOSR),1099714,Hazard Mitigation-Long Beach Ice Arena (PW-433532 Emmie-03978),0.312,0.0,1.0,0.042,below threshold - review only
+3643335,Hazard Mitigation-Long Beach Ice Arena (PW-433532 Emmie-03978),1099723,Install Check Valves for Critical Infrastructure,0.312,0.0,1.0,0.042,below threshold - review only
+3643335,Hazard Mitigation-Long Beach Ice Arena (PW-433532 Emmie-03978),1099720,Drainage Improvement Project (GOSR),0.312,0.0,1.0,0.042,below threshold - review only
+3643335,Install Check Valves for Critical Infrastructure,1099714,Hazard Mitigation-Long Beach Ice Arena (PW-433532 Emmie-03978),0.312,0.0,1.0,0.042,below threshold - review only
+3643335,Drainage Improvement Project (GOSR),1099717,Hazard Mitigation-Animal Shelter (PW-433524 Emmie-04134),0.309,0.0,1.0,0.031,below threshold - review only
+3643335,Hazard Mitigation-Animal Shelter (PW-433524 Emmie-04134),1099723,Install Check Valves for Critical Infrastructure,0.309,0.0,1.0,0.031,below threshold - review only
+3643335,Hazard Mitigation-Animal Shelter (PW-433524 Emmie-04134),1099720,Drainage Improvement Project (GOSR),0.309,0.0,1.0,0.031,below threshold - review only
+3643335,Install Check Valves for Critical Infrastructure,1099717,Hazard Mitigation-Animal Shelter (PW-433524 Emmie-04134),0.309,0.0,1.0,0.031,below threshold - review only
 3628178,Rosemary Kennedy Center Back Up Generator,1094026,George Farber Center Back Up Generator,0.303,0.5,0.059,0.286,below threshold - review only
-3643335,Drainage Improvement Project (GOSR),1099718,Hazard Mitigation-150 W. Pine St. Complex (PW-433528 Emmie-0449),0.3,0.0,1.0,0.0,REFUSED - discriminator conflict
-3643335,Drainage Improvement Project (GOSR),1099725,Hazard Mitigation-Waste Water Treatment Plant (PW-433508 Emmie-00309),0.3,0.0,1.0,0.0,REFUSED - discriminator conflict
-3643335,Drainage Improvement Project (GOSR),1099724,Hazard Mitigation-Water Purification Plant (PW-4333509 Emmie-0293),0.3,0.0,1.0,0.0,REFUSED - discriminator conflict
+3643335,Drainage Improvement Project (GOSR),1099718,Hazard Mitigation-150 W. Pine St. Complex (PW-433528 Emmie-0449),0.3,0.0,1.0,0.0,below threshold - review only
+3643335,Drainage Improvement Project (GOSR),1099725,Hazard Mitigation-Waste Water Treatment Plant (PW-433508 Emmie-00309),0.3,0.0,1.0,0.0,below threshold - review only
+3643335,Drainage Improvement Project (GOSR),1099724,Hazard Mitigation-Water Purification Plant (PW-4333509 Emmie-0293),0.3,0.0,1.0,0.0,below threshold - review only
 3643335,Drainage Improvement Project (GOSR),1099723,Install Check Valves for Critical Infrastructure,0.3,0.0,1.0,0.0,below threshold - review only
-3643335,Hazard Mitigation-150 W. Pine St. Complex (PW-433528 Emmie-0449),1099720,Drainage Improvement Project (GOSR),0.3,0.0,1.0,0.0,REFUSED - discriminator conflict
-3643335,"Hazard Mitigation-Fire Houses Station 1 Maple, Station 2 Indiana (PW-433525 Emmie-04134)",1099723,Install Check Valves for Critical Infrastructure,0.3,0.0,1.0,0.0,REFUSED - discriminator conflict
-3643335,Hazard Mitigation-Recreation and Senior Center (PW-433505 Emmie-04154),1099723,Install Check Valves for Critical Infrastructure,0.3,0.0,1.0,0.0,REFUSED - discriminator conflict
-3643335,Hazard Mitigation-Waste Water Treatment Plant (PW-433508 Emmie-00309),1099720,Drainage Improvement Project (GOSR),0.3,0.0,1.0,0.0,REFUSED - discriminator conflict
-3643335,Hazard Mitigation-Waste Water Treatment Plant (PW-433508 Emmie-00309),1099723,Install Check Valves for Critical Infrastructure,0.3,0.0,1.0,0.0,REFUSED - discriminator conflict
-3643335,Hazard Mitigation-Water Purification Plant (PW-4333509 Emmie-0293),1099720,Drainage Improvement Project (GOSR),0.3,0.0,1.0,0.0,REFUSED - discriminator conflict
-3643335,Hazard Mitigation-Water Purification Plant (PW-4333509 Emmie-0293),1099723,Install Check Valves for Critical Infrastructure,0.3,0.0,1.0,0.0,REFUSED - discriminator conflict
+3643335,Hazard Mitigation-150 W. Pine St. Complex (PW-433528 Emmie-0449),1099720,Drainage Improvement Project (GOSR),0.3,0.0,1.0,0.0,below threshold - review only
+3643335,"Hazard Mitigation-Fire Houses Station 1 Maple, Station 2 Indiana (PW-433525 Emmie-04134)",1099723,Install Check Valves for Critical Infrastructure,0.3,0.0,1.0,0.0,below threshold - review only
+3643335,Hazard Mitigation-Recreation and Senior Center (PW-433505 Emmie-04154),1099723,Install Check Valves for Critical Infrastructure,0.3,0.0,1.0,0.0,below threshold - review only
+3643335,Hazard Mitigation-Waste Water Treatment Plant (PW-433508 Emmie-00309),1099723,Install Check Valves for Critical Infrastructure,0.3,0.0,1.0,0.0,below threshold - review only
+3643335,Hazard Mitigation-Waste Water Treatment Plant (PW-433508 Emmie-00309),1099720,Drainage Improvement Project (GOSR),0.3,0.0,1.0,0.0,below threshold - review only
+3643335,Hazard Mitigation-Water Purification Plant (PW-4333509 Emmie-0293),1099723,Install Check Valves for Critical Infrastructure,0.3,0.0,1.0,0.0,below threshold - review only
+3643335,Hazard Mitigation-Water Purification Plant (PW-4333509 Emmie-0293),1099720,Drainage Improvement Project (GOSR),0.3,0.0,1.0,0.0,below threshold - review only
+3643335,Install Check Valves for Critical Infrastructure,1099716,"Hazard Mitigation-Fire Houses Station 1 Maple, Station 2 Indiana (PW-433525 Emmie-04134)",0.3,0.0,1.0,0.0,below threshold - review only
+3643335,Install Check Valves for Critical Infrastructure,1099726,Hazard Mitigation-Recreation and Senior Center (PW-433505 Emmie-04154),0.3,0.0,1.0,0.0,below threshold - review only
+3643335,Install Check Valves for Critical Infrastructure,1099725,Hazard Mitigation-Waste Water Treatment Plant (PW-433508 Emmie-00309),0.3,0.0,1.0,0.0,below threshold - review only
+3643335,Install Check Valves for Critical Infrastructure,1099724,Hazard Mitigation-Water Purification Plant (PW-4333509 Emmie-0293),0.3,0.0,1.0,0.0,below threshold - review only
 3643335,Install Check Valves for Critical Infrastructure,1099720,Drainage Improvement Project (GOSR),0.3,0.0,1.0,0.0,below threshold - review only
-3643335,Install Check Valves for Critical Infrastructure,1099716,"Hazard Mitigation-Fire Houses Station 1 Maple, Station 2 Indiana (PW-433525 Emmie-04134)",0.3,0.0,1.0,0.0,REFUSED - discriminator conflict
-3643335,Install Check Valves for Critical Infrastructure,1099726,Hazard Mitigation-Recreation and Senior Center (PW-433505 Emmie-04154),0.3,0.0,1.0,0.0,REFUSED - discriminator conflict
-3643335,Install Check Valves for Critical Infrastructure,1099725,Hazard Mitigation-Waste Water Treatment Plant (PW-433508 Emmie-00309),0.3,0.0,1.0,0.0,REFUSED - discriminator conflict
-3643335,Install Check Valves for Critical Infrastructure,1099724,Hazard Mitigation-Water Purification Plant (PW-4333509 Emmie-0293),0.3,0.0,1.0,0.0,REFUSED - discriminator conflict
+3643335,Comprehensive Drainage Analysis of the City,2484513,Canal flood gates Along Reynolds Channel,0.3,0.0,1.0,0.0,below threshold - review only
+3643335,Canal flood gates Along Reynolds Channel,2484512,Comprehensive Drainage Analysis of the City,0.3,0.0,1.0,0.0,below threshold - review only
+3643335,Mitigation of Masonry Exterior. Installation of parapet walls and water-resistant material,2484520,"Install permanent generators at the Lido Complex, Lindell Elementary School & East Element",0.3,0.0,1.0,0.0,REFUSED - discriminator conflict
+3643335,"Install permanent generators at the Lido Complex, Lindell Elementary School & East Element",2484517,Mitigation of Masonry Exterior. Installation of parapet walls and water-resistant material,0.3,0.0,1.0,0.0,REFUSED - discriminator conflict

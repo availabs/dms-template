@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>TMC network · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  measures_and_data--data--tmc_network.html · IA page 71 · type data. Phase 3, 2026-09-05.
+  Sources: Data Manager metadata "NPMRDS TMC Network Shapefile - Enhanced V6" (description + 61 columns), "AVAIL NPMRDS Shapefile Enhanced"
+  (earlier, Sandbox), "TMC Average Speed Limit" (OSM input); TSMO Data & Methodology 2184101 (54,249, keys, "annual conflation", f_system 0);
+  NPMRDS home design header 2026-07-29 (52,029 / 52,157 / 52,473); downloadManifest MEASURED.meta2017; datasets-pattern designs
+  (source page tabs + export formats, marked design-era); legacy overview 225868 (AADT from FHWA with the feed).
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="data" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · data</div>
+          <h1 class="doc-title">TMC network.</h1>
+          <p class="doc-lede">The enhanced TMC network shapefile: the geometry and attributes of every segment, rebuilt with each raw load and re-cut every year. The join backbone every measure keys to, and the owner of the two segment counts readers meet. For analysts and developers.</p>
+          <div class="stamps">
+            <span class="type">data</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="overview">Overview</h2>
+          <p><strong>The TMC network is the spatial backbone.</strong> Probe travel times name a TMC id and nothing else; the network supplies the segment's line, length, road name, direction, county, region, functional class, AADT and speed limit. The Data Manager catalogues the current table as "NPMRDS TMC Network Shapefile - Enhanced V6": "the enhanced TMC Network Shapefile that is built each time Raw NPMRDS data is processed into the Production database. This shapefile includes a variety of spatial datasets that provide additional network attributes (e.g., speed limits, MPO boundaries, NYSDOT region boundaries). This shapefile also calculates directionality from NPMRDS data for use in AADT disaggregation for the PHED measure."</p>
+          <p>An earlier build, "AVAIL NPMRDS Shapefile Enhanced", remains in the catalog under Sandbox with a near-identical column set under abbreviated names. The TSMO Data &amp; Methodology page names the current table's keys: "tmclinear · road_order · direction · county · miles · aadt · intersection", the fields that chain segments into corridors. <a href="measures_and_data--concepts--tmc_network_and_vintages.html">The TMC network and its vintages</a> explains the segment, the yearly map and the OpenStreetMap conflation.</p>
+
+          <h2 id="coverage-and-vintage">Coverage and vintage</h2>
+          <p><strong>There is one network per calendar year, and two segment counts in circulation.</strong> A year's map counts the segments in that vintage. The accumulated network table counts every segment that has ever carried data, across all vintages. The TSMO Data &amp; Methodology page's 54,249 is the accumulated count. Quote a per-year count with its year; quote 54,249 only for the whole archive.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Count</th><th class="num">Segments</th><th>Basis</th><th>Source</th></tr></thead>
+            <tbody>
+              <tr><td>2024 map</td><td class="num">52,029</td><td>One vintage</td><td>NPMRDS home design header, verified 2026-07-29</td></tr>
+              <tr><td>2025 map</td><td class="num">52,157</td><td>One vintage; verified against three stores</td><td>NPMRDS home design header, 2026-07-29</td></tr>
+              <tr><td>2026 map</td><td class="num">52,473</td><td>One vintage; the current network</td><td>NPMRDS home design header, 2026-07-29</td></tr>
+              <tr><td>Accumulated network table</td><td class="num">54,249</td><td>Every segment ever present, all vintages</td><td>TSMO Data &amp; Methodology page, source catalog and glossary</td></tr>
+            </tbody>
+          </table></div>
+          <p>The archive runs from about 36,000 segments in 2017 to about 46,000 from 2019-01-01 to about 52,000 today. The 2017 vintage carries attributes from a different metadata family that disagrees materially on functional class with 2018 to 2025, and 2017 publishes 32,915 of its 36,166 feed segments because 3,251 have no attribute row. The refresh cadence is "annual conflation"; the Data &amp; Methodology page listed the 2026 network as current at its 2026-07-27 revision.</p>
+
+          <h2 id="schema">Schema</h2>
+          <p>The current table's columns, grouped by family. Where a meaning is not stated in any source, the row says so. </p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Field</th><th>Type</th><th>Sample value</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>tmc</code></td><td>string</td><td>120N14364</td><td>The segment id; the join key to the travel-time table.</td></tr>
+              <tr><td><code>year</code></td><td>integer</td><td>2025</td><td>The network vintage the row belongs to.</td></tr>
+              <tr><td><code>road</code> · <code>direction</code> · <code>intersection</code></td><td>string</td><td>—</td><td>Road name, direction of travel, and the cross-street the segment starts at.</td></tr>
+              <tr><td><code>tmclinear</code> · <code>road_order</code></td><td>integer · number</td><td>—</td><td>The linear road the segment belongs to, and its position along it. Together they chain segments into a corridor.</td></tr>
+              <tr><td><code>state</code> · <code>county</code> · <code>zip</code> · <code>country</code> · <code>timezone_name</code></td><td>string</td><td>—</td><td>Location fields as delivered with the network.</td></tr>
+              <tr><td><code>start_latitude</code> · <code>start_longitude</code> · <code>end_latitude</code> · <code>end_longitude</code></td><td>number</td><td>—</td><td>Segment end points.</td></tr>
+              <tr><td><code>miles</code></td><td>number</td><td>—</td><td>Segment length in miles. Median about 0.28; 24.3 % under 0.05.</td></tr>
+              <tr><td><code>wkb_geometry</code></td><td>geometry</td><td>—</td><td>The segment's line, one per direction.</td></tr>
+              <tr><td><code>f_system</code></td><td>integer</td><td>1</td><td>FHWA functional system, 1 (Interstate) to 7 (local). 0 marks the extended set of local and unclassified roads.</td></tr>
+              <tr><td><code>frc</code></td><td>integer</td><td>—</td><td>The vendor's functional road class. Values 0 (motorway) to 7 (local), per the vendor's glossary.</td></tr>
+              <tr><td><code>nhs</code> · <code>nhs_pct</code> · <code>is_interstate</code></td><td>integer · integer · boolean</td><td>—</td><td>National Highway System code, share of the segment on the NHS, and an Interstate flag.</td></tr>
+              <tr><td><code>faciltype</code> · <code>structype</code> · <code>thrulanes</code> · <code>thrulanes_unidir</code></td><td>integer</td><td>—</td><td>Facility type, structure type, through lanes both directions and in this direction.</td></tr>
+              <tr><td><code>urban_code</code> · <code>ua_code</code> · <code>ua_name</code></td><td>integer · string · string</td><td>—</td><td>Census urban-area code and name.</td></tr>
+              <tr><td><code>route_numb</code> · <code>route_sign</code> · <code>route_qual</code> · <code>altrtename</code></td><td>integer · string</td><td>—</td><td>Route number, signing, qualifier and alternate name.</td></tr>
+              <tr><td><code>aadt</code> · <code>aadt_singl</code> · <code>aadt_combi</code></td><td>integer</td><td>—</td><td>Annual average daily traffic, both directions: all vehicles, single-unit trucks, combination trucks.</td></tr>
+              <tr><td><code>aadt_unidir</code> · <code>aadt_singl_unidir</code> · <code>aadt_combi_unidir</code> · <code>directionality</code></td><td>integer · string</td><td>—</td><td>The same three, assigned to this direction using directionality calculated from the probe data.</td></tr>
+              <tr><td><code>truck</code> · <code>strhnt_typ</code> · <code>strhnt_pct</code></td><td>integer · string</td><td>—</td><td>Truck network flag and Strategic Highway Network type and share.</td></tr>
+              <tr><td><code>avg_speedlimit</code></td><td>number</td><td>—</td><td>Average posted speed limit, calculated from OpenStreetMap speed limits. The excessive-delay threshold reads it.</td></tr>
+              <tr><td><code>avg_vehicle_occupancy</code></td><td>number</td><td>—</td><td>Persons per vehicle used to turn vehicle-hours into person-hours for PHED. Values follow FHWA's average-vehicle-occupancy factors for the reliability and PHED measures.</td></tr>
+              <tr><td><code>congestion_level</code></td><td>string</td><td>—</td><td>Congestion classification carried with the HPMS-style attributes. Its value set is not documented; the PHED computation requires the field to be present.</td></tr>
+              <tr><td><code>state_code</code> · <code>county_code</code> · <code>region_code</code> · <code>mpo_code</code> · <code>mpo_name</code> · <code>state_name</code> · <code>county_name</code></td><td>string</td><td>—</td><td>Codes and names joined from state, county, NYSDOT region and MPO boundaries. The TSMO Region filter keys on <code>region_code</code>.</td></tr>
+              <tr><td><code>type</code> · <code>border_set</code> · <code>isprimary</code> · <code>active_start_date</code> · <code>active_end_date</code></td><td>string · integer</td><td>—</td><td>Vendor segment type, border-set membership, primary flag and the dates the segment was active.</td></tr>
+              <tr><td><code>ogc_fid</code></td><td>integer</td><td>—</td><td>Row id; the only property carried in map tiles.</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="how-it-is-produced">How it is produced</h2>
+          <ol class="steps">
+            <li>Each raw NPMRDS load delivers the vendor's segment geometry and identification attributes for that vintage: road, direction, intersection, county, length, linear id, functional system, NHS, facility type, lanes, routes and AADT. The 2024 documentation states that "NPMRDS data includes traffic volume AADT data from FHWA", lagging about two years.</li>
+            <li>Spatial joins add the NYSDOT region, MPO and urban-area codes from boundary layers.</li>
+            <li>The average speed limit is joined from a table calculated from OpenStreetMap speed limits per segment.</li>
+            <li>Directionality is calculated from the probe data and used to split AADT and truck AADT into this direction's share.</li>
+            <li>The result is published as that year's network, and the segment-to-OpenStreetMap conflation is run per vintage. Speeds are joined to it live on the TSMO pages.</li>
+          </ol>
+
+          <h2 id="uses-and-limits">Uses and limits</h2>
+          <p>Every measure joins to this table: the analytical series for geometry, length, functional class and AADT; PHED for directional AADT and occupancy; the excessive-delay series for the speed limit, AADT and region; Corridor View for the road order that stacks a corridor. Its limits follow from the yearly re-cut and the attribute vintages. A segment may not exist in every year or may change length, so check lengths before reading a trend. AADT carries its own revision cycle; see <a href="measures_and_data--concepts--aadt_and_vintage.html">AADT and its vintage</a>. A segment with no AADT or no speed limit carries no delay and is left uncoloured on a delay map. Map tiles carry only the row id, so popups look attributes up by segment afterwards.</p>
+
+          <h2 id="distribution">Distribution</h2>
+          <ul>
+            <li><strong>Data Manager source page.</strong> Versions are the vintages; the page carries a table, a map and the metadata. The datasets pattern's design offers per-version exports in CSV, GeoJSON, Shapefile, GeoPackage and XLSX. Downloads exist where one has been generated for the view.</li>
+            <li><strong>Macro View download.</strong> The GeoPackage option carries each segment's geometry with the measures for the chosen year. See <a href="npmrds--macro_view--download.html">Download data from the Macro View</a>.</li>
+            <li><strong>Data Manager API</strong>, key on sign-in. See <a href="developers--data_manager_api.html">Data Manager API</a>.</li>
+          </ul>
+
+          <h2 id="where-this-appears">Where this appears</h2>
+          <div class="where">
+            <a href="npmrds--macro_view.html">Macro View</a>
+            <a href="npmrds--segment.html">Segment (TMC) page</a>
+            <a href="tsmo--corridor_view.html">Corridor View</a>
+            <a href="tsmo--filters.html">TSMO Region filter</a>
+            <a href="npmrds--routes--create.html">Route creation</a>
+            <a href="measures_and_data--data--hpms_ris_attributes.html">HPMS / RIS attributes</a>
+          </div>
+
+          <h2 id="revision-log">Revision log</h2>
+          <ul>
+            <li>2026-07-19 · the platform's current vintage moved to the 2026 map (52,473 segments) as the data ran into 2026; counts per vintage verified 2026-07-29.</li>
+            <li>2026-09-05 · this datasheet created.</li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs"><li>INRIX developer documentation, glossary: functional road class (FRC) 0–7.</li><li>FHWA, "Average Vehicle Occupancy Factors for Computing Travel Time Reliability Measures and Total Peak Hour Excessive Delay Metrics" (April 2018).</li><li>pm3 PHED computation (calcPhed): requires avg_vehicle_occupancy, functionalclass and congestion_level on the segment row.</li>
+            <li>Data Manager, "NPMRDS TMC Network Shapefile - Enhanced V6": the description quoted above and the 61-column list. "AVAIL NPMRDS Shapefile Enhanced": the earlier build's columns. "TMC Average Speed Limit": "Avg Speed limit value for TMCS in NY calculated from open street map speed limits. This is an input to NPMRDS TMC Network Shapefile - Enhanced".</li>
+            <li>TSMO Data &amp; Methodology page: source catalog "TMC network · shapefile-enhanced … 54,249 TMCs · annual conflation · keys: tmclinear · road_order · direction · county · miles · aadt · intersection"; glossary (54,249; functional class 1 to 7, 0 for the extended set); refresh-cadence table ("2026 network").</li>
+            <li>NPMRDS home design header, verified 2026-07-29: 52,029 · 52,157 · 52,473; the vintage tracked to 2026 on 2026-07-19.</li>
+            <li>pm3 download manifest, MEASURED block: 2017 attribute family; 32,915 of 36,166 feed segments.</li>
+            <li>Measures &amp; Methodology page, published 2026-08-28, glossary: median 0.28 miles; 24.3 % under 0.05 miles.</li>
+            <li>2024 NPMRDS documentation, Overview: "NPMRDS data includes traffic volume AADT data from FHWA, but the AADT data lags two years behind the NPMRDS data."</li>
+            <li>Datasets pattern designs (source page and Data &amp; Downloads, 2026): tabs Overview · Table · Map · Metadata, version selector, export formats CSV / GeoJSON / Shapefile / GeoPackage / XLSX.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 3)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--concepts--tmc_network_and_vintages.html">The TMC network and its vintages</a>
+          <a href="measures_and_data--data--npmrds_travel_times.html">NPMRDS travel times</a>
+          <a href="measures_and_data--concepts--geography.html">Geography</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

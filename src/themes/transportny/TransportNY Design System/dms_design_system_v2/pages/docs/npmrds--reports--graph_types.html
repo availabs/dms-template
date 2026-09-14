@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Graph types reference · NPMRDS · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="reference" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">NPMRDS · reference</div>
+          <h1 class="doc-title">Graph types reference.</h1>
+          <p class="doc-lede">The five shapes the <span class="ui">Add Graph</span> dialog offers, the two comparison modes, the seven resolutions and the eleven measures, each with what it shows and how it reads. A table maps the graph names of the 2024 documentation to today's shapes.</p>
+          <div class="stamps">
+            <span class="type">reference</span>
+            <span>applies to · NPMRDS</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="the-five-shapes">The five shapes</h2>
+          <p>A graph card is one question about one or more routes: a shape, a measure, a resolution, a time-of-day and day-of-week window, and for charts a comparison mode. Every route on the card keeps its identity colour, so a reader learns the key once. The shape decides how the answer is drawn.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Shape</th><th>What it shows</th><th>Use it when</th><th>How it reads</th></tr></thead>
+            <tbody>
+              <tr><td><span class="ui">Bar Graph</span></td><td>One bar per time bucket, one series per route</td><td>Comparing routes or periods at a glance; totals by day, weekday or month</td><td>x is the bucket, y the measure; at <span class="ui">Summary</span> one bar per route</td></tr>
+              <tr><td><span class="ui">Line Graph</span></td><td>A continuous line per route</td><td>The shape of a day or a trend; several periods overlaid</td><td>x is time, y the measure; the gap between lines is the comparison</td></tr>
+              <tr><td><span class="ui">Grid Graph</span></td><td>A heat map of value by segment and time</td><td>Finding where and when on the route the measure is worst</td><td>Rows are segments top to bottom in route order; columns are time left to right; colour is the value</td></tr>
+              <tr><td><span class="ui">Table</span></td><td>The same data in rows and columns; several measures at once</td><td>Reading exact values; a per-route summary with compare and reliability columns</td><td>One row per bucket or, at <span class="ui">Summary</span>, per route</td></tr>
+              <tr><td><span class="ui">Map</span></td><td>The route drawn on a map, plain or coloured by a measure</td><td>Showing where the route runs; a choropleth of speed or delay by segment</td><td>Segment colour is the measure's value over the route's window</td></tr>
+            </tbody>
+          </table></div>
+
+          <h3 id="bar-graph">Bar Graph</h3>
+          <p>One bar per time bucket, good for comparing values across routes at a glance. At <span class="ui">Day</span> resolution across a year it is the place to spot event days: a single tall bar of hours of delay is an incident or weather, a run of them is a work zone or a holiday pattern. At <span class="ui">Summary (one bar per route)</span> it collapses each route to one value, which is how the templates' AM, PM and off-peak comparisons are drawn.</p>
+          <h3 id="line-graph">Line Graph</h3>
+          <p>A continuous line per route, good for trends. At <span class="ui">5 Minutes</span> or <span class="ui">Hour</span> across a day it draws the daily profile: the morning and evening peaks in travel time, or the dips in speed. Put the same route in twice with two windows and the two lines are a before-and-after overlay. It is the default shape.</p>
+          <h3 id="grid-graph">Grid Graph</h3>
+          <p>The route's segments run top to bottom in route order and time runs left to right; each cell is the measure's value for one segment in one bucket. The 2024 tool drew each row's height in proportion to the segment's length and marked the direction of travel with an arrow; the live grid's row sizing is a rendering detail, not a reading. Read a grid for shape: a dark vertical band is a time when the whole route slowed; a dark horizontal band is a segment that is slow all day; a wedge spreading downward over time is a queue growing back from a bottleneck. In <span class="ui">Difference</span> mode the colour is one route minus the other, so a diverging scale is used and the middle colour means no change.</p>
+          <h3 id="table">Table</h3>
+          <p>The same measure and resolution as a chart, in rows and columns. It is the only shape that takes several measures at once, one column each, from the <span class="ui">Measures (pick any)</span> checklist. At <span class="ui">Summary (one row per route)</span> two extras become available: <span class="ui">Route Compare</span>, which adds a percent-against-the-first-route column per measure, and <span class="ui">Reliability</span>, which adds LOTTR, TTTR and free-flow speed columns when the card's <span class="ui">When</span> window is exactly a federal peak period or the weekend and the routes' year has published values. Those columns are the platform's analytical series, not the federal submittal; see <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a>.</p>
+          <h3 id="map">Map</h3>
+          <p>The selected routes drawn on a map. <span class="ui">Color by</span> is <span class="ui">None — just show the route</span> or one of speed, travel time, hours of delay, average hours of delay and the four emissions measures, each with fixed colour breaks so the legend does not move between reports. A Map has no resolution and no time-of-day window at creation; its colour is the measure over the route's whole date window.</p>
+
+          <h2 id="comparison-mode">Comparison mode: Plain and Difference</h2>
+          <p><span class="ui">Plain</span> overlays every route on the card; the pill reads <span class="ui">Overlay</span>. <span class="ui">Difference</span> subtracts one route from the other and needs exactly two routes; the pill reads <span class="ui">Diff</span>. The route named under <span class="ui">Anchor Route</span> is the one subtracted from, so the value is anchor minus other: on a travel-time card with the "before" period as anchor, a positive bar means before was slower, that is, things improved. The dialog offers the anchor choice only once two routes are ticked, and the default anchor is whichever of the two sits first in the report's route list. Maps and Tables have no comparison mode; a Table compares through its <span class="ui">Route Compare</span> column instead.</p>
+
+          <h2 id="resolution">Resolution</h2>
+          <p>The time bucket, shown on the card as the aggregate pill. Bars and lines take any of them; a Table takes them too; a Map has none.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Resolution</th><th>Bucket</th><th>Pill</th><th>Typical use</th></tr></thead>
+            <tbody>
+              <tr><td><span class="ui">5 Minutes</span></td><td>Each epoch of the day, averaged over the window's days</td><td><span class="ui">5m</span></td><td>The daily profile in full detail</td></tr>
+              <tr><td><span class="ui">15 Minutes</span></td><td>Three epochs</td><td><span class="ui">15m</span></td><td>A smoother profile</td></tr>
+              <tr><td><span class="ui">Hour</span></td><td>Twelve epochs</td><td><span class="ui">1h</span></td><td>The default; peaks without noise</td></tr>
+              <tr><td><span class="ui">Day</span></td><td>One value per calendar day</td><td><span class="ui">1d</span></td><td>Event days across a year</td></tr>
+              <tr><td><span class="ui">Weekday</span></td><td>One value per day of the week</td><td><span class="ui">wk</span></td><td>The weekly pattern</td></tr>
+              <tr><td><span class="ui">Month</span></td><td>One value per month</td><td><span class="ui">1mo</span></td><td>Seasonality</td></tr>
+              <tr><td><span class="ui">Summary (one bar per route)</span></td><td>One value per route over its whole window</td><td>—</td><td>Period-to-period comparison; the Table's compare and reliability columns</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="measures-offered">Measures offered</h2>
+          <p>The measures in the <span class="ui">Measure</span> list, in the dialog's groups. Every value is computed for the route as a whole from all-vehicle travel times, except the truck speed and the truck emissions.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Measure</th><th>Unit</th><th>What it is</th><th>Read with</th></tr></thead>
+            <tbody>
+              <tr><td><span class="ui">Speed (mph)</span></td><td>mph</td><td>Route length divided by the mean travel time over the bucket</td><td><a href="measures_and_data--measures--percentile_speed.html">Percentile speed</a></td></tr>
+              <tr><td><span class="ui">Truck Speed (mph)</span></td><td>mph</td><td>The same, from the freight-truck feed</td><td><a href="measures_and_data--measures--tttr.html">TTTR</a></td></tr>
+              <tr><td><span class="ui">Travel Time (min)</span></td><td>minutes</td><td>The sum over segments of the mean travel time</td><td><a href="measures_and_data--data--npmrds_travel_times.html">NPMRDS travel times</a></td></tr>
+              <tr><td><span class="ui">Hours of Delay</span></td><td>vehicle-hours</td><td>Time below the threshold speed, the greater of 20 mph or 60 % of the posted limit, weighted by the segment's AADT share for that epoch, summed</td><td><a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a></td></tr>
+              <tr><td><span class="ui">Avg. Hours of Delay</span></td><td>vehicle-hours per day</td><td>Hours of Delay divided by the number of days in the window</td><td><a href="measures_and_data--measures--excessive_delay.html">Excessive delay</a></td></tr>
+              <tr><td><span class="ui">CO2 Emissions (tonnes) — Passenger</span> · <span class="ui">— Truck</span></td><td>tonnes</td><td>Emissions from a speed-based factor per vehicle class, weighted by AADT, summed</td><td><a href="measures_and_data--measures--in_development.html">Measures in development</a></td></tr>
+              <tr><td><span class="ui">Avg. CO2 Emissions (tonnes) — Passenger</span> · <span class="ui">— Truck</span></td><td>tonnes per day</td><td>The same, per day</td><td>as above</td></tr>
+              <tr><td><span class="ui">Length (mi)</span></td><td>miles</td><td>The route's total length on the network map</td><td><a href="measures_and_data--concepts--tmc_network_and_vintages.html">TMC vintages</a></td></tr>
+              <tr><td><span class="ui">AADT</span></td><td>vehicles per day</td><td>The mean annual average daily traffic over the route's segments</td><td><a href="measures_and_data--concepts--aadt_and_vintage.html">AADT and its vintage</a></td></tr>
+            </tbody>
+          </table></div>
+          <p>The 2024 documentation also listed Data Quality, Freeflow, Buffer Time Index, Planning Time Index, Misery Index, Travel Time Index and the 95th and 97th percentile travel times as report measures. None is in today's <span class="ui">Measure</span> list. Free-flow speed and the reliability ratios appear as a Table's <span class="ui">Reliability</span> columns; coverage and percentile speed are Macro View measures. Definitions live on the measure pages, which take precedence over the 2024 text.</p>
+
+          <h2 id="the-2024-graph-names-and-todays-shapes">The 2024 graph names and today's shapes</h2>
+          <p>For readers of the earlier documentation: the thirteen graph types it defined, and what to add now. Five further types it listed as not yet built are dropped.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>2024 name</th><th>Today</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td>Route Line Graph</td><td><span class="ui">Line Graph</span></td><td>One line per route; speed was the default, travel time is now</td></tr>
+              <tr><td>Route Bar Graph</td><td><span class="ui">Bar Graph</span></td><td>One route, one measure over time</td></tr>
+              <tr><td>Bar Graph Summary</td><td><span class="ui">Bar Graph</span> at <span class="ui">Summary (one bar per route)</span></td><td>A sum or mean per route</td></tr>
+              <tr><td>Route Difference Graph</td><td><span class="ui">Bar Graph</span> or <span class="ui">Line Graph</span> in <span class="ui">Difference</span> mode</td><td>Exactly two routes; the anchor is named</td></tr>
+              <tr><td>Hours of Delay Graph</td><td><span class="ui">Grid Graph</span> of Hours of Delay, or a <span class="ui">Table</span></td><td>The stacked per-segment bar has no direct equivalent</td></tr>
+              <tr><td>Traffic Volume Graph</td><td><span class="ui">Table</span> with <span class="ui">AADT</span>, or a <span class="ui">Map</span></td><td>Vehicle-miles travelled is not offered</td></tr>
+              <tr><td>Route Map</td><td><span class="ui">Map</span></td><td><span class="ui">Color by</span> a measure or none</td></tr>
+              <tr><td>TMC Grid Graph</td><td><span class="ui">Grid Graph</span></td><td>Segments down, time across</td></tr>
+              <tr><td>TMC Difference Grid</td><td><span class="ui">Grid Graph</span> in <span class="ui">Difference</span> mode</td><td>Two windows of the same route</td></tr>
+              <tr><td>Route Compare Component</td><td><span class="ui">Table</span> at <span class="ui">Summary</span> with <span class="ui">Route Compare</span></td><td>Percent against the first route</td></tr>
+              <tr><td>Route Info Box</td><td><span class="ui">Table</span> at <span class="ui">Summary</span></td><td>Several measures, one row per route</td></tr>
+              <tr><td>TMC Info Box</td><td>No equivalent in the dialog</td><td>Rebuilt templates carry per-segment tables of length; a new one cannot be added</td></tr>
+              <tr><td>Graph controls (Routes · Display Data · Comparison)</td><td>The card's pills: <span class="ui">Routes</span> · measure · <span class="ui">When</span> · aggregate · mode</td><td>Time of day and days moved from the route to the graph in August 2026</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="where-this-matters">Where this matters</h2>
+          <p>Choose the shape by the question: a profile wants a line, event days want daily bars, "where on the route" wants a grid, exact values want a table, and the map is for the reader who does not know the road. Make the comparison explicit with <span class="ui">Difference</span> only when two windows of one route are on the card and you have named the anchor.</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Add Graph dialog code and guidance copy (AddGraphModal, graphGuidanceCopy, 2026-08-24): shapes, the one-sentence descriptions, <span class="ui">Measures (pick any)</span>, <span class="ui">Route Compare</span>, <span class="ui">Reliability</span> and their gates, <span class="ui">Color by</span>, the default pick.</li>
+            <li>Measure configuration (composeMeasureConfig, composeMapConfig, 2026-09-02): resolution labels, <span class="ui">Plain</span> · <span class="ui">Difference</span>, the anchor convention, fixed colour breaks for Map.</li>
+            <li>Quick Controls code (2026-08-20): pill tokens <span class="ui">5m</span> · <span class="ui">15m</span> · <span class="ui">1h</span> · <span class="ui">1d</span> · <span class="ui">wk</span> · <span class="ui">1mo</span>, <span class="ui">Overlay</span> · <span class="ui">Diff</span>.</li>
+            <li>Measure vocabulary (2026-08-24): the eleven measure labels and their expressions (speed = length ÷ mean travel time; travel time in minutes; delay threshold greatest(20, 0.6 × posted limit) with AADT weighting; averages per distinct day; length and AADT from the network map).</li>
+            <li>Legacy NPMRDS documentation, Report Tool Functions (2024): "Types of Graphs" (thirteen definitions, five more not built) and "Route Reports Data Measures" (units, sources, equations).</li>
+            <li>Difference-graph mechanism note (platform guides): anchor minus other; a diverging colour range.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 4a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="npmrds--reports--build.html">Build and edit a report</a>
+          <a href="npmrds--reports--templates.html">Template reference</a>
+          <a href="measures_and_data.html">Measures &amp; Data</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

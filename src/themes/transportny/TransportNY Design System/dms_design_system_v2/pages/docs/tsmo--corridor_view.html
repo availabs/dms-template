@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Explore a corridor over time · TSMO · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="tsmo">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">TSMO · how-to</div>
+          <h1 class="doc-title">Explore a corridor over time.</h1>
+          <p class="doc-lede">Replay one corridor through one day. Pick a county, a corridor, a direction and a date, read the time-space speed grid, see the day's events drawn over it, and check the strip map to confirm which segments you are looking at.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · TSMO (www/tsmo)</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="before-you-start">Before you start</h2>
+          <p>Open <span class="ui">Explorers</span> › <span class="ui">Corridor View</span>. No account is needed. Speeds arrive in a daily batch about 2 weeks behind, so the most recent days are not there yet. The page is county-keyed: a region set on a dashboard does not follow you here.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Open Corridor View.<span class="result">It opens on a default corridor with its grid already drawn.</span></li>
+            <li>Pick the county.<span class="result">The corridor list narrows to that county's roads.</span></li>
+            <li>Pick the corridor. A corridor is one road's chain of segments within the county.</li>
+            <li>Pick the direction.</li>
+            <li>Pick the date. Or use the month strip above the grid, <span class="ui">Daily pattern &amp; time-space speed</span>. It plots each day's average speed for the month; selecting a day drives the grid.<span class="result">The grid refetches for that corridor and day.</span></li>
+            <li>Read the grid. Each row is one segment in road order, labelled by its cross street where known, its height proportional to its length in miles. Each column is one 5-minute slice from 05:00 to midnight. Each cell is the average speed in mph: above 55, 45–55, 35–45, 25–35, below 25. A blank cell had no probe data.<span class="result">Slow cells stacked down a column are a queue at that time; slow cells across a row are a segment that ran slow all day.</span></li>
+            <li>Read <span class="ui">Incidents on this corridor</span>: the TRANSCOM events touching the corridor that day, one row per segment, open to close. Their spans are drawn on the grid with an outline coloured by category: Crash, Work zone, Road hazard, Other.</li>
+            <li>Read <span class="ui">Corridor at a glance</span>: the corridor's length, its traffic count, and the day's worst measured speed.</li>
+            <li>Check <span class="ui">Corridor strip map</span>. It draws exactly the segments feeding the grid and zooms to them.<span class="result">If a segment looks wrong, you can see it here before you trust the grid.</span></li>
+          </ol>
+
+          <h2 id="settings">Settings</h2>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Control</th><th>What it does</th><th>Values</th><th>Default</th></tr></thead>
+            <tbody>
+              <tr><td>County</td><td>Chooses the county whose roads are offered</td><td>New York counties</td><td>A default county Queens, I-495 and Westbound when the page was verified in July 2026.</td></tr>
+              <tr><td>Corridor</td><td>Chooses the road, as a chain of segments in the county</td><td>The county's roads</td><td>A default road</td></tr>
+              <tr><td>Direction</td><td>Chooses one direction of travel</td><td>The road's directions</td><td>A default direction</td></tr>
+              <tr><td>Date</td><td>Chooses the day to replay</td><td>Days with speeds, about 2 weeks behind today</td><td>A recent day</td></tr>
+              <tr><td>Month strip</td><td>Selecting a day sets the date</td><td>The days of the selected month</td><td>The selected date</td></tr>
+              <tr><td>Measure and resolution</td><td>Announced in the page's design; not confirmed on the live page</td><td> The live page has four controls, <span class="ui">County</span> · <span class="ui">Corridor</span> · <span class="ui">Direction</span> · <span class="ui">Month</span>; there is no measure or resolution control.</td><td>—</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="why-the-region-selection-does-not-carry-into-it">Why the region selection does not carry into it</h2>
+          <p>The dashboards filter by NYSDOT region. Corridor View filters by county, road and direction, and the network it reads carries no region for a segment. A region therefore cannot be translated into a corridor selection. That is why the Congestion dashboard's "drill into a corridor" button was removed in July 2026: it landed on the default county whatever region was set. Open Corridor View and pick the county yourself. Counties and their regions are listed in <a href="measures_and_data--concepts--geography.html#the-four-geographies">Geography</a>.</p>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul>
+            <li>Speed is segment length divided by observed travel time. On very short segments this can imply impossible values, so speeds are capped at 80 mph.</li>
+            <li>The overnight slices from midnight to 05:00 are dropped as too sparse.</li>
+            <li>A blank cell is missing probe data, not a stopped road.</li>
+            <li>Corridors split at county lines. A long road is several corridors, one per county.</li>
+            <li>The home's explorer card promises comparing dates side by side. No compare control exists on the live page.</li>
+            <li>The grid's row labels are small on long corridors.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="the-grid-is-blank">The grid is blank</h3>
+          <p>The date is probably inside the 2-week lag. Pick an earlier day in the month strip. If an older day is blank, the corridor had no probe data that day.</p>
+          <h3 id="my-road-is-not-in-the-corridor-list">My road is not in the corridor list</h3>
+          <p>Check the county. Roads are listed per county, and the list only holds roads with monitored segments there.</p>
+          <h3 id="the-page-ignored-my-region">The page ignored my region</h3>
+          <p>It always will. See <a href="#why-the-region-selection-does-not-carry-into-it">why the region selection does not carry into it</a>.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="tsmo--congestion.html#worst-corridors-by-excessive-delay">Worst corridors by excessive delay</a> · which corridors to look at first</li>
+            <li><a href="tsmo--incident_view.html">Read an incident page</a> · one event on the corridor</li>
+            <li><a href="measures_and_data--measures--percentile_speed.html">Percentile speed</a> · the speed measure behind the grid</li>
+            <li><a href="measures_and_data--concepts--geography.html">Geography</a></li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>TSMO Corridor View page, published 2026-07-29: status line "speeds · daily batch · ~2-week lag", the grid legend and caption, <span class="ui">Incidents on this corridor</span>, <span class="ui">Corridor at a glance</span>, <span class="ui">Corridor strip map</span>, the method note.</li>
+            <li>TSMO Data &amp; Methodology page, "Segment speed · time-space replay": 80 mph cap, overnight slices dropped, month strip of daily averages.</li>
+            <li>Feedback records: strip map built 2026-07-27 (2195605, 2194853) · drill removed, network carries no region (2195006).</li>
+            <li>TSMO home explorer card: "Compare dates side by side"; corridor-view design header: measure and resolution pickers.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 2b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="tsmo.html">TSMO</a>
+          <a href="measures_and_data--concepts--geography.html">Geography</a>
+          <a href="measures_and_data--measures--percentile_speed.html">Percentile speed</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

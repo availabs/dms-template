@@ -8,6 +8,7 @@ from .db import dms, now_iso, old_falcor_get
 from .info_box_templates import build_route_info_box_section_state_multi, ensure_info_box_aadt_template, ensure_info_box_delay_template, ensure_info_box_length_template, ensure_info_box_speed_template, ensure_info_box_traveltime_template, ensure_pm3_join_template
 from .route_compare_template import build_route_compare_section_state_multi, ensure_route_compare_template
 from .route_map import GEOMETRY_TILE_VIEWS, REVERSE_COLORS_MEASURES, ROUTE_MAP_MEASURES, ensure_route_map_avghoursofdelay_template, ensure_route_map_hoursofdelay_template, ensure_route_map_none_template, ensure_route_map_speed_template, ensure_route_map_traveltime_template
+from .transforms import merged_group_date_label
 
 def build_route_map_section_state(measure, year, templates, dry_run,
                                   resolution=None, tmcs=None,
@@ -603,11 +604,33 @@ def analyze_graph(g, comps_by_id, gaps):
     comp_names = ", ".join(filter(None, ((comps_by_id[c].get("name") or "").strip()
                                          for c in assigned)))
     title = title.replace("{name}", comp_names)
+    # Route/year label for the title-suffix enrichment (round 82,
+    # user-reported: "IDK which route/year is being shown"). Distinct from
+    # `comp_names` above — that one feeds literal {name} substitution and
+    # must stay exactly the old client's bare/compTitle-resolved name — since
+    # old-tool titles never showed a year unless an author's own compTitle
+    # happened to include {year}. This always appends a year/date-range label
+    # per comp (`merged_group_date_label` — year if set, else derived from
+    # the comp's own calendar date range) regardless of whether compTitle
+    # already had one, so a graph reliably shows both which route AND which
+    # time period it's rendering. Capped at 4 comps — beyond that, listing
+    # every route in a title becomes unreadable and the RRL sidebar is
+    # already the real source of truth for "which routes."
+    dated_names = []
+    for c in assigned[:4]:
+        rc = comps_by_id[c]
+        name = (rc.get("name") or "").strip()
+        if not name:
+            continue
+        year = merged_group_date_label(rc.get("settings") or {})
+        dated_names.append(f"{name}, {year}" if year and year not in name else name)
+    comp_names_dated = ", ".join(dated_names)
     description = (state.get("message") or {}).get("text", "")
     return {"type": gtype, "measure": measure, "resolution": resolution,
             "data_column": data_column, "assigned": assigned,
             "title": title.strip(), "description": description,
-            "had_name_token": had_name_token, "comp_names": comp_names}
+            "had_name_token": had_name_token, "comp_names": comp_names,
+            "comp_names_dated": comp_names_dated}
 
 
 def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph,

@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Peak periods and epochs · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  measures_and_data--concepts--peak_periods_and_epochs.html · IA page 65 · type concept. Phase 3, 2026-09-05.
+  Sources: _seed--npmrds-measures.html §05 trap 2 + §08 glossary; PROVENANCE §2 (15-minute mean), §11 (pmp / alt_pmp, per-bin
+  denominators); 23 CFR 490.511 / .611 / .711 period definitions; TSMO Data & Methodology 2184101 (PHED 6–10 AM, 3–7 PM;
+  5-minute slices); Segment page design npmrds-tmc.html (Resolution control, peak table); legacy report-tool functions page
+  281503 (off-peak free-flow window, quoted as legacy); legacy overview 225868 (288 epochs).
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="concept" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · concept</div>
+          <h1 class="doc-title">Peak periods and epochs.</h1>
+          <p class="doc-lede">The time units behind every number on the platform: the 5-minute epoch, the 15-minute reporting bin, the peak windows each measure uses, and the one label that means two different windows. Written for anyone who joins two figures by period.</p>
+          <div class="stamps">
+            <span class="type">concept</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="epochs-and-reporting-bins">Epochs and reporting bins</h2>
+          <p><strong>An epoch is one 5-minute observation of travel time on one segment.</strong> It is the rawest unit in the feed. A day holds 288 epochs. A <strong>reporting bin</strong> is a 15-minute window, three epochs, averaged before any percentile is taken. Every reliability and delay measure on the Macro View is computed from bin means, not from raw epochs.</p>
+          <p>A bin counts as present when any one of its three epochs is present. That rule is why the two coverage percentages differ: epochs reporting is always lower than bins reporting. <a href="measures_and_data--measures--coverage.html">Data coverage</a> explains the pair.</p>
+          <p>The averaging step is the largest outlier suppressor in the pipeline, and nobody chose it. A screen applied to epochs reaches 5.3 times further than the same numeric bound applied to bin means, 1.72 % of epochs against 0.33 % of bins. Binning therefore hides roughly four fifths of the extreme tail from everything downstream. It is a smoothing choice, inherited rather than decided. It is not imputation under 23 CFR 490.509(b): nothing is replaced and nothing is dropped.</p>
+          <div class="callout note"><span class="k">note</span>A "no record" epoch means no probe vehicle reported on that segment in those 5 minutes. The platform does not fill it. A bin with one epoch present is a full bin; a bin with none is absent.</div>
+
+          <h2 id="resolution-on-the-segment-page">Resolution on the Segment page</h2>
+          <p>The Segment (TMC) page design carries a <span class="ui">Resolution</span> control with three values: <span class="ui">Hour</span>, <span class="ui">15 min</span> and <span class="ui">5 min</span>. Resolution bins the raw epochs. At <span class="ui">Hour</span>, one cell is up to 12 observations averaged. The control changes what the grid and the distribution are counting, not how they are drawn. The Segment page is a design at the time of writing; its Resolution control offers Hour, 15 min and 5 min.</p>
+          <p>Corridor View replays a corridor at 5-minute resolution, from 05:00 to midnight, and drops the 00:00 to 05:00 epochs as too sparse to read. See <a href="tsmo--corridor_view.html">Corridor View</a>.</p>
+
+          <h2 id="the-peak-windows">The peak windows</h2>
+          <p>Each measure assigns bins to periods before it takes a percentile or a sum. The federal rule fixes the windows. The table lists every window the platform uses, with the measures that read it. Times are local, inclusive of the start and exclusive of the end.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Period</th><th>Hours</th><th>Days</th><th>Used by</th></tr></thead>
+            <tbody>
+              <tr><td>AM peak</td><td>06:00–09:59</td><td>Monday to Friday</td><td>LOTTR · TTTR · TTTR₈₀ · PHED · coverage</td></tr>
+              <tr><td>Midday</td><td>10:00–15:59</td><td>Monday to Friday</td><td>LOTTR · TTTR · TTTR₈₀ · coverage</td></tr>
+              <tr><td>PM peak (reliability)</td><td>16:00–19:59</td><td>Monday to Friday</td><td>LOTTR · TTTR · TTTR₈₀ · coverage</td></tr>
+              <tr><td>PM peak (delay)</td><td>15:00–18:59</td><td>Monday to Friday</td><td>PHED · coverage (published as a separate bin)</td></tr>
+              <tr><td>Weekend</td><td>06:00–19:59</td><td>Saturday and Sunday</td><td>LOTTR · TTTR · TTTR₈₀ · coverage</td></tr>
+              <tr><td>Overnight</td><td>20:00–05:59</td><td>Every day</td><td>TTTR · TTTR₈₀ · coverage. The thinnest data on the network</td></tr>
+              <tr><td>All hours</td><td>00:00–23:59</td><td>Every day</td><td>TED · percentile speed · coverage · the excessive-delay series</td></tr>
+            </tbody>
+          </table></div>
+          <p>Weekday and weekend are the first split. A Saturday afternoon hour is weekend, never midday. Overnight wins over both: a 22:00 Saturday hour is overnight. The federal reliability measures publish four periods for LOTTR and five for TTTR. PHED publishes two, the AM and the 15:00–18:59 PM peak, and the TSMO Data &amp; Methodology page states them as "6–10 AM, 3–7 PM weekdays".</p>
+          <p>Period size sets the sample a percentile rests on. An AM peak holds 4,176 bins in CY 2025; an overnight period holds 14,600. <a href="measures_and_data--measures--lottr.html#how-much-to-trust-it">LOTTR</a> and <a href="measures_and_data--measures--tttr.html">TTTR</a> publish the bar each needs.</p>
+          <div class="callout basis"><span class="k">basis</span>When you quote a period figure, name the window in hours, not only its label: "PM peak, 16:00–19:59, weekdays, CY 2025".</div>
+
+          <h2 id="the-pm-peak-label-trap">The PM-peak label trap</h2>
+          <p><strong>"PM peak" means two different windows.</strong> LOTTR and TTTR compute their PM peak over 16:00–19:59. PHED computes its PM peak over 15:00–18:59 and publishes it under the same label. The labels match; the hours do not. Do not join a LOTTR PM-peak figure to a PHED PM-peak figure and assume the same window.</p>
+          <p>The mismatch predates the current pipeline and is not corrected, because renaming a published column would break every existing consumer. Coverage is exempt: it publishes the 16:00–19:59 and 15:00–18:59 windows as separate bins, so either denominator is unambiguous. The download package restates this in its <code>PM3_README.txt</code>.</p>
+
+          <h2 id="five-minute-slices-and-fifteen-minute-bins">Five-minute slices and fifteen-minute bins</h2>
+          <p>Two families use two time units, and the difference is part of why their totals never match. The Macro View measures (LOTTR, TTTR, PHED, TED) work from 15-minute bin means over a calendar year. The <a href="measures_and_data--measures--excessive_delay.html">excessive-delay series</a> behind the TSMO dashboards works from 5-minute slices, summed to segment and month. A 5-minute slice keeps the extreme epochs that a bin mean smooths away, so a delay figure from the series reads differently from a TED figure for the same road, even before the threshold and the geography are considered.</p>
+          <p>The free-flow reference behind the delay family is the 15th-percentile travel time of the 15-minute bins, which is the 85th-percentile speed, taken over a fixed window rather than an off-peak set of hours. <a href="measures_and_data--measures--phed.html">PHED</a> documents the window. The 2024 report tool defined free flow over off-peak hours instead: "Off-peak periods Monday through Friday, 9am to 4pm and 7pm to 10pm, as well as Saturday and Sunday 6am to 10pm." That is the legacy tool's definition. The current measures do not use it.</p>
+
+          <h2 id="where-this-matters">Where this matters</h2>
+          <p>Compare periods only when their hours match: a LOTTR PM peak against a TTTR PM peak is safe, against a PHED PM peak it is not. Read the bin count before you trust an overnight truck ratio. Do not expect a monthly delay total to reconcile with an annual TED figure; they count different slices. Do not apply the 2024 report tool's off-peak window to a current free-flow figure. When a Segment page grid changes with <span class="ui">Resolution</span>, the data did not change; the averaging did. <a href="measures_and_data--concepts--coverage_eras_and_comparability.html">Coverage eras and comparability</a> covers the other axis of comparability, how much of each period actually arrived.</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Measures &amp; Methodology page, published 2026-08-28: §05 "Two traps", trap 2 (the PM-peak windows); §08 glossary (epoch, reporting bin, stream, free-flow reference).</li>
+            <li>pm3 provenance record, §2 (the 15-minute mean: 5.3×, 1.72 % against 0.33 %; not imputation under 23 CFR 490.509(b)), §3 (the free-flow reference is the 15th-percentile travel time), §11 (the two PM windows; per-bin denominators of 4,176 and 14,600; coverage publishes both windows).</li>
+            <li>23 CFR 490.511 (LOTTR periods), 490.611 (TTTR periods, including overnight) and 490.711 (PHED peak hours).</li>
+            <li>TSMO Data &amp; Methodology page: PHED "peak periods (6–10 AM, 3–7 PM weekdays)"; excessive delay "in that 5-minute slice"; Corridor View "5 AM-to-midnight clock", overnight epochs dropped.</li>
+            <li>Segment (TMC) page design, 2026: the Resolution control (Hour · 15 min · 5 min, "up to 12 observations averaged") and its peak table (overnight 20:00–06:00, AM 06:00–10:00, off peak 10:00–16:00, PM 16:00–20:00, weekend 06:00–20:00; "a 22:00 Saturday hour is overnight").</li>
+            <li>2024 NPMRDS documentation, Report tool functions: "Measure Time Periods: Off-peak periods Monday through Friday, 9am to 4pm and 7pm to 10pm, as well as Saturday and Sunday 6am to 10pm" (legacy definition).</li>
+            <li>2024 NPMRDS documentation, Overview: "There are 288 5-minute epochs in a given day."</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 3)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--measures--coverage.html">Data coverage</a>
+          <a href="measures_and_data--measures--lottr.html">LOTTR</a>
+          <a href="measures_and_data--measures--phed.html">PHED</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

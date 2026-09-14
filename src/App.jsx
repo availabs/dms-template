@@ -1,5 +1,5 @@
 import { DmsSite, adminConfig } from "./dms/packages/dms/src";
-import themes from "./themes";
+import loadThemes from "./themes";
 import getDataTypes from "./data-types.js";
 
 const DEFAULT_API_HOST = "https://dmsserver.availabs.org";
@@ -25,7 +25,7 @@ const PG_ENVS = (import.meta.env.VITE_DMS_PG_ENVS || "")
   .filter(Boolean);
 const IS_MULTI_TENANT = import.meta.env.VITE_DMS_MULTI_TENANT === "1";
 
-function App({ defaultData, hydrationData } = {}) {
+function App({ defaultData, hydrationData, themes } = {}) {
   //console.log('pgEnvs', PG_ENVS)
   return (
     <DmsSite
@@ -42,7 +42,11 @@ function App({ defaultData, hydrationData } = {}) {
       API_HOST={API_HOST}
       AUTH_HOST={API_HOST}
       DAMA_HOST={DAMA_HOST}
-      themes={themes}
+      // Cold SPA gets the lazy loader (no `themes` prop passed in); SSR
+      // hydration (src/main.jsx) resolves the theme(s) the server used and
+      // passes an already-resolved plain object here instead. See
+      // planning/shared/bundle-size-log.md.
+      themes={themes || loadThemes}
       damaDataTypes={getDataTypes(DMS_APP)}
       isMultiTenant={IS_MULTI_TENANT}
     />

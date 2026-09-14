@@ -1,0 +1,588 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Work Zone Safety &amp; Mobility Reporting: recommendation &middot; TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <style>
+    /* TransportNY design-system v2 surface utilities.
+     * Inlined (not linked) because this document lives in references/ and must open standalone.
+     * Values copied verbatim from dms_design_system_v2/design-system/_shared.css — same subset as
+     * ../npmrds pm3/congestion management planning/overview.html. Do not diverge; re-copy if the DS changes. */
+    .font-display, .font-oswald { font-family: "Oswald", "Bebas Neue", sans-serif; }
+    .font-proxima { font-family: "Source Sans 3", system-ui, sans-serif; }
+    body { font-family: "Source Sans 3", system-ui, sans-serif; background: #ECEEF2; }
+    .tny-pane      { background: #ECEEF2; }
+    .tny-pane-tint { background: #E4E8EE; }
+    .tny-card {
+      background: #fff;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 8px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 0 rgba(15, 23, 42, 0.02);
+    }
+    .tny-card-tint { background: #FAFBFC; }
+    .tny-card-bone { background: #F5F1E8; }
+    .tny-card-ink  { background: #0F2D4D; color: #fff; }
+    .tny-link      { color: #1F3F8F; text-decoration: underline; text-underline-offset: 2px; }
+    .tny-link:hover{ color: #16307A; }
+    .tny-card-ink .tny-link { color: #BFD3F2; }
+    .tny-mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.92em; padding: 1px 5px;
+      background: rgba(15, 23, 42, 0.05);
+      border: 1px solid rgba(15, 23, 42, 0.06);
+      border-radius: 3px; color: #37576B; white-space: nowrap;
+    }
+    .tny-card-ink .tny-mono { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); color: #DCE6F5; }
+    .tny-hero-topo {
+      background:
+        radial-gradient(circle at 25% 30%, rgba(15, 23, 42, 0.04), transparent 40%),
+        radial-gradient(circle at 75% 70%, rgba(15, 23, 42, 0.05), transparent 50%),
+        repeating-linear-gradient(28deg, transparent 0 30px, rgba(15, 23, 42, 0.035) 30px 31px, transparent 31px 60px),
+        repeating-linear-gradient(-30deg, transparent 0 36px, rgba(15, 23, 42, 0.028) 36px 37px, transparent 37px 70px),
+        #EEF1F3;
+    }
+    .bar { height: 8px; border-radius: 2px; background: #37576B; }
+    .bar-warn { background: #CA8A04; }
+    .bar-bad  { background: #B45309; }
+    .bar-ok   { background: #10B981; }
+    table.tny { border-collapse: collapse; width: 100%; }
+    table.tny th {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em;
+      color: #64748b; text-align: right; padding: 6px 8px;
+      border-bottom: 1px solid rgba(15,23,42,0.12); white-space: nowrap;
+    }
+    table.tny th:first-child, table.tny td:first-child { text-align: left; }
+    table.tny td {
+      font-size: 13px; padding: 7px 8px; text-align: right;
+      border-bottom: 1px solid rgba(15,23,42,0.05);
+      font-variant-numeric: tabular-nums;
+      vertical-align: top;
+    }
+    table.tny td.txt { text-align: left; font-variant-numeric: normal; line-height: 1.5; }
+    table.tny th.txt { text-align: left; }
+    table.tny tr:last-child td { border-bottom: none; }
+    .step-n {
+      font-family: "Oswald", sans-serif; font-weight: 600; font-size: 13px;
+      width: 26px; height: 26px; border-radius: 4px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #37576B; color: #fff; flex: none;
+    }
+    .cite { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10.5px; color:#64748b; }
+    .pill { display:inline-flex; align-items:center; height:22px; padding:0 8px; border-radius:4px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:10px; text-transform:uppercase; letter-spacing:.12em; white-space:nowrap; }
+    .pill-ok   { background:#E6F7EF; color:#0B6B44; border:1px solid #B7E3CC; }
+    .pill-warn { background:#FBF3DB; color:#8A5A00; border:1px solid #EAD59A; }
+    .pill-bad  { background:#FBE9E0; color:#8A3B0C; border:1px solid #F0C9B4; }
+    .pill-ink  { background:#0F2D4D; color:#fff; }
+    .kpi { font-family:"Oswald",sans-serif; font-weight:600; font-size:30px; line-height:1; color:#0F1722; letter-spacing:-0.01em; }
+  </style>
+</head>
+<body class="tny-pane">
+
+<!--
+  WORK ZONE SAFETY & MOBILITY REPORTING — RECOMMENDATION FOR NYSDOT
+  Deliverable of planning/transportny/tasks/current/workzone-safety-mobility-reporting-research.md
+  HTML rendering of ./05_recommendation_report.md, with the regulation, peer-practice and dataset
+  material condensed in from 01–04. Every claim traces to a source held locally in ./references/ and
+  summarised in a companion note of the same slug; bracketed markers link to those notes
+  (index: ./references/_INDEX.md). Regulatory quotations are verbatim from the eCFR capture
+  ./references/23cfr630_subpartJ_ecfr_2026-09-01.txt.
+  Design: TransportNY design system v2 tokens/utilities (inlined _shared.css subset above), matching
+  ../npmrds pm3/congestion management planning/overview.html. Document-style page, not the app shell.
+-->
+
+<div class="max-w-[1180px] mx-auto px-6 lg:px-10">
+
+  <!-- ── header ──────────────────────────────────────────────────────── -->
+  <header class="tny-hero-topo -mx-6 lg:-mx-10 px-6 lg:px-10 pt-10 pb-9 border-b border-zinc-950/10">
+    <div class="flex items-center gap-2 mb-3">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// recommendation for nysdot</span>
+      <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+    </div>
+    <h1 class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">
+      Work Zone Safety &amp; Mobility Reporting<span class="text-[#CA8A04]">.</span>
+    </h1>
+    <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-3 max-w-[820px]">
+      FHWA rewrote <span class="text-[#0f1722] font-medium">23 CFR 630 Subpart J</span> on November 1, 2024. By
+      <span class="text-[#0f1722] font-medium">December 31, 2026</span> NYSDOT&rsquo;s work-zone policy must name the
+      safety and mobility performance measures it manages with; from 2025 it must monitor them every year; and by
+      <span class="text-[#0f1722] font-medium">December 31, 2030</span> it must hand FHWA a data-driven programmatic review
+      of a documented sample of its significant work zones. NYSDOT asked AVAIL to evaluate solutions and has suggested <em>change in speed at work zones</em> as a measure.
+      This report defines that proposal, evaluates it against the rule, the literature and fifteen peer states, and
+      recommends a program built on the data AVAIL and NYSDOT already hold.
+    </p>
+    <div class="flex flex-wrap items-center gap-2 mt-5 font-mono text-[10.5px] uppercase tracking-[0.14em]">
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] bg-[#37576B] text-white">23 CFR 630 Subpart J</span>
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white text-slate-600">89 FR 87293 &middot; Nov 1 2024</span>
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white text-slate-600">NPMRDS &times; TRANSCOM</span>
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white text-slate-600">compiled 2026-09-08 &middot; draft for discussion</span>
+    </div>
+  </header>
+
+
+  <!-- ── the proposal under evaluation ────────────────────────────────── -->
+  <section class="pt-8 pb-2">
+    <div class="tny-card tny-card-bone p-6">
+      <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#8A5A00]">the proposal under evaluation</div>
+      <div class="font-display font-medium text-[19px] text-[#0f1722] mt-1.5">Report the change in vehicle speeds at work zones, from NPMRDS speeds and TRANSCOM work-zone events</div>
+      <p class="font-proxima text-[13.5px] leading-[1.7] text-slate-700 mt-2 max-w-[900px]">
+        NYSDOT has suggested meeting the rule&rsquo;s mobility-measure requirement with a speed-based measure. Concretely, as we understand it:
+      </p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3 mt-4">
+        <div>
+          <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">measure</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">How much, and how often, speeds on the road segments inside a work zone fall while the zone is active, relative to speeds on the same segments when no work zone is present &mdash; a <em>before / during</em> comparison.</p>
+        </div>
+        <div>
+          <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">speed data</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1"><strong>NPMRDS</strong> probe speeds and travel times &mdash; 5-minute, TMC segments, National Highway System &mdash; received free from FHWA and already held by AVAIL in <span class="tny-mono">npmrds2</span> (view 982, 2017 &rarr; present).</p>
+        </div>
+        <div>
+          <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">work-zone data (when / where)</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1"><strong>TRANSCOM</strong> construction and maintenance events &mdash; the event store behind 511NY, held as source 956 / view 1947 &mdash; with the explicit option to substitute or combine better work-zone sources if any exist.</p>
+        </div>
+        <div>
+          <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">output</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">An annual (and, where useful, weekly) series by Region / facility / project that can be named in the Subpart J policy and used in the December 2030 programmatic review.</p>
+        </div>
+      </div>
+      <p class="font-proxima text-[12.5px] leading-[1.65] text-slate-600 mt-4 border-t border-zinc-950/10 pt-3">
+        This report asks four things of that proposal: is it compliant with the rule as written; is it what peer states do; what does it
+        leave uncovered (safety, exposure, project identity); and what data should be added, in what order.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── §01 verdict ─────────────────────────────────────────────────── -->
+  <section class="py-11 border-b border-zinc-950/5">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01</span>
+      <span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Verdict on the proposal</h2>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-6">
+      <div class="lg:col-span-2">
+        <p class="font-proxima text-[13.5px] leading-[1.7] text-slate-700">
+          <span class="font-medium text-[#0f1722]">Adopt it &mdash; it is not a proxy, it is one of the rule&rsquo;s own example
+          measures.</span> &sect;630.1006(b) requires the policy to identify performance measures and lists, verbatim,
+          <em>&ldquo;percent of time when speeds in a work zone drop below a predefined threshold&rdquo;</em>; &sect;630.1008(c)
+          lists <em>speeds</em> as operational information and <em>speed differentials</em> as safety-surrogate data States shall
+          use. FHWA has separately published guidance endorsing the National Performance Management Research Data Set for
+          exactly this purpose
+          <span class="cite">[<a class="tny-link" href="./references/FHWA_HOP-20-028_NPMRDS_WZ_Perf_Measurement.md">HOP-20-028</a>,
+          <a class="tny-link" href="./references/FHWA_HOP-20-029_Measuring_WZ_Mobility_NPMRDS.md">HOP-20-029</a>]</span>,
+          and the final-rule preamble confirms that &ldquo;available&rdquo; data means data accessible through existing sources
+          &mdash; FHWA is <em>not</em> requiring States to buy anything
+          <span class="cite">[<a class="tny-link" href="./references/FR_2024-25065_WZ_final_rule.md">FR</a>]</span>.
+          An NPMRDS &times; TRANSCOM speed-based mobility measure is therefore squarely compliant, costs nothing in data, and is
+          roughly 80% built inside the TSMO work-zones dashboard pipeline.
+        </p>
+        <p class="font-proxima text-[13.5px] leading-[1.7] text-slate-700 mt-3">Three refinements the literature insists on:</p>
+        <ol class="font-proxima text-[13.5px] leading-[1.7] text-slate-700 mt-2 space-y-2 list-decimal pl-5">
+          <li><span class="font-medium text-[#0f1722]">Express it as an exceedance share, with a declared threshold and a
+            pre-construction baseline</span> &mdash; &ldquo;% of active work-zone hours with in-zone speed below X&rdquo;, not
+            &ldquo;average speed change&rdquo;. Ohio uses 35 mph; FHWA&rsquo;s TxDOT case uses travel time &gt; 1.25 &times; baseline.
+            Comparing against the posted limit alone is confounded by work-zone speed reductions
+            <span class="cite">[<a class="tny-link" href="./references/NCHRP_Synthesis_482_WZ_Speed_Management.md">NCHRP 482</a>]</span>.</li>
+          <li><span class="font-medium text-[#0f1722]">Pair it with the other rule-listed quantities that fall out of the same
+            computation</span> &mdash; delay (already computed), queue length and duration (contiguous upstream TMCs below
+            threshold), and the speed differential between approach and zone, which doubles as the rule&rsquo;s safety surrogate.</li>
+          <li><span class="font-medium text-[#0f1722]">It satisfies only half the clause.</span> The policy also needs at least
+            one <em>safety</em> measure; NYSDOT already produces work-zone crash and intrusion counts for the AWZSE legislative
+            report <span class="cite">[<a class="tny-link" href="./references/NY_2026_Governors_Report_AWZSE.md">AWZSE 2026</a>]</span> &mdash; declare those.</li>
+        </ol>
+      </div>
+      <div class="tny-card tny-card-ink p-5">
+        <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#BFD3F2]">the compliance floor</div>
+        <div class="font-display font-medium text-[17px] mt-1.5">One mobility + one safety measure + a documented approach</div>
+        <p class="font-proxima text-[12.5px] leading-[1.65] text-slate-200 mt-2">
+          FHWA&rsquo;s preamble and Q&amp;A: the listed measures are examples; States &ldquo;can comply with this requirement by
+          identifying at least one safety and one mobility performance measure&rdquo; but &ldquo;must have a documented work zone
+          performance management approach for selecting projects, identifying performance measures, and collecting
+          performance data.&rdquo;
+        </p>
+        <div class="grid grid-cols-2 gap-3 mt-4">
+          <div><div class="kpi text-white">12/31/26</div><div class="font-mono text-[10px] uppercase tracking-[0.14em] text-[#BFD3F2] mt-1">policy names measures</div></div>
+          <div><div class="kpi text-white">12/31/30</div><div class="font-mono text-[10px] uppercase tracking-[0.14em] text-[#BFD3F2] mt-1">programmatic review (CY 2025&ndash;29)</div></div>
+        </div>
+        <p class="font-proxima text-[11.5px] leading-[1.6] text-slate-300 mt-3">
+          <span class="cite">[<a class="tny-link" href="./references/FHWA_SubpartJ_Final_Rule_QA.md">FHWA Q&amp;A, Apr 2026</a>]</span>
+          &middot; monitoring is annual (&sect;630.1008(e)(3)).
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── §02 what the rule requires ──────────────────────────────────── -->
+  <section class="py-11 border-b border-zinc-950/5">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02</span>
+      <span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">What the 2024 rule actually requires</h2>
+    <p class="font-proxima text-[13.5px] leading-[1.7] text-slate-700 mt-3 max-w-[860px]">
+      The 2004 rule asked States to <em>consider</em> impacts and review their processes every two years. The 2024 rewrite
+      turns that into a measurement program with a calendar. Full clause-by-clause read:
+      <a class="tny-link" href="./01_regulation_23cfr630J.md">01_regulation_23cfr630J.md</a>.
+    </p>
+    <div class="tny-card overflow-x-auto mt-5">
+      <table class="tny">
+        <thead><tr><th style="width:150px">Clause</th><th class="txt">Requirement (2024 text)</th><th class="txt" style="width:34%">Consequence for NYSDOT</th></tr></thead>
+        <tbody>
+          <tr><td class="txt"><span class="tny-mono">&sect;630.1006(b)</span></td>
+            <td class="txt">&ldquo;At a minimum, the policy <strong>shall identify safety and mobility performance measures</strong> that will be used to manage work zone performance.&rdquo; Examples: fatal/injury WZ crashes; % projects exceeding a pre-established crash rate; worker fatalities/injuries; <strong>% projects with queues above a threshold; % of time speeds in a WZ drop below a threshold</strong>.</td>
+            <td class="txt">HDM Chapter 16 &mdash; NYSDOT&rsquo;s policy vehicle &mdash; contains no quantitative measures today <span class="cite">[<a class="tny-link" href="./references/NYSDOT_HDM_Chapter16_Work_Zone_Traffic_Control.md">HDM 16</a>]</span>. Must be amended by Dec 31 2026.</td></tr>
+          <tr><td class="txt"><span class="tny-mono">&sect;630.1008(c)</span></td>
+            <td class="txt">States <strong>shall use</strong> field observations, available <strong>crash</strong> data, available <strong>safety surrogate</strong> data (speed differentials, hard braking, CAV data), available <strong>operational</strong> information (speeds, travel times, queue length, duration) and available <strong>exposure</strong> data (number of projects, number/length of lane closures, VMT through work zones) &mdash; for specific projects during implementation <em>and</em> for the programmatic review.</td>
+            <td class="txt">Four data families must be demonstrably in use. Preamble: &ldquo;available&rdquo; = accessible through existing sources; no purchase obligation.</td></tr>
+          <tr><td class="txt"><span class="tny-mono">&sect;630.1008(e)</span></td>
+            <td class="txt"><strong>Programmatic review every 5 years</strong>: data-driven assessment of a <strong>documented representative sample of significant work zones</strong>; performance since last review; processes to improve; action items, responsible offices, timeline; <strong>annual monitoring</strong>; cross-office scope incl. <strong>permitting</strong>.</td>
+            <td class="txt">A standing annual series, not a one-off study. Next report Dec 31 2030 covering CY 2025&ndash;2029.</td></tr>
+          <tr><td class="txt"><span class="tny-mono">&sect;630.1010(c)</span></td>
+            <td class="txt">Interstate projects within a TMA requiring intermittent or continuous lane closures for <strong>3 or more consecutive days</strong> are significant (IIJA &sect;11303(a)).</td>
+            <td class="txt">The sample frame. NY TMAs: New York&ndash;Newark, Buffalo, Rochester, Albany, Syracuse, Poughkeepsie&ndash;Newburgh (HDM &sect;16.5.2.1, App. 16B).</td></tr>
+          <tr><td class="txt"><span class="tny-mono">&sect;630.1004</span></td>
+            <td class="txt"><em>Mobility</em>: &ldquo;minimum delay compared to <strong>baseline travel when no work zone is present</strong>&rdquo;; measures: delay, speed, travel time, queue length. <em>Work zone crash</em>: MMUCC 5th ed., incl. vehicles slowed/stopped by the zone before the first sign.</td>
+            <td class="txt">Every mobility measure is a before/during comparison; the crash definition includes queue-related crashes upstream.</td></tr>
+          <tr><td class="txt"><span class="tny-mono">&sect;630.1016</span></td>
+            <td class="txt">Comply no later than <strong>December 31, 2026</strong>; next programmatic review due <strong>December 31, 2030</strong>.</td>
+            <td class="txt">The calendar.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="font-proxima text-[12px] leading-[1.55] text-slate-500 mt-2">
+      <span class="cite">[<a class="tny-link" href="./references/23cfr630_subpartJ_ecfr_2026-09-01.md">eCFR</a>,
+      <a class="tny-link" href="./references/FR_2024-25065_WZ_final_rule.md">FR 2024-25065</a>]</span>
+      Quotations verbatim from the eCFR capture (point-in-time 2026-09-01).
+    </p>
+  </section>
+
+  <!-- ── §03 recommended measure set ─────────────────────────────────── -->
+  <section class="py-11 border-b border-zinc-950/5">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span>
+      <span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Recommended measure set</h2>
+    <p class="font-proxima text-[13.5px] leading-[1.7] text-slate-700 mt-3 max-w-[860px]">
+      Drawn from FHWA&rsquo;s primer vocabulary <span class="cite">[<a class="tny-link" href="./references/FHWA_HOP-11-033_WZ_Perf_Measurement_Primer.md">HOP-11-033</a>]</span>
+      so FHWA recognises every term. Minimum compliance is M1 + M5; the full set is what peers report and what the 2030
+      review will need. Thresholds are placeholders to calibrate against 2024&ndash;2026 data with NYSDOT&rsquo;s work-zone program staff.
+    </p>
+    <div class="tny-card overflow-x-auto mt-5">
+      <table class="tny">
+        <thead><tr><th style="width:44px">#</th><th class="txt" style="width:110px">Family</th><th class="txt">Measure (draft policy wording)</th><th class="txt" style="width:200px">Threshold to declare</th><th class="txt" style="width:190px">Computed from</th><th style="width:90px">Status</th></tr></thead>
+        <tbody>
+          <tr><td class="txt"><strong>M1</strong></td><td class="txt">Mobility (operational)</td>
+            <td class="txt"><strong>Percent of active work-zone hours in which average speed within the zone falls below the threshold</strong> &mdash; the proposed measure, in the rule&rsquo;s words</td>
+            <td class="txt">35 mph on freeways/expressways (Ohio); or 60% of pre-construction reference speed elsewhere &mdash; one per facility class</td>
+            <td class="txt">NPMRDS 5-min speeds on the zone&rsquo;s TMCs &times; TRANSCOM active window</td>
+            <td><span class="pill pill-warn">build</span></td></tr>
+          <tr><td class="txt"><strong>M2</strong></td><td class="txt">Mobility</td>
+            <td class="txt"><strong>Work-zone delay</strong> (vehicle-hours; per vehicle) vs baseline; share of statewide delay attributable to work zones</td>
+            <td class="txt">report; flag projects &gt; 10 min/veh (Michigan)</td>
+            <td class="txt">event&times;TMC delay (view 2799); excessive_delay <span class="tny-mono">construction</span></td>
+            <td><span class="pill pill-ok">exists</span></td></tr>
+          <tr><td class="txt"><strong>M3</strong></td><td class="txt">Mobility</td>
+            <td class="txt"><strong>Percent of significant projects with a queue exceeding the threshold</strong>; queue length (max, 95th pct) and duration</td>
+            <td class="txt">0.75 mi (Ohio) or 1.5 mi beyond pre-existing (Illinois)</td>
+            <td class="txt">contiguous upstream TMCs below threshold (Maryland &ldquo;connected queue&rdquo;)</td>
+            <td><span class="pill pill-warn">build</span></td></tr>
+          <tr><td class="txt"><strong>M4</strong></td><td class="txt">Safety surrogate</td>
+            <td class="txt"><strong>Speed differential</strong>: approach-segment minus in-zone speed, and during-vs-baseline speed drop, per active hour</td>
+            <td class="txt">flag &gt; 15&ndash;20 mph (rear-end risk); calibrate against M5</td>
+            <td class="txt">NPMRDS</td>
+            <td><span class="pill pill-warn">build</span></td></tr>
+          <tr><td class="txt"><strong>M5</strong></td><td class="txt">Safety (crash)</td>
+            <td class="txt"><strong>Work-zone crashes by severity</strong> statewide and on sampled projects; <strong>WZ crash rate per 100M VMT through work zones</strong>; % of projects above the statewide rate</td>
+            <td class="txt">report + exceedance share</td>
+            <td class="txt">CLEAR WZ-flagged extract (preferred) or NYS open crash data TCD codes; exposure E3</td>
+            <td><span class="pill pill-bad">data request</span></td></tr>
+          <tr><td class="txt"><strong>M6</strong></td><td class="txt">Safety (workers)</td>
+            <td class="txt"><strong>Work-zone intrusions and worker injuries</strong> (counts)</td>
+            <td class="txt">report</td>
+            <td class="txt">NYSDOT/NYSTA intrusion records (in the AWZSE report today)</td>
+            <td><span class="pill pill-ok">exists</span></td></tr>
+          <tr><td class="txt"><strong>E1&ndash;E3</strong></td><td class="txt">Exposure</td>
+            <td class="txt">number of work-zone events/projects; number and length of lane closures (lane-mile-hours); <strong>VMT through work zones</strong></td>
+            <td class="txt">denominators</td>
+            <td class="txt">TRANSCOM <span class="tny-mono">lanes_affected_count</span> &times; <span class="tny-mono">tmclist</span> length &times; duration; NPMRDS-meta AADT</td>
+            <td><span class="pill pill-warn">build</span></td></tr>
+          <tr><td class="txt"><strong>F1</strong></td><td class="txt">Field observations</td>
+            <td class="txt">WZTC quality-assurance rating distribution</td>
+            <td class="txt">existing regional goals</td>
+            <td class="txt">NYSDOT QA program <span class="cite">[<a class="tny-link" href="./references/TRB_01-2223_NYSDOT_WZTC_Quality_Assurance_Program.md">Bryden &amp; Andrew</a>]</span></td>
+            <td><span class="pill pill-ok">exists</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── §04 the approach ────────────────────────────────────────────── -->
+  <section class="py-11 border-b border-zinc-950/5">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 04</span>
+      <span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Recommended approach &mdash; three tiers</h2>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-6">
+      <div class="tny-card p-5">
+        <div class="flex items-center gap-2"><span class="step-n">1</span><span class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#0B6B44]">now &rarr; dec 2026 &middot; no data purchases</span></div>
+        <div class="font-display font-medium text-[17px] text-[#0f1722] mt-2">Compliance on data we hold</div>
+        <ol class="font-proxima text-[12.5px] leading-[1.65] text-slate-700 mt-2 space-y-1.5 list-decimal pl-4">
+          <li><strong>Work-zone activity spine from TRANSCOM</strong> (source 956/1947), NY-filtered, <span class="tny-mono">nysdot_sub_category</span> &isin; Construction / Maintenance / Emergency Ops, recurring chains de-duplicated; TMC extents from <span class="tny-mono">tmclist</span> (else snap start/end points), direction, lanes affected, active windows. Flag <strong>significant-project candidates</strong>: Interstate &cap; TMA counties &cap; &ge;3 consecutive days with a lane closure.</li>
+          <li><strong>NPMRDS mobility engine</strong> (view 982): per event &times; TMC &times; 5-min epoch, speed and travel time against a <strong>baseline</strong> (same TMC, same hour/day-type, 12 months prior, other events excluded) &rarr; M1, M2, M3, M4. Follow HOP-20-029&rsquo;s ten steps; document thresholds.</li>
+          <li><strong>Exposure</strong> E1&ndash;E3 from the same spine + NPMRDS-meta AADT.</li>
+          <li><strong>Safety series</strong> from NYS open crash data (traffic-control codes 12/13/14): 1,289 &rarr; 1,384 crashes/yr 2021&ndash;24, geocoded via DOT reference markers where present (56%).</li>
+          <li><strong>Publish</strong> a DMS Work Zone Performance surface: extend the TSMO work-zones page, un-block the Work-Zone Safety page, add a <strong>methodology page</strong> that <em>is</em> the documented approach.</li>
+          <li><strong>Policy text</strong> for HDM Ch. 16 (or a standalone policy, as Iowa did Dec 2025) naming M1&ndash;M6 / E1&ndash;E3 and thresholds.</li>
+        </ol>
+      </div>
+      <div class="tny-card p-5">
+        <div class="flex items-center gap-2"><span class="step-n">2</span><span class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#8A5A00]">2027 &middot; nysdot data requests</span></div>
+        <div class="font-display font-medium text-[17px] text-[#0f1722] mt-2">Close the gaps with data NYSDOT already holds</div>
+        <ul class="font-proxima text-[12.5px] leading-[1.65] text-slate-700 mt-2 space-y-1.5 list-disc pl-4">
+          <li><strong>CLEAR/ALIS extract</strong> of MV-104 work-zone-coded crashes with coordinates and KABCO (already used for the AWZSE report) &rarr; spatial-temporal join to the spine &rarr; M5 rates.</li>
+          <li><strong>PIN geometry</strong> (the token-gated ActiveProjects service) or a PIN&harr;contract&harr;TRANSCOM crosswalk; STIP <span class="tny-mono">SW.xls</span> supplies Region/MPO/phase/funding.</li>
+          <li><strong>Intrusion / worker-injury</strong> records (M6) and <strong>WZTC QA ratings</strong> (F1) as annual feeds.</li>
+          <li><strong>AWZSE speed distributions</strong> as a speed-behaviour measure for enforced zones.</li>
+          <li><strong>Highway Work Permit / lane-closure permit</strong> records for the permitting leg of &sect;630.1008(e)(4).</li>
+          <li>Ask TRANSCOM/Arcadis to <strong>enrich the 511NY WZDx feed</strong> (direction, vehicle impact, lanes, verified dates, LineStrings) and plan a <strong>CWZ</strong> upgrade.</li>
+        </ul>
+      </div>
+      <div class="tny-card p-5">
+        <div class="flex items-center gap-2"><span class="step-n">3</span><span class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#8A3B0C]">2027&ndash;29 &middot; optional purchases</span></div>
+        <div class="font-display font-medium text-[17px] text-[#0f1722] mt-2">Higher-resolution and surrogate data, if Tier 1 shows the need</div>
+        <ul class="font-proxima text-[12.5px] leading-[1.65] text-slate-700 mt-2 space-y-1.5 list-disc pl-4">
+          <li><strong>Connected-vehicle hard braking</strong> (INRIX / StreetLight / Arity, or a TETC / pooled-fund buy) for sampled significant projects, per Purdue&rsquo;s &minus;0.25 g weekly-change method <span class="cite">[<a class="tny-link" href="./references/Purdue_INDOT_Continued_Deployment_WZ_Analytics.md">JTRP</a>]</span> &mdash; only if M4 proves insufficient.</li>
+          <li><strong>XD-resolution probe data</strong> for project-tier queues where TMCs are long (rural Interstates), per VDOT <span class="cite">[<a class="tny-link" href="./references/FHWA_HOP-19-051_Probe_Data_WZ_Mobility_PM.md">HOP-19-051</a>]</span>; or CATT&rsquo;s PDA Work Zone Performance Reporting tool as benchmark/alternative <span class="cite">[<a class="tny-link" href="./references/CATT_RITIS_PDA_WZ_Performance_Reporting.md">CATT</a>]</span>.</li>
+          <li><strong>Smart-work-zone device logs</strong> (queue warning) on TMPs for significant projects.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="tny-card tny-card-bone p-5 mt-5">
+      <div class="font-display font-medium text-[15px] text-[#0f1722]">Why this and not the alternatives</div>
+      <div class="overflow-x-auto mt-2">
+      <table class="tny">
+        <thead><tr><th class="txt" style="width:34%">Option</th><th class="txt">Assessment</th></tr></thead>
+        <tbody>
+          <tr><td class="txt"><strong>A. NPMRDS &times; TRANSCOM in AVAIL/DMS</strong> <span class="pill pill-ink ml-1">recommended</span></td><td class="txt">Rule-listed measures; FHWA-endorsed data; both datasets and the join already held; extends dashboards already built; zero data cost; annual and weekly cadence possible; the methodology page doubles as the documented approach. Weaknesses: TMC granularity for project-level queues; TRANSCOM activity-data fidelity.</td></tr>
+          <tr><td class="txt">B. CATT RITIS PDA Work Zone Performance Reporting</td><td class="txt">Mature and target-based, but needs NYSDOT&rsquo;s own INRIX/HERE contract, sits outside NYSDOT&rsquo;s DMS reporting, and still needs the same work-zone spine. Keep as benchmark.</td></tr>
+          <tr><td class="txt">C. Connected-vehicle-first (Purdue model)</td><td class="txt">Best safety surrogate; but paid data, ~5% penetration, thin overnight, vendor churn after Wejo/Otonomo; the preamble says it is not required. Tier 3.</td></tr>
+          <tr><td class="txt">D. Field sensors / smart work zones only</td><td class="txt">Project-level only; cannot produce statewide annual series. Complement, not core.</td></tr>
+          <tr><td class="txt">E. Status quo (WZTC quality ratings)</td><td class="txt">Satisfies &ldquo;field observations&rdquo; but not &sect;630.1006(b)&rsquo;s outcome measures. Insufficient.</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── §05 the data ────────────────────────────────────────────────── -->
+  <section class="py-11 border-b border-zinc-950/5">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 05</span>
+      <span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">The data, graded against the rule&rsquo;s four families</h2>
+    <p class="font-proxima text-[13.5px] leading-[1.7] text-slate-700 mt-3 max-w-[860px]">
+      Full inventory with audit numbers: <a class="tny-link" href="./04_datasets.md">04_datasets.md</a>. Three findings from the
+      audit changed the recommendation.
+    </p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 mt-6">
+      <div class="tny-card p-5">
+        <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#B45309]">finding 1 &middot; indicator data</div>
+        <div class="font-display font-medium text-[16px] text-[#0f1722] mt-1.5">The 511NY WZDx feed <em>is</em> TRANSCOM &mdash; and it is thin</div>
+        <p class="font-proxima text-[12.5px] leading-[1.65] text-slate-700 mt-2">
+          Snapshot 2026-09-08: <strong>6,232</strong> active features, publisher Arcadis, <span class="tny-mono">data_source_id: TRANSCOM</span>
+          &mdash; the same store AVAIL holds as source 956/1947. Geometry is MultiPoint (start/end only);
+          <span class="tny-mono">direction</span>, <span class="tny-mono">vehicle_impact</span>, <span class="tny-mono">location_method</span>
+          are &ldquo;unknown&rdquo; on <strong>100%</strong>; lane records on <strong>0</strong>; all start dates unverified; schedules are free text.
+          Our internal copy (lanes affected, direction, <span class="tny-mono">tmclist</span>) is richer than the public feed.
+        </p>
+        <p class="font-proxima text-[11.5px] leading-[1.6] text-slate-500 mt-2"><span class="cite">[<a class="tny-link" href="./references/NY511_wzdx_sample_2026-09-08.md">WZDx audit</a>, <a class="tny-link" href="./references/USDOT_WZDx_Feed_Registry.md">registry</a>]</span></p>
+      </div>
+      <div class="tny-card p-5">
+        <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#0B6B44]">finding 2 &middot; crash data</div>
+        <div class="font-display font-medium text-[16px] text-[#0f1722] mt-1.5">NYS open crash data carries a work-zone flag</div>
+        <p class="font-proxima text-[12.5px] leading-[1.65] text-slate-700 mt-2">
+          <span class="tny-mono">traffic_control_device</span> &isin; Construction / Maintenance / Utility Work Area (MV-104A codes 12/13/14).
+          Statewide: <strong>1,289 &middot; 1,220 &middot; 1,331 &middot; 1,384</strong> crashes in 2021&ndash;24; four-year total 5,224 &mdash;
+          3,895 PDO &middot; 1,020 PD+injury &middot; 299 injury &middot; <strong>10 fatal</strong>; <strong>56%</strong> carry a DOT reference marker; no lat/long.
+          Consistent with the AWZSE report&rsquo;s ~1,400/yr. CLEAR remains the source of record for a crash&cap;zone join.
+        </p>
+        <div class="mt-3 space-y-1.5">
+          <div class="flex items-center gap-2"><span class="font-mono text-[10px] w-10 text-slate-500">2021</span><div class="bar" style="width:93%"></div><span class="font-mono text-[10px] text-slate-500">1,289</span></div>
+          <div class="flex items-center gap-2"><span class="font-mono text-[10px] w-10 text-slate-500">2022</span><div class="bar" style="width:88%"></div><span class="font-mono text-[10px] text-slate-500">1,220</span></div>
+          <div class="flex items-center gap-2"><span class="font-mono text-[10px] w-10 text-slate-500">2023</span><div class="bar" style="width:96%"></div><span class="font-mono text-[10px] text-slate-500">1,331</span></div>
+          <div class="flex items-center gap-2"><span class="font-mono text-[10px] w-10 text-slate-500">2024</span><div class="bar bar-warn" style="width:100%"></div><span class="font-mono text-[10px] text-slate-500">1,384</span></div>
+        </div>
+        <p class="font-proxima text-[11.5px] leading-[1.6] text-slate-500 mt-2"><span class="cite">[<a class="tny-link" href="./references/NYS_OpenData_Crashes.md">data.ny.gov e8ky-4vqe</a>]</span> &middot; coded flags misclassify &gt;1 in 3 in tests <span class="cite">[<a class="tny-link" href="./references/USU_Spatial_Misclassification_WZ_Crashes.md">USU</a>]</span> &mdash; validate spatially.</p>
+      </div>
+      <div class="tny-card p-5">
+        <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#8A5A00]">finding 3 &middot; project identity</div>
+        <div class="font-display font-medium text-[16px] text-[#0f1722] mt-1.5">STIP gives PINs, not geometry; NYSDOT&rsquo;s project map is token-gated</div>
+        <p class="font-proxima text-[12.5px] leading-[1.65] text-slate-700 mt-2">
+          The STIP list is one row per PIN &times; phase &times; fund year with Region, MPO, county and description &mdash; the project
+          universe for the review sample &mdash; but no location or closure dates. NYSDOT&rsquo;s ActiveProjects MapServer (behind
+          &ldquo;Projects in Your Neighborhood&rdquo;) returns <span class="tny-mono">499 Token Required</span>. TRANSCOM events are
+          <em>closures</em>, not projects. The PIN&harr;event link is the one data request that makes the 2030 sample deterministic.
+        </p>
+        <p class="font-proxima text-[11.5px] leading-[1.6] text-slate-500 mt-2"><span class="cite">[<a class="tny-link" href="./references/NYSDOT_STIP_Project_List.md">STIP</a>, <a class="tny-link" href="./references/NYSDOT_GIS_ActiveProjects_and_services.md">GIS</a>]</span></p>
+      </div>
+    </div>
+
+    <h3 class="font-display font-medium text-[16px] text-[#0f1722] mt-8 mb-2">Fit-to-rule matrix</h3>
+    <div class="tny-card overflow-x-auto">
+      <table class="tny">
+        <thead><tr><th class="txt" style="width:170px">&sect;630.1008(c) family</th><th class="txt">Free / held now</th><th class="txt">Needs a data request to NYSDOT</th><th class="txt">Needs a purchase</th></tr></thead>
+        <tbody>
+          <tr><td class="txt">Field observations</td><td class="txt">&mdash;</td><td class="txt">WZTC QA ratings (NYSDOT)</td><td class="txt">&mdash;</td></tr>
+          <tr><td class="txt">Crash</td><td class="txt">NYS open crash data (TCD flag)</td><td class="txt">CLEAR extract with coordinates; intrusion / worker-injury records</td><td class="txt">&mdash;</td></tr>
+          <tr><td class="txt">Safety surrogate</td><td class="txt"><strong>NPMRDS speed differentials</strong>; Waze alerts (via 511NY)</td><td class="txt">AWZSE speed distributions</td><td class="txt">CV hard braking</td></tr>
+          <tr><td class="txt">Operational</td><td class="txt"><strong>NPMRDS &times; TRANSCOM</strong> (speed, TT, delay, queue proxy, duration) &mdash; 14.0B rows 2017&rarr;2026-05; 3.73M events 2015&rarr;live</td><td class="txt">&mdash;</td><td class="txt">XD-resolution probe (project tier, optional)</td></tr>
+          <tr><td class="txt">Exposure</td><td class="txt">TRANSCOM lanes/durations &times; NPMRDS-meta AADT; STIP PINs</td><td class="txt">PIN geometry; HWP / lane-closure permits</td><td class="txt">&mdash;</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── §06 peers ───────────────────────────────────────────────────── -->
+  <section class="py-11 border-b border-zinc-950/5">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 06</span>
+      <span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">What peer states do</h2>
+    <p class="font-proxima text-[13.5px] leading-[1.7] text-slate-700 mt-3 max-w-[860px]">
+      Fifteen states surveyed (<a class="tny-link" href="./03_state_practice.md">03_state_practice.md</a>). They converge on
+      <strong>threshold-exceedance measures computed from probe speeds against a pre-construction baseline</strong>, crash counts
+      validated spatially, two tiers (programmatic + project), and weekly operational snapshots rolled into annual series.
+    </p>
+    <div class="tny-card overflow-x-auto mt-5">
+      <table class="tny">
+        <thead><tr><th class="txt" style="width:120px">State</th><th class="txt">Mobility threshold</th><th class="txt">Safety</th><th class="txt">Data</th><th class="txt" style="width:150px">Note</th></tr></thead>
+        <tbody>
+          <tr><td class="txt"><strong>Ohio</strong></td><td class="txt">predicted queue &le; <strong>0.75 mi</strong>; in-zone speed &lt; <strong>35 mph</strong> monitored</td><td class="txt">&frac12;-mile-segment before/after crash analysis</td><td class="txt">INRIX, CCTV, permitted lane-closure system</td><td class="txt"><span class="cite">[<a class="tny-link" href="./references/FHWA_HOP-19-034_Policy_Driven_WZ_Mobility_PM_Ohio.md">HOP-19-034</a>]</span></td></tr>
+          <tr><td class="txt"><strong>Virginia</strong></td><td class="txt">macro delay by source (WZ = 4&ndash;8% of statewide delay); micro project queues</td><td class="txt">dashboard</td><td class="txt">INRIX TMC + XD/Sub-XD via RITIS PDA</td><td class="txt">TMC too coarse for project queues <span class="cite">[<a class="tny-link" href="./references/FHWA_HOP-19-051_Probe_Data_WZ_Mobility_PM.md">HOP-19-051</a>]</span></td></tr>
+          <tr><td class="txt"><strong>Maryland</strong></td><td class="txt">delay, connected-queue length, user delay cost</td><td class="txt">CHART incidents nearby</td><td class="txt">INRIX via RITIS (WZPMA)</td><td class="txt">built for Subpart J <span class="cite">[<a class="tny-link" href="./references/MDOT_SHA_2016_WZ_Performance_Monitoring_Report.md">MD-16</a>]</span></td></tr>
+          <tr><td class="txt"><strong>Iowa</strong></td><td class="txt">congestion events; avg queue 1.1&rarr;0.8 mi; % traffic encountering a queue; draft <strong>4 min/veh</strong></td><td class="txt">WZ crashes per WZ-VMT; 7 fatal/yr</td><td class="txt">InTrans sensors (24 sites), INRIX</td><td class="txt">policy revised Dec 2025 <span class="cite">[<a class="tny-link" href="./references/FHWA_Data_Driven_WZ_Process_Review_Iowa_Case_Study.md">HOP-21-052</a>]</span></td></tr>
+          <tr><td class="txt"><strong>Illinois</strong></td><td class="txt">queues &le; <strong>1.5 mi</strong> beyond pre-existing</td><td class="txt">WZ crashes by facility type</td><td class="txt">RITIS PDA; GIS &rarr; dashboards; CWZ feed</td><td class="txt"><span class="cite">[<a class="tny-link" href="./references/FHWA_Data_Driven_WZ_Program_Review_Illinois_Case_Study.md">HOP-23-007</a>]</span></td></tr>
+          <tr><td class="txt"><strong>Michigan</strong></td><td class="txt">&le; <strong>10 minutes</strong> delay per project</td><td class="txt">crash review</td><td class="txt">probe</td><td class="txt"><span class="cite">[<a class="tny-link" href="./references/MDOT_Michigan_WZ_Safety_Mobility_Manual.md">MDOT</a>]</span></td></tr>
+          <tr><td class="txt"><strong>Montana</strong></td><td class="txt">significant delay &gt; <strong>15 min</strong></td><td class="txt">% fatal WZ crash evaluations completed</td><td class="txt">project records</td><td class="txt">review of &le;25 significant projects</td></tr>
+          <tr><td class="txt"><strong>North Carolina</strong></td><td class="txt">weekly one-page probe snapshots</td><td class="txt">6,732 WZ crashes / 33 fatal per yr (5-yr avg)</td><td class="txt">probe; WZDx 4.2</td><td class="txt"><span class="cite">[<a class="tny-link" href="./references/NCDOT_2023_WZ_Safety_Mobility_Process_Review.md">2023 review</a>]</span></td></tr>
+          <tr><td class="txt"><strong>Indiana</strong></td><td class="txt">queue miles/duration; mile-hours &lt; 45 mph</td><td class="txt"><strong>hard braking</strong> (&minus;0.25 g); ~147 per crash</td><td class="txt">CV trajectories (StreetLight/Omnitracs)</td><td class="txt">weekly dashboards <span class="cite">[<a class="tny-link" href="./references/Purdue_INDOT_Continued_Deployment_WZ_Analytics.md">JTRP</a>]</span></td></tr>
+          <tr><td class="txt"><strong>Texas</strong></td><td class="txt">TT &gt; <strong>1.25&times;</strong> baseline = underperforming hour</td><td class="txt">&mdash;</td><td class="txt">NPMRDS (FHWA case)</td><td class="txt"><span class="cite">[<a class="tny-link" href="./references/FHWA_HOP-20-029_Measuring_WZ_Mobility_NPMRDS.md">HOP-20-029</a>]</span></td></tr>
+          <tr class="bg-[#F5F1E8]/60"><td class="txt"><strong>New York today</strong></td><td class="txt">none quantified in HDM Ch. 16; AVAIL&rsquo;s TSMO dashboard computes WZ delay</td><td class="txt">AWZSE biennial report: WZ crashes, intrusions, speed/violations; WZTC QA ratings</td><td class="txt">CLEAR/ALIS; TRANSCOM; NPMRDS; cameras</td><td class="txt">has the data, lacks the declared measures</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="tny-card tny-card-ink p-5 mt-5">
+      <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#BFD3F2]">the literature, in one paragraph</div>
+      <p class="font-proxima text-[13px] leading-[1.7] text-slate-100 mt-2">
+        FHWA&rsquo;s measurement canon (2011&ndash;2021) settled the taxonomy &mdash; exposure, safety, mobility &mdash; and the finding that
+        probe speeds are adequate for programmatic mobility reporting while the binding constraint is knowing when and where the
+        work zone actually was <span class="cite">[<a class="tny-link" href="./references/FHWA_HOP-13-011_WZ_Data_Needs.md">HOP-13-011</a>, <a class="tny-link" href="./references/FHWA_HOP-13-043_WZ_Perf_Measurement_Probe_Data.md">HOP-13-043</a>]</span>.
+        <strong>No NCHRP product targets the 2024 rule&rsquo;s measurement directly</strong>; the closest are FHWA&rsquo;s Iowa and Illinois
+        data-driven review case studies and the SWZDI pooled fund&rsquo;s 2025 WZPERFOMAT tool, which implements exactly the
+        &ldquo;work-zone feed &times; probe speeds &times; crash records&rdquo; architecture AVAIL already operates
+        <span class="cite">[<a class="tny-link" href="./references/SWZDI_2025_Analytical_Tool_WZ_Performance.md">SWZDI 2025</a>]</span>.
+        Connected-vehicle hard braking is the gold-standard safety surrogate but is paid data; the only peer-reviewed paper written
+        to the rule is Purdue&rsquo;s (Jan 2026), now applied to 101 work zones in 9 states
+        <span class="cite">[<a class="tny-link" href="./references/MDPI_FutureTransp_2026_WZ_Perf_Measures_CV_Data.md">Sakhare 2026</a>]</span>.
+        Full review: <a class="tny-link" href="./02_literature_review.md">02_literature_review.md</a>.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── §07 limitations ─────────────────────────────────────────────── -->
+  <section class="py-11 border-b border-zinc-950/5">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 07</span>
+      <span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Limitations to state up front &mdash; and how we handle them</h2>
+    <div class="tny-card overflow-x-auto mt-5">
+      <table class="tny">
+        <thead><tr><th class="txt" style="width:30%">Limitation</th><th class="txt">Handling</th></tr></thead>
+        <tbody>
+          <tr><td class="txt"><strong>TRANSCOM is closures, not projects</strong>, and includes permit/utility work</td><td class="txt">De-duplicate recurring chains; classify by <span class="tny-mono">nysdot_sub_category</span>; reconcile to PINs for the review sample; report utility/permit work separately (a permitting finding the review must make anyway).</td></tr>
+          <tr><td class="txt"><strong>Work-zone extents</strong>: <span class="tny-mono">tmclist</span> on ~50% of events; others only start/end points</td><td class="txt">Snap points to the TMC network along the facility; flag extent confidence; expect measured impact to grow as extents improve (Illinois observed this).</td></tr>
+          <tr><td class="txt"><strong>TMC resolution</strong></td><td class="txt">Programmatic reporting is fine; project-level queue lengths are estimates (every source). Report queue as range / 95th pct; use XD or devices for a few flagship projects if enforcement-grade numbers are wanted.</td></tr>
+          <tr><td class="txt"><strong>NHS-only speeds</strong></td><td class="txt">Off-NHS work zones get exposure and crash measures but no speed measures. State the coverage; it matches every peer using NPMRDS/INRIX TMC.</td></tr>
+          <tr><td class="txt"><strong>Crash location</strong>: open data has no coordinates (56% ref-marker)</td><td class="txt">Tier 2 CLEAR extract; until then statewide/county series plus a ref-marker-geocoded subset.</td></tr>
+          <tr><td class="txt"><strong>Latency</strong>: NPMRDS ~2 weeks; event&times;TMC delay is batch</td><td class="txt">Annual/monthly reporting, not real-time; weekly snapshots feasible from raw NPMRDS.</td></tr>
+          <tr><td class="txt"><strong>Baseline contamination</strong> by prior zones, incidents, weather</td><td class="txt">Exclude epochs overlapping other TRANSCOM events; use 12-month same-hour/day-type medians (HOP-20-029).</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── §08 sequencing + questions ──────────────────────────────────── -->
+  <section class="py-11">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 08</span>
+      <span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Sequencing, and questions for NYSDOT</h2>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-6">
+      <div class="tny-card overflow-x-auto">
+        <table class="tny">
+          <thead><tr><th class="txt" style="width:120px">When</th><th class="txt">Deliverable</th></tr></thead>
+          <tbody>
+            <tr><td class="txt">Sep&ndash;Oct 2026</td><td class="txt">Method spec; TRANSCOM work-zone spine (dedupe, extents, significant-candidate flag); baseline engine on NPMRDS</td></tr>
+            <tr><td class="txt">Oct&ndash;Nov 2026</td><td class="txt">M1&ndash;M4, E1&ndash;E3 for 2024&ndash;2026; open-crash M5 series; thresholds calibrated with NYSDOT WZ program staff</td></tr>
+            <tr><td class="txt">Nov&ndash;Dec 2026</td><td class="txt">DMS Work Zone Performance surface (mobility extension + safety page + methodology page); draft policy language for HDM Ch. 16 &rarr; <strong>Dec 31 2026 compliance</strong></td></tr>
+            <tr><td class="txt">2027</td><td class="txt">CLEAR extract + PIN geometry requests; crash join; intrusion/QA feeds; WZDx enrichment with TRANSCOM; first annual monitoring report (CY 2025&ndash;26)</td></tr>
+            <tr><td class="txt">2028&ndash;29</td><td class="txt">Annual reports; Tier 3 decision on CV/XD data; project-tier deep dives on the sampled significant projects</td></tr>
+            <tr><td class="txt"><strong>2030</strong></td><td class="txt">Programmatic review data package (2025&ndash;2029) to FHWA by <strong>Dec 31 2030</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tny-card tny-card-bone p-5">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">Questions for NYSDOT</div>
+        <ol class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-2 space-y-1.5 list-decimal pl-5">
+          <li>Which office owns the Subpart J policy update (HDM Ch. 16 vs a standalone policy), and who is FHWA NY Division&rsquo;s counterpart?</li>
+          <li>Can we get the CLEAR work-zone-coded crash extract (with coordinates) and the intrusion series that feed the AWZSE report?</li>
+          <li>Can we get PIN geometry (ActiveProjects) or a PIN&harr;TRANSCOM/contract crosswalk?</li>
+          <li>Preferred thresholds &mdash; 35 mph in-zone? 10-min delay? 0.75-mi queue? We will show the exceedance share each implies on 2024&ndash;2026 data.</li>
+          <li>Should the 511NY WZDx feed be enriched (direction, lanes, verified dates) as part of this, and is there appetite for a CWZ upgrade with TRANSCOM/Arcadis?</li>
+          <li>Is NYSDOT already in Purdue&rsquo;s multi-state CV work-zone program or TETC&rsquo;s probe-data purchasing? That changes Tier 3 economics.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="tny-card tny-card-tint p-5 mt-5">
+      <div class="font-display font-medium text-[15px] text-[#0f1722]">Companion documents in this folder</div>
+      <ul class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-2 space-y-1">
+        <li><a class="tny-link" href="./00_README.md">00_README.md</a> &mdash; index and headline findings</li>
+        <li><a class="tny-link" href="./01_regulation_23cfr630J.md">01_regulation_23cfr630J.md</a> &mdash; the rule clause by clause, preamble rulings, compliance calendar</li>
+        <li><a class="tny-link" href="./02_literature_review.md">02_literature_review.md</a> &mdash; FHWA canon, NCHRP/TRB, SWZDI, connected-vehicle research, data standards</li>
+        <li><a class="tny-link" href="./03_state_practice.md">03_state_practice.md</a> &mdash; fifteen-state survey and where New York stands</li>
+        <li><a class="tny-link" href="./04_datasets.md">04_datasets.md</a> &mdash; dataset inventory with audit numbers</li>
+        <li><a class="tny-link" href="./05_recommendation_report.md">05_recommendation_report.md</a> &mdash; this report in markdown</li>
+        <li><a class="tny-link" href="./references/_INDEX.md">references/_INDEX.md</a> &mdash; 67 source notes over 119 saved files; <a class="tny-link" href="./references/_DOWNLOAD_LINKS.md">_DOWNLOAD_LINKS.md</a> for the few not downloadable</li>
+      </ul>
+    </div>
+
+    <p class="font-proxima text-[11.5px] leading-[1.6] text-slate-500 mt-6 border-t border-zinc-950/10 pt-4">
+      Compiled 2026-09-08 for
+      <span class="tny-mono">planning/transportny/tasks/current/workzone-safety-mobility-reporting-research.md</span>.
+      Regulatory quotations are verbatim from the eCFR capture in <span class="tny-mono">references/23cfr630_subpartJ_ecfr_2026-09-01.txt</span>;
+      all other claims trace to the local source copies described in the bracketed companion notes. Data audit figures
+      (511NY WZDx feed, data.ny.gov crash tables) were queried live on 2026-09-08 and will drift.
+    </p>
+  </section>
+
+</div>
+</body>
+</html>

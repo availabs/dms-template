@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Routes data · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  measures_and_data--data--routes_data.html · IA page 76 · type data. Phase 3-ii, 2026-09-05.
+  Sources: Route Creation design record npmrds-route-creation.html (revision 1, 2026-09-01: save payload name · description · tmc_array ·
+  tags · metadata {} · created_at/updated_at; points not written; network vintage 2022 / conflation v0_6_0 pinned; 2026-07-23 routing
+  test 2020–2022 only; the § 04 gap table); NPMRDS mockups digest (cross-page facts: Routes Data 32,569 distinct route ids, ~2× duplicated;
+  § 5 picker proposal 2026-08-25: service account owns 55,370 of 73,464 rows); platform skill creating-routes.md (click order stored, route_id
+  in the address is load-bearing, TMC search Add button 2026-07-27, Update Route wording, command-line builder, routing vintage-bound);
+  live Route Creation page 2216258 (one Map section; layer "NPMRDS TMC Network Shapefile - Enhanced V6 2026 pg"; hover tmc) and _controls.md
+  (Reports header counts saved routes from Routes Data; Route Comparison joins Routes Data as route_catalog); tickets 2210869, 2217675;
+  running fix 2172492; start--accounts_and_sessions.html (sign in only to save routes and reports).
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="data" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · data</div>
+          <h1 class="doc-title">Routes data.</h1>
+          <p class="doc-lede">The table of saved routes: one row per route, each a named, ordered list of TMC segments made in the Route Creation tool and read by Reports and Route Comparison. The datasheet for analysts who build routes and developers who read them, including where the table is untidy.</p>
+          <div class="stamps">
+            <span class="type">data</span>
+            <span>applies to · NPMRDS</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="overview">Overview</h2>
+          <p><strong>A route is a named, ordered collection of TMC segments.</strong> A TMC (Traffic Message Channel) segment is one direction of one piece of road, the unit of the NPMRDS network. A route is the input every NPMRDS analysis surface takes. Reports charts a route over time, Route Comparison cross-tabs routes against periods, and the Reports header counts them. The platform stores routes in its own table, catalogued in the Data Manager as "Routes Data".</p>
+          <p>One row is one route. It carries a name, a description, the list of TMC codes in order, a set of tags, an empty metadata object and two timestamps. It carries no geometry beyond the codes and no dates: a route is a place, and the report that uses it owns the time window. Saving a route needs a signed-in account. Reading one does not. A route's address is a link anyone can open.</p>
+          <div class="callout basis"><span class="k">basis</span>Counts on this page are whole-table counts, all owners, at the date given in the sentence. The table changes with every save, so the live counts differ.</div>
+
+          <h2 id="coverage-and-vintage">Coverage and vintage</h2>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Source</th><th>Span</th><th>Lag</th><th>Cadence</th><th>Gaps</th></tr></thead>
+            <tbody>
+              <tr><td>Routes Data</td><td>Every route saved since the tool existed; 32,569 distinct route ids in about 73,464 rows at the August 2026 design-era reading</td><td>None: a save is visible at once</td><td>Continuous, on every save</td><td>Rows are duplicated about 2 to 1. Most rows were written by a service account, not a person. Marker waypoints are not kept</td></tr>
+            </tbody>
+          </table></div>
+          <h3 id="which-network-a-route-belongs-to">Which network a route belongs to</h3>
+          <p>A route pins a network vintage. Its TMC codes are the codes of the map that was on screen when it was saved. The live Route Creation page draws the 2026 network, so a route made by clicking holds 2026-map codes. A route made with markers is matched by a routing service against the 2022 network, the only vintage the service resolves reliably. A July 2026 test near Albany found 2020 to 2022 resolving. The years 2016, 2018 and 2023 to 2026 returned nothing. The vintage is shown on the page as a fixed chip, not a choice.</p>
+          <p>A segment can be split, merged, lengthened or retired between vintages. A route saved against one map can therefore hold a code that a later map no longer carries. A report run on that later year charts one segment fewer. <a href="measures_and_data--concepts--tmc_network_and_vintages.html">The TMC network and its vintages</a> explains the mechanism.</p>
+
+          <h2 id="schema">Schema</h2>
+          <p>The fields the Route Creation tool writes, plus the id the platform assigns. Sample values are shown only where a source records one.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Field</th><th>Type</th><th>Sample value</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>route_id</code></td><td>integer</td><td>—</td><td>The route's id, assigned on the first save. The value Reports and Route Comparison reference, and the value in the Route Creation address (<code>?route_id=</code>). With the id in the address, every save updates that route.</td></tr>
+              <tr><td><code>name</code></td><td>string</td><td>—</td><td>The name typed in the save dialog. Every report that references the route inherits it. There is no per-report rename.</td></tr>
+              <tr><td><code>description</code></td><td>string</td><td>—</td><td>Free text from the save dialog.</td></tr>
+              <tr><td><code>tmc_array</code></td><td>JSON array of strings</td><td>—</td><td>The TMC codes in order, as clicked or as resolved from markers. The only geometry the route carries. Click order is stored as clicked. The tool does not sort into road order.</td></tr>
+              <tr><td><code>tags</code></td><td>JSON array of strings</td><td>—</td><td>Chips from the save dialog in an <code>agency:</code> and <code>user:</code> vocabulary, validated against the groups the saving account belongs to. A new route is seeded with the saver's own tags. Tags carry the grouping a folder would. There is no folder field.</td></tr>
+              <tr><td><code>metadata</code></td><td>JSON object</td><td><code>{}</code></td><td>Always empty. The earlier tool stored start and end dates here. The current tool keeps it empty on purpose because a route carries no dates.</td></tr>
+              <tr><td><code>created_at</code></td><td>timestamp</td><td>—</td><td>Stamped by the tool when the route is first saved. Not rewritten on update.</td></tr>
+              <tr><td><code>updated_at</code></td><td>timestamp</td><td>—</td><td>Stamped by the tool on every save.</td></tr>
+            </tbody>
+          </table></div>
+          <p>Marker waypoints (<code>points</code>) are not written. A route drawn with markers saves as a flat TMC list and reopens in TMC click mode with no pins. Editing it later means editing segments, not dragging markers.</p>
+
+          <h2 id="how-it-is-produced">How it is produced</h2>
+          <ol class="steps">
+            <li>The Route Creation tool is reached from the Reports header's <span class="ui">New route</span> action. The page is one map with the tool drawn over it. A reader who cannot find the tool is looking for this action. The question was asked in August 2026.</li>
+            <li>In <span class="ui">TMC Click</span> mode, each click on a segment adds it to the route. The TMC search box adds a segment by its 9-character code once the code resolves. The list shows each segment's code, miles and road, with a running total.</li>
+            <li>In <span class="ui">Markers</span> mode, two or more dropped waypoints are matched to a TMC sequence by a routing service against the 2022 network. Dragging a waypoint re-resolves the whole path.</li>
+            <li><span class="ui">Save Route</span> opens a dialog with <span class="ui">Name</span>, <span class="ui">Description</span> and <span class="ui">Tags</span>. Saving writes one row: name, description, the TMC array, the tags, an empty metadata object and the timestamps. The page then navigates to the new route's address, so the button reads <span class="ui">Update Route</span> and later saves overwrite that row.</li>
+            <li>Most rows were not drawn by a person. At the August 2026 design-era reading a service account owned 55,370 of 73,464 rows, generated in bulk. A command-line builder used by platform staff writes the same row shape and, unlike the map tool, sorts segments into road order.</li>
+          </ol>
+
+          <h2 id="uses-and-limits">Uses and limits</h2>
+          <p>Reports references routes by id and binds each graph to the routes assigned to it. Route Comparison's route picker reads the same table. The Reports header's saved-routes count is a distinct count of route ids in it. The table's limits are these.</p>
+          <ul>
+            <li><strong>Duplication.</strong> About 73,464 rows carry 32,569 distinct route ids, so the same id appears in more than two rows on average. This is data debt, not a feature. A picker may show one route twice, and a count of rows is not a count of routes.</li>
+            <li><strong>Stale segments.</strong> A route's TMC array can go stale when the network vintage changes, as described above. A route built for one year is not automatically valid for another.</li>
+            <li><strong>Markers are not kept.</strong> Only the TMC array is saved. Waypoints do not round-trip. In marker mode the page also does not show its start and end markers, reported in September 2026.</li>
+            <li><strong>Routing gaps.</strong> The routing service can return a blank segment in a resolved path. A May 2026 report names northbound I-787 near Albany. The service resolves the 2022 network only, and the year cannot be chosen.</li>
+            <li><strong>Overwrite by address.</strong> With a route id in the address every save is an update, with no confirmation dialog. The button and the dialog say so, in red. Exploring from an existing route's address edits that route.</li>
+            <li><strong>No dates, no folders.</strong> A route is a geometry. The time window belongs to the report's route instance. Grouping belongs to tags.</li>
+          </ul>
+
+          <h2 id="distribution">Distribution</h2>
+          <ul>
+            <li><strong>Your routes.</strong> Saving needs sign-in. The routes you save are yours and carry your <code>user:</code> and <code>agency:</code> tags. The Route Creation page's <span class="ui">All routes</span> link, the Reports pickers and Route Comparison's picker list saved routes. See <a href="start--accounts_and_sessions.html">Sign in, sessions and accounts</a>.</li>
+            <li><strong>Sharing.</strong> A route's address (<code>/route_creation?route_id=&lt;id&gt;</code>) loads the route for anyone who opens it.</li>
+            <li><strong>Bulk download.</strong> No page offers a download of the routes table. Whether the table can be read through the Data Manager API without signing in is not documented.</li>
+          </ul>
+
+          <h2 id="where-this-appears">Where this appears</h2>
+          <div class="where">
+            <a href="npmrds--routes--create.html">Create a route</a>
+            <a href="npmrds--routes--manage.html">Find, edit, tag and share routes</a>
+            <a href="npmrds--reports--build.html">Build and edit a report</a>
+            <a href="npmrds--route_comparison.html">Route Comparison</a>
+            <a href="measures_and_data--concepts--tmc_network_and_vintages.html">The TMC network and its vintages</a>
+          </div>
+
+          <h2 id="revision-log">Revision log</h2>
+          <ul>
+            <li>2026-05-14 · a blank segment in a marker-resolved path recorded as a running fix (northbound I-787 near Albany).</li>
+            <li>2026-07-23 · routing service tested: only 2020 to 2022 resolved near Albany. The network vintage fixed at 2022.</li>
+            <li>2026-07-27 · the TMC search box gained an <span class="ui">Add</span> button. The <span class="ui">Update Route</span> wording added whenever a route id is in the address.</li>
+            <li>2026-09-01 · the Route Creation page published with validated tags: the <code>agency:</code> and <code>user:</code> vocabulary and suggestion chips replace free-text tags.</li>
+            <li>2026-09-05 · this datasheet created.</li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Route Creation design record, revision 1 (2026-09-01): "What the save writes" (name · description · tmc_array · tags · metadata always {} · created_at/updated_at stamped client-side · points not written); the network-vintage chip "2022 · conflation v0_6_0 · pinned"; the 2026-07-23 routing test ("only 2020–2022 resolved near Albany; 2016, 2018 and 2023–2026 returned no match"); the § 04 gap table (waypoint persistence open; folder and dates deferred; tag validation shipped 2026-09-01).</li>
+            <li>NPMRDS design digest (2026-09-04), cross-page facts: "Routes Data … 32,569 distinct route_ids; ~2× duplicated, data debt"; § 5 picker proposal (2026-08-25): "service account … owns 55,370 of 73,464 rows".</li>
+            <li>Platform route-building guide (creating-routes): the map tool stores click order and the builder sorts to road order; "route_id in the URL is load-bearing"; the Update Route wording and the search-box Add button of 2026-07-27; routing verification is vintage-bound to 2020–2022.</li>
+            <li>Live Route Creation page (published 2026-09-01): one Map section whose layer is the 2026 enhanced TMC network, hover field <code>tmc</code>. Live Reports header: saved-routes count computed as a distinct count of <code>route_id</code> in Routes Data. Live Route Comparison: Routes Data joined as its route catalogue.</li>
+            <li>Ticket 2210869 (2026-08-11): "I can't find the tools needed to create a new route". Ticket 2217675 (2026-09-02): marker mode "doesn't show start and end markers". Running fix 2172492 (2026-05-14): "Blank TMC on routing (NB 787 near albany)".</li>
+            <li>Sign in, sessions and accounts page: sign in only to save routes and reports.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 3)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--data--tmc_network.html">TMC network</a>
+          <a href="measures_and_data--concepts--tmc_network_and_vintages.html">The TMC network and its vintages</a>
+          <a href="npmrds--routes--create.html">Create a route</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

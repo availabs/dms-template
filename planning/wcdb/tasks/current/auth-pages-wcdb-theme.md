@@ -1,6 +1,6 @@
 # Auth pages on the WCDB theme — login first
 
-**Project:** WCDB · **Topic:** themes · **Status:** PHASE 2 DONE, PHASE 3 BLOCKED on the live write (needs the user's go-ahead in-session) · **Started:** 2026-09-12
+**Project:** WCDB · **Topic:** themes · **Status:** LIVE — login / signup / forgot / users verified in the browser 2026-09-13; groups / profile verified too; light mode + wrong-password error strip left to eyeball; mockups still show the notch (rail adopted, see Decisions) · **Started:** 2026-09-12
 
 ## Objective
 
@@ -132,6 +132,12 @@ button, an *or* hairline divider, **Continue with SUNY SSO**, and a hairline-top
   and turns `/auth/signup` into the disabled notice — the station's call.
 - **Manage pages are in scope** (users / groups / profile), designed without a rail for
   the reason under "The manage pages' frame".
+- **Rail adopted (2026-09-13).** The pattern was configured with a compact sideNav rail
+  (Logo top, UserMenu bottom, topNav none) rather than the mockups' logo-only notch. It works
+  for both surfaces — the rail carries Profile / Users / Groups on the manage pages via
+  `manage.menuItems`, is empty-but-branded on login, and hides below `lg`. The auth mockups
+  (`login.html`, `auth-*.html`, `admin/users|groups|profile.html`) still draw the notch:
+  **follow-up — redraw their chrome to the rail**, content unchanged.
 
 ## Open decision (was: asked before Phase 1)
 
@@ -198,14 +204,32 @@ button, an *or* hairline divider, **Continue with SUNY SSO**, and a hairline-top
 - [ ] `disable_signup` — only if the station decides to close self sign-up.
 - [ ] Mint / delete the token as in `wcdb-live-writes` memory: three separate calls.
 
+## Phase 3 — DONE (pattern set via the admin UI; the rest landed as theme keys)
+
+The pattern carries `selectedTheme: "wcdb"` + the rail options. The two things the plan
+wanted on the pattern (`activeStyle: 1` for the manage layout, the manage nav) became theme
+keys instead — `auth.authPages.manageLayoutStyle: "app"` and `manage.menuItems` — so the
+pattern row needs nothing more and the theme owns the whole look.
+
+Library follow-ups that surfaced on the first live render, all BC and recorded in
+`src/dms/planning/tasks/completed/auth-pages-themeable-chrome.md`:
+- `manageAuthConfig` hardcoded `selectedTheme: 'mny_admin'` — the manage pages rendered
+  MitigateNY on every site. Now the pattern's theme, `mny_admin` only as the no-theme fallback.
+- `manageLayoutStyle` / `manageLayoutGroupStyle` / `manage.menuItems` (above).
+- `manage.rowAction` / `modalAction` / `headerInput` — the View As / reset buttons, dialog
+  submits and header search inputs took the library's slate Button / full-size input.
+- `table.stickyHeader` / `stickyBottom` — `Virtual.jsx` hardcoded `bg-white` on the sticky
+  bands; on a dark table that was a white bar. Any dark theme wants these.
+
 ## Phase 4 — Verify
 
 - [ ] `node scripts/card-shot.mjs --name login --mockup ".../pages/login.html"
       --mockup-sel '[data-dms-section="card:login-form"]' --live
       http://localhost:5173/auth/login --live-sel form --out scratchpad/wcdb/auth`
       (signed out is fine). Then the same for forgot / reset / signup.
-- [ ] Read the live form's `class` attribute: if it is still the
-      `patterns/auth/defaultTheme.js` string, the pattern isn't on `wcdb` (skill §6).
+- [x] Live login / signup / forgot render the theme (1440 + 390, dark). Manage `users`
+      verified in the signed-in browser: single column, rail Profile / Users / Groups, card-tone
+      sticky header, ghost row actions, compact header inputs.
 - [ ] 390px and 1440px; light and dark.
 - [ ] A real sign-in still works (token stored, redirect lands where decision 4 says);
       a wrong password shows the error strip legibly on the dark card.

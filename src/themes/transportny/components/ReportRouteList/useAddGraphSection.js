@@ -4,8 +4,9 @@ import { getRegisteredComponents } from '../../../../dms/packages/dms/src/patter
 import { reconcileComparisonSeriesColumnOnState } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/useDataWrapperAPI';
 import { CMSContext } from '../../../../dms/packages/dms/src/patterns/page/context';
 import { applyMeasurePickToState } from '../MeasurePicker';
-import { BASE_SOURCE } from '../MeasurePicker/composeMeasureConfig';
-import { composeMapSectionConfig } from '../MeasurePicker/composeMapConfig';
+import { BASE_SOURCE, applyDefaultLegendPosition, composeSectionTitlePatch } from '../MeasurePicker/composeMeasureConfig';
+import { composeMapSectionConfig, composeMapSectionTitlePatch } from '../MeasurePicker/composeMapConfig';
+import { DEFAULT_GRAPH_SECTION_BORDER, DEFAULT_GRAPH_SECTION_STYLE } from './reportSectionDefaults';
 
 const AVL_GRAPH_ELEMENT_TYPE = 'AVL Graph';
 const SPREADSHEET_ELEMENT_TYPE = 'Spreadsheet';
@@ -55,6 +56,10 @@ export function useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit, a
 
     let elementType;
     let state;
+    // `{ title?, description? }` for the new section row — the card's own auto-composed name and
+    // meta line. Filled by whichever branch below actually composes the pick, since Map and the
+    // chart/table types use different composers.
+    let sectionPatch = {};
     if (pick.graphType === 'Map') {
       // Tier 5C/5I (report-authoring-ux-overhaul.md, 2026-08-20): Map's compose shape is
       // genuinely different from every chart/table entry point below — no columns/join/
@@ -66,6 +71,7 @@ export function useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit, a
       elementType = MAP_ELEMENT_TYPE;
       state = composeMapSectionConfig({ measureKey: pick.measure, apiHost });
       state.display._measurePick = pick;
+      sectionPatch = composeMapSectionTitlePatch({ currentTitle: '', priorMeasureKey: undefined, measureKey: pick.measure }) || {};
     } else {
       elementType = ELEMENT_TYPE_BY_GRAPH_TYPE[pick.graphType] || AVL_GRAPH_ELEMENT_TYPE;
       const RegisteredComponents = getRegisteredComponents();
@@ -75,6 +81,11 @@ export function useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit, a
       // applyMeasurePickToState's own `if (!state.externalSource?.source_id)` guard, which exists
       // only for the already-configured-graph case (an author's own different Dataset pick).
       state.externalSource = { ...BASE_SOURCE.sourceInfo };
+      // NPMRDS's own per-graph-type default legend position (composeMeasureConfig.js's
+      // DEFAULT_LEGEND_POSITION_BY_GRAPH_TYPE) — seeded once, here, at real creation time only;
+      // never reasserted by applyMeasurePickToState below, so a later manual override (Settings
+      // drawer, or QuickControls' own Legend pill) survives every future re-pick on this section.
+      applyDefaultLegendPosition(state, pick.graphType);
 
       const applied = applyMeasurePickToState(state, pick, {
         externalSourceColumns: BASE_SOURCE.sourceInfo.columns,
@@ -85,6 +96,10 @@ export function useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit, a
         allRoutes,
       });
       if (!applied) return null;
+      // The new card names itself. `priorPick` is undefined on a brand-new section, so the
+      // pristine check short-circuits on the empty title and always writes — the same
+      // creation-time behaviour the in-card title had before this moved to the section row.
+      sectionPatch = composeSectionTitlePatch({ currentTitle: '', currentDescription: '', priorPick: undefined, nextPick: pick }) || {};
       reconcileComparisonSeriesColumnOnState(state);
       const seriesCol = state.columns.find((c) => c.origin === 'comparison-series');
       if (seriesCol && !seriesCol.customName) seriesCol.customName = 'Route';
@@ -98,6 +113,14 @@ export function useAddGraphSection({ item, apiUpdate, updateAttribute, isEdit, a
       is_draft: true,
       // Same shape sectionArray.jsx's own save() stamps onto every newly-created section.
       parent: JSON.stringify({ id: item.id, ref: `${item.app}+${item.type}` }),
+      border: DEFAULT_GRAPH_SECTION_BORDER,
+      // The graph-card header band (2026-09-11) — see reportSectionDefaults.js. Stamped on EVERY
+      // report section type, not just AVL Graph: the band is drawn by the section, so a Route Map
+      // or an Info Box card gets the same header, and each component theme ignores a style name it
+      // doesn't define. This replaces the older AVL-Graph-only 'reportInlineTitle'.
+      activeStyle: DEFAULT_GRAPH_SECTION_STYLE,
+      // The card's own title + meta line, composed from the pick that just built it.
+      ...sectionPatch,
       element: { 'element-type': elementType, 'element-data': JSON.stringify(state) },
     };
     const nextSections = [...sectionList, newSection];

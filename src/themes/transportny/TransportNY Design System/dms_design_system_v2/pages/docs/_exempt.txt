@@ -1,0 +1,1 @@
+# pages exempt from shell checks (one filename per line) — moved mockups awaiting re-shell in their phase

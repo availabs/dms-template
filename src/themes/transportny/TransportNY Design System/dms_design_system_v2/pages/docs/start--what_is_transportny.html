@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>What TransportNY is · Get started · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  start--what_is_transportny.html · IA page 3 · type concept. Phase 1, 2026-09-04.
+  Sources: landing 2173051 (published copy), NPMRDS home 2211341, primer 225868 (platform-level framing only),
+  platform-inventory.md §1, plan report §03. TRANSCOM (not "511NY feeds") per STYLE §6; see the phase report.
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="concept" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Get started · concept</div>
+          <h1 class="doc-title">What TransportNY is.</h1>
+          <p class="doc-lede">NYSDOT's open platform for travel-time, operations and freight data: its three products, who uses each, what is public, and where the numbers come from.</p>
+          <div class="stamps">
+            <span class="type">concept</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-04</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="one-platform-three-products">One platform, three products</h2>
+          <p>TransportNY is a program of the New York State Department of Transportation (NYSDOT), in partnership with AVAIL. It started as an NYSDOT internal reporting tool and grew into a shared platform. NYSDOT uses it to file its MAP-21 PM3 federal reports. The state's 14 metropolitan planning organizations (MPOs) use it to draft their transportation improvement programs (TIPs).</p>
+          <p>Three products share one landing page, one sign-in and one docs site. The <a href="start--navigating.html">product switcher</a> moves you between them.</p>
+
+          <h2 id="the-three-products">The three products</h2>
+          <h3 id="npmrds">NPMRDS: speed, travel time and reliability</h3>
+          <p>The National Performance Management Research Data Set (NPMRDS) is the probe travel-time data set the Federal Highway Administration (FHWA) licenses to state DOTs. The <strong>NPMRDS</strong> product turns it into measures for every road segment. It answers: how fast, how reliable and how congested is this road, and how has that changed? It has four tools. <span class="ui">Reports</span> charts one route over time. The <span class="ui">Macro View</span> shows one measure, one year, every segment. <span class="ui">Route Comparison</span> sets routes against periods. The <span class="ui">MAP-21 PM3</span> pages carry the federal figures. NYSDOT planners and MPO analysts use it most. Read the <a href="npmrds.html">NPMRDS hub</a>.</p>
+
+          <h3 id="tsmo">TSMO: operations dashboards</h3>
+          <p>Transportation Systems Management and Operations (TSMO) is the practice of managing the road network day to day. The <strong>TSMO</strong> product answers: how did congestion, reliability, incidents and work zones look in a year, statewide or in one NYSDOT region? It has four dashboards: <span class="ui">Congestion</span>, <span class="ui">Reliability</span>, <span class="ui">Incidents</span> and <span class="ui">Work Zones</span>. Two explorers, <span class="ui">Incident Search</span> and <span class="ui">Corridor View</span>, sit beside <span class="ui">About TSMO</span> and <span class="ui">Data &amp; Methodology</span>. Operations engineers, regional staff and MPO planners use it. Read the <a href="tsmo.html">TSMO hub</a>.</p>
+
+          <h3 id="freight-atlas">Freight Atlas: the State Freight Plan as a map</h3>
+          <p>The <strong>Freight Atlas</strong> answers: where are New York's freight networks, facilities and flows, and what does the 2024 State Freight Plan say about them? It is one map with switchable layers, a <span class="ui">Maps Gallery</span> of the plan's figures, a <span class="ui">Data &amp; Downloads</span> catalog, and <span class="ui">About &amp; The Plan</span>. It serves the public as well as planners. Read the <a href="freight_atlas.html">Freight Atlas hub</a>.</p>
+
+          <h2 id="what-is-public-and-what-needs-an-account">What is public and what needs an account</h2>
+          <p>Everything that reads is public. Sign in to save routes and reports, and for administration: uploading data and building maps. One sign-in covers the landing page, TSMO and the Freight Atlas. NPMRDS runs on its own subdomain and may ask you to sign in again.</p>
+          <div class="callout caution"><span class="k">known issue</span>The <span class="ui">Data &amp; Downloads</span> catalog currently asks visitors without an account to sign in. Sign in to open it.</div>
+          <p>Sign-in steps and session length: <a href="start--accounts_and_sessions.html">Sign in, sessions and accounts</a>.</p>
+
+          <h2 id="where-the-numbers-come-from">Where the numbers come from</h2>
+          <p>Three sources feed the platform. <a href="measures_and_data.html">Measures &amp; Data</a> documents each.</p>
+          <dl class="defs">
+            <dt>NPMRDS travel times</dt>
+            <dd>Probe travel times averaged to 5-minute intervals on each segment of the National Highway System (NHS) and the expanded network NYSDOT licenses beyond it. Speed, reliability and delay measures come from here. See <a href="measures_and_data--data--npmrds_travel_times.html">NPMRDS travel times</a>.</dd>
+            <dt>TRANSCOM events</dt>
+            <dd>Incidents, work zones and other road events reported through TRANSCOM, the multi-state coalition of transportation agencies whose live feed carries incidents, construction, road conditions and special events. The platform keeps the New York events. TSMO's incident and work-zone pages use it. See <a href="measures_and_data--data--transcom_events.html">TRANSCOM events</a>.</dd>
+            <dt>The 2024 State Freight Plan</dt>
+            <dd>The plan's maps and the datasets behind them: freight networks, facilities and commodity flows. The Freight Atlas layers use it. See <a href="measures_and_data--data--freight_atlas_sources.html">Freight Atlas sources</a>.</dd>
+          </dl>
+          <p>Reliability appears in two forms: the <strong>MAP-21 / PM3 (federal)</strong> figures NYSDOT submits to FHWA, and <strong>the analytical series</strong> the platform computes itself. <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a> explains the difference.</p>
+
+          <h2 id="where-this-matters">Where this matters</h2>
+          <p>When you quote a number, say which product it came from and on what basis: geography, period, vehicle class and road system. For a federal document, take the figure from the MAP-21 PM3 pages, not from a dashboard. <a href="start--which_tool.html">Which tool answers my question?</a> routes each common question to its tool.</p>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-04 created (phase 1)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="start--which_tool.html">Which tool answers my question?</a>
+          <a href="measures_and_data.html">Measures &amp; Data</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

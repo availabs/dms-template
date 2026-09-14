@@ -57,11 +57,11 @@
     to = "https://www.devtny.org/freightatlas"
     status = 301
     force = true
-  [[redirects]]
-    from = "https://npmrds.devtny.org/"
-    to = "https://www.devtny.org/npmrds"
-    status = 301
-    force = true
+  ## NOTE: there is deliberately NO npmrds rule. NPMRDS stays on its own subdomain
+  ## (owner call 2026-09-01) — it is not part of the path cutover. A rule here would
+  ## 301 npmrds.devtny.org to /npmrds at the CDN edge, before any JS runs, which is
+  ## what made dev and prod disagree: this file ships with the devtny deploy only,
+  ## while prod deploys from the transportNY repo and never had these rules.
 
   ## Uncomment to use this redirect for Single Page Applications like create-react-app.
   ## Not needed for static site generators.

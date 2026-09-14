@@ -1,0 +1,1114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Platform Documentation Plan · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <style>
+    /* TransportNY design-system v2 surface utilities — inlined subset of
+     * ../design-system/_shared.css so this report opens standalone from the file
+     * system (same convention as npmrds-data-quality-report.html). Values copied
+     * verbatim; do not diverge — re-copy if the design system changes. */
+    .font-display, .font-oswald { font-family: "Oswald", "Bebas Neue", sans-serif; }
+    .font-proxima { font-family: "Source Sans 3", system-ui, sans-serif; }
+    body { font-family: "Source Sans 3", system-ui, sans-serif; background: #ECEEF2; }
+    .tny-pane      { background: #ECEEF2; }
+    .tny-pane-tint { background: #E4E8EE; }
+    .tny-card {
+      background: #fff;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 8px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 0 rgba(15, 23, 42, 0.02);
+    }
+    .tny-card-tint { background: #FAFBFC; }
+    .tny-card-bone { background: #F5F1E8; }
+    .tny-card-ink  { background: #0F2D4D; color: #fff; }
+    .tny-link      { color: #1F3F8F; text-decoration: underline; text-underline-offset: 2px; }
+    .tny-link:hover{ color: #16307A; }
+    .tny-mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.92em; padding: 1px 5px;
+      background: rgba(15, 23, 42, 0.05);
+      border: 1px solid rgba(15, 23, 42, 0.06);
+      border-radius: 3px; color: #37576B; white-space: nowrap;
+    }
+    .tny-hero-topo {
+      background:
+        radial-gradient(circle at 25% 30%, rgba(15, 23, 42, 0.04), transparent 40%),
+        radial-gradient(circle at 75% 70%, rgba(15, 23, 42, 0.05), transparent 50%),
+        repeating-linear-gradient(28deg, transparent 0 30px, rgba(15, 23, 42, 0.035) 30px 31px, transparent 31px 60px),
+        repeating-linear-gradient(-30deg, transparent 0 36px, rgba(15, 23, 42, 0.028) 36px 37px, transparent 37px 70px),
+        #EEF1F3;
+    }
+    .bar { height: 8px; border-radius: 2px; background: #37576B; }
+    .bar-warn { background: #CA8A04; }
+    .bar-bad  { background: #B45309; }
+    .bar-ok   { background: #10B981; }
+    table.tny { border-collapse: collapse; width: 100%; }
+    table.tny th {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em;
+      color: #64748b; text-align: left; padding: 6px 8px;
+      border-bottom: 1px solid rgba(15,23,42,0.12); white-space: nowrap; vertical-align: bottom;
+    }
+    table.tny td {
+      font-size: 12.5px; padding: 7px 8px; text-align: left; vertical-align: top;
+      border-bottom: 1px solid rgba(15,23,42,0.05); line-height: 1.45;
+    }
+    table.tny td.num, table.tny th.num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    table.tny tr:last-child td { border-bottom: none; }
+    table.tny tr.total td { font-weight: 600; background: rgba(15,23,42,0.02); }
+    table.tny tr.group td { font-family: "Oswald", sans-serif; font-weight: 500; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: #37576B; background: rgba(15,23,42,0.025); padding-top: 10px; }
+    /* report-local helpers (no new tokens — colours are the design system's) */
+    .kicker { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.2em; color: #CA8A04; }
+    .pill { display: inline-flex; align-items: center; height: 20px; padding: 0 7px; border-radius: 4px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px; text-transform: uppercase; letter-spacing: 0.12em; white-space: nowrap; }
+    .pill-ink   { background: #37576B; color: #fff; }
+    .pill-line  { border: 1px solid rgba(15,23,42,0.15); background: #fff; color: #475569; }
+    .pill-amber { background: rgba(202,138,4,0.14); color: #92400E; }
+    .pill-red   { background: rgba(180,83,9,0.14); color: #9A3412; }
+    .pill-green { background: rgba(16,185,129,0.16); color: #065F46; }
+    .pill-blue  { background: rgba(31,63,143,0.12); color: #1F3F8F; }
+    pre.tree { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11.5px; line-height: 1.5; color: #1e293b; background: #FAFBFC; border: 1px solid rgba(15,23,42,0.08); border-radius: 8px; padding: 14px 16px; overflow-x: auto; white-space: pre; }
+    pre.tree .c { color: #64748b; }
+    pre.tree .n { color: #1F3F8F; }
+    pre.tree .k { color: #92400E; }
+    blockquote.q { border-left: 3px solid #CA8A04; padding: 2px 12px; margin: 0; font-size: 12.5px; line-height: 1.5; color: #334155; font-style: italic; }
+    blockquote.q cite { display: block; font-style: normal; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; color: #64748b; margin-top: 4px; }
+    .prose p { margin: 0 0 10px; }
+    .prose ul, .prose ol { margin: 0 0 10px 18px; }
+    .prose li { margin: 0 0 4px; }
+    .prose li::marker { color: #CA8A04; }
+    /* grid items default to min-width:auto, which lets a wide <pre> or <table> child stretch the
+     * track past the container (seen at 768px). Let them shrink so their own overflow-x scroll wins. */
+    .grid > * { min-width: 0; }
+    /* long paths in the footer/prose may break when the viewport is narrower than the path */
+    @media (max-width: 900px) { .tny-mono { white-space: normal; overflow-wrap: anywhere; } }
+    h2 { scroll-margin-top: 16px; }
+    h3 { scroll-margin-top: 16px; }
+  </style>
+</head>
+<body class="tny-pane">
+
+<!--
+  PLATFORM DOCUMENTATION PLAN — research, recommendation, information architecture
+  Deliverable 2 of planning/transportny/tasks/current/platform-documentation-plan.md (2026-09-04).
+
+  Evidence base (all pulled 2026-09-04 against dmsserver.availabs.org · npmrdsv5/dev2):
+    · every page of the npmrds_docs pattern 1411813 (37 pages, 28,171 published words, 141 images)
+    · live page lists for 11 patterns; pattern configs (theme/nav) for landing, npmrds_sub, tsmo2,
+      Freight Atlas v2, npmrds_docs
+    · sitemgmt_tickets (202 rows) · sitemgmt_stories (92) · NYSDOT Running Fixes (62)
+    · the 53 design-system mockups' header comments
+    · web review of 11 competitor/analogue documentation sets and ~90 primary sources on
+      documentation practice (URLs in the research files)
+  Research files: planning/transportny/research/docs-redesign/ (docs-audit.md · platform-inventory.md ·
+  tickets-analysis.md · best-practices.md · competitors.md · docs-dump/ · data/).
+
+  Design: TransportNY design system v2 tokens/utilities (inlined _shared.css subset above), the
+  sibling report's document grammar (numbered // sections, tny-card, table.tny). Document-style page,
+  not the app shell: it lives in reports/, so the site side-nav would be dead links.
+  Counts labelled "measured" are computed from the dumped data; competitor observations are the
+  research agent's fetched pages ("observed") unless marked inferred.
+-->
+
+<div class="max-w-[1180px] mx-auto px-6 lg:px-10">
+
+  <!-- ── header ──────────────────────────────────────────────────────── -->
+  <header class="tny-hero-topo -mx-6 lg:-mx-10 px-6 lg:px-10 pt-10 pb-9 border-b border-zinc-950/10">
+    <div class="flex items-center gap-2 mb-3">
+      <span class="kicker">// documentation plan · research + recommendation + information architecture</span>
+      <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+    </div>
+    <h1 class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">
+      Rebuilding the TransportNY documentation<span class="text-[#CA8A04]">.</span>
+    </h1>
+    <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-3 max-w-[820px]">
+      The platform now has three products on one origin and a documentation site that still describes
+      one of them — the <span class="text-[#0f1722] font-medium">legacy</span> one. This report audits
+      what is at <span class="tny-mono">devtny.org/docs</span>, inventories what the three products
+      actually expose, reads every ticket users have filed to learn where they get stuck, and reviews
+      how documentation should be done and how eleven comparable platforms do it. It ends with one
+      recommendation for the shape of the documentation and the full page tree it should contain,
+      including how the docs plug back into the product pages.
+    </p>
+    <div class="flex flex-wrap items-center gap-2 mt-5">
+      <span class="pill pill-ink">research 2026-09-04</span>
+      <span class="pill pill-line">37 docs pages · 28,171 words · 141 images</span>
+      <span class="pill pill-line">202 tickets · 92 user stories · 62 legacy fixes</span>
+      <span class="pill pill-line">3 products · 11 live patterns · 53 mockups</span>
+      <span class="pill pill-line">11 competitor doc sets · ~90 practice sources</span>
+      <span class="pill pill-line">task: platform-documentation-plan.md</span>
+    </div>
+  </header>
+
+  <!-- ── contents ─────────────────────────────────────────────────────── -->
+  <nav class="py-6 border-b border-zinc-950/05">
+    <div class="tny-card tny-card-tint p-4">
+      <div class="kicker mb-2">contents</div>
+      <ol class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-1 font-proxima text-[13px] text-slate-700 list-none m-0 p-0">
+        <li><a class="tny-link" href="#s01">01 · Headline findings</a></li>
+        <li><a class="tny-link" href="#s02">02 · The documentation as it stands</a></li>
+        <li><a class="tny-link" href="#s03">03 · The platform the docs must cover</a></li>
+        <li><a class="tny-link" href="#s04">04 · What the tickets say about users</a></li>
+        <li><a class="tny-link" href="#s05">05 · How documentation should be done</a></li>
+        <li><a class="tny-link" href="#s06">06 · How comparable platforms do it</a></li>
+        <li><a class="tny-link" href="#s07">07 · Recommendation — the documentation model</a></li>
+        <li><a class="tny-link" href="#s08">08 · Information architecture — every page</a></li>
+        <li><a class="tny-link" href="#s09">09 · Integrating docs into the product sites</a></li>
+        <li><a class="tny-link" href="#s10">10 · Sequencing and follow-on tasks</a></li>
+        <li><a class="tny-link" href="#appA">A · Current docs inventory and disposition</a></li>
+        <li><a class="tny-link" href="#appB">B · Coverage matrix</a></li>
+        <li><a class="tny-link" href="#appC">C · Sources and method</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <!-- ── §01 headline ────────────────────────────────────────────────── -->
+  <section id="s01" class="py-11 border-b border-zinc-950/05">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="kicker">// 01</span><span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Six numbers that set the agenda.</h2>
+    <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mt-2 max-w-[760px]">
+      Each is measured on the dumped data unless marked otherwise. Together they say the problem is not
+      a lack of words — it is that the words describe the wrong site, live in the wrong places, and
+      cannot be reached from the tools that raise the questions.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-6">
+      <div class="tny-card p-4 flex flex-col">
+        <div class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#B45309]">80%</div>
+        <div class="font-display font-medium text-[14px] text-[#0f1722] mt-2 leading-tight">of the docs' words are NPMRDS — and 9 of its 14 pages describe the legacy site</div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-2">22,427 of 28,171 published words. TSMO has 236 words and zero screenshots; Freight Atlas 1,182 words, its only substantive page machine-generated and hedged ("Users can probably turn on/off different layers").</p>
+      </div>
+      <div class="tny-card p-4 flex flex-col">
+        <div class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#B45309]">9 / 37</div>
+        <div class="font-display font-medium text-[14px] text-[#0f1722] mt-2 leading-tight">pages are empty or near-empty; 5 are verbatim duplicates</div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-2">Four have no sections at all (Freight Atlas root, its Datasets child, Transit, TSMO Incidents Dashboard); two exist only as drafts; three hold 1–92 words. Measure definitions appear in five places and contradict each other.</p>
+      </div>
+      <div class="tny-card p-4 flex flex-col">
+        <div class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#37576B]">0</div>
+        <div class="font-display font-medium text-[14px] text-[#0f1722] mt-2 leading-tight">links to /docs from any product navigation</div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-2">The landing, NPMRDS, TSMO and Freight Atlas side-navs carry no Docs item; the NPMRDS home mockup designs one plus a nine-row documentation card, neither built. Every legacy in-doc link points at <span class="tny-mono">npmrds.transportny.org/docs/…</span> slugs that no longer exist.</p>
+      </div>
+      <div class="tny-card p-4 flex flex-col">
+        <div class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#CA8A04]">49%</div>
+        <div class="font-display font-medium text-[14px] text-[#0f1722] mt-2 leading-tight">of user-filed feedback is documentation-relevant</div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-2">111 of 227 non-test client tickets and legacy fixes ask what a number means, how to find or do something, what a term means, what the data covers, or how to get data out. 41 of 165 client tickets are literally phrased as questions.</p>
+      </div>
+      <div class="tny-card p-4 flex flex-col">
+        <div class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#CA8A04]">67%</div>
+        <div class="font-display font-medium text-[14px] text-[#0f1722] mt-2 leading-tight">of client tickets land on TSMO — the product with 236 words of docs</div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-2">113 of 170. The single most repeated confusion is geography and time basis: statewide vs region vs county vs MPO, annual PM3 next to monthly delay, partial years. The second is dead "How it's computed →" affordances that had no page to point at.</p>
+      </div>
+      <div class="tny-card p-4 flex flex-col">
+        <div class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#10B981]">2</div>
+        <div class="font-display font-medium text-[14px] text-[#0f1722] mt-2 leading-tight">pages already show what good looks like — published 2026-08-28</div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-2">The Macro View guide (280612) and Measures &amp; Methodology (281670) are task-ordered, single-sourced from the code's own measure definitions and provenance record, and carry dated, state-captioned screenshots. The rest of the site should be brought to their standard, not the other way round.</p>
+      </div>
+    </div>
+
+    <div class="tny-card tny-card-bone p-5 mt-6 prose font-proxima text-[13px] leading-[1.6] text-slate-700">
+      <div class="kicker mb-2" style="color:#92400E">the recommendation in one paragraph</div>
+      <p>Keep one public documentation site at <span class="tny-mono">/docs</span>, reachable without a login and from every
+      product's navigation. Organise it by <span class="font-medium text-[#0f1722]">domain</span> — Get started · NPMRDS · TSMO · Freight Atlas ·
+      <span class="font-medium text-[#0f1722]">Measures &amp; Data</span> · Developers · Admin — and nest the documentation types (start here, how-to,
+      screens &amp; settings, FAQ) <em>inside</em> each product hub. The owner's instinct to separate "how to use the tools"
+      from "how the numbers are made" is right and is what every framework asks for on the page; but because
+      LOTTR, TTTR, excessive delay and the shared datasets are used by NPMRDS <em>and</em> TSMO, the methodology
+      must live once, in a shared hub with a fixed per-measure template, and be summarised (two or three
+      sentences plus a deep link) on every tool page that shows the number. Retire the legacy-site pages
+      into a dated, frozen branch; delete the empties and strays; give every page a last-reviewed stamp and
+      an "applies to" badge; and turn the ticket system's resolved questions into the FAQ.</p>
+    </div>
+  </section>
+
+  <!-- ── §02 current docs ─────────────────────────────────────────────── -->
+  <section id="s02" class="py-11 border-b border-zinc-950/05">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="kicker">// 02</span><span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">The documentation as it stands: one product's manual wearing a platform's hat.</h2>
+    <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mt-2 max-w-[760px]">
+      Pattern <span class="tny-mono">npmrds_docs</span> 1411813, mounted at <span class="tny-mono">*/docs</span> on every subdomain, theme
+      <span class="tny-mono">transportnyv2</span>, sidebar = the page tree. Every page's published and draft sections were dumped to text
+      and read end to end (<span class="tny-mono">research/docs-redesign/docs-dump/</span>). Full per-page findings in Appendix A.
+    </p>
+
+    <div class="grid grid-cols-1 xl:grid-cols-5 gap-6 mt-6">
+      <div class="xl:col-span-3">
+        <div class="kicker mb-2">the tree as rendered (root index order) · flags</div>
+<pre class="tree">0  Overview                        <span class="c">hub cards; 2 cards carry pasted Transit copy; 3 orphan labels</span>
+1  NPMRDS                          <span class="c">root text ≡ child "Overview" verbatim</span>
+   0  Overview                     <span class="c">What is NPMRDS · strengths &amp; weaknesses (good primer)</span>
+   1  Quick Start                  <span class="k">LEGACY site tour</span> <span class="c">· 3,811 w · FAQ ×19 · 24 dead links</span>
+   2  Route Analysis               <span class="k">LEGACY</span> <span class="c">· template walkthroughs · 30 screenshots</span>
+      0  Create a Route            <span class="k">LEGACY</span> <span class="c">route tool</span>
+      1  Report Tool Functions     <span class="k">LEGACY</span> <span class="c">· graph types · measures table · 5 × "Coming Soon"</span>
+   3  Regional Analysis            <span class="n">NEW · Macro View guide · published 2026-08-28</span>
+   4  PM3 Measures                 <span class="n">NEW · Measures &amp; Methodology · published 2026-08-28</span>
+   5  Batch Reports                <span class="k">LEGACY</span> <span class="c">· 282 w · CSV spec</span>
+   6  Discussions                  <span class="c">outline with empty headings</span>
+      0  Congestion Management Process (CMP)   <span class="c">"(Draft)" in title · legacy steps · 7 legacy links</span>
+      1  787 Raised Intersections  <span class="c">case study with real numbers · stock images</span>
+   7  Appendix                     <span class="c">"(Draft)" ×3 · empty field tables · OSM conflation essay (keep)</span>
+   8  Training Videos              <span class="c">2024 · 3 empty video bodies</span>
+2  Freight Atlas                   <span class="k">EMPTY landing</span>
+   0  Navigating the Freight Atlas <span class="k">LLM-generated, hedged, utm_source=chatgpt.com links</span>
+   1  Navigation                   <span class="c">159 w · two "at this link" with no link · empty "Docs" heading</span>
+   2  Datasets                     <span class="k">EMPTY</span>
+3  TSMO                            <span class="c">"four dashboards … Reliability - Coming soon" (it is live)</span>
+   0  Methodology                  <span class="k">UNPUBLISHED</span> <span class="c">· draft is the corridor page, not methodology</span>
+   1  Incidents Dashboard          <span class="k">EMPTY</span>
+4  Transit                         <span class="k">EMPTY · no such product</span>
+5  Admin                           <span class="n">strongest branch · procedural · current (2025-09 → 2026-03)</span>
+   0  Uploading Data · 1  Managing Data · 2  Mapmaking and Symbology
+   3  Updating Maps                <span class="c">verbatim duplicate of 2 §4–5</span>
+   4  Adding Maps to a Website 2   <span class="c">stray "2" in title</span>
+   5  Map21 / PM3 Sources          <span class="c">load-bearing runbook · dev/sandbox links</span>
+6  APIs                            <span class="c">title only (1 word)</span>
+   0  Data Manager API             <span class="c">Falcor grammar · root `dama` vs example's `uda`</span>
+      0  Python Client Examples    <span class="c">33 w</span>  ·  1  API Request Example <span class="c">(good)</span>
+   1  Batch Reports API            <span class="c">column/source tables · "auth: true" code voice</span>
+7  Navigating the Freight Atlas    <span class="k">STRAY ROOT · draft-only · name collides with 2.0</span>
+8  Road Closure / Incident Scenarios <span class="k">STRAY ROOT · internal design memo · dev link</span></pre>
+      </div>
+      <div class="xl:col-span-2">
+        <div class="kicker mb-2">weight by branch · measured</div>
+        <div class="overflow-x-auto tny-card">
+          <table class="tny">
+            <thead><tr><th>branch</th><th class="num">pages</th><th class="num">words</th><th class="num">img</th><th>last content edit</th></tr></thead>
+            <tbody>
+              <tr><td>NPMRDS</td><td class="num">14</td><td class="num">22,427</td><td class="num">110</td><td>2024-04 → 2024-10 (12 pages); 2026-08-28 (2)</td></tr>
+              <tr><td>Admin</td><td class="num">7</td><td class="num">3,003</td><td class="num">25</td><td>2025-09 → 2026-03</td></tr>
+              <tr><td>Freight Atlas (+ stray)</td><td class="num">4</td><td class="num">1,182</td><td class="num">0</td><td>2025-10 → 2025-11</td></tr>
+              <tr><td>APIs</td><td class="num">5</td><td class="num">1,052</td><td class="num">0</td><td>2025-08 → 2026-02</td></tr>
+              <tr><td>TSMO</td><td class="num">3</td><td class="num">236</td><td class="num">0</td><td>2025-08 (nothing since)</td></tr>
+              <tr><td>Hub · Transit · Road closure</td><td class="num">4</td><td class="num">271</td><td class="num">6</td><td>2025-10 → 2026-01</td></tr>
+              <tr class="total"><td>total</td><td class="num">37</td><td class="num">28,171</td><td class="num">141</td><td>34 of 37 carry a 2026-03-04 bulk-migration stamp, not an edit</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="mt-3 space-y-1.5">
+          <div class="flex items-center gap-2"><span class="w-24 font-mono text-[10px] uppercase tracking-wider text-slate-500">NPMRDS</span><div class="flex-1 bg-slate-200/70 rounded-sm h-2"><div class="bar bar-bad" style="width:80%"></div></div><span class="font-mono text-[10px] text-slate-600 w-8 text-right">80%</span></div>
+          <div class="flex items-center gap-2"><span class="w-24 font-mono text-[10px] uppercase tracking-wider text-slate-500">Admin</span><div class="flex-1 bg-slate-200/70 rounded-sm h-2"><div class="bar" style="width:11%"></div></div><span class="font-mono text-[10px] text-slate-600 w-8 text-right">11%</span></div>
+          <div class="flex items-center gap-2"><span class="w-24 font-mono text-[10px] uppercase tracking-wider text-slate-500">Freight</span><div class="flex-1 bg-slate-200/70 rounded-sm h-2"><div class="bar bar-warn" style="width:4%"></div></div><span class="font-mono text-[10px] text-slate-600 w-8 text-right">4%</span></div>
+          <div class="flex items-center gap-2"><span class="w-24 font-mono text-[10px] uppercase tracking-wider text-slate-500">APIs</span><div class="flex-1 bg-slate-200/70 rounded-sm h-2"><div class="bar" style="width:4%"></div></div><span class="font-mono text-[10px] text-slate-600 w-8 text-right">4%</span></div>
+          <div class="flex items-center gap-2"><span class="w-24 font-mono text-[10px] uppercase tracking-wider text-slate-500">TSMO</span><div class="flex-1 bg-slate-200/70 rounded-sm h-2"><div class="bar bar-warn" style="width:1%"></div></div><span class="font-mono text-[10px] text-slate-600 w-8 text-right">&lt;1%</span></div>
+        </div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-3">Share of published words. The product that generates two thirds of user questions (TSMO, §04) has under one percent of the documentation.</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+      <div class="tny-card p-5 prose font-proxima text-[13px] leading-[1.6] text-slate-700">
+        <div class="kicker mb-2" style="color:#9A3412">what is wrong — structurally</div>
+        <ol>
+          <li><span class="font-medium text-[#0f1722]">Two UI generations, one nav, no label.</span> Nine legacy pages ("mousing over the 'Add New' button … Folders") sit beside two new ones ("the right panel", "the download builder") with nothing to say which site each describes.</li>
+          <li><span class="font-medium text-[#0f1722]">Single-product framing.</span> The hub is "Transport NY Documentation" but the NPMRDS root opens "Welcome to the … (NPMRDS) Platform"; TSMO is introduced <em>inside</em> the NPMRDS Quick Start.</li>
+          <li><span class="font-medium text-[#0f1722]">Definitions in five places, drifting.</span> LOTTR "for cars only … exclude trucks" (Quick Start) vs "Stream — all vehicles" (Measures); two different TTI formulas under one name; a TED entry pasted from Truck TED.</li>
+          <li><span class="font-medium text-[#0f1722]">Naming collisions.</span> <em>PM3</em> = the federal measure set, the legacy dashboard, the site's analytical fork, and a data type; <em>Macro Tool / Macro View / Regional Analysis / Region Analysis</em> name one thing; <em>TTI</em> is an index and an institute on one page.</li>
+          <li><span class="font-medium text-[#0f1722]">Audience mixing.</span> End-user how-tos, planner whitepapers, a case study with stock art, an internal runbook, an internal product memo and code-level API notes share one tree at equal weight.</li>
+          <li><span class="font-medium text-[#0f1722]">Draft artefacts published.</span> "(Draft)" in five section titles; "Coming Soon" in eight places (one for a feature that shipped); editor-mode <span class="tny-mono">/docs/edit/…</span> URLs as links; 24 links to slugs that no longer exist; one malformed <span class="tny-mono">https://https//</span>.</li>
+          <li><span class="font-medium text-[#0f1722]">No provenance except on the two new pages.</span> The 2024 layer states no sources; the Freight Atlas page states that it guessed.</li>
+          <li><span class="font-medium text-[#0f1722]">Unreachable from the products.</span> No product nav links to <span class="tny-mono">/docs</span>; the new pages link to other tools by name without URLs.</li>
+        </ol>
+      </div>
+      <div class="tny-card p-5 prose font-proxima text-[13px] leading-[1.6] text-slate-700">
+        <div class="kicker mb-2" style="color:#065F46">what is good — carry it forward</div>
+        <ol>
+          <li><span class="font-medium text-[#0f1722]">Measures &amp; Methodology</span> (281670): federal-vs-analytical distinction first; seven measures on a fixed five-part template; the "which delay measure" decision table; coverage eras; the two cross-year traps; glossary — every figure traced to <span class="tny-mono">PROVENANCE.md</span> / <span class="tny-mono">precision.js</span> / <span class="tny-mono">downloadManifest.js</span>.</li>
+          <li><span class="font-medium text-[#0f1722]">Macro View guide</span> (280612): task-ordered, six real screenshots each captioned with the state that produced it and its capture date.</li>
+          <li><span class="font-medium text-[#0f1722]">The FAQ's 19 questions</span> (280326): the right planner questions; only the answers' tool names are stale.</li>
+          <li><span class="font-medium text-[#0f1722]">Template walkthroughs</span> Snapshot · Seasonality · Bi-directional, each Introduction → Setup → Interpretation, with the "check TMC lengths before concluding" caveat.</li>
+          <li><span class="font-medium text-[#0f1722]">Graph-type reference + measures table</span> (281503): 13 visualisations defined; units/sources/equations per measure incl. the off-peak free-flow window.</li>
+          <li><span class="font-medium text-[#0f1722]">Composite Score Tutorial</span>: a tool-independent Excel method (30 % reporting filter, min–max normalisation, weighted rank).</li>
+          <li><span class="font-medium text-[#0f1722]">What is NPMRDS / strengths and weaknesses</span> primer (225868).</li>
+          <li><span class="font-medium text-[#0f1722]">Admin guides</span>: Uploading Data, Managing Data (authority levels 1/2/10, events log), Map Editor style controls, publish-to-page steps, the map21/pm3/pm3_aggregate runbook.</li>
+          <li><span class="font-medium text-[#0f1722]">API grammar + worked example</span> (options object; Transcom length → data) and the Batch Reports column/source tables.</li>
+          <li><span class="font-medium text-[#0f1722]">CMP framing and the 787 case study</span>: the two pieces that show <em>why</em> a planner would use the tools, with real numbers ($451,000 → $271,875/yr).</li>
+        </ol>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── §03 the platform ─────────────────────────────────────────────── -->
+  <section id="s03" class="py-11 border-b border-zinc-950/05">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="kicker">// 03</span><span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">The platform the docs must cover: three products, two generations, one origin.</h2>
+    <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mt-2 max-w-[760px]">
+      Live page lists were pulled for every pattern in the <span class="tny-mono">npmrdsv5</span> app; controls, data bindings and concepts per page
+      come from the 53 mockups' header comments and the task record (<span class="tny-mono">platform-inventory.md</span>).
+    </p>
+
+    <div class="overflow-x-auto tny-card mt-6">
+      <table class="tny">
+        <thead><tr><th>surface</th><th>mount · pattern</th><th>generation</th><th class="num">live pages</th><th>navigation today</th><th>docs today</th></tr></thead>
+        <tbody>
+          <tr class="group"><td colspan="6">products</td></tr>
+          <tr><td><span class="font-medium text-[#0f1722]">NPMRDS</span> (new)</td><td><span class="tny-mono">www/npmrds</span> · npmrds_sub 2100394</td><td>DMS · transportnyv2</td><td class="num">66</td><td>Home · Macro View · Reports · MAP-21 PM3 (Route comparison removed 2026-09-02) — <span class="pill pill-red">no Docs</span></td><td>2 current pages (macro guide, measures); everything else legacy</td></tr>
+          <tr><td>NPMRDS (interim)</td><td><span class="tny-mono">npmrds2.</span> · 1473710</td><td>DMS · transportny</td><td class="num">5</td><td>home · macro_tool · analysis · routes · map_21</td><td>none</td></tr>
+          <tr><td>NPMRDS (legacy)</td><td><span class="tny-mono">npmrds.transportny.org</span> · React</td><td>legacy</td><td class="num">~10</td><td>Home · Folders · Routes · Reports · Batch Reports · Macro · PM3 · TMC · Incident View · Route Creation · Data Manager</td><td>9 pages, 2024</td></tr>
+          <tr><td><span class="font-medium text-[#0f1722]">TSMO</span></td><td><span class="tny-mono">www/tsmo</span> · tsmo2 1431209</td><td>DMS · transportnyv2</td><td class="num">10</td><td>Dashboards (Congestion · Reliability · Incidents · Work Zones) · Explorers (Incident Search · Corridor View) · Program (About · <span class="font-medium">Data &amp; Methodology</span>) — <span class="pill pill-red">no Docs</span></td><td>236 words; methodology lives in-product</td></tr>
+          <tr><td><span class="font-medium text-[#0f1722]">Freight Atlas</span></td><td><span class="tny-mono">www/freightatlas</span> · 2175436 (+ datasets 2186526)</td><td>DMS · transportnyv2</td><td class="num">4 + catalog</td><td>Home · Freight Atlas · Maps Gallery · Data &amp; Downloads · About &amp; The Plan — <span class="pill pill-red">no Docs</span></td><td>1 hedged page + 1 site map; admin Map Editor guides</td></tr>
+          <tr class="group"><td colspan="6">shared</td></tr>
+          <tr><td>Landing</td><td><span class="tny-mono">www/</span> · 1700630</td><td>DMS</td><td class="num">1</td><td>Platform · NPMRDS · TSMO · Freight Atlas — <span class="pill pill-red">no Docs</span>; footer "API Guide / Data Dictionary / What's New" were dead (ticket 2197781)</td><td>—</td></tr>
+          <tr><td>Auth</td><td><span class="tny-mono">*/auth</span> · 1498261</td><td>DMS</td><td class="num">—</td><td>public read; login for saved work; ~6 h session; historically re-login per subdomain</td><td>none</td></tr>
+          <tr><td>Data Manager / datasets</td><td><span class="tny-mono">*/datasources</span> · 1700711</td><td>DMS</td><td class="num">catalog</td><td>dual-role: public catalog + admin chrome</td><td>Admin branch (good)</td></tr>
+          <tr><td>Status / issue tracker</td><td><span class="tny-mono">*/status</span> · 2123681</td><td>DMS</td><td class="num">3</td><td>bug_report · status · issue_tracker ("NYSDOT Running Fixes")</td><td>none</td></tr>
+          <tr><td>Docs</td><td><span class="tny-mono">*/docs</span> · 1411813</td><td>DMS</td><td class="num">37</td><td>page tree as sidebar</td><td>this report</td></tr>
+          <tr><td>Control room · Transit · Sandbox · NEVI</td><td>2184885 · 1411814 · 1163899 · 2061577</td><td>DMS</td><td class="num">5 · 1 · 107 · —</td><td>internal / not products</td><td>out of scope</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-8">
+      <div class="tny-card p-5 prose font-proxima text-[13px] leading-[1.6] text-slate-700">
+        <div class="kicker mb-2">npmrds · what a user must learn</div>
+        <ul>
+          <li><span class="font-medium text-[#0f1722]">Routes</span> — an ordered TMC array made by clicking segments or dropping markers; saved with name/description/tags; tags replace the legacy Folders.</li>
+          <li><span class="font-medium text-[#0f1722]">Reports</span> — 12 templates in 5 question types; the report canvas (route rail + graph cards; Quick Controls: routes · measure · aggregate · when · comparison mode; Add Graph: shape · value · when · routes); the library as templates / all-reports list with facets and tags.</li>
+          <li><span class="font-medium text-[#0f1722]">Macro View</span> — one measure, one year, every NHS segment; "a measure brings its own controls"; worst-25; download builder (CSV/GPKG + manifest); URL is the state.</li>
+          <li><span class="font-medium text-[#0f1722]">Route comparison</span> — routes × periods cross-tab; Base period; fixed / own-dates / relative periods (successor to Batch Reports).</li>
+          <li><span class="font-medium text-[#0f1722]">MAP-21 PM3</span> — compliance vs targets, trends, MPO breakdown, annual download; and the sentence that matters most: <em>federal (map21) ≠ analytical (pm3)</em>.</li>
+          <li><span class="font-medium text-[#0f1722]">Segment (TMC)</span> — attributes, completeness, speed by peak, PM3 history <span class="pill pill-line">design</span>.</li>
+        </ul>
+      </div>
+      <div class="tny-card p-5 prose font-proxima text-[13px] leading-[1.6] text-slate-700">
+        <div class="kicker mb-2">tsmo · what a user must learn</div>
+        <ul>
+          <li><span class="font-medium text-[#0f1722]">The filter bar</span> — Year is single-select; Region single-select and clearable (clear = statewide); blank means All; what each dashboard excludes by design (incidents exclude construction; work zones are construction).</li>
+          <li><span class="font-medium text-[#0f1722]">Geography</span> — NYSDOT regions 1–11, counties, MPOs; statewide = the full PM3 submission, deliberately <em>not</em> the sum of regions; corridor view is county-keyed.</li>
+          <li><span class="font-medium text-[#0f1722]">Measures</span> — excessive delay (v2 series, not comparable to v1), recurrent vs non-recurrent attribution, cost of congestion and its value-of-time, LOTTR/TTTR vs 75/70/2.00 targets, TIM clearance and timestamp completeness.</li>
+          <li><span class="font-medium text-[#0f1722]">Time basis</span> — annual PM3 next to monthly delay; partial years; event counts across all years vs the selected year.</li>
+          <li><span class="font-medium text-[#0f1722]">Explorers</span> — Incident Search (facets + keyword), Incident View (timeline with "not recorded", footprint, TMC × 5-min grid), Corridor View (county → corridor → direction → date).</li>
+          <li><span class="font-medium text-[#0f1722]">Data &amp; Methodology</span> already exists in-product (27 sections): sources · measures · coverage · cadence · glossary · downloads.</li>
+        </ul>
+      </div>
+      <div class="tny-card p-5 prose font-proxima text-[13px] leading-[1.6] text-slate-700">
+        <div class="kicker mb-2">freight atlas · what a user must learn</div>
+        <ul>
+          <li><span class="font-medium text-[#0f1722]">The map</span> — 7 categories / 28 layers / 31 symbologies; layer switches, per-layer metric filters, active-map list, legend blocks with eye toggles, hover popups; share a map with <span class="tny-mono">?layers=…</span>.</li>
+          <li><span class="font-medium text-[#0f1722]">Maps Gallery</span> — the 2024 plan's 33 figures as tiles (22 live), each a preset of the one map; why a category can be hidden.</li>
+          <li><span class="font-medium text-[#0f1722]">Data &amp; Downloads</span> — the datasets catalog; source pages (Overview · Table · Map · Metadata · version); CSV / GeoJSON / Shapefile / GeoPackage / XLSX; the sign-in wall anonymous users currently hit.</li>
+          <li><span class="font-medium text-[#0f1722]">Layer vocabulary</span> — FCHN, NHFN/PHFS/CUFC/CRFC, AADTT, last mile, versioned networks; provenance to plan page numbers and base years (TRANSEARCH 2023).</li>
+          <li><span class="font-medium text-[#0f1722]">The plan</span> — six goals, 20 strategies, report library, what changed 2019 → 2024.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="tny-card tny-card-tint p-5 mt-6">
+      <div class="kicker mb-2">the methodology is already written — it is just not where users can read it</div>
+      <div class="overflow-x-auto">
+        <table class="tny">
+          <thead><tr><th>fact family</th><th>authoritative location today</th><th>reaches users via</th></tr></thead>
+          <tbody>
+            <tr><td>PM3 measure definitions (<span class="tny-mono">answers</span> / <span class="tny-mono">definition</span> strings)</td><td><span class="tny-mono">components/macroview/measures.js</span></td><td>docs 281670 (verbatim) · macro view right panel</td></tr>
+            <tr><td>Measure choices: 20-mph floor, anchored free-flow, precision bands, coverage eras, AADT vintage</td><td><span class="tny-mono">data-types/pm3/PROVENANCE.md</span> · <span class="tny-mono">lib/precision.js</span> · <span class="tny-mono">downloadManifest.js</span> (MEASURED block)</td><td>docs 281670 · the download package's README</td></tr>
+            <tr><td>TSMO sources, measure formulas, coverage, cadence, glossary</td><td>live page tsmo2/methodology 2184101 · <span class="tny-mono">tsmo-methodology.html</span> · ED v2 header comments · <span class="tny-mono">vot_rates.js</span></td><td>in-product only; <span class="tny-mono">docs/tsmo/methodology</span> is empty</td></tr>
+            <tr><td>MAP-21 computation and targets</td><td><span class="tny-mono">MAP21_REPORTING_PLAN.md</span> · <span class="tny-mono">map-21-*.html</span> · pm3 fork task R1–R14 · FHWA HIF-18-040 / HIF-18-024</td><td>MAP-21 page "methodology" band (partial)</td></tr>
+            <tr><td>Freight Atlas sources and cadence</td><td>35 source descriptions in the npmrds2 Data Manager (2026-07-10 pass) · plan-maps crosstab · TRANSEARCH methodology PDFs (upload pending)</td><td>source pages behind the sign-in wall</td></tr>
+            <tr><td>Data quality / precision of probe data</td><td><span class="tny-mono">reports/npmrds-data-quality-report.html</span> · outliers research</td><td>not user-facing</td></tr>
+            <tr><td>OSM / TMC conflation</td><td>docs 281807 · section 281915 (the only written provenance)</td><td>buried in "Appendix (Draft)"</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="font-proxima text-[12px] leading-[1.55] text-slate-600 mt-3">Two figure conflicts must be settled before any of this is republished: Non-Interstate LOTTR 83.2 % (bound view) vs 85.0 % (Warde table) across the MAP-21 pages and NPMRDS home; and <span class="tny-mono">map-21.html</span> / <span class="tny-mono">map-21-trend.html</span> still carry handoff placeholder KPIs.</p>
+    </div>
+  </section>
+
+  <!-- ── §04 tickets ──────────────────────────────────────────────────── -->
+  <section id="s04" class="py-11 border-b border-zinc-950/05">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="kicker">// 04</span><span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">What the tickets say about users: half the feedback is a documentation request in disguise.</h2>
+    <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mt-2 max-w-[760px]">
+      Three corpora, read in full: the control-room ticket dataset (202 rows, 2026-07-07 → 2026-09-03; 169 filed by clients, 32 by the QA agent),
+      the 92 per-page user stories, and the legacy "NYSDOT Running Fixes" tracker (62 rows, 2025-08 → 2026-06). Every non-AI row was hand-assigned
+      one primary cluster (<span class="tny-mono">tickets-analysis.md</span>, <span class="tny-mono">tools/classify.py</span>).
+    </p>
+
+    <div class="grid grid-cols-1 xl:grid-cols-5 gap-6 mt-6">
+      <div class="xl:col-span-3 overflow-x-auto tny-card">
+        <table class="tny">
+          <thead><tr><th>cluster</th><th class="num">tickets</th><th class="num">legacy fixes</th><th class="num">combined</th><th>documentation implied</th></tr></thead>
+          <tbody>
+            <tr><td><span class="font-medium text-[#0f1722]">A · number / measure / geography not understood</span></td><td class="num">22</td><td class="num">0</td><td class="num">22</td><td>measure reference with unit · period basis · vehicle class · geography basis; "what the filters mean"</td></tr>
+            <tr><td><span class="font-medium text-[#0f1722]">B · couldn't find it / didn't know how / looked clickable</span></td><td class="num">22</td><td class="num">13</td><td class="num">35</td><td>filter-bar guide; navigation map; sign-in &amp; sessions; report-an-issue</td></tr>
+            <tr><td><span class="font-medium text-[#0f1722]">C · terminology, labels, jargon</span></td><td class="num">20</td><td class="num">1</td><td class="num">21</td><td>glossary + house style (no internal version names; expand formula variables; "Freight Atlas" not "Atlas")</td></tr>
+            <tr><td><span class="font-medium text-[#0f1722]">D · data coverage, freshness, time basis, provenance</span></td><td class="num">13</td><td class="num">10</td><td class="num">23</td><td>per-source coverage table; "partial years show partial totals"; provenance line under every headline figure</td></tr>
+            <tr><td><span class="font-medium text-[#0f1722]">E · downloads, exports, API access</span></td><td class="num">8</td><td class="num">2</td><td class="num">10</td><td>"getting the data out" per product; download formats; where the API docs are</td></tr>
+            <tr class="total"><td>documentation-relevant (A–E)</td><td class="num">85</td><td class="num">26</td><td class="num">111</td><td>49 % of 227 non-test rows · 52 % of tickets alone</td></tr>
+            <tr><td>F1 · pure bugs</td><td class="num">38</td><td class="num">23</td><td class="num">61</td><td>—</td></tr>
+            <tr><td>F2 · pure style / copy edits</td><td class="num">32</td><td class="num">6</td><td class="num">38</td><td>—</td></tr>
+            <tr><td>G · feature requests</td><td class="num">10</td><td class="num">7</td><td class="num">17</td><td>roadmap (county view, MPO geography, maps, vehicle-class selector)</td></tr>
+            <tr><td>T · test artifacts</td><td class="num">5</td><td class="num">0</td><td class="num">5</td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="xl:col-span-2 tny-card p-5">
+        <div class="kicker mb-2">who is asking · measured</div>
+        <div class="overflow-x-auto">
+          <table class="tny">
+            <thead><tr><th>organisation</th><th class="num">rows</th><th>cares about</th></tr></thead>
+            <tbody>
+              <tr><td>NYSDOT central office (program lead)</td><td class="num">54</td><td>messaging consistent with NYSITS; MPOs as "our primary customer"; complete-year integrity; comparability</td></tr>
+              <tr><td>NYSDOT data / technical staff (3)</td><td class="num">16</td><td>exact values, provenance to the plan, map legibility, route tooling</td></tr>
+              <tr><td>MPOs — SMTC (Syracuse), GBNRTC (Buffalo)</td><td class="num">27</td><td>verifying segments/geography, exporting data, attribution, dashboard interactivity</td></tr>
+              <tr><td>County — Dutchess</td><td class="num">6</td><td>sub-regional views; explicit statewide/region labelling; discoverable filters</td></tr>
+              <tr><td>Unattributed (before reporter stamping)</td><td class="num">56</td><td>mostly maps_gallery, reliability, congestion</td></tr>
+              <tr><td>QA agent / AVAIL</td><td class="num">43</td><td>acceptance gaps (not end users)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-3">By surface: TSMO 125 · Freight Atlas 55 · NPMRDS 17 · landing 5. The legacy NPMRDS tools (Folders, Batch Reports, Report View, User Management) appear only in the legacy tracker — no story or ticket covers them in the new corpus.</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+      <div class="space-y-3">
+        <div class="kicker">in their words</div>
+        <blockquote class="q">"it says 'How it's computed -&gt;' at the bottom. This is not clickable and there is no information on how it's computed."<cite>2191403 · tsmo2:home</cite></blockquote>
+        <blockquote class="q">"What is actually being shown when there is no filter on region? Is there anyway to clarify this?"<cite>2191486 · tsmo2:reliability_v2 — decided: no region = the full PM3 submission, deliberately not Σ regions</cite></blockquote>
+        <blockquote class="q">"Why are we showing this on an annual basis for all years instead of the year selected????"<cite>2214490 · tsmo2:home — the missing answer: LOTTR is annual by federal definition</cite></blockquote>
+        <blockquote class="q">"I have no idea what delay attribution v2 series means or refers to."<cite>2214495 · tsmo2:home</cite></blockquote>
+        <blockquote class="q">"the Year pre-sets to 2025 but Region is blank, and it's unclear how to select a region. You can't click on 'Region'-- you have to hover around until you hit on a blank area with a drop-down."<cite>2195000 · tsmo2:reliability_v2</cite></blockquote>
+        <blockquote class="q">"In the black boxes for measure definitions the formulas have a lot of abbreviated words, it would be helpful to expand them all. i.e. TT_obs"<cite>2195606 · tsmo2:methodology</cite></blockquote>
+        <blockquote class="q">"Does this link to the NYSDOT page and obtain a fresh download ORRRRRRRRRR Is this a copy you got last week/year/month…"<cite>2197823 · freightatlas2:about_the_plan</cite></blockquote>
+        <blockquote class="q">"Docs page link goes to NPMRDS Docs?" — note: "universal docs page, sectioned for each domain"<cite>RF2172528 · legacy tracker</cite></blockquote>
+        <blockquote class="q">"I can't find the tools needed to create a new route."<cite>2210869 · NYSDOT data staff</cite></blockquote>
+      </div>
+      <div class="tny-card p-5 prose font-proxima text-[13px] leading-[1.6] text-slate-700">
+        <div class="kicker mb-2">the ten documentation topics the evidence pays for, in order</div>
+        <ol>
+          <li><span class="font-medium text-[#0f1722]">Measure reference with basis statements</span> — definition, formula with expanded variables, unit, period basis (annual vs monthly), vehicle class, system (interstate vs not, mileage), federal targets. Every KPI card's "how it's computed" must resolve to it.</li>
+          <li><span class="font-medium text-[#0f1722]">Geography semantics</span> — statewide vs region vs county vs MPO; why regions don't sum; region numbering; MPO/county status.</li>
+          <li><span class="font-medium text-[#0f1722]">Using the filter bar</span> — single-select year, clearable region, blank = All, what each page excludes by design.</li>
+          <li><span class="font-medium text-[#0f1722]">Coverage &amp; freshness per source</span> — spans, lag, gaps, partial years, why a cell shows $0, which measures are "not yet computed".</li>
+          <li><span class="font-medium text-[#0f1722]">Getting the data out</span> — download builder, Data &amp; Downloads catalog, formats, API location, what needs a login.</li>
+          <li><span class="font-medium text-[#0f1722]">Glossary + naming rules</span> — including a ban on internal names ("v2 series", "ClickHouse, view 982") on user pages.</li>
+          <li><span class="font-medium text-[#0f1722]">Navigation &amp; accounts</span> — product switcher, "Platform home", public vs signed-in, session length, one login across products.</li>
+          <li><span class="font-medium text-[#0f1722]">Map reading</span> — layers, legends, deep links, deselecting, what a blank incident map means.</li>
+          <li><span class="font-medium text-[#0f1722]">"What this page answers"</span> per dashboard — liftable from the 92 stories.</li>
+          <li><span class="font-medium text-[#0f1722]">Legacy NPMRDS how-tos</span> — reports, batch reports, folders, route creation, permissions: 36 legacy-tracker rows and no current coverage.</li>
+        </ol>
+        <p class="mt-2 text-[12px] text-slate-600">Silence is not clarity: NPMRDS pages drew few tickets because they are in QA with one or two testers, not because they are understood. TSMO About drew none — it is prose about the program, which is what documentation of the <em>program</em> should look like.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── §05 best practice ────────────────────────────────────────────── -->
+  <section id="s05" class="py-11 border-b border-zinc-950/05">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="kicker">// 05</span><span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">How documentation should be done: separate doing from knowing on the page, never at the top of the site.</h2>
+    <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mt-2 max-w-[760px]">
+      Frameworks (Diátaxis, DITA, Information Mapping, Google and Microsoft style guides, Write the Docs, Every Page is Page One), usability research
+      (Nielsen Norman Group, Meng et al.), public-sector content design (GOV.UK, ONS, plainlanguage.gov, 18F, Section 508 / WCAG), and how statistical
+      publishers document methods (BLS, Census, ONS, Eurostat, FHWA TPM guidance; Datasheets for Datasets, Data Cards, FAIR, DCAT). Full list with URLs in
+      <span class="tny-mono">best-practices.md</span>.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-4 mt-6">
+      <div class="tny-card p-4"><div class="font-display font-semibold text-[26px] leading-none text-[#37576B]">20–28%</div><div class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-2">of the words on a page get read (NN/g). Front-load, inverted pyramid, short lists; conclusions first improves recall.</div></div>
+      <div class="tny-card p-4"><div class="font-display font-semibold text-[26px] leading-none text-[#37576B]">skipped</div><div class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-2">Onboarding tours are dismissed and do not improve task performance; contextual pull-help at the point of need is read (NN/g 2023).</div></div>
+      <div class="tny-card p-4"><div class="font-display font-semibold text-[26px] leading-none text-[#37576B]">domain</div><div class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-2">The one observational study of docs use (Meng et al. 2019) found a top-level split by information type ("Concepts / Reference") confused readers; organise by domain, nest the types.</div></div>
+      <div class="tny-card p-4"><div class="font-display font-semibold text-[26px] leading-none text-[#37576B]">dated</div><div class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-2">Domain experts scan too; they check dates, bylines and sources and abandon undated content (NN/g). Every page needs a last-reviewed stamp.</div></div>
+      <div class="tny-card p-4"><div class="font-display font-semibold text-[26px] leading-none text-[#37576B]">template</div><div class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-2">BLS, Census, ONS and FHWA document every measure with the same section order (concepts · sources · calculation · accuracy · revisions), versioned independently of any tool.</div></div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+      <div class="tny-card p-5 prose font-proxima text-[13px] leading-[1.6] text-slate-700">
+        <div class="kicker mb-2">principles we adopt · structure and writing</div>
+        <ol>
+          <li><span class="font-medium text-[#0f1722]">A page is a task, a lookup, or an explanation — never a blend</span> (Diátaxis). Mixing degrades both halves.</li>
+          <li><span class="font-medium text-[#0f1722]">Label hubs by domain, nest the types inside</span> (Meng et al.; Diátaxis on complex hierarchies).</li>
+          <li><span class="font-medium text-[#0f1722]">Every page is page one</span>: state what it is for, whom it assumes, and link to neighbours — readers arrive from search or from the app (Baker).</li>
+          <li><span class="font-medium text-[#0f1722]">Task pages</span>: goal in the title, prerequisites and location first, one action per step, ≤ 12 steps, expected result, UI labels verbatim (Google, Microsoft).</li>
+          <li><span class="font-medium text-[#0f1722]">Plain language even for engineers</span>; precise terms explained in place and linked to one glossary (ONS, GOV.UK).</li>
+          <li><span class="font-medium text-[#0f1722]">Two levels of disclosure</span>: summary in the tool, full method one click away; tooltips carry hints, never essentials (NN/g).</li>
+          <li><span class="font-medium text-[#0f1722]">One canonical definition, rendered everywhere</span>; duplicated copies drift (Write the Docs). The audit found exactly this failure.</li>
+          <li><span class="font-medium text-[#0f1722]">FAQs only from real questions, in the users' words, pruned</span> (NN/g) — the ticket system supplies them.</li>
+          <li><span class="font-medium text-[#0f1722]">Descriptive link text, never "Learn more"</span>; deep-link from the app to the specific anchor, not a landing page.</li>
+          <li><span class="font-medium text-[#0f1722]">Adopt incrementally; never publish empty sections</span> (Diátaxis: "horrible"). Nine empty pages today.</li>
+        </ol>
+      </div>
+      <div class="tny-card p-5 prose font-proxima text-[13px] leading-[1.6] text-slate-700">
+        <div class="kicker mb-2">principles we adopt · methodology, accessibility, operations</div>
+        <ol start="11">
+          <li><span class="font-medium text-[#0f1722]">Methodology follows the statistical-agency template</span>, identical on every measure page; every calculation step cites its authority (23 CFR 490, FHWA HIF-18-040) and states its edge rules.</li>
+          <li><span class="font-medium text-[#0f1722]">Document data products like datasheets</span>: motivation, composition, collection, preprocessing, uses, distribution, maintenance; provenance, licence, cadence are metadata fields, not prose (FAIR, DCAT).</li>
+          <li><span class="font-medium text-[#0f1722]">Version methodology independently of the UI and keep old editions</span> (Census D&amp;M, HPMS Field Manual, EPA MOVES); numbers should carry the methodology version they were computed under.</li>
+          <li><span class="font-medium text-[#0f1722]">Public change notes for substantive changes</span>; release notes for humans, grouped Added / Changed / Deprecated / Removed / Fixed, dated (GOV.UK, Keep a Changelog).</li>
+          <li><span class="font-medium text-[#0f1722]">HTML first; PDF only as a tagged export</span> (GDS, Section 508). WCAG 2.1 AA is the floor: alt text on every screenshot, data tables for complex images, real captions plus transcript for any video (ADA 2024 web rule applies to a state DOT).</li>
+          <li><span class="font-medium text-[#0f1722]">Screenshots only when they save words</span>: cropped, annotated with overlays, alt-texted, captured from the real tool with the state named, regenerable (Google style; the design system's <span class="tny-mono">assets/screens</span> convention already says this).</li>
+          <li><span class="font-medium text-[#0f1722]">Search and navigation together; instrument both</span> — zero-result searches are the content backlog.</li>
+          <li><span class="font-medium text-[#0f1722]">API docs = generated reference + hand-written quick start, concepts, recipes</span>, pinned versions, changelog (OpenAPI; Stripe).</li>
+          <li><span class="font-medium text-[#0f1722]">Named owners, review triggers, docs reviewed in the same pipeline as the product</span> (Write the Docs; Google SWE book). Docs owned by nobody rot on schedule.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="tny-card tny-card-tint p-5 mt-6">
+      <div class="kicker mb-3">three ways to shape a multi-product docs site — and the pick</div>
+      <div class="overflow-x-auto">
+        <table class="tny">
+          <thead><tr><th>option</th><th>shape</th><th>for</th><th>against</th><th>verdict</th></tr></thead>
+          <tbody>
+            <tr><td><span class="font-medium text-[#0f1722]">A · Diátaxis per product</span></td><td><span class="tny-mono">/docs/npmrds/{start, how-to, reference, explanation}</span> repeated per product; methodology inside each</td><td>matches the product mental model; each hub self-contained</td><td>LOTTR/TTTR/PHED/excessive delay and the shared datasets serve NPMRDS <em>and</em> TSMO → duplicated definitions that drift (the audit's five-copies problem again); methodology and UI change on different cycles; "Explanation / Reference" are the labels Meng et al. found confusing</td><td><span class="pill pill-line">reject</span></td></tr>
+            <tr><td><span class="font-medium text-[#0f1722]">B · Domain hubs + a shared Measures &amp; Data hub</span></td><td>per-product hubs (start here → how-to → screens &amp; settings → FAQ) + one <em>Measures &amp; Data</em> hub (one page per measure, data source, processing concept; change log; glossary) + Developers + Admin + What's new</td><td>single-sourced definitions; how BLS/Census/ONS/FHWA publish; separate owners and review triggers; hub names are domain labels; in-app tooltips can deep-link to one canonical anchor; the owner's tool-vs-methodology split, done at the right level</td><td>"why is my number what it is" takes two hops unless the tool page embeds a summary (so it must); the hub needs a strict per-page template or becomes a dumping ground; cross-links must be audited</td><td><span class="pill pill-green">adopt</span></td></tr>
+            <tr><td><span class="font-medium text-[#0f1722]">C · Audience-first</span></td><td>Analysts / Operations / Developers / Admins, then product</td><td>developers and admins genuinely diverge</td><td>planners, MPO staff and operations engineers overlap heavily across NPMRDS and TSMO — the same tasks would fragment</td><td><span class="pill pill-line">reject as primary axis</span>; keep Developers and Admin as hubs</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── §06 competitors ──────────────────────────────────────────────── -->
+  <section id="s06" class="py-11 border-b border-zinc-950/05">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="kicker">// 06</span><span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">How comparable platforms do it: the credible ones publish their methodology; the incumbent hides it behind a login.</h2>
+    <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mt-2 max-w-[760px]">
+      Replica, StreetLight, RITIS / Probe Data Analytics / NPMRDS Analytics, INRIX, Iteris ClearGuide, plus TomTom Move, HERE Traffic Analytics, Urban SDK,
+      Caltrans PeMS, FHWA's own TPM pages, Waze for Cities and Esri as a general model. Observations are of pages actually fetched on 2026-09-04; items
+      behind logins are marked. Full notes and every URL in <span class="tny-mono">competitors.md</span>.
+    </p>
+
+    <div class="overflow-x-auto tny-card mt-6">
+      <table class="tny">
+        <thead><tr><th>doc type · convention</th><th>Replica</th><th>StreetLight</th><th>RITIS / PDA</th><th>INRIX</th><th>ClearGuide</th><th>TomTom</th><th>HERE</th><th>PeMS</th></tr></thead>
+        <tbody>
+          <tr><td>public without login</td><td>✔ ReadMe + Intercom</td><td>✖ help / ✔ API + white papers</td><td>✖ (marketing only)</td><td>✔ Jekyll</td><td>✔ one PDF</td><td>✔</td><td>✔</td><td>✖ (PDF manual)</td></tr>
+          <tr><td>how-to / tutorials (written)</td><td>✔</td><td>🔒</td><td>✖ (video only)</td><td>✔ user guide</td><td>✔</td><td>✔</td><td>✔</td><td>✔ + exercises</td></tr>
+          <tr><td>metric definitions with formulas</td><td>✔ in methodology</td><td>✔ white papers</td><td>🔒</td><td>✔ + thresholds + assumptions</td><td>✔ appendix (one-liners)</td><td>✔</td><td>✔ page per field</td><td>✔ glossary + "About This Report"</td></tr>
+          <tr><td>long-form methodology</td><td>✔ summary + extended (15k words)</td><td>✔ (form-gated PDF)</td><td>✖</td><td>✔</td><td>◐</td><td>✔ "How it works"</td><td>◐</td><td>✔</td></tr>
+          <tr><td>validation / quality reports</td><td>✔ per region per release</td><td>✔ (R² vs counters)</td><td>✖</td><td>◐ missing-data table</td><td>✖</td><td>✖</td><td>✖</td><td>✔ data fidelity</td></tr>
+          <tr><td>data dictionary / schema</td><td>✔ 4-column tables</td><td>✖</td><td>✖</td><td>◐</td><td>◐</td><td>✔</td><td>✔</td><td>✖</td></tr>
+          <tr><td>glossary</td><td>✖</td><td>🔒</td><td>🔒</td><td>✔</td><td>◐</td><td>✔</td><td>✔</td><td>✔ with "Pathway: VDS &gt; Performance &gt; …"</td></tr>
+          <tr><td>release notes / changelog</td><td>✔ one dated article</td><td>🔒 + public method-update posts</td><td>✖</td><td>◐ Map Updates Q&amp;A</td><td>✖</td><td>✔ date + version</td><td>✔</td><td>✖</td></tr>
+          <tr><td>use cases → templates</td><td>◐</td><td>◐</td><td>✔ use case → tool → tutorial → template</td><td>◐</td><td>✖</td><td>✔</td><td>✖</td><td>✔ exercises</td></tr>
+          <tr><td>contextual help from the app</td><td>✖ observed</td><td>?</td><td>✔ (gated)</td><td>✖</td><td>✔ About menu</td><td>◐</td><td>✖</td><td>✔ "About This Report" beside every report</td></tr>
+          <tr><td>last-updated stamps</td><td>✔</td><td>✔ (API)</td><td>✖</td><td>✖</td><td>✔ cover</td><td>✔</td><td>✔</td><td>✔ cover</td></tr>
+          <tr><td>feedback widget</td><td>✔</td><td>?</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td><td>✖</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="font-proxima text-[11px] text-slate-500 mt-2">✔ observed public · ◐ partial · 🔒 exists but login/form-gated · ✖ not found. Urban SDK, Waze and Esri are in the research file.</p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+      <div class="tny-card p-5 prose font-proxima text-[13px] leading-[1.6] text-slate-700">
+        <div class="kicker mb-2">patterns that recur among the strong examples</div>
+        <ol>
+          <li><span class="font-medium text-[#0f1722]">Two layers, one click apart, per product.</span> INRIX's <em>Overview / Metrics / User Guide</em> triad; TomTom's "How it works → Definitions" nested inside the user guide; Replica's <em>Overview / Sample / Schema / Methodology</em> dataset template.</li>
+          <li><span class="font-medium text-[#0f1722]">Methodology is public even when the tool is not.</span> StreetLight gates help but publishes metric-by-metric methodology and validation; Replica publishes 15k words; FHWA publishes step-by-step procedures. Methodology is a credibility asset for procurement, peer review and federal reporting.</li>
+          <li><span class="font-medium text-[#0f1722]">A metric page has a fixed anatomy</span>: plain definition → formula → percentile / threshold → time-period rules → source and version → assumptions and caveats → where it appears in the UI.</li>
+          <li><span class="font-medium text-[#0f1722]">Change logs cover data and map versions and state the impact.</span> INRIX tells users saved routes get "[Manual Review Required]"; StreetLight re-runs old analyses to show the delta; TomTom stamps release date + software version.</li>
+          <li><span class="font-medium text-[#0f1722]">Use case → tool → tutorial → deliverable template</span> (RITIS): answers "how do I produce the MAP-21 / corridor / bottleneck report my boss wants", which no metric page does.</li>
+          <li><span class="font-medium text-[#0f1722]">Contextual help from the exact report to the exact explanation</span> — PeMS's "About This Report" beside every report title is the model.</li>
+          <li><span class="font-medium text-[#0f1722]">Video supplements, never replaces, text.</span> RITIS's undated, transcript-less videos and INRIX Signals' one-video "user guide" are the weakest how-to experiences reviewed.</li>
+          <li><span class="font-medium text-[#0f1722]">Q&amp;A is the natural form for "why does my number differ"</span> — FHWA's Urban Congestion Report documentation, INRIX Map Updates, TomTom FAQ.</li>
+        </ol>
+      </div>
+      <div class="tny-card p-5 prose font-proxima text-[13px] leading-[1.6] text-slate-700">
+        <div class="kicker mb-2">what to copy · what to avoid</div>
+        <p><span class="font-medium text-[#0f1722]">Copy.</span> Replica's dataset page template and summary-vs-extended methodology pair; StreetLight's public methodology-update posts that quantify impact; RITIS's use-case chain and deliverable templates with real agency samples; INRIX's metric pages (formula + threshold + assumptions) and its map-update Q&amp;A; PeMS's contextual "About This Report" and glossary pathways; TomTom's release date + version stamps; Waze's revision table atop a spec; Esri's in-topic TOC, callouts, related links and feedback footer; HERE's deep-linkable page per output field.</p>
+        <p><span class="font-medium text-[#0f1722]">Avoid.</span> Login-gated help that breaks search results and partner deep links (RITIS, StreetLight); PDF-only manuals (ClearGuide v2.08, PeMS 2020) — no search, no deep links, copy-paste errors survive; "Confidential" stamped on a public document; form-gated PDFs; three vendors' UIs for one product; a single ever-growing release-notes article; a version number as a category name; disabled nav tabs; undated pages.</p>
+        <p class="mt-2"><span class="font-medium text-[#0f1722]">The opening TransportNY has.</span> The incumbent for NPMRDS analytics exposes no public glossary, metric definitions, release notes or API reference. A public, versioned, citable Measures &amp; Data hub — which the 281670 page already prototypes — is the differentiator, and it is what MPO consultants and FHWA reviewers can actually cite.</p>
+        <p class="mt-2 text-[12px] text-slate-600">Cite by title on every PM3 page: FHWA "General Guidance and Step-by-Step Metric Calculation Procedures…" (HIF-18-040), "Computation Procedure for Travel Time Based and Percent Non-SOV Travel Performance Measures" (HIF-18-024), the Average Vehicle Occupancy factors memo, and 23 CFR 490 subparts E–G.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── §07 recommendation ───────────────────────────────────────────── -->
+  <section id="s07" class="py-11 border-b border-zinc-950/05">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="kicker">// 07</span><span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Recommendation: domain hubs on the outside, documentation types on the inside, methodology written once.</h2>
+    <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mt-2 max-w-[760px]">
+      One public documentation site at <span class="tny-mono">/docs</span>, no login, stable URLs, reachable from every product. Seven hubs plus three utilities.
+      Inside each product hub the Diátaxis types are nested in reading order; methodology lives in one shared hub and is summarised on every tool page that shows a number.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-6">
+      <div class="tny-card p-4"><div class="kicker mb-1">hub</div><div class="font-display font-medium text-[16px] text-[#0f1722]">Get started</div><p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1">What TransportNY is · accounts &amp; sessions · navigating · which tool answers my question · FAQ.</p></div>
+      <div class="tny-card p-4"><div class="kicker mb-1">hub × 3</div><div class="font-display font-medium text-[16px] text-[#0f1722]">NPMRDS · TSMO · Freight Atlas</div><p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1">Each: <em>start here</em> (one tutorial) → <em>how to</em> (task pages) → <em>screens &amp; settings</em> (what each page/panel shows) → <em>recipes</em> → FAQ. No measure definitions here — summaries and links only.</p></div>
+      <div class="tny-card tny-card-ink p-4"><div class="kicker mb-1" style="color:#F5D78E">hub · canonical</div><div class="font-display font-medium text-[16px]">Measures &amp; Data</div><p class="font-proxima text-[12px] leading-[1.5] text-slate-200 mt-1">One page per measure (fixed anatomy), per data source (datasheet), per processing concept; which-measure decision table; coverage &amp; freshness; dated methodology change log.</p></div>
+      <div class="tny-card p-4"><div class="kicker mb-1">hub × 2</div><div class="font-display font-medium text-[16px] text-[#0f1722]">Developers · Admin</div><p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1">Quick start, Data Manager API, examples, downloads &amp; formats, changelog · upload, manage, map editor, publish, users &amp; permissions (role-gated content, labelled).</p></div>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+      <div class="tny-card tny-card-tint p-4"><div class="kicker mb-1">utility</div><div class="font-display font-medium text-[15px] text-[#0f1722]">Glossary</div><p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1">One entry per term, with a "Pathway: product › screen" line and a link to the canonical measure or data page.</p></div>
+      <div class="tny-card tny-card-tint p-4"><div class="kicker mb-1">utility</div><div class="font-display font-medium text-[15px] text-[#0f1722]">What's new</div><p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1">Dated entries labelled Platform · Data release · Map/TMC version · Methodology, each linking to the page whose number moved.</p></div>
+      <div class="tny-card tny-card-tint p-4"><div class="kicker mb-1">utility</div><div class="font-display font-medium text-[15px] text-[#0f1722]">Help &amp; feedback</div><p class="font-proxima text-[12px] leading-[1.5] text-slate-600 mt-1">Report an issue / ask a question (the existing ticket modal), known issues (the status page), contact, release process.</p></div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
+      <div class="tny-card p-5 prose font-proxima text-[13px] leading-[1.6] text-slate-700">
+        <div class="kicker mb-2">the page types, and the one rule each obeys</div>
+        <div class="overflow-x-auto">
+          <table class="tny">
+            <thead><tr><th>type</th><th>job</th><th>rule</th></tr></thead>
+            <tbody>
+              <tr><td><span class="font-medium text-[#0f1722]">Start here</span></td><td>one guided first success per product (≈10 min)</td><td>a real task with a visible result; no options, no theory</td></tr>
+              <tr><td><span class="font-medium text-[#0f1722]">How-to</span></td><td>one user goal, imperative title</td><td>prerequisites + location first; one action per step; ≤ 12 steps; expected result; UI labels verbatim</td></tr>
+              <tr><td><span class="font-medium text-[#0f1722]">Screens &amp; settings</span></td><td>what each page, panel, filter and column shows</td><td>tables, not prose; every measure name links to its Measures &amp; Data anchor; a 2–3 sentence "how this is computed" pulled from that page</td></tr>
+              <tr><td><span class="font-medium text-[#0f1722]">Measure page</span></td><td>the canonical definition and method</td><td>fixed anatomy (below); versioned; cites authority; never contains UI steps</td></tr>
+              <tr><td><span class="font-medium text-[#0f1722]">Data source page</span></td><td>the datasheet</td><td>motivation · composition · collection · preprocessing · uses · distribution · maintenance; cadence and licence as fields</td></tr>
+              <tr><td><span class="font-medium text-[#0f1722]">Concept</span></td><td>the explanation that spans measures (geography, peak periods, vintages)</td><td>no procedures; ends with "where this matters" links</td></tr>
+              <tr><td><span class="font-medium text-[#0f1722]">Recipe</span></td><td>use case → tools → steps → sample output</td><td>a deliverable a planner recognises; links to the measure pages used</td></tr>
+              <tr><td><span class="font-medium text-[#0f1722]">FAQ</span></td><td>real questions, users' words</td><td>sourced from resolved "Question" tickets; pruned quarterly; each answer links to the page that should have pre-empted it</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="tny-card p-5 prose font-proxima text-[13px] leading-[1.6] text-slate-700">
+        <div class="kicker mb-2">measure page anatomy · identical on every measure</div>
+        <ol>
+          <li><span class="font-medium text-[#0f1722]">Header block (the "telescope")</span> — name, abbreviation, one-sentence definition, unit; authority (23 CFR 490 §, FHWA guidance by title); methodology version + effective dates; last reviewed; owner; data vintages and coverage; <em>where this appears</em> (tools, reports, API fields); intended and out-of-scope uses. <span class="text-slate-500">This block is the single source for every in-app summary.</span></li>
+          <li><span class="font-medium text-[#0f1722]">What it answers</span> — the <span class="tny-mono">answers</span> string, verbatim from <span class="tny-mono">measures.js</span>.</li>
+          <li><span class="font-medium text-[#0f1722]">How it is computed</span> — numbered steps, formula with every variable expanded (ticket 2195606), percentile, time bins, stream, aggregation and weighting, rounding.</li>
+          <li><span class="font-medium text-[#0f1722]">Parameters and edge rules</span> — thresholds with source; missing data; truck fallback; facility types; minimum sample bars; the 20-mph floor.</li>
+          <li><span class="font-medium text-[#0f1722]">The choices made, and why</span> — the section that exists nowhere user-facing except 281670; from PROVENANCE and the task record.</li>
+          <li><span class="font-medium text-[#0f1722]">How much to trust it</span> — precision band, minimum-n, share of network clearing it; comparison to the federal value and expected differences.</li>
+          <li><span class="font-medium text-[#0f1722]">Worked example</span> — one segment, one period, reproducing a value visible in the tool.</li>
+          <li><span class="font-medium text-[#0f1722]">Known limits, comparability across years/versions, revision log, reproducibility</span> (download or API sketch), references, related measures.</li>
+        </ol>
+        <p class="text-[12px] text-slate-600">The 281670 catalogue entries already follow parts 2–6 on a five-part template; this anatomy adds the header block, the worked example and the per-page revision log, and gives each measure its own URL so the app can deep-link to it.</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+      <div class="tny-card p-5 prose font-proxima text-[13px] leading-[1.6] text-slate-700">
+        <div class="kicker mb-2">house rules the tickets wrote</div>
+        <ul>
+          <li>Say the <span class="font-medium text-[#0f1722]">basis</span> with every number: geography (statewide / region / county / MPO), period (annual PM3 / monthly series / selected year), vehicle class, system.</li>
+          <li>"Statewide" is a label, never a blank. Blank filters read "All".</li>
+          <li>No internal names on user pages: no "v2 series", "methodology v2", view or table ids, "ClickHouse".</li>
+          <li>Expand every formula variable on first use.</li>
+          <li>Product names verbatim: "Freight Atlas", not "Atlas"; "NPMRDS data" or "travel time data"; "Data freshness".</li>
+          <li>Partial years are labelled partial; series start dates are stated as dates, not slogans.</li>
+          <li>Every headline figure carries a provenance line (source, base year, plan page).</li>
+          <li>Design-language kickers (<span class="tny-mono">// 01</span>) stay in the design system; docs pages use plain headings.</li>
+        </ul>
+      </div>
+      <div class="tny-card p-5 prose font-proxima text-[13px] leading-[1.6] text-slate-700">
+        <div class="kicker mb-2">screenshots, media, accessibility</div>
+        <ul>
+          <li>Screenshots only where they save words; <span class="font-medium text-[#0f1722]">from the real tool</span>, captioned with the exact state and capture date (the <span class="tny-mono">assets/screens</span> convention, already proven on 280612).</li>
+          <li>Annotate with overlays, never baked into the PNG; crop; no PII; alt text that states the meaning; complex figures get a data table.</li>
+          <li>Capture scripts stored beside the images so a UI change regenerates them; a stale screenshot is a documentation bug.</li>
+          <li>Video only as a supplement, under ~3 minutes, with corrected captions and a transcript; never the only form of the steps (RITIS is the counter-example).</li>
+          <li>HTML first; PDFs only as tagged exports. WCAG 2.1 AA in review: heading order, alt text, link text, contrast. The 2024 ADA web rule applies to a state DOT.</li>
+          <li>Descriptive link text; deep links to anchors, never "Learn more" to a landing page.</li>
+        </ul>
+      </div>
+      <div class="tny-card p-5 prose font-proxima text-[13px] leading-[1.6] text-slate-700">
+        <div class="kicker mb-2">single-sourcing and governance</div>
+        <ul>
+          <li><span class="font-medium text-[#0f1722]">One registry of definitions</span>: <span class="tny-mono">measures.js</span> strings, PROVENANCE figures and the download manifest's MEASURED block render into the measure pages; the tool shows the page's header summary. When a number appears in two places it traces to one measurement.</li>
+          <li><span class="font-medium text-[#0f1722]">Owners</span>: one per hub; a methods owner per measure/data page; a product owner per tool page. UI changes that touch a documented surface touch (or explicitly waive) the doc.</li>
+          <li><span class="font-medium text-[#0f1722]">Review triggers</span>: tool pages on every release of the surface + a quarterly sweep; methodology pages on every data vintage, TMC network year, FHWA guidance change and the annual PM3 cycle — with a log entry even when nothing changed.</li>
+          <li><span class="font-medium text-[#0f1722]">Stamps</span>: last reviewed · applies to (product generation / methodology version) · owner, on every page. Substantive edits get a public change note; typos are silent.</li>
+          <li><span class="font-medium text-[#0f1722]">Feedback loop</span>: the ticket modal on every page; auto-stamped reporter, page and environment; a "Question" category; resolved questions become FAQ candidates weekly; zero-result docs searches are the backlog.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── §08 IA ───────────────────────────────────────────────────────── -->
+  <section id="s08" class="py-11 border-b border-zinc-950/05">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="kicker">// 08</span><span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Information architecture: 96 pages in seven hubs, each with a type, an audience, a source of truth and a salvage pointer.</h2>
+    <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mt-2 max-w-[760px]">
+      Slugs follow the pattern's existing snake_case convention under <span class="tny-mono">/docs</span>. <em>Status</em>: <span class="pill pill-green">keep</span> exists and is good ·
+      <span class="pill pill-amber">rewrite</span> exists, redo against the current UI · <span class="pill pill-blue">new</span> · <span class="pill pill-line">merge</span> from existing pages ·
+      <span class="pill pill-red">freeze</span> legacy content kept dated until the tool retires. Old page ids in the salvage column are today's <span class="tny-mono">npmrds_docs</span> rows.
+      Retirements and the disposition of all 37 current pages are in Appendix A.
+    </p>
+
+    <div class="mt-6">
+      <div class="kicker mb-2">the tree</div>
+<pre class="tree">/docs                                  Documentation home — hub cards · search · "I want to…" task index · latest What's new
+├─ start/                              GET STARTED
+│    what_is_transportny · accounts_and_sessions · navigating · which_tool · faq
+├─ npmrds/                             NPMRDS
+│    start                             build a route → put it in a report → read the measure
+│    routes/        create · manage
+│    reports/       start_from_template · find · build · share_and_print · templates · graph_types
+│    macro_view     (+ macro_view/download)
+│    route_comparison · segment · map21
+│    recipes/       composite_score · congestion_management_process · before_and_after
+│    legacy         <span class="k">frozen, dated: Folders · Batch Reports · old Macro · old Route Creation</span>
+│    faq
+├─ tsmo/                               TSMO
+│    start · filters · congestion · reliability · incidents · work_zones
+│    incident_search · incident_view · corridor_view · faq
+├─ freight_atlas/                      FREIGHT ATLAS
+│    start · map · gallery · layers · downloads · the_plan · faq
+├─ measures_and_data/                  <span class="n">MEASURES &amp; DATA — canonical</span>
+│    federal_vs_analytical · which_measure
+│    measures/      lottr · tttr · tttr80 · phed · ted · percentile_speed · coverage
+│                   excessive_delay · delay_attribution · cost_of_congestion
+│                   incident_delay_and_clearance · work_zone_delay · in_development · retired
+│    concepts/      peak_periods_and_epochs · geography · tmc_network_and_vintages
+│                   aadt_and_vintage · coverage_eras_and_comparability
+│    data/          npmrds_travel_times · tmc_network · pm3_and_map21 · transcom_events
+│                   excessive_delay_series · hpms_ris_attributes · routes_data · freight_atlas_sources
+│    coverage_and_freshness · methodology_changes
+├─ developers/                         DEVELOPERS
+│    quickstart · data_manager_api · examples · downloads_and_formats · batch_reports_api · changelog
+├─ admin/                              ADMIN  <span class="c">(role-gated content, labelled)</span>
+│    upload_data · manage_data · map_editor · add_map_to_page · map21_pm3_sources · users_and_permissions
+├─ glossary
+├─ whats_new
+└─ help</pre>
+    </div>
+
+    <div class="overflow-x-auto tny-card mt-6">
+      <table class="tny">
+        <thead><tr><th>#</th><th>slug (under /docs/)</th><th>page</th><th>type</th><th>audience</th><th>status</th><th>salvage from · single-source from</th></tr></thead>
+        <tbody>
+          <tr class="group"><td colspan="7">home + get started</td></tr>
+          <tr><td class="num">1</td><td><span class="tny-mono">/</span></td><td>Documentation home</td><td>hub</td><td>all</td><td><span class="pill pill-amber">rewrite</span></td><td>hub 1435963 (fix Transit copy, drop orphan labels, drop Transit card); design <span class="tny-mono">docs-overview.html</span></td></tr>
+          <tr><td class="num">2</td><td><span class="tny-mono">start</span></td><td>Get started</td><td>hub</td><td>all</td><td><span class="pill pill-blue">new</span></td><td>—</td></tr>
+          <tr><td class="num">3</td><td><span class="tny-mono">start/what_is_transportny</span></td><td>What TransportNY is · the three products · who it is for · what is public</td><td>concept</td><td>all</td><td><span class="pill pill-blue">new</span></td><td>landing copy; primer 225868 (NPMRDS part moves to #8)</td></tr>
+          <tr><td class="num">4</td><td><span class="tny-mono">start/accounts_and_sessions</span></td><td>Sign in, sessions and what needs an account</td><td>how-to</td><td>all</td><td><span class="pill pill-blue">new</span></td><td>tickets 2214470, RF2172529/2517/2510; ~6 h token; one login across products since 2026-09-02</td></tr>
+          <tr><td class="num">5</td><td><span class="tny-mono">start/navigating</span></td><td>Navigating the platform (product switcher, side navs, "Platform home", where Docs lives, sharing a URL)</td><td>how-to</td><td>all</td><td><span class="pill pill-blue">new</span></td><td>ticket 2197822; RF2172528</td></tr>
+          <tr><td class="num">6</td><td><span class="tny-mono">start/which_tool</span></td><td>Which tool answers my question? (cross-product decision table)</td><td>reference</td><td>planners</td><td><span class="pill pill-line">merge</span></td><td>280612 §01 routing table; 225868 "When to use each tool"; 280326 FAQ answers</td></tr>
+          <tr><td class="num">7</td><td><span class="tny-mono">start/faq</span></td><td>Platform FAQ</td><td>FAQ</td><td>all</td><td><span class="pill pill-amber">rewrite</span></td><td>280326 FAQ (19 questions, retarget answers); resolved "Question" tickets (e.g. 2191486, 2214490, 2192902)</td></tr>
+          <tr class="group"><td colspan="7">npmrds</td></tr>
+          <tr><td class="num">8</td><td><span class="tny-mono">npmrds</span></td><td>NPMRDS documentation home (what it is, strengths &amp; limits, the tools)</td><td>hub</td><td>planners · analysts</td><td><span class="pill pill-line">merge</span></td><td>1435960 ≡ 225868 (one copy; fix acronym expansions and dated examples)</td></tr>
+          <tr><td class="num">9</td><td><span class="tny-mono">npmrds/start</span></td><td>Start here: build a route, put it in a report, read the measure</td><td>start</td><td>new users</td><td><span class="pill pill-blue">new</span></td><td>design: home docs-card "New here?" three steps; skills creating-routes / creating-reports</td></tr>
+          <tr><td class="num">10</td><td><span class="tny-mono">npmrds/routes/create</span></td><td>Create a route (TMC click · markers · TMC search · save)</td><td>how-to</td><td>analysts</td><td><span class="pill pill-amber">rewrite</span></td><td>280614 (pins/TMC list/save concepts carry over; chrome does not); <span class="tny-mono">npmrds-route-creation.html</span> rev 1</td></tr>
+          <tr><td class="num">11</td><td><span class="tny-mono">npmrds/routes/manage</span></td><td>Find, edit, tag and share routes (tags replace Folders)</td><td>how-to</td><td>analysts</td><td><span class="pill pill-blue">new</span></td><td>routes_data 2107426; picker-modals proposal; RF2172513/2490 (Folders pain)</td></tr>
+          <tr><td class="num">12</td><td><span class="tny-mono">npmrds/reports/start_from_template</span></td><td>Start a report from a template (12 templates · 5 question types)</td><td>how-to</td><td>analysts</td><td><span class="pill pill-amber">rewrite</span></td><td>280610 intro; 280326 template catalogue; <span class="tny-mono">npmrds-reports.html</span> rev 3.1</td></tr>
+          <tr><td class="num">13</td><td><span class="tny-mono">npmrds/reports/find</span></td><td>Find a report (search, facets, tags, "mine", all-reports list)</td><td>how-to</td><td>analysts</td><td><span class="pill pill-blue">new</span></td><td><span class="tny-mono">npmrds-reports-list.html</span>; reports/list 2217965</td></tr>
+          <tr><td class="num">14</td><td><span class="tny-mono">npmrds/reports/build</span></td><td>Build and edit a report (route rail · graph cards · quick controls · Add graph · comparison mode)</td><td>how-to</td><td>analysts</td><td><span class="pill pill-amber">rewrite</span></td><td>281503 §Building / §Using the Graphs (panels → canvas); <span class="tny-mono">npmrds-report.html</span> §03 control inventory + 15 control rules</td></tr>
+          <tr><td class="num">15</td><td><span class="tny-mono">npmrds/reports/share_and_print</span></td><td>Share, print and publish a report (draft vs published; route edits write through)</td><td>how-to</td><td>analysts</td><td><span class="pill pill-blue">new</span></td><td><span class="tny-mono">npmrds-report.html</span> §04 print; traversing-report-pages skill</td></tr>
+          <tr><td class="num">16</td><td><span class="tny-mono">npmrds/reports/templates</span></td><td>Template reference — per template: question · setup · interpretation</td><td>reference</td><td>analysts</td><td><span class="pill pill-amber">rewrite</span></td><td>280610 walkthroughs (Snapshot · Seasonality · Bi-directional; keep Introduction/Setup/Interpretation; re-shoot); fix Single Route vs Single Day copy</td></tr>
+          <tr><td class="num">17</td><td><span class="tny-mono">npmrds/reports/graph_types</span></td><td>Graph types reference (bar · line · grid · table · map · difference)</td><td>reference</td><td>analysts</td><td><span class="pill pill-green">keep</span></td><td>281503 §Types of Graphs (drop the five "Coming Soon"); Add Graph shapes</td></tr>
+          <tr><td class="num">18</td><td><span class="tny-mono">npmrds/macro_view</span></td><td>Macro View: how to use</td><td>how-to</td><td>planners</td><td><span class="pill pill-green">keep</span></td><td>280612 (published 2026-08-28) — rename slug from <span class="tny-mono">regional_analysis</span>; move Composite Score to #24</td></tr>
+          <tr><td class="num">19</td><td><span class="tny-mono">npmrds/macro_view/download</span></td><td>Download data from the Macro View (scope · CSV/GPKG · columns · the manifest)</td><td>how-to</td><td>analysts</td><td><span class="pill pill-line">merge</span></td><td>280612 §07; <span class="tny-mono">downloadManifest.js</span>; tickets 2214580, RF2172487/2523</td></tr>
+          <tr><td class="num">20</td><td><span class="tny-mono">npmrds/route_comparison</span></td><td>Compare routes across periods (the cross-tab; Base period; fixed / own / relative dates)</td><td>how-to</td><td>analysts</td><td><span class="pill pill-blue">new</span></td><td><span class="tny-mono">route-comparison.html</span>; supersedes Batch Reports 489118 when live</td></tr>
+          <tr><td class="num">21</td><td><span class="tny-mono">npmrds/segment</span></td><td>Look at one segment (attributes · completeness · speed by peak · PM3 history)</td><td>how-to</td><td>analysts</td><td><span class="pill pill-blue">new</span></td><td><span class="tny-mono">npmrds-tmc.html</span> (design); legacy TmcPage — write when the page ships</td></tr>
+          <tr><td class="num">22</td><td><span class="tny-mono">npmrds/map21</span></td><td>MAP-21 PM3 pages: read compliance, trends, MPO breakdown, download the annual file</td><td>how-to</td><td>planners · MPOs</td><td><span class="pill pill-blue">new</span></td><td><span class="tny-mono">map-21-*.html</span>; <span class="tny-mono">MAP21_REPORTING_PLAN.md</span>; links to #49 for federal-vs-analytical</td></tr>
+          <tr><td class="num">23</td><td><span class="tny-mono">npmrds/recipes</span></td><td>Recipes — use case → tools → steps → sample output</td><td>hub</td><td>planners</td><td><span class="pill pill-line">merge</span></td><td>Discussions 281672 intro (skeleton Measures section dropped)</td></tr>
+          <tr><td class="num">24</td><td><span class="tny-mono">npmrds/recipes/composite_score</span></td><td>Recipe: a composite bottleneck score in Excel</td><td>recipe</td><td>planners</td><td><span class="pill pill-green">keep</span></td><td>280612 Composite Score Tutorial (modernise download steps and column names)</td></tr>
+          <tr><td class="num">25</td><td><span class="tny-mono">npmrds/recipes/congestion_management_process</span></td><td>Recipe: a CMP with TransportNY (CMP step → tool → measure)</td><td>recipe</td><td>MPOs</td><td><span class="pill pill-amber">rewrite</span></td><td>675545 (keep framing + "TED per mile to rank, TED total to report"; replace legacy steps; write or drop Results)</td></tr>
+          <tr><td class="num">26</td><td><span class="tny-mono">npmrds/recipes/before_and_after</span></td><td>Recipe: a before/after study (Route 787 raised intersections)</td><td>recipe</td><td>planners</td><td><span class="pill pill-green">keep</span></td><td>675525 (replace stock images with tool output; add route + dates for reproducibility)</td></tr>
+          <tr><td class="num">27</td><td><span class="tny-mono">npmrds/legacy</span></td><td>The legacy tool suite (npmrds.transportny.org): Folders · Batch Reports · old Macro · old Route Creation</td><td>reference</td><td>legacy users</td><td><span class="pill pill-red">freeze</span></td><td>280326 tour, 489118 CSV spec, 280614/281503 legacy chrome — dated "applies to legacy site"; retire with the tools</td></tr>
+          <tr><td class="num">28</td><td><span class="tny-mono">npmrds/faq</span></td><td>NPMRDS FAQ</td><td>FAQ</td><td>all</td><td><span class="pill pill-blue">new</span></td><td>QA findings users will hit: PM3 2024 view has 22,754 vs 52,127 segments (2211482); three measures not computed (2211481); NHS vs expanded network (2211525)</td></tr>
+          <tr class="group"><td colspan="7">tsmo</td></tr>
+          <tr><td class="num">29</td><td><span class="tny-mono">tsmo</span></td><td>TSMO documentation home (the program, what each page answers)</td><td>hub</td><td>operations · planners</td><td><span class="pill pill-amber">rewrite</span></td><td>1435973 (remove "Reliability - Coming soon"; add explorers); About page 2184040 "What each page answers"; 92 stories</td></tr>
+          <tr><td class="num">30</td><td><span class="tny-mono">tsmo/start</span></td><td>Start here: pick a year, read the three KPIs, open a dashboard, drill to a corridor</td><td>start</td><td>new users</td><td><span class="pill pill-blue">new</span></td><td>home 1431215 stories</td></tr>
+          <tr><td class="num">31</td><td><span class="tny-mono">tsmo/filters</span></td><td>Using the filter bar: Year (single), Region (single, clear = statewide), blank = All, what each dashboard excludes</td><td>how-to</td><td>all</td><td><span class="pill pill-blue">new</span></td><td>tickets 2195000, 2191406, 2191408, 2195366, 2194890, 2191485, 2195387 and their resolutions</td></tr>
+          <tr><td class="num">32</td><td><span class="tny-mono">tsmo/congestion</span></td><td>Congestion dashboard: what each panel shows</td><td>screens &amp; settings</td><td>all</td><td><span class="pill pill-blue">new</span></td><td><span class="tny-mono">tsmo-congestion.html</span> header; stories; tickets 2211340, 2194998, 2194780, 2195006</td></tr>
+          <tr><td class="num">33</td><td><span class="tny-mono">tsmo/reliability</span></td><td>Reliability dashboard: what each panel shows</td><td>screens &amp; settings</td><td>all</td><td><span class="pill pill-blue">new</span></td><td>tickets 2191486, 2194999, 2191744; targets 75/70/2.00</td></tr>
+          <tr><td class="num">34</td><td><span class="tny-mono">tsmo/incidents</span></td><td>Incidents dashboard: what each panel shows (non-construction reactive events)</td><td>screens &amp; settings</td><td>all</td><td><span class="pill pill-blue">new</span></td><td>1436040 (empty) retired into this; tickets 2195001, 2195366, 2192555</td></tr>
+          <tr><td class="num">35</td><td><span class="tny-mono">tsmo/work_zones</span></td><td>Work Zones dashboard: what each panel shows (construction is the planned story)</td><td>screens &amp; settings</td><td>all</td><td><span class="pill pill-blue">new</span></td><td><span class="tny-mono">tsmo-workzones.html</span>; ticket #180 (active zones removed — say so)</td></tr>
+          <tr><td class="num">36</td><td><span class="tny-mono">tsmo/incident_search</span></td><td>Find an incident (facets · keyword · open detail)</td><td>how-to</td><td>operations</td><td><span class="pill pill-blue">new</span></td><td>stories; ~18.5 % of events carry attributed delay</td></tr>
+          <tr><td class="num">37</td><td><span class="tny-mono">tsmo/incident_view</span></td><td>Read an incident page (timeline with "not recorded" · footprint · TMC × 5-min speed grid · switching corridor)</td><td>how-to</td><td>operations</td><td><span class="pill pill-blue">new</span></td><td><span class="tny-mono">tsmo-incident-view.html</span> active-corridor model; ticket 2196812 (blank map meaning)</td></tr>
+          <tr><td class="num">38</td><td><span class="tny-mono">tsmo/corridor_view</span></td><td>Explore a corridor over time (county → corridor → direction → date → measure → resolution)</td><td>how-to</td><td>operations · planners</td><td><span class="pill pill-amber">rewrite</span></td><td>1436025 draft (the misfiled "methodology" draft is this page); tickets 2195605, 2194887</td></tr>
+          <tr><td class="num">39</td><td><span class="tny-mono">tsmo/faq</span></td><td>TSMO FAQ</td><td>FAQ</td><td>all</td><td><span class="pill pill-blue">new</span></td><td>the 08-21 client batch's questions and recorded answers (annual LOTTR, statewide ≠ Σ regions, why $0)</td></tr>
+          <tr class="group"><td colspan="7">freight atlas</td></tr>
+          <tr><td class="num">40</td><td><span class="tny-mono">freight_atlas</span></td><td>Freight Atlas documentation home</td><td>hub</td><td>public · planners</td><td><span class="pill pill-amber">rewrite</span></td><td>retire 1498112 (speculative); merge 1498114 site map with links added; <span class="tny-mono">freight-atlas-about.html</span> pattern</td></tr>
+          <tr><td class="num">41</td><td><span class="tny-mono">freight_atlas/start</span></td><td>Start here: open a gallery map, read its legend, share it</td><td>start</td><td>new users</td><td><span class="pill pill-blue">new</span></td><td>stories 2188087–89</td></tr>
+          <tr><td class="num">42</td><td><span class="tny-mono">freight_atlas/map</span></td><td>Use the map: categories and layers, per-layer filters, legend and eye toggles, hover, share with <span class="tny-mono">?layers=</span></td><td>how-to</td><td>all</td><td><span class="pill pill-blue">new</span></td><td><span class="tny-mono">freight-atlas-map.html</span> (2026-07-10 redesign); tickets 2190960, 2192575, 2195603</td></tr>
+          <tr><td class="num">43</td><td><span class="tny-mono">freight_atlas/gallery</span></td><td>Maps Gallery: the plan's figures as presets; why a category can be hidden</td><td>how-to</td><td>all</td><td><span class="pill pill-blue">new</span></td><td><span class="tny-mono">freightatlas_maps</span> 2189815; tickets 2191404, 2197854</td></tr>
+          <tr><td class="num">44</td><td><span class="tny-mono">freight_atlas/layers</span></td><td>Layer reference: 7 categories / 28 layers — what each shows, source, vintage, legend</td><td>reference</td><td>all</td><td><span class="pill pill-blue">new</span></td><td>35 source descriptions in the npmrds2 Data Manager; plan-maps crosstab; tickets 2195642, 2192901, 2197855, 2192904</td></tr>
+          <tr><td class="num">45</td><td><span class="tny-mono">freight_atlas/downloads</span></td><td>Download freight data (Data &amp; Downloads catalog · source pages · CSV/GeoJSON/Shapefile/GeoPackage/XLSX · what needs a login)</td><td>how-to</td><td>analysts</td><td><span class="pill pill-blue">new</span></td><td>replaces empty 1498122; <span class="tny-mono">freight-atlas-data.html</span>; tickets 2195719, 2192251, 2197829, 2197778</td></tr>
+          <tr><td class="num">46</td><td><span class="tny-mono">freight_atlas/the_plan</span></td><td>The 2024 State Freight Plan and the report library; what changed since 2019</td><td>concept</td><td>public</td><td><span class="pill pill-blue">new</span></td><td>1498112 "What is the NYS Freight Plan" (verify); about_the_plan 2175239; ticket 2197823 (link freshness)</td></tr>
+          <tr><td class="num">47</td><td><span class="tny-mono">freight_atlas/faq</span></td><td>Freight Atlas FAQ</td><td>FAQ</td><td>all</td><td><span class="pill pill-blue">new</span></td><td>"why isn't Albany airport listed" (2192902), "7 themes not 8" (2191404), base year (2197830)</td></tr>
+          <tr class="group"><td colspan="7">measures &amp; data — canonical</td></tr>
+          <tr><td class="num">48</td><td><span class="tny-mono">measures_and_data</span></td><td>Measures &amp; Data home: index by family; "where this appears" matrix</td><td>hub</td><td>all</td><td><span class="pill pill-blue">new</span></td><td>281670 catalogue index; TSMO methodology 2184101 source catalog</td></tr>
+          <tr><td class="num">49</td><td><span class="tny-mono">measures_and_data/federal_vs_analytical</span></td><td>Federal PM3 (map21) vs what this site publishes (pm3) — the sentence that prevents mis-citation</td><td>concept</td><td>planners · MPOs</td><td><span class="pill pill-green">keep</span></td><td>281670 §01; PROVENANCE §9; 1997398 framing</td></tr>
+          <tr><td class="num">50</td><td><span class="tny-mono">measures_and_data/which_measure</span></td><td>Which delay / reliability measure should I use? (decision table)</td><td>reference</td><td>planners</td><td><span class="pill pill-green">keep</span></td><td>281670 §03; PROVENANCE §9; 675545 recommendation</td></tr>
+          <tr><td class="num">51–57</td><td><span class="tny-mono">measures_and_data/measures/{lottr, tttr, tttr80, phed, ted, percentile_speed, coverage}</span></td><td>One page per NPMRDS measure, fixed anatomy (§07)</td><td>measure</td><td>all</td><td><span class="pill pill-green">keep</span> → split</td><td>281670 §02 catalogue entries (each gains header block, worked example, revision log); <span class="tny-mono">measures.js</span> · PROVENANCE · <span class="tny-mono">precision.js</span> · <span class="tny-mono">downloadManifest.js</span></td></tr>
+          <tr><td class="num">58</td><td><span class="tny-mono">measures_and_data/measures/excessive_delay</span></td><td>Excessive delay (TSMO v2 series): thresholds, median baselines, capped attribution, why v2 ≠ v1</td><td>measure</td><td>all</td><td><span class="pill pill-blue">new</span></td><td>tsmo2/methodology 2184101 measure cards; ED v2 header (<span class="tny-mono">tsmo-congestion.html</span>); tickets 2214480/2214495</td></tr>
+          <tr><td class="num">59</td><td><span class="tny-mono">measures_and_data/measures/delay_attribution</span></td><td>Recurrent vs non-recurrent delay; construction / accident / other attribution</td><td>measure</td><td>all</td><td><span class="pill pill-blue">new</span></td><td>2184101; ticket 2211340 (composition chart reading)</td></tr>
+          <tr><td class="num">60</td><td><span class="tny-mono">measures_and_data/measures/cost_of_congestion</span></td><td>Cost of congestion and the value of time (flat $20 → class-weighted $52 / $42 / $77, ≈ $53 blend)</td><td>measure</td><td>all</td><td><span class="pill pill-blue">new</span></td><td><span class="tny-mono">class-weighted-vot-cost.md</span>, <span class="tny-mono">vot_rates.js</span>; 675525's $15/hr as historical note; ticket 2191403</td></tr>
+          <tr><td class="num">61</td><td><span class="tny-mono">measures_and_data/measures/incident_delay_and_clearance</span></td><td>Incident delay, clearance time (TIM) and timestamp completeness</td><td>measure</td><td>operations</td><td><span class="pill pill-blue">new</span></td><td>2184101 coverage panel (42.7 / 20.1 / 10.6 / 0.3 %); <span class="tny-mono">tsmo-incidents.html</span></td></tr>
+          <tr><td class="num">62</td><td><span class="tny-mono">measures_and_data/measures/work_zone_delay</span></td><td>Work-zone delay and exposure</td><td>measure</td><td>operations</td><td><span class="pill pill-blue">new</span></td><td><span class="tny-mono">tsmo-workzones.html</span> methodology block</td></tr>
+          <tr><td class="num">63</td><td><span class="tny-mono">measures_and_data/measures/in_development</span></td><td>Measures in development: free-flow speed · emissions · attributes — what blocks each</td><td>reference</td><td>all</td><td><span class="pill pill-green">keep</span></td><td>281670 §06; <span class="tny-mono">pm3-emissions-measures.md</span></td></tr>
+          <tr><td class="num">64</td><td><span class="tny-mono">measures_and_data/measures/retired</span></td><td>Measures that used to be here (PTI · BTI · TTI · RIS attributes) and where the capability went</td><td>reference</td><td>legacy users</td><td><span class="pill pill-green">keep</span></td><td>281670 §07; 281503 measures table as the historical record</td></tr>
+          <tr><td class="num">65</td><td><span class="tny-mono">measures_and_data/concepts/peak_periods_and_epochs</span></td><td>Epochs, 15-minute bins, resolution, peak windows — and the PM-peak mismatch (LOTTR/TTTR 16–20 vs PHED 15–19)</td><td>concept</td><td>all</td><td><span class="pill pill-line">merge</span></td><td>281670 §05 trap 2 + glossary; <span class="tny-mono">npmrds-tmc.html</span> peak table; 281503 free-flow window</td></tr>
+          <tr><td class="num">66</td><td><span class="tny-mono">measures_and_data/concepts/geography</span></td><td>Regions (1–11), counties, MPOs, urbanized areas — what "statewide" means and why regions don't sum</td><td>concept</td><td>all</td><td><span class="pill pill-blue">new</span></td><td>tickets 2191486 (decision recorded), 2191406, 2195006, 2214565, 2194997 — the single most repeated confusion</td></tr>
+          <tr><td class="num">67</td><td><span class="tny-mono">measures_and_data/concepts/tmc_network_and_vintages</span></td><td>The TMC network, yearly vintages, and how routes conflate to it (OSM / LRS)</td><td>concept</td><td>analysts</td><td><span class="pill pill-line">merge</span></td><td>OSM Conflation essay 281807 · 281915 (the only written provenance); 52,473 / 52,157 / 52,029 TMC counts by map year</td></tr>
+          <tr><td class="num">68</td><td><span class="tny-mono">measures_and_data/concepts/aadt_and_vintage</span></td><td>AADT, its vintage, and why multi-year delay charts partly plot a dataset's revision history</td><td>concept</td><td>analysts</td><td><span class="pill pill-green">keep</span></td><td>281670 §05 trap 1; <span class="tny-mono">downloadManifest.js</span> warning machinery</td></tr>
+          <tr><td class="num">69</td><td><span class="tny-mono">measures_and_data/concepts/coverage_eras_and_comparability</span></td><td>Coverage is not stationary: nine eras 2017–2026 and the comparability rule</td><td>concept</td><td>analysts</td><td><span class="pill pill-green">keep</span></td><td>281670 §04; PROVENANCE §5/§11</td></tr>
+          <tr><td class="num">70–77</td><td><span class="tny-mono">measures_and_data/data/{npmrds_travel_times, tmc_network, pm3_and_map21, transcom_events, excessive_delay_series, hpms_ris_attributes, routes_data, freight_atlas_sources}</span></td><td>One datasheet per data source: what it is, composition, collection, preprocessing, uses, distribution, cadence</td><td>data source</td><td>analysts · developers</td><td><span class="pill pill-blue">new</span></td><td>Data Manager source descriptions (583/982, 582/983/984, 2001/3394 + 2027/3460, 956/1947 + 2799, 2039/3488, 2107426); 1997398 runbook framing; freight = index to the 35 source pages; ticket 2211525 (expanded network)</td></tr>
+          <tr><td class="num">78</td><td><span class="tny-mono">measures_and_data/coverage_and_freshness</span></td><td>Coverage &amp; freshness: per source span, lag, gaps, partial-year rule, "not yet computed" list</td><td>reference</td><td>all</td><td><span class="pill pill-blue">new</span></td><td>2184101 coverage dashboard; freshness strips; tickets 2214476, RF2172498/2499, 2211482</td></tr>
+          <tr><td class="num">79</td><td><span class="tny-mono">measures_and_data/methodology_changes</span></td><td>Methodology change log (dated; which numbers moved; links to What's new)</td><td>log</td><td>all</td><td><span class="pill pill-blue">new</span></td><td>PROVENANCE history; ED v1 → v2; VOT change; map21/pm3 fork</td></tr>
+          <tr class="group"><td colspan="7">developers</td></tr>
+          <tr><td class="num">80</td><td><span class="tny-mono">developers</span></td><td>Developers home: base URL, auth, the Falcor-vs-REST split, list of APIs</td><td>hub</td><td>developers</td><td><span class="pill pill-amber">rewrite</span></td><td>1435979 (one word today); 281807 "APIs (Draft)" retired into it</td></tr>
+          <tr><td class="num">81</td><td><span class="tny-mono">developers/quickstart</span></td><td>Quick start: mint a token, first query, first download</td><td>start</td><td>developers</td><td><span class="pill pill-blue">new</span></td><td><span class="tny-mono">authenticating-the-dms-cli.md</span> (public parts); 1458899 example</td></tr>
+          <tr><td class="num">82</td><td><span class="tny-mono">developers/data_manager_api</span></td><td>Data Manager API reference (routes, options grammar)</td><td>reference</td><td>developers</td><td><span class="pill pill-green">keep</span></td><td>1436006 — settle <span class="tny-mono">dama</span> vs <span class="tny-mono">uda</span> and casing against 1458899; confirm code blocks render</td></tr>
+          <tr><td class="num">83</td><td><span class="tny-mono">developers/examples</span></td><td>Worked examples (Transcom events length → data; Python client)</td><td>how-to</td><td>developers</td><td><span class="pill pill-line">merge</span></td><td>1458899 + 1481752 (33 words → real install + example)</td></tr>
+          <tr><td class="num">84</td><td><span class="tny-mono">developers/downloads_and_formats</span></td><td>Bulk downloads and formats per view; download manifests</td><td>reference</td><td>analysts · developers</td><td><span class="pill pill-blue">new</span></td><td>ogr2ogr export config; <span class="tny-mono">downloadManifest.js</span>; ticket 2195719</td></tr>
+          <tr><td class="num">85</td><td><span class="tny-mono">developers/batch_reports_api</span></td><td>Batch Reports API and CSV spec (until Route Comparison retires it)</td><td>reference</td><td>developers</td><td><span class="pill pill-line">merge</span> → <span class="pill pill-red">freeze</span></td><td>1715527 + 489118 (fix the duplicated-TMC example row; drop "auth: true" voice)</td></tr>
+          <tr><td class="num">86</td><td><span class="tny-mono">developers/changelog</span></td><td>API changelog</td><td>log</td><td>developers</td><td><span class="pill pill-blue">new</span></td><td>—</td></tr>
+          <tr class="group"><td colspan="7">admin</td></tr>
+          <tr><td class="num">87</td><td><span class="tny-mono">admin</span></td><td>Administrator guidance (lists all children; who this is for)</td><td>hub</td><td>admins</td><td><span class="pill pill-green">keep</span> + extend</td><td>1496528</td></tr>
+          <tr><td class="num">88</td><td><span class="tny-mono">admin/upload_data</span></td><td>Upload a dataset (.zip GIS or tabular; field mapping; publish; FINAL)</td><td>how-to</td><td>admins</td><td><span class="pill pill-green">keep</span></td><td>1496530 (+ size limit note)</td></tr>
+          <tr><td class="num">89</td><td><span class="tny-mono">admin/manage_data</span></td><td>Manage a dataset (overview, versions, downloads, access levels 1/2/10, events, metadata)</td><td>how-to</td><td>admins</td><td><span class="pill pill-green">keep</span> + screenshots</td><td>1496547 (fix tab names and "State" → "Start")</td></tr>
+          <tr><td class="num">90</td><td><span class="tny-mono">admin/map_editor</span></td><td>Map Editor: build, style, modify and save a symbology</td><td>how-to</td><td>admins</td><td><span class="pill pill-line">merge</span></td><td>1496554 + 1516806 (verbatim duplicate); fix cross-references; name images; <span class="tny-mono">editing-map-symbologies.md</span></td></tr>
+          <tr><td class="num">91</td><td><span class="tny-mono">admin/add_map_to_page</span></td><td>Add a saved map to a page section</td><td>how-to</td><td>admins</td><td><span class="pill pill-green">keep</span></td><td>1597434 (drop the stray "2"; fix typo)</td></tr>
+          <tr><td class="num">92</td><td><span class="tny-mono">admin/map21_pm3_sources</span></td><td>Create the map21 / pm3 / pm3_aggregate sources (the annual runbook)</td><td>how-to</td><td>admins</td><td><span class="pill pill-green">keep</span> + frame</td><td>1997398 (add what each produces; replace sandbox/dev links)</td></tr>
+          <tr><td class="num">93</td><td><span class="tny-mono">admin/users_and_permissions</span></td><td>Users, groups and authority levels</td><td>how-to</td><td>admins</td><td><span class="pill pill-blue">new</span></td><td>RF2172501/2500/2502/2496/2491, RF2172503 (auth tiers)</td></tr>
+          <tr class="group"><td colspan="7">utilities</td></tr>
+          <tr><td class="num">94</td><td><span class="tny-mono">glossary</span></td><td>Glossary — one entry per term, with "Pathway: product › screen" and a link to the canonical page</td><td>glossary</td><td>all</td><td><span class="pill pill-line">merge</span></td><td>281670 §08; 2184101 glossary; 281807 Data Dictionary headings; the ~90 candidates in <span class="tny-mono">platform-inventory.md</span> §6</td></tr>
+          <tr><td class="num">95</td><td><span class="tny-mono">whats_new</span></td><td>What's new — dated entries: Platform · Data release · Map/TMC version · Methodology</td><td>log</td><td>all</td><td><span class="pill pill-blue">new</span></td><td>the landing footer's dead "What's New" (2197781); the release/backfill record in the task docs</td></tr>
+          <tr><td class="num">96</td><td><span class="tny-mono">help</span></td><td>Help &amp; feedback — report an issue / ask a question, known issues, contact, release process</td><td>reference</td><td>all</td><td><span class="pill pill-blue">new</span></td><td>Add-ticket modal → <span class="tny-mono">sitemgmt_tickets</span>; <span class="tny-mono">/status</span>; RF2172532/2533, RF2174076</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="font-proxima text-[12px] leading-[1.55] text-slate-600 mt-3">Retired outright (not in the tree): Transit 1435975 (no product), the stray root "Navigating the Freight Atlas" 1516694, the Road Closure memo 1596593 (moves to planning), Training Videos 419465 (re-record later with transcripts if wanted), Discussions 281672 and Appendix 281807 as pages (their content is redistributed above), Updating Maps 1516806 (duplicate). Tally: 96 pages — 23 keep · 11 rewrite · 10 merge · 51 new · 1 frozen (plus one merge, the Batch Reports API, that freezes when Route Comparison ships). Of the 51 new pages, 12 are template-driven one-screen pages (screens &amp; settings, datasheets) and 9 are hub, FAQ or log pages that start short and grow; the remaining 30 are how-to, concept and measure pages that need real writing.</p>
+  </section>
+
+  <!-- ── §09 integration ──────────────────────────────────────────────── -->
+  <section id="s09" class="py-11 border-b border-zinc-950/05">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="kicker">// 09</span><span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Integrating the docs into the product sites: from the nav, from every number, and back again.</h2>
+    <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mt-2 max-w-[760px]">
+      Documentation nobody can reach is the audit's eighth structural problem and the tickets' second cluster. Ten integration points, ordered from
+      cheapest to most involved; the first four are configuration, not code.
+    </p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+      <div class="tny-card p-5 prose font-proxima text-[13px] leading-[1.6] text-slate-700">
+        <ol>
+          <li><span class="font-medium text-[#0f1722]">A Docs entry in every navigation.</span> Landing (Platform group), <span class="tny-mono">npmrds_sub</span>, <span class="tny-mono">tsmo2</span>, Freight Atlas v2 and the <span class="tny-mono">freight_data</span> datasets nav each get a <em>Docs</em> item that lands on that product's hub (<span class="tny-mono">/docs/npmrds</span>, <span class="tny-mono">/docs/tsmo</span>, <span class="tny-mono">/docs/freight_atlas</span>). The NPMRDS mockups already place it as a QuickLink below the section items; follow that. Landing footer links become real: User guide → <span class="tny-mono">/docs/start</span>, API guide → <span class="tny-mono">/docs/developers</span>, Data dictionary → <span class="tny-mono">/docs/measures_and_data</span>, What's new → <span class="tny-mono">/docs/whats_new</span> (all four were dead, ticket 2197781).</li>
+          <li><span class="font-medium text-[#0f1722]">A documentation card on each product home.</span> The NPMRDS home design has it ("New here? 1 Build a route · 2 Put it in a report · 3 Read the measure" plus the page list). Repeat the pattern on TSMO home and Freight Atlas home with their hubs' pages; the landing's documentation card lists the seven hubs.</li>
+          <li><span class="font-medium text-[#0f1722]">"How it's computed →" on every KPI and measure card resolves to a measure page anchor.</span> <span class="tny-mono">/docs/measures_and_data/measures/&lt;measure&gt;#how_it_is_computed</span>. This is the PeMS "About This Report" pattern and directly answers 2191403 / 2214480, which were dead affordances because the destination did not exist. The TSMO home, congestion, reliability, incidents and work-zones cards; the NPMRDS home §01 measure rows and §04 KPIs; the MAP-21 compliance cards; the Macro View right panel (already links <em>methodology →</em>).</li>
+          <li><span class="font-medium text-[#0f1722]">A "?" beside every filter bar and legend.</span> TSMO tone bars → <span class="tny-mono">/docs/tsmo/filters</span>; Freight Atlas legend blocks → <span class="tny-mono">/docs/freight_atlas/layers#&lt;layer&gt;</span>; MAP-21 period toggle → <span class="tny-mono">…/concepts/peak_periods_and_epochs</span>; Region selects → <span class="tny-mono">…/concepts/geography</span>; the Add Graph value select → the measure glossary; the download builder → <span class="tny-mono">/docs/npmrds/macro_view/download</span>. Tooltips carry the one-line hint; the link carries the substance.</li>
+          <li><span class="font-medium text-[#0f1722]">In-product methodology surfaces become summaries of the canonical pages.</span> TSMO's Data &amp; Methodology page keeps its role as the product's trust layer, but each measure card renders the canonical page's header block and links to it; NPMRDS home §05 "About the data" and Freight Atlas About do the same. One definition, rendered in four places; every rendering carries "where this appears" back-links.</li>
+        </ol>
+      </div>
+      <div class="tny-card p-5 prose font-proxima text-[13px] leading-[1.6] text-slate-700">
+        <ol start="6">
+          <li><span class="font-medium text-[#0f1722]">Stamps on every docs page.</span> A small header component renders <em>applies to</em> (NPMRDS · TSMO · Freight Atlas · legacy site · methodology version), <em>last reviewed</em>, <em>owner</em> from page fields; legacy pages carry a banner. Until the legacy site retires this badge is the only thing that stops a reader following Folders instructions on the new site.</li>
+          <li><span class="font-medium text-[#0f1722]">Report an issue / ask a question on every product page.</span> The Page-QA Add-ticket modal already writes to <span class="tny-mono">sitemgmt_tickets</span>; surface it in the user menu of each product (RF2174076), auto-stamp reporter · page · environment (56 rows were unattributed), add a <em>Question</em> category, and route resolved questions to the FAQ pages. <span class="tny-mono">/docs/help</span> links to <span class="tny-mono">/status</span> for known issues (RF2172533).</li>
+          <li><span class="font-medium text-[#0f1722]">Search.</span> A search box on the docs home and on each hub; the product Docs item passes the product as a scope. Log zero-result queries — they are the content backlog.</li>
+          <li><span class="font-medium text-[#0f1722]">Pattern mechanics.</span> Keep <span class="tny-mono">npmrds_docs</span> 1411813 at <span class="tny-mono">*/docs</span> — it is already reachable from every subdomain and path mount. Restructure the tree (hub pages as parents; reparent surviving children; new slugs), retire old slugs with redirects — the platform has subdomain-level retirement (<span class="tny-mono">retired_subdomains</span>) but page-slug redirects need a check and, if absent, a small core addition (escalate per the primitive-change rule). Scope the sidebar to the current hub (the pattern's sideNav is the page tree; hub depth keeps it short). Give every heading a stable anchor id so deep links survive edits.</li>
+          <li><span class="font-medium text-[#0f1722]">Screenshots pipeline.</span> The design system's <span class="tny-mono">assets/screens</span> convention (real tool · state named · overlays) feeds the live build's image path (<span class="tny-mono">/img/npmrdsv5/…</span>); keep one capture script per docs page so a UI release can regenerate its figures, and treat a stale screenshot as a ticket.</li>
+        </ol>
+        <div class="tny-card tny-card-bone p-3 mt-3">
+          <div class="kicker mb-1" style="color:#92400E">what this asks of the product pages</div>
+          <p class="text-[12px] leading-[1.55] m-0">Five nav edits, three home cards, one header component for docs pages, and a link target on every measure card. Nothing here requires a new primitive; the "How it's computed" links and legend "?" links are Lexical/Card links to fixed URLs. The only possible core touch is slug redirects.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── §10 sequencing ───────────────────────────────────────────────── -->
+  <section id="s10" class="py-11 border-b border-zinc-950/05">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="kicker">// 10</span><span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Sequencing: structure first, then the product that generates the questions, then the canon, then the rest.</h2>
+    <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mt-2 max-w-[760px]">
+      Every framework reviewed warns against the big-bang restructure. Each phase below leaves the site better than it found it and has a hard stopping
+      point. Sizes are relative (S = a session, M = a few sessions, L = a sprint); each phase becomes one task document in <span class="tny-mono">planning/transportny/tasks/current/</span>.
+    </p>
+
+    <div class="overflow-x-auto tny-card mt-6">
+      <table class="tny">
+        <thead><tr><th>phase</th><th>what ships</th><th>why this order</th><th>size</th><th>task doc to create</th></tr></thead>
+        <tbody>
+          <tr><td><span class="font-medium text-[#0f1722]">A · Structure &amp; plumbing</span></td><td>Hub pages (7) with real intros; reparent surviving pages; delete the 9 empties/strays; redirects for retired slugs; Docs nav item in 5 patterns; landing footer links; <em>applies to</em> / <em>last reviewed</em> header component; glossary consolidated (94); Help page (96). No new prose beyond hub intros.</td><td>Makes everything that follows reachable and labelled; fixes the dead links and the two-generation confusion on day one.</td><td>M</td><td><span class="tny-mono">docs-ia-restructure.md</span></td></tr>
+          <tr><td><span class="font-medium text-[#0f1722]">B · TSMO guides + its measures</span></td><td>Pages 29–39; measure pages 58–62; concept 66 (geography); coverage &amp; freshness (78); "How it's computed →" links live on TSMO cards; TSMO methodology cards become summaries.</td><td>67 % of client tickets; 236 words of docs; the answers already exist in ticket resolutions and page 2184101.</td><td>L</td><td><span class="tny-mono">docs-tsmo-guides-and-measures.md</span></td></tr>
+          <tr><td><span class="font-medium text-[#0f1722]">C · Measures &amp; Data canon</span></td><td>Split 281670 into pages 49–57, 63–65, 68–69 with the full anatomy; datasheets 70–77; methodology change log (79); Macro View, MAP-21 and NPMRDS home cards link in.</td><td>Single-sources the definitions before the NPMRDS guides are written against them; settles the 83.2 vs 85.0 figure first.</td><td>L</td><td><span class="tny-mono">docs-measures-and-data-hub.md</span></td></tr>
+          <tr><td><span class="font-medium text-[#0f1722]">D · NPMRDS guides</span></td><td>Pages 8–28: start tutorial, routes, reports (re-shot screenshots), report canvas, route comparison (when live), MAP-21, recipes; legacy branch frozen and dated.</td><td>The live tools are still converging (reports rev 3.1, route creation rev 1); write against shipped UI, after C so measure links resolve.</td><td>L</td><td><span class="tny-mono">docs-npmrds-guides-rewrite.md</span></td></tr>
+          <tr><td><span class="font-medium text-[#0f1722]">E · Freight Atlas guides</span></td><td>Pages 40–47; layer reference from the 35 source descriptions; downloads page + resolve the <span class="tny-mono">/freight_data</span> sign-in wall; provenance lines on Home figures.</td><td>Second-largest ticket volume, mostly legend/label/provenance — cheap wins once the layer reference exists.</td><td>M</td><td><span class="tny-mono">docs-freight-atlas-guides.md</span></td></tr>
+          <tr><td><span class="font-medium text-[#0f1722]">F · Developers + Admin</span></td><td>Pages 80–93: reconcile the API root, quick start, merge examples, downloads &amp; formats, users &amp; permissions; admin dedupe and screenshots.</td><td>Content is mostly good already; small, self-contained.</td><td>M</td><td><span class="tny-mono">docs-developers-and-admin.md</span></td></tr>
+          <tr><td><span class="font-medium text-[#0f1722]">G · Operations</span></td><td>Question category + weekly FAQ triage; What's new (95) with the four labels; docs search + zero-result log; screenshot regeneration scripts; owners and review calendar; WCAG check in review; retire the legacy branch when the legacy site goes.</td><td>Keeps A–F from decaying; the tickets show the site generates ~50 documentation-relevant items a month.</td><td>M · ongoing</td><td><span class="tny-mono">docs-operations-and-feedback-loop.md</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+      <div class="tny-card p-5 prose font-proxima text-[13px] leading-[1.6] text-slate-700">
+        <div class="kicker mb-2">decisions the owner needs to take before phase A</div>
+        <ol>
+          <li><span class="font-medium text-[#0f1722]">Where methodology lives</span> — this report recommends canonical pages in <span class="tny-mono">/docs/measures_and_data</span> with in-product summaries. The alternative (in-product only, as TSMO does today) leaves NPMRDS and Freight Atlas without a home and duplicates the shared measures.</li>
+          <li><span class="font-medium text-[#0f1722]">The legacy branch</span> — freeze and date it (recommended) or retire it now with the tools it describes. Depends on the legacy site's retirement date.</li>
+          <li><span class="font-medium text-[#0f1722]">Ownership and cadence</span> — who owns each hub; whether <span class="tny-mono">sitemgmt_tickets</span> becomes the docs feedback channel (recommended) or a separate form is preferred.</li>
+          <li><span class="font-medium text-[#0f1722]">Transit, Road-closure, Discussions, Training videos</span> — out of the new tree as proposed, or kept somewhere.</li>
+          <li><span class="font-medium text-[#0f1722]">Slug redirects</span> — accept a small core addition if page-level redirects do not exist, or accept broken inbound links to the old slugs.</li>
+        </ol>
+      </div>
+      <div class="tny-card p-5 prose font-proxima text-[13px] leading-[1.6] text-slate-700">
+        <div class="kicker mb-2">how we will know it worked</div>
+        <ul>
+          <li>Every "How it's computed" affordance on a live page resolves to a measure page; zero dead docs links (today: 24 legacy + 4 editor URLs + 4 footer).</li>
+          <li>Documentation-relevant share of new client tickets falls from ~50 % toward the bug/style baseline; "Question" tickets get answered by a link to an existing page.</li>
+          <li>Every docs page shows a last-reviewed date under six months old; every measure page states its methodology version.</li>
+          <li>TSMO and Freight Atlas have at least one real screenshot per how-to page (today: zero).</li>
+          <li>No definition of any measure exists in more than one canonical place (today: five).</li>
+          <li>An MPO consultant or FHWA reviewer can cite a measure page URL for a number on a TransportNY page without logging in.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Appendix A ───────────────────────────────────────────────────── -->
+  <section id="appA" class="py-11 border-b border-zinc-950/05">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="kicker">// appendix a</span><span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Current docs inventory and disposition — all 37 pages.</h2>
+    <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mt-2 max-w-[760px]">Words and images are published lexical content as dumped 2026-09-04; "last edit" is the newest prose section, not the 2026-03-04 migration stamp. New home = the §08 page number.</p>
+    <div class="overflow-x-auto tny-card mt-6">
+      <table class="tny">
+        <thead><tr><th>id</th><th>slug</th><th class="num">words</th><th class="num">img</th><th>last edit</th><th>what it is</th><th>disposition</th><th>new home</th></tr></thead>
+        <tbody>
+          <tr class="group"><td colspan="8">root + npmrds</td></tr>
+          <tr><td>1435963</td><td>overview</td><td class="num">134</td><td class="num">6</td><td>2025-10</td><td>hub cards; 2 pasted Transit blurbs; 3 orphan labels</td><td><span class="pill pill-amber">rewrite</span></td><td>#1</td></tr>
+          <tr><td>1435960</td><td>npmrds</td><td class="num">1,380</td><td class="num">0</td><td>2025-08</td><td>root text ≡ 225868</td><td><span class="pill pill-line">merge</span></td><td>#8</td></tr>
+          <tr><td>225868</td><td>npmrds/overview</td><td class="num">1,372</td><td class="num">0</td><td>2024-04</td><td>What is NPMRDS · strengths &amp; weaknesses</td><td><span class="pill pill-green">keep</span> + edit</td><td>#8, #3</td></tr>
+          <tr><td>280326</td><td>npmrds/quick_start</td><td class="num">3,811</td><td class="num">9</td><td>2024-06</td><td>legacy home tour · FAQ ×19 · template &amp; measure catalogues · 24 dead links</td><td><span class="pill pill-amber">rewrite</span> (FAQ, templates) / <span class="pill pill-red">freeze</span> (tour)</td><td>#7, #12, #27</td></tr>
+          <tr><td>280610</td><td>npmrds/route_analysis</td><td class="num">2,744</td><td class="num">30</td><td>2024-04</td><td>legacy report tool overview · 3 template walkthroughs</td><td><span class="pill pill-amber">rewrite</span></td><td>#12, #16</td></tr>
+          <tr><td>280614</td><td>…/create_a_route</td><td class="num">1,026</td><td class="num">11</td><td>2024-04</td><td>legacy route creation</td><td><span class="pill pill-amber">rewrite</span></td><td>#10 (#27)</td></tr>
+          <tr><td>281503</td><td>…/report_tool_functions</td><td class="num">2,654</td><td class="num">32</td><td>2024-04</td><td>legacy builder · graph types · measures table · 5 "Coming Soon"</td><td><span class="pill pill-amber">rewrite</span> / <span class="pill pill-green">keep</span> (graph types)</td><td>#14, #17, #64</td></tr>
+          <tr><td>280612</td><td>npmrds/regional_analysis</td><td class="num">2,484</td><td class="num">13</td><td>2026-08-28</td><td>NEW Macro View guide + Composite Score Tutorial</td><td><span class="pill pill-green">keep</span>, rename</td><td>#18, #19, #24</td></tr>
+          <tr><td>281670</td><td>npmrds/p_m_3_measures</td><td class="num">3,032</td><td class="num">1</td><td>2026-08-28</td><td>NEW Measures &amp; Methodology</td><td><span class="pill pill-green">keep</span> → split</td><td>#49–57, 63–65, 68–69, 94</td></tr>
+          <tr><td>489118</td><td>npmrds/batch_reports</td><td class="num">282</td><td class="num">0</td><td>2024-07</td><td>legacy Batch Reports + CSV spec</td><td><span class="pill pill-line">merge</span> → <span class="pill pill-red">freeze</span></td><td>#85, #27</td></tr>
+          <tr><td>281672</td><td>npmrds/discussions</td><td class="num">509</td><td class="num">0</td><td>2024-09</td><td>outline; empty headings</td><td>retire as page</td><td>#23</td></tr>
+          <tr><td>675545</td><td>…/congestion_management_process_cmp</td><td class="num">1,056</td><td class="num">8</td><td>2024-09</td><td>CMP "(Draft)" mapped to legacy Macro</td><td><span class="pill pill-amber">rewrite</span></td><td>#25</td></tr>
+          <tr><td>675525</td><td>…/787_raised_intersections</td><td class="num">733</td><td class="num">6</td><td>2024-10</td><td>case study, real numbers, stock images</td><td><span class="pill pill-green">keep</span>, re-illustrate</td><td>#26</td></tr>
+          <tr><td>281807</td><td>npmrds/appendix</td><td class="num">1,252</td><td class="num">0</td><td>2024-04</td><td>"(Draft)" ×3 · empty data dictionary · OSM conflation essay · API stubs</td><td>split</td><td>#67, #94, #80</td></tr>
+          <tr><td>419465</td><td>npmrds/training_videos</td><td class="num">92</td><td class="num">0</td><td>2024-04</td><td>3 empty video bodies</td><td>retire (re-record later with transcripts)</td><td>—</td></tr>
+          <tr class="group"><td colspan="8">freight atlas · tsmo · transit · strays</td></tr>
+          <tr><td>1435970</td><td>freight_atlas</td><td class="num">0</td><td class="num">0</td><td>—</td><td>empty landing</td><td>write</td><td>#40</td></tr>
+          <tr><td>1498112</td><td>…/navigating_the_freight_atlas</td><td class="num">1,023</td><td class="num">0</td><td>2025-10</td><td>LLM-generated, hedged, chatgpt utm links</td><td>retire; rewrite from scratch</td><td>#40, #46</td></tr>
+          <tr><td>1498114</td><td>freight_atlas/navigation</td><td class="num">159</td><td class="num">0</td><td>2025-11</td><td>site map; two missing links; empty "Docs"</td><td><span class="pill pill-line">merge</span></td><td>#40</td></tr>
+          <tr><td>1498122</td><td>freight_atlas/datasets</td><td class="num">0</td><td class="num">0</td><td>—</td><td>empty</td><td>replace</td><td>#45</td></tr>
+          <tr><td>1516694</td><td>navigating_the_freight_atlas (root)</td><td class="num">0</td><td class="num">0</td><td>2025-11</td><td>stray draft-only duplicate title</td><td>delete</td><td>—</td></tr>
+          <tr><td>1435973</td><td>tsmo</td><td class="num">236</td><td class="num">0</td><td>2025-08</td><td>"four dashboards … Reliability - Coming soon"</td><td><span class="pill pill-amber">rewrite</span></td><td>#29</td></tr>
+          <tr><td>1436025</td><td>tsmo/methodology</td><td class="num">0 (≈190 draft)</td><td class="num">0</td><td>2025-08</td><td>unpublished; draft is the corridor page</td><td><span class="pill pill-amber">rewrite</span> as corridor how-to</td><td>#38</td></tr>
+          <tr><td>1436040</td><td>tsmo/incidents_dashboard</td><td class="num">0</td><td class="num">0</td><td>—</td><td>empty</td><td>replace</td><td>#34</td></tr>
+          <tr><td>1435975</td><td>transit</td><td class="num">0</td><td class="num">0</td><td>—</td><td>no such product</td><td>delete</td><td>—</td></tr>
+          <tr><td>1596593</td><td>road_closure_incident_scenarios</td><td class="num">137</td><td class="num">0</td><td>2025-11</td><td>internal design memo; dev link</td><td>unpublish → planning</td><td>—</td></tr>
+          <tr class="group"><td colspan="8">admin · apis</td></tr>
+          <tr><td>1496528</td><td>admin</td><td class="num">303</td><td class="num">0</td><td>2025-09</td><td>administrator guidance intro</td><td><span class="pill pill-green">keep</span> + extend</td><td>#87</td></tr>
+          <tr><td>1496530</td><td>admin/uploading_data</td><td class="num">397</td><td class="num">2</td><td>2025-09</td><td>upload procedure</td><td><span class="pill pill-green">keep</span></td><td>#88</td></tr>
+          <tr><td>1496547</td><td>admin/managing_data</td><td class="num">1,131</td><td class="num">0</td><td>2025-09</td><td>manage · versions · access levels · events</td><td><span class="pill pill-green">keep</span> + screenshots</td><td>#89</td></tr>
+          <tr><td>1496554</td><td>admin/mapmaking_and_symbology</td><td class="num">613</td><td class="num">14</td><td>2025-10</td><td>Map Editor steps; broken cross-refs; one empty section</td><td><span class="pill pill-line">merge</span></td><td>#90</td></tr>
+          <tr><td>1516806</td><td>admin/updating_maps</td><td class="num">196</td><td class="num">3</td><td>2025-10</td><td>verbatim duplicate of 1496554 §4–5</td><td>delete (merge)</td><td>#90</td></tr>
+          <tr><td>1597434</td><td>admin/adding_maps_to_a_website_2</td><td class="num">184</td><td class="num">6</td><td>2025-12</td><td>add saved map to a page</td><td><span class="pill pill-green">keep</span>, rename</td><td>#91</td></tr>
+          <tr><td>1997398</td><td>admin/map21_p_m_3_sources</td><td class="num">179</td><td class="num">0</td><td>2026-03</td><td>map21 / pm3 / pm3_aggregate runbook</td><td><span class="pill pill-green">keep</span> + frame</td><td>#92, #72</td></tr>
+          <tr><td>1435979</td><td>ap_is</td><td class="num">1</td><td class="num">0</td><td>2026-02</td><td>title only</td><td><span class="pill pill-amber">rewrite</span></td><td>#80</td></tr>
+          <tr><td>1436006</td><td>ap_is/data_manager_api</td><td class="num">631</td><td class="num">0</td><td>2025-08</td><td>Falcor grammar</td><td><span class="pill pill-green">keep</span> + reconcile</td><td>#82</td></tr>
+          <tr><td>1481752</td><td>…/python_client_examples</td><td class="num">33</td><td class="num">0</td><td>2025-09</td><td>one sentence</td><td><span class="pill pill-line">merge</span></td><td>#83</td></tr>
+          <tr><td>1458899</td><td>…/api_request_example</td><td class="num">185</td><td class="num">0</td><td>2025-09</td><td>worked Transcom query</td><td><span class="pill pill-green">keep</span></td><td>#83</td></tr>
+          <tr><td>1715527</td><td>ap_is/batch_reports_api</td><td class="num">202</td><td class="num">0</td><td>2026-02</td><td>REST doc + reference tables</td><td><span class="pill pill-line">merge</span></td><td>#85</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── Appendix B ───────────────────────────────────────────────────── -->
+  <section id="appB" class="py-11 border-b border-zinc-950/05">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="kicker">// appendix b</span><span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Coverage matrix — platform pages against today's docs and the proposed pages.</h2>
+    <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mt-2 max-w-[760px]">Y documented · P partial · L legacy UI only · N none. "Accurate" is against the current UI.</p>
+    <div class="overflow-x-auto tny-card mt-6">
+      <table class="tny">
+        <thead><tr><th>platform page / tool</th><th>documented today</th><th>accurate</th><th>methodology</th><th>screens</th><th>proposed pages (§08 #)</th></tr></thead>
+        <tbody>
+          <tr class="group"><td colspan="6">npmrds (new)</td></tr>
+          <tr><td>Home</td><td>N (280326 describes the legacy home)</td><td>L</td><td>—</td><td>legacy</td><td>#8, #9</td></tr>
+          <tr><td>Macro View</td><td>Y 280612</td><td>Y</td><td>Y via 281670</td><td>6 dated</td><td>#18, #19</td></tr>
+          <tr><td>Reports · templates · list · report canvas</td><td>L 280610 / 281503 (legacy builder)</td><td>L</td><td>P (281503 measures)</td><td>62 legacy</td><td>#12–17</td></tr>
+          <tr><td>Route creation</td><td>L 280614</td><td>partly transferable</td><td>—</td><td>11 legacy</td><td>#10, #11</td></tr>
+          <tr><td>Route comparison</td><td>N</td><td>—</td><td>N</td><td>N</td><td>#20</td></tr>
+          <tr><td>Segment / TMC</td><td>N</td><td>—</td><td>—</td><td>N</td><td>#21</td></tr>
+          <tr><td>MAP-21 pages</td><td>P (named; admin recipe 1997398)</td><td>no how-to</td><td>P (281670 §1)</td><td>N</td><td>#22, #49, #72</td></tr>
+          <tr><td>Measures (analytical)</td><td>Y 281670</td><td>Y</td><td>Y</td><td>1</td><td>#51–57</td></tr>
+          <tr class="group"><td colspan="6">npmrds (legacy site)</td></tr>
+          <tr><td>Folders · Routes · Reports · Batch Reports · Macro · PM3 · TMC · Incident View</td><td>Y/P for the first six; N for TMC and Incident View</td><td>L</td><td>P</td><td>Y</td><td>#27 (frozen), #85</td></tr>
+          <tr class="group"><td colspan="6">tsmo</td></tr>
+          <tr><td>Home · Congestion · Incidents · Work Zones</td><td>P 1435973 (one paragraph each)</td><td>stale</td><td>N (in-product page 2184101 only)</td><td>N</td><td>#29–35, #58–62</td></tr>
+          <tr><td>Reliability</td><td>N — "Coming soon"</td><td>wrong</td><td>N</td><td>N</td><td>#33</td></tr>
+          <tr><td>Incident Search · Incident View · About</td><td>N</td><td>—</td><td>N</td><td>N</td><td>#36, #37, #29</td></tr>
+          <tr><td>Corridor View</td><td>draft-only 1436025</td><td>plausible</td><td>N</td><td>3 draft</td><td>#38</td></tr>
+          <tr><td>Data &amp; Methodology</td><td>page exists, empty/misfiled</td><td>—</td><td>N in docs</td><td>N</td><td>#48, #78</td></tr>
+          <tr class="group"><td colspan="6">freight atlas</td></tr>
+          <tr><td>Home · About &amp; The Plan</td><td>N / P (1498112 unverified)</td><td>unverified</td><td>—</td><td>N</td><td>#40, #46</td></tr>
+          <tr><td>Map · Maps Gallery</td><td>speculative / one paragraph</td><td>unverified</td><td>N</td><td>N</td><td>#42–44</td></tr>
+          <tr><td>Data &amp; Downloads</td><td>1498122 empty</td><td>—</td><td>N</td><td>N</td><td>#45, #77</td></tr>
+          <tr><td>Map Editor (admin)</td><td>Y 1496554 / 1516806 / 1597434</td><td>Y</td><td>—</td><td>Y</td><td>#90, #91</td></tr>
+          <tr class="group"><td colspan="6">platform</td></tr>
+          <tr><td>Landing · sign-in · sessions</td><td>N</td><td>—</td><td>—</td><td>N</td><td>#3–5</td></tr>
+          <tr><td>Data Manager (/datasources)</td><td>Y 1496530 / 1496547</td><td>Y</td><td>—</td><td>2</td><td>#88, #89</td></tr>
+          <tr><td>Data Manager API · Batch Reports API</td><td>Y 1436006 / 1458899 / 1715527</td><td>root/casing conflict</td><td>—</td><td>N</td><td>#81–86</td></tr>
+          <tr><td>Status / issue tracker · report an issue</td><td>N</td><td>—</td><td>—</td><td>N</td><td>#96</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── Appendix C / footer ──────────────────────────────────────────── -->
+  <footer id="appC" class="py-10">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="kicker">// appendix c · sources and method</span><span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-10 gap-y-4 font-proxima text-[12px] leading-[1.6] text-slate-600">
+      <div>
+        <span class="font-medium text-[#0f1722]">Live data.</span> Pulled 2026-09-04 with the DMS CLI and a falcor client against
+        <span class="tny-mono">dmsserver.availabs.org</span>, app <span class="tny-mono">npmrdsv5</span>, type <span class="tny-mono">dev2</span> (the rows the production site serves):
+        all 37 <span class="tny-mono">npmrds_docs</span> pages with published + draft sections (lexical → text; 28,171 published words; 141 image nodes),
+        page lists for 11 patterns, pattern configs (theme, side/top/secondary nav) for landing · npmrds_sub · tsmo2 · Freight Atlas v2 · npmrds_docs,
+        and the datasets <span class="tny-mono">sitemgmt_tickets</span> (202) · <span class="tny-mono">sitemgmt_stories</span> (92) · <span class="tny-mono">sitemgmt_pages</span> (23) ·
+        <span class="tny-mono">nysdot_running_fixes</span> (62). Scripts and raw JSON are in
+        <a class="tny-link" href="../../../../../../../planning/transportny/research/docs-redesign/">planning/transportny/research/docs-redesign/</a>.
+      </div>
+      <div>
+        <span class="font-medium text-[#0f1722]">Research files.</span>
+        <a class="tny-link" href="../../../../../../../planning/transportny/research/docs-redesign/docs-audit.md">docs-audit.md</a> ·
+        <a class="tny-link" href="../../../../../../../planning/transportny/research/docs-redesign/platform-inventory.md">platform-inventory.md</a> ·
+        <a class="tny-link" href="../../../../../../../planning/transportny/research/docs-redesign/tickets-analysis.md">tickets-analysis.md</a> ·
+        <a class="tny-link" href="../../../../../../../planning/transportny/research/docs-redesign/best-practices.md">best-practices.md</a> (≈70 primary sources with URLs) ·
+        <a class="tny-link" href="../../../../../../../planning/transportny/research/docs-redesign/competitors.md">competitors.md</a> (every URL fetched, with access status).
+        Four were written by research agents and checked against the raw data where they make counts; the platform inventory was compiled by hand
+        from the mockups' header comments and the page lists after its agent was terminated by an API limit.
+      </div>
+      <div>
+        <span class="font-medium text-[#0f1722]">Competitor observations</span> are of pages actually fetched on 2026-09-04: Replica (ReadMe + Intercom), StreetLight
+        (marketing, white-paper index, developer hub; help center login-gated), RITIS / CATT Lab (public marketing, tutorials, templates; apps and help
+        login-gated), INRIX docs, Iteris ClearGuide user guide v2.08 (PDF), TomTom Move / Traffic Stats, HERE Traffic Analytics, Urban SDK, Caltrans PeMS
+        user guide (PDF), FHWA TPM / UCR pages, Waze for Cities, Esri ArcGIS Online. Anything not directly observed is labelled inferred in the research file.
+      </div>
+      <div>
+        <span class="font-medium text-[#0f1722]">Design.</span> TransportNY design system v2 — Oswald display, Source Sans 3 body, the <span class="tny-mono">.tny-*</span> surfaces and
+        <span class="tny-mono">table.tny</span> from <span class="tny-mono">design-system/_shared.css</span>, inlined so the file opens from disk; the sibling
+        <a class="tny-link" href="npmrds-data-quality-report.html">npmrds-data-quality-report.html</a> set the document grammar. Not registered in <span class="tny-mono">ds-nav.js</span>
+        (reports are not pages). Task: <span class="tny-mono">planning/transportny/tasks/current/platform-documentation-plan.md</span>.
+      </div>
+      <div class="md:col-span-2 pt-2 border-t border-zinc-950/05">
+        <span class="font-medium text-[#0f1722]">Two corrections made during the work.</span> The task brief assumed the two rewritten NPMRDS docs pages were unpublished drafts; the dump shows both were
+        published 2026-08-28 (<span class="tny-mono">has_changes: false</span>), so the digests hold no copy of the old text. The first dump pass read the wrong
+        key (<span class="tny-mono">data["element-type"]</span> rather than <span class="tny-mono">data.element["element-type"]</span>) and produced empty digests; every count in this report is from the corrected pass.
+      </div>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

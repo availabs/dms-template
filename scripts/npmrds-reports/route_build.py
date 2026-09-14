@@ -477,8 +477,8 @@ def cmd_audit(args):
     """Flag likely-junk auto_generated routes for human triage: single-TMC
     routes (a corridor generator producing a 1-segment "route" is usually a
     sign the underlying road/tmclinear grouping degenerated) and duplicate
-    names (e.g. two rows both named "10TH AVE 36061 NORTHBOUND (2024)" — a
-    generator re-run or region-boundary overlap, not two real routes).
+    names (e.g. two rows both named "10TH AVE SUF N" — a generator re-run
+    or region-boundary overlap, not two real routes).
     Each flagged item is enriched with the evidence a drop/combine/rename
     decision actually needs: the TMC's real road/direction/county (is this a
     genuine short road or a fragment?), and whether same-named rows share

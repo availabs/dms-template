@@ -12,7 +12,7 @@ export const editorMockupTheme = {
   cta: 'inline-flex items-center gap-1.5 text-xs text-white bg-blue-600 rounded-md px-2.5 py-1',
   ctaIcon: 'w-3.5 h-3.5',
   body: 'flex',
-  sidebar: 'hidden md:flex flex-col w-48 flex-none border-r border-gray-200 py-3 px-2.5 gap-0.5',
+  sidebar: 'hidden md:flex flex-col w-48 flex-none border-l border-gray-200 py-3 px-2.5 gap-0.5',
   sidebarItem: 'flex items-center gap-2 px-2 py-1.5 rounded-md text-sm text-gray-600',
   sidebarItemActive: 'flex items-center gap-2 px-2 py-1.5 rounded-md bg-blue-50 text-blue-600 text-sm font-medium',
   sidebarIcon: 'w-3.5 h-3.5',

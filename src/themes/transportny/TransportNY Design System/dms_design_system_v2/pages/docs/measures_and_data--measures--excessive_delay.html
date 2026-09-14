@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Excessive delay · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  measures_and_data--measures--excessive_delay.html · IA page 58 · type measure. Phase 2a, 2026-09-04.
+  Sources: live TSMO Data & Methodology 2184101 (excessive-delay card + where-legend, coverage panel, cadence), Congestion
+  dashboard 2175676 methodology band, references/tsmo/06_congestion_delay_methodology.md (decisions 2026-06-10, §2 formula,
+  M1–M6), mockup header tsmo-congestion.html (2026-06-13 data revision: 310.86 M · 157.07 M · 46.84 M · 4.82 M; regions),
+  ticket 2214476 (partial years), running fix 2172499 (blank months), PROVENANCE §9 (posted-limit caveat).
+  Series/view ids deliberately not on the page. The Congestion dashboard's "(no 20 mph floor)" wording diverges from the
+  Data & Methodology page and the reference doc (max(20, 0.6 × posted)); this page follows the latter — see the phase report.
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="measure" data-applies-to="tsmo">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · measure</div>
+          <h1 class="doc-title">Excessive delay.</h1>
+          <p class="doc-lede">Vehicle-hours spent below a congestion threshold on New York's monitored roads, per segment and month. This is the canonical definition behind the TSMO Congestion dashboard and the TSMO home figures. It assumes you know what a TMC segment and AADT are.</p>
+          <div class="stamps">
+            <span class="type">measure</span>
+            <span>applies to · TSMO dashboards (www/tsmo)</span>
+            <span>methodology · excessive delay, June 2026 revision</span>
+            <span>last reviewed · 2026-09-04</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-it-answers">What it answers</h2>
+          <p>How much time traffic loses to congestion, where, and in which month. The TSMO Data &amp; Methodology page defines it as: "Time spent traveling slower than the excessive-delay threshold — the greater of 20 mph or 60% of the posted speed — multiplied by the vehicles present in that 5-minute slice. Summed to TMC × month, then split into cause buckets by overlapping TRANSCOM events."</p>
+          <p>Excessive delay is the platform's operational delay series. It is not the federal PHED and not the Macro View's TED, although all three use the same threshold formula. The differences are listed under <a href="#comparability-across-years-and-versions">Comparability</a>.</p>
+          <div class="callout basis"><span class="k">basis</span>Figures on this page are CY 2025, statewide, all vehicles, the monitored network with a posted speed limit and an AADT, unless stated.</div>
+
+          <h2 id="how-it-is-computed">How it is computed</h2>
+          <ol class="steps">
+            <li>Set the segment's threshold speed: the greater of 20 mph and 60 % of the posted speed limit. Convert to a threshold travel time: length divided by threshold speed.</li>
+            <li>For each 5-minute slice, take the observed travel time minus the threshold travel time, floored at zero.</li>
+            <li>Multiply by the vehicles present in the slice: the segment's directional AADT times the slice's share of daily traffic, from a fixed daily traffic profile for the road type and day type.</li>
+            <li>Sum the slices to segment × month. This is <strong>total</strong> excessive delay, in vehicle-hours.</li>
+            <li>Repeat step 2 against the greater of the threshold and the segment's recurrent baseline, the median weekday travel time for that slice over the year. This is <strong>non-recurrent</strong> delay. Recurrent delay is total minus non-recurrent.</li>
+            <li>Split non-recurrent delay into construction, accident and other by the TRANSCOM events that overlap the segment and month. See <a href="measures_and_data--measures--delay_attribution.html">Delay attribution</a>.</li>
+          </ol>
+          <div class="formula">threshold = max(20 mph, 0.6 × posted)
+delay_5min = max(0, TT_obs − TT_thr) × veh_5min
+veh-hrs = Σ delay_5min   per TMC × month
+recurrent = total − non-recurrent
+            <span class="var">posted = the posted speed limit · TT_obs = observed travel time · TT_thr = threshold travel time (length ÷ threshold speed)</span>
+            <span class="var">veh_5min = vehicles counted in that 5-minute slice, from directional AADT × the slice's share of the day · delay_5min = delay in that slice</span>
+            <span class="var">veh-hrs = vehicle-hours · Σ = the sum over every slice in the month · non-recurrent uses max(TT_thr, baseline travel time) in place of TT_thr</span>
+          </div>
+
+          <h2 id="parameters-and-edge-rules">Parameters and edge rules</h2>
+          <ul>
+            <li><strong>Floor:</strong> 20 mph. <strong>Reference:</strong> the posted speed limit, so the threshold measures degradation from a policy number, not from what the road can achieve.</li>
+            <li><strong>Time slice:</strong> 5 minutes, not the 15-minute bins of the Macro View measures.</li>
+            <li><strong>Baseline:</strong> the median weekday travel time per segment and slice over the year. The earlier series used the mean.</li>
+            <li><strong>Volume:</strong> AADT split by direction, weighted across the day by a fixed national profile. A segment needs a posted speed limit and an AADT to carry delay.</li>
+            <li><strong>Unit:</strong> vehicle-hours. Person-hours are vehicle-hours times an occupancy; dollars are a separate step, see <a href="measures_and_data--measures--cost_of_congestion.html">Cost of congestion</a>.</li>
+            <li><strong>Geography:</strong> statewide, or one of the 11 NYSDOT regions from the <span class="ui">Region</span> filter. See <a href="measures_and_data--concepts--geography.html">Geography</a>.</li>
+            <li><strong>Partial years show partial totals.</strong> A year with four months of data shows four months of delay, presented in the same card as a full year.</li>
+          </ul>
+
+          <h2 id="the-choices-made-and-why">The choices made, and why</h2>
+          <ul>
+            <li><strong>The posted-limit threshold is now real.</strong> In the earlier series the speed-limit field was empty for every year, so the formula collapsed to a uniform 20 mph threshold statewide. We backfilled posted limits from the network geometry in June 2026, and the current series applies the greater of 20 mph and 60 % of the limit.</li>
+            <li><strong>The baseline is the median, not the mean.</strong> A yearly mean over all days includes the disrupted days themselves. Big events depressed their own baseline, undercounting non-recurrent delay, and a year with many incidents looked "more recurrent".</li>
+            <li><strong>Attribution is capped.</strong> Two events on the same segment and time used to each claim the full excess. Bucket sums now cannot exceed the segment-month's non-recurrent delay.</li>
+            <li><strong>The series was restarted, not patched.</strong> Because the new threshold and baseline are not comparable with the old, the recomputation started in a new series, filling from the newest complete month backwards. The old series stays frozen.</li>
+            <li><strong>Vehicle-hours stay the stored unit.</strong> Monetisation and occupancy are conversions stated once, not baked into the measure.</li>
+          </ul>
+
+          <h2 id="how-much-to-trust-it">How much to trust it</h2>
+          <p>No precision band is published. Three things bound the figure. The daily traffic profile that spreads AADT over the day is a static national profile, not a New York count, so the within-day weighting is approximate. Missing probe slices contribute no delay, so a thinly observed month reads low. And the series covers only segments with both a posted limit and an AADT. The recurrent and non-recurrent split is robust to single events because the baseline is a median.</p>
+
+          <h2 id="worked-example">Worked example</h2>
+          <p>CY 2025, statewide, all vehicles, monitored network, as measured for the Congestion dashboard's data revision of 2026-06-13: total excessive delay <strong>310.86 million vehicle-hours</strong>, of which <strong>157.07 million (51 %) non-recurrent</strong>. Construction events account for 46.84 million and accidents for 4.82 million. By region, Region 11 carries 219.5 million vehicle-hours with 42 % non-recurrent, Region 8 carries 22.9 million with 73 % non-recurrent, and Region 6 carries 0.3 million with 95 % non-recurrent. Upstate delay is overwhelmingly event-driven; New York City's is recurrent.</p>
+          <p>  The live dashboard recomputes as the backfill lands; the figures above are the June 2026 revision's.</p>
+
+          <h2 id="known-limits">Known limits</h2>
+          <ul>
+            <li><strong>Not every year is computed.</strong> As of the Data &amp; Methodology page's July 2026 revision, the current series covers 2018 and 2021–2025, with 2019 and 2020 shown as an explicit gap. The backfill continues; the Data &amp; Methodology page's refresh-cadence table shows the latest month loaded (through October 2025 at its last update).</li>
+            <li><strong>Partial years look like full ones.</strong> The <span class="ui">Year</span> filter offers every year with any data. A month with no data shows nothing, not zero.</li>
+            <li><strong>Not comparable with earlier published figures.</strong> Numbers from before the June 2026 revision used a flat 20 mph threshold and a mean baseline. Never mix them.</li>
+            <li><strong>Roads that cannot reach their posted limit report delay in normal operation.</strong> This is a property of the posted-limit reference.</li>
+            <li><strong>Delay is linear in AADT</strong>, which has its own revision cycle. See <a href="measures_and_data--measures--ted.html#known-limits">TED, known limits</a>.</li>
+          </ul>
+
+          <h2 id="comparability-across-years-and-versions">Comparability across years and versions</h2>
+          <p>Within the current series, compare complete years to complete years and read the region filter as a filter on segments. Do not compare this series to PHED or TED: they use 15-minute bins, an annual scope, and, by default, a free-flow reference rather than the posted limit. Do not compare it to numbers published before June 2026. A dated list of changes is in <a href="measures_and_data--methodology_changes.html">Methodology changes</a>.</p>
+
+          <h2 id="where-this-appears">Where this appears</h2>
+          <div class="where">
+            <a href="tsmo--start.html">TSMO home · annual delay</a>
+            <a href="tsmo--congestion.html">Congestion dashboard</a>
+            <a href="tsmo--filters.html">Using the filter bar</a>
+            <a href="measures_and_data--data--excessive_delay_series.html">Excessive-delay series · datasheet</a>
+            <a href="npmrds--reports--graph_types.html">Reports · Hours of Delay graphs</a>
+            <a href="npmrds--route_comparison.html">Route Comparison · delay metric</a>
+          </div>
+
+          <h2 id="revision-log">Revision log</h2>
+          <ul>
+            <li>2026-06-10 · methodology revised: posted-limit threshold made live, median baseline, capped attribution; the series restarted from December 2024 backwards.</li>
+            <li>2026-06-19 · the value-of-time basis for dollars changed; see <a href="measures_and_data--measures--cost_of_congestion.html">Cost of congestion</a>.</li>
+            <li>2026-07-27 · the Data &amp; Methodology page published the 2019–2020 gap and the refresh cadence.</li>
+            <li>2026-09-04 · this page created.</li>
+          </ul>
+
+          <h2 id="reproducibility">Reproducibility</h2>
+          <p>The Data &amp; Methodology page's <span class="ui">Downloads &amp; API</span> section offers the delay-attribution table per year as CSV or Parquet, New York extract, and the same API endpoint the dashboards render from. See <a href="developers--downloads_and_formats.html">Bulk downloads and formats</a>.</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>TSMO Data &amp; Methodology page: the excessive-delay card and its formula legend; the coverage panel (2019–2020 not computed); the refresh-cadence table.</li>
+            <li>TSMO Congestion dashboard, methodology band and the delay-composition caption ("Partial years show partial totals").</li>
+            <li>Congestion and excessive-delay methodology review (references/tsmo/06): §2 monthly formula, findings M1 to M6, decisions of 2026-06-10.</li>
+            <li>Congestion dashboard design header, data revision 2026-06-13: the CY 2025 statewide and regional figures.</li>
+            <li>pm3 provenance record §9: the posted-limit reference measures degradation from a policy number.</li>
+            <li>Ticket 2214476 (partial years in the Year filter) and legacy running fix 2172499 (blank months).</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-04 created (phase 2a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--measures--delay_attribution.html">Delay attribution</a>
+          <a href="measures_and_data--measures--cost_of_congestion.html">Cost of congestion</a>
+          <a href="measures_and_data--measures--phed.html">PHED</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

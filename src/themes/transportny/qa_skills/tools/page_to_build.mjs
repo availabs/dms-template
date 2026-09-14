@@ -28,7 +28,9 @@ const clean = (s) => s.split("\n").filter((l) => l.trim().startsWith("{") || l.t
 const jget = (id) => JSON.parse(clean(cli("raw", "get", String(id))));
 
 // find the page
-const listOut = cli("page", "list", "--pattern", PATTERN);
+// `--limit`: `dms page list` defaults to 50 rows, and npmrds_sub crossed 50 pages on 2026-09-02
+// (report conversions) — without it this exporter reported "no page with slug" for a page that exists.
+const listOut = cli("page", "list", "--pattern", PATTERN, "--limit", "1000");
 const items = (JSON.parse(clean(listOut)).items || JSON.parse(clean(listOut))) || [];
 const page = items.find((p) => (p.url_slug || p.data?.url_slug) === SLUG);
 if (!page) { console.error(`no page with slug '${SLUG}' in pattern '${PATTERN}'`); process.exit(1); }

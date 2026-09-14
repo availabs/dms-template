@@ -548,7 +548,11 @@ const theme = {
         // address. Inverted ink, like everything else on that surface.
         footMeta: "font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--inv-ink)]",
         footListHead: "font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--inv-ink-2)]",
-        footLink: "font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--inv-ink)] hover:underline",
+        // The items are Lexical link nodes (real anchors). The editor paints
+        // every link its own blue (`lexical/theme.js` `link`); `[&_a]` re-inks
+        // the anchor here, scoped to this token, so body-copy links elsewhere
+        // keep the site treatment.
+        footLink: "font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--inv-ink)] [&_a]:text-[color:var(--inv-ink)] [&_a]:no-underline [&_a]:hover:underline",
         footColophon: "font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--inv-ink-2)]",
         footColophonEnd: "w-fit! ml-auto font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--inv-ink-2)]",
 
@@ -684,6 +688,14 @@ const theme = {
           "inline-flex items-center gap-1.5 font-[family-name:var(--font-mono)] text-[11px] " +
           "tracking-[0.10em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] " +
           "border-b border-transparent hover:border-[var(--line-3)] pb-0.5 transition-colors cursor-pointer",
+      },
+      {
+        // The inverted footer's link-list items (`footLink` in textSettings,
+        // as a real link). A lexical `button` node with this style is how the
+        // footer's Schedule / Recent spins / Station info / DJ login navigate;
+        // the text token alone renders plain text.
+        name: "footLink",
+        button: "font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--inv-ink)] hover:underline cursor-pointer",
       },
     ],
   },
@@ -1003,6 +1015,11 @@ const theme = {
         headerCellContainer: "w-full font-[family-name:var(--font-mono)] uppercase tracking-[0.12em] text-[length:var(--tx-xs)] px-3 py-2 content-center text-[color:var(--ink-3)]",
         headerCellContainerBg: "bg-transparent",
         headerCellContainerBgSelected: "bg-[var(--accent-soft)] text-[color:var(--ink-1)]",
+        // The sticky header / footer bands of a scrolling table. The library
+        // default paints them `bg-white` so rows cannot show through while
+        // scrolling — on this surface that is a white bar; use the card tone.
+        stickyHeader: "top-0 sticky z-[5] bg-[var(--card-bg)]",
+        stickyBottom: "bottom-0 sticky z-[5] bg-[var(--card-bg)]",
         cell: "relative flex items-center min-h-[44px] border-t border-[var(--line-1)]",
         cellInner: "w-full min-h-full flex flex-wrap items-center truncate py-1 px-3 text-[color:var(--ink-2)]",
         cellBg: "bg-transparent hover:bg-[var(--bg-2)]",

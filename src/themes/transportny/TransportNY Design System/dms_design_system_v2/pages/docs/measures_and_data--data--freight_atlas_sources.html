@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Freight Atlas sources · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  measures_and_data--data--freight_atlas_sources.html · IA page 77 · type data (index). Phase 3-ii, 2026-09-05.
+  Sources: research/docs-redesign/sources/npmrds2_sources.md (the 30 sources whose categories include "Freight Atlas": name · type · categories ·
+  description · columns; no update_interval declared; modified 2026-06-29 → 2026-08-10); site-dump/freight_atlas/_map_layers.md (live map
+  2026-09-05: 8 categories · 39 layers · 39 symbologies, legends, hover fields, "freight plan gap layer (2026-07)" notes); references/freight atlas/
+  06_PLAN_MAPS_DATA_CROSSTAB.md (2026-07-10: 33 plan maps, 57 inventory sources, uploads, gap list G1–G7); live home 2175238 and About & The Plan
+  2175239 copy; tickets 2197830, 2214651, 2195719, 2197778; datasets-pattern source-page design (tabs, formats). Source ↔ layer matched by name
+  (or by the symbology's inner layer name); the Census Tracts match was by content only and was resolved against the layer configuration on 2026-09-05 (symbology 2100151 names the source).
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="data" data-applies-to="freight_atlas">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · data</div>
+          <h1 class="doc-title">Freight Atlas sources.</h1>
+          <p class="doc-lede">An index of the datasets behind the Freight Atlas map: what each holds, where it came from, and which map layer draws it. For planners and analysts who need to cite a layer or download its data, and who want to know how the map stays in step with the 2024 State Freight Plan.</p>
+          <div class="stamps">
+            <span class="type">data</span>
+            <span>applies to · Freight Atlas (www/freightatlas)</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="overview">Overview</h2>
+          <p><strong>The Freight Atlas is the interactive companion to the 2024 New York State Freight Plan.</strong> The plan is the provenance frame for every source here. The plan's consultant compiled a data inventory of 57 sources for the plan's maps and figures. Those sources, uploaded to the Data Manager and categorised "Freight Atlas", are the datasets this page indexes. The Maps Gallery rebuilds each of the plan's 33 maps from the same layers.</p>
+          <p>The plan's commodity figures come from TRANSEARCH, S&amp;P Global's commodity-flow database. The plan uses its 2023 release with a 2021 base year and a 2050 forecast. The home page's headline is 936.5 million tons moved across all five modes in the 2021 base year, forecast to grow 34 % by 2050. An earlier sub-line read "S&amp;P TRANSEARCH 2023", which readers took for a data year. It was reworded in July 2026.</p>
+          <p>Where the plan publishes a figure, the Freight Atlas shows the plan's figure. The rule dates from August 2026, when a mode-share chart that derived its shares live from the TRANSEARCH table disagreed with the plan. It was replaced by the plan's own values. By tons: truck 68.6 %, water 17.0 %, rail 10.7 %, pipeline 3.2 %, air 0.3 %. By value: truck 75.9 %, water 5.6 %, rail 14.7 %, pipeline 0.5 %, air 3.0 %. The map layers still draw the underlying data.</p>
+          <div class="callout basis"><span class="k">basis</span>Figures on this page are statewide and follow the plan's 2021 base year unless a source states its own year. Layer and source counts are at the 2026-09-05 reading of the live map and the 2026-09-04 reading of the catalog.</div>
+
+          <h2 id="coverage-and-vintage">Coverage and vintage</h2>
+          <p>For a Freight Atlas source, vintage means the year of the data inside it, not the date it was uploaded. Each source carries its own. The vintages the catalog and the layer titles state:</p>
+          <ul>
+            <li>border-crossing truck volumes 2022 · airport cargo tons 2022 · dairy cow counts 2021 · REDC population 2012 and 2022</li>
+            <li>road condition exported 2020 · crude-oil rail terminals active 2017 to 2018 · bottleneck segments on the 2021 network</li>
+            <li>truck crash density 2018 to 2022 · business locations 2019 (layer titles)</li>
+            <li>TRANSEARCH flows: the 2021 base year with a 2050 forecast. The map offers a 2021 to 2050 vintage toggle</li>
+          </ul>
+          <p>The Data Manager records an update interval per source. None of the 30 readable sources declares one at the 2026-09-04 reading, so treat each as a one-time upload unless its source page says otherwise. The catalog's modified dates run from 2026-06-29 to 2026-08-10 and are edit dates, not data vintages. The source page's version selector shows whether a source has more than one version.</p>
+
+          <h2 id="the-sources">The sources</h2>
+          <p>The Data & Downloads catalog advertises 52 datasets. This index covers the 30 Freight Atlas sources whose catalog entry was publicly readable at the 2026-09-04 reading. The July 2026 metadata pass covered 35 Freight Atlas sources; the five not readable to the public are not listed here, and the catalog's own count differs because it counts versions and sub-categories. The tables follow the live map's eight layer categories. The catalog groups sources differently: Regions, Freight Facilities, Pipeline, Air Cargo, Truck Parking, Commodity Flows, Economy &amp; Demand, Environment &amp; Equity, Performance and Bridges. A layer whose source is not publicly readable is listed with "—" in the Source column. Every source is a GIS dataset. The Type column gives its geometry.</p>
+
+          <h3 id="geographies">Geographies</h3>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Source</th><th>Type</th><th>What it holds</th><th>Where it appears (layer)</th></tr></thead>
+            <tbody>
+              <tr><td>NY County Statistics</td><td>GIS · polygon</td><td>County polygons with population, employment in specific industries and educational attainment. Matched to the layer by its hover field.</td><td>Counties</td></tr>
+              <tr><td>NY REDC Statistics</td><td>GIS · polygon</td><td>Regional Economic Development Council (REDC) regions with population counts for 2012 and 2022, employment and educational attainment.</td><td>REDC Regions</td></tr>
+              <tr><td>NYS MPOs</td><td>GIS · polygon</td><td>Metropolitan planning organization (MPO) boundaries with name and acronym.</td><td>NYS MPOs</td></tr>
+              <tr><td>NRI Census Tracts USA The Census Tracts layer's symbology names this source.</td><td>GIS · polygon</td><td>Census tracts with FEMA National Risk Index (NRI) risk factors for natural hazards. The layer shows county, tract and FIPS code only.</td><td>Census Tracts</td></tr>
+            </tbody>
+          </table></div>
+
+          <h3 id="freight-facilities">Freight Facilities</h3>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Source</th><th>Type</th><th>What it holds</th><th>Where it appears (layer)</th></tr></thead>
+            <tbody>
+              <tr><td>Freight Intermodal Facilities 2022</td><td>GIS · line</td><td>Freight intermodal facility access lines with identifiers and road-network attributes.</td><td>Freight Intermodal Facilities</td></tr>
+              <tr><td>North American Pipelines · North American Pipelines (Shoreline)</td><td>GIS · line</td><td>Merged Energy Information Administration (EIA) pipelines: petroleum product, crude oil, hydrocarbon gas liquids and natural gas. The Shoreline version keeps only operating interstate and intrastate natural-gas lines.</td><td>Pipeline System</td></tr>
+              <tr><td>Border Crossings</td><td>GIS · point</td><td>Border crossings with mode where known, and inbound truck volume for 2022 added by the plan's consultant for crossings with volume data.</td><td>Border Crossings</td></tr>
+              <tr><td>Major Airports NY</td><td>GIS · point</td><td>Major cargo airports from the Bureau of Transportation Statistics (BTS), with inbound and outbound tons for 2022 and services provided.</td><td>Air Cargo Facilities</td></tr>
+              <tr><td>Pipeline Terminals</td><td>GIS · point</td><td>Rail terminals that load and unload crude oil, compiled by EIA from public data, covering terminals active in 2017 and 2018.</td><td>Pipeline Terminals</td></tr>
+              <tr><td>Truck Parking Inventory · Truck Parking Inventory Buffer</td><td>GIS · point</td><td>Truck parking locations in New York and in the 15-mile buffer around the state: name, stop type, bathrooms and spaces.</td><td>Truck Parking Inventory Buffer (two layers)</td></tr>
+            </tbody>
+          </table></div>
+
+          <h3 id="maritime-network">Maritime Network</h3>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Source</th><th>Type</th><th>What it holds</th><th>Where it appears (layer)</th></tr></thead>
+            <tbody>
+              <tr><td>NYS Canal System</td><td>GIS · line</td><td>The state canal system, with the canal name only.</td><td>Canal System</td></tr>
+              <tr><td>Marine Highways (International)</td><td>GIS · line</td><td>Marine highways in the United States and beyond, with name and length.</td><td>Marine Highways</td></tr>
+              <tr><td>Maritime Ports</td><td>GIS · point</td><td>Major ports, with name and state.</td><td>Major Ports</td></tr>
+            </tbody>
+          </table></div>
+
+          <h3 id="rail-network">Rail Network</h3>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Source</th><th>Type</th><th>What it holds</th><th>Where it appears (layer)</th></tr></thead>
+            <tbody>
+              <tr><td>NYS Freight Core Rail Network</td><td>GIS · line</td><td>Rail lines designated for the State Freight Core Rail Network, updated for the plan: owner, railroad type, operator, class and corridor type.</td><td>2024 Core Rail Freight Network · Core Rail Freight Network by Class · STRACNET (the Strategic Rail Corridor Network)</td></tr>
+              <tr><td>Rail Served Facilities</td><td>GIS · point</td><td>Rail-served facilities in New York and nearby, from BTS, with intermodal type, nearest city and railroad operator added by the plan's consultant.</td><td>Rail Served Facilities</td></tr>
+            </tbody>
+          </table></div>
+
+          <h3 id="road-network">Road Network</h3>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Source</th><th>Type</th><th>What it holds</th><th>Where it appears (layer)</th></tr></thead>
+            <tbody>
+              <tr><td>New York HPMS</td><td>GIS · line</td><td>The Federal Highway Administration's Highway Performance Monitoring System (HPMS) roadway network for New York: functional class, AADT (annual average daily traffic), sign name and speed limit. See <a href="measures_and_data--data--hpms_ris_attributes.html">HPMS / RIS attributes</a>.</td><td>Roads · Traffic Volume &amp; Road Attributes · New York State Thruway</td></tr>
+              <tr><td>New York City Truck Routes</td><td>GIS · line</td><td>Truck routes throughout New York City with street name, borough and route type.</td><td>NYC Truck Routes</td></tr>
+              <tr><td>Road Condition</td><td>GIS · line</td><td>The National Highway System subset of HPMS with pavement condition, roughness (IRI) and faulting, exported in 2020.</td><td>Road Condition</td></tr>
+              <tr><td>—</td><td>—</td><td>Not publicly readable. The layer draws the Freight Core Highway Network with its critical corridors and AADT.</td><td>New York State Freight Core Highway Network</td></tr>
+              <tr><td>—</td><td>—</td><td>Not publicly readable. The layer draws the National Highway Freight Network: primary system, other Interstate portions, critical urban and rural corridors.</td><td>National Freight Highway Network</td></tr>
+              <tr><td>—</td><td>—</td><td>Not publicly readable. The layer draws STRAHNET (the Strategic Highway Network) routes and connectors from the State Freight Core Highway Network source.</td><td>STRAHNET</td></tr>
+            </tbody>
+          </table></div>
+
+          <h3 id="network-and-commodity-data">Network and Commodity Data</h3>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Source</th><th>Type</th><th>What it holds</th><th>Where it appears (layer)</th></tr></thead>
+            <tbody>
+              <tr><td>USDA Apple Orchard Locations</td><td>GIS · polygon</td><td>Apple orchard locations in the United States, from United States Department of Agriculture (USDA) data.</td><td>USDA Apple Orchard Locations</td></tr>
+              <tr><td>Dairy Cow Inventory by County</td><td>GIS · polygon</td><td>County polygons with dairy cow counts for 2021 and population.</td><td>Dairy Cow Inventory by County</td></tr>
+              <tr><td>Alternative Fuel Corridors</td><td>GIS · line</td><td>Designated alternative fuel corridors in the United States, with length and the fuels carried. The layer filters by electric, compressed and liquefied natural gas, propane and hydrogen.</td><td>Alternative Fuel Corridors</td></tr>
+              <tr><td>Freight Demand Intensity</td><td>GIS · polygon</td><td>Moody's Analytics freight-demand score per census block group, as prepared by the plan's consultant.</td><td>Freight Demand Intensity</td></tr>
+              <tr><td>Disadvantaged Populations NY</td><td>GIS · polygon</td><td>Census tracts with Environmental Protection Agency indicators of locational disadvantage. The mapped field is the disadvantaged-communities index percentile rank.</td><td>Disadvantaged Populations (DAC Rank)</td></tr>
+              <tr><td>—</td><td>—</td><td>Not publicly readable; licensed business-location points. The layer is a density heat map.</td><td>Business Locations Density (Data Axle 2019)</td></tr>
+            </tbody>
+          </table></div>
+
+          <h3 id="transearch-freight-movement">Transearch Freight Movement</h3>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Source</th><th>Type</th><th>What it holds</th><th>Where it appears (layer)</th></tr></thead>
+            <tbody>
+              <tr><td>Transearch Directional Selected Commodities</td><td>GIS · line</td><td>Selected commodity tonnage and value on directional roads, by Standard Transportation Commodity Code (STCC) group. The layers filter by commodity, farm products first.</td><td>STCC Transearch Tonnage · STCC Transearch Value</td></tr>
+              <tr><td>—</td><td>—</td><td>Not publicly readable. The layers draw total 2021 tonnage and total value on directional roads.</td><td>Transearch Totals · Transearch Total Value</td></tr>
+            </tbody>
+          </table></div>
+
+          <h3 id="safety-and-performance">Safety &amp; Performance</h3>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Source</th><th>Type</th><th>What it holds</th><th>Where it appears (layer)</th></tr></thead>
+            <tbody>
+              <tr><td>Truck Crash Data</td><td>GIS · point</td><td>All truck crashes in New York with injury severity, case number and location. The layer is a density heat map for 2018 to 2022.</td><td>Truck Crash Density (2018-2022)</td></tr>
+              <tr><td>Top Ten Truck Bottlenecks NYSDOT</td><td>GIS · point</td><td>The 2022 freight bottlenecks NYSDOT recognises as its top ten, as points derived from the bottleneck segments.</td><td>Top 10 Truck Bottlenecks</td></tr>
+              <tr><td>Truck Bottleneck Segments v2</td><td>GIS · line</td><td>Top truck bottleneck segments in New York for TED, TTTR and AADT, on the 2021 TMC network.</td><td>Truck Bottleneck Segments</td></tr>
+              <tr><td>—</td><td>—</td><td>Not publicly readable; licensed clusters from the American Transportation Research Institute (ATRI).</td><td>Undesignated Truck Parking (ATRI)</td></tr>
+            </tbody>
+          </table></div>
+          <p>One readable source has no layer on the live map: NY State Bridge Inventory. It is a point layer of bridges with type, material, condition and minimum vertical clearance. A flag marks bridges within 600 feet of the Freight Core Highway Network.</p>
+
+          <h2 id="how-it-is-produced">How it is produced</h2>
+          <ol class="steps">
+            <li>Each dataset is uploaded to the Data Manager as a GIS dataset and categorised "Freight Atlas". The description carries the plan's inventory code and a provenance note. Fourteen plan datasets were uploaded on 2026-07-10 to close gaps the crosstab found.</li>
+            <li>Each source gets a symbology: a styled map layer with a legend and the fields shown on hover. The live map holds 39 layers in eight categories. Nine of them were added in July 2026 as "gap layers" for plan figures the map did not yet reproduce.</li>
+            <li>The crosstab indexes every plan figure to its inventory source, its Data Manager source and its layer. At 2026-07-10, 14 of the 33 plan maps were reproducible from live layers, 11 had data loaded but no layer, and 8 needed data. The gap list names what is still outside the catalog: crude-oil rail terminals (EIA), border-crossing volumes and TransBorder flows (BTS), airport traffic, and freight-project locations.</li>
+            <li>Download files are generated per dataset version. On 2026-07-27 the 23 versions that lacked one were generated as CSV, Shapefile and GeoPackage.</li>
+          </ol>
+
+          <h2 id="uses-and-limits">Uses and limits</h2>
+          <p>The sources exist to draw the map, to rebuild the plan's maps in the Maps Gallery, and to be downloaded. Three limits matter when citing them. First, plan-published figures and live layer data are different things. Quote the plan's number from the home or the plan itself, and the layer's data from its source page. Second, downloads existed for some datasets only until 2026-07-27, when the missing ones were generated. If a source page shows no download, the file may not have been published yet. Third, the Data &amp; Downloads catalog showed a sign-in page to anonymous visitors in July 2026, although the home says "No login". The cause was a permission check, not a deliberate gate. Whether the catalog is meant to be public awaited a decision. Two layers rest on licensed data (Data Axle business points, ATRI parking clusters). The crosstab flags their redistribution terms as unconfirmed.</p>
+
+          <h2 id="distribution">Distribution</h2>
+          <ul>
+            <li><strong>Data &amp; Downloads.</strong> The catalog lists every dataset with a category rail and search. The home names CSV, GeoJSON, Shapefile and GeoPackage as the download formats. The source page design adds XLSX. See <a href="freight_atlas--downloads.html">Download freight data</a>.</li>
+            <li><strong>The source page.</strong> Tabs <span class="ui">Overview</span> · <span class="ui">Table</span> · <span class="ui">Map</span> · <span class="ui">Metadata</span>, with a version selector. Overview carries the description, categories, columns and downloads. Metadata carries the data dictionary.</li>
+            <li><strong>The map.</strong> Each layer offers a per-layer download and feature popups.</li>
+            <li><strong>Data Manager API.</strong> The same catalog is readable through the API described in <a href="developers--data_manager_api.html">Data Manager API</a>.</li>
+          </ul>
+
+          <h2 id="where-this-appears">Where this appears</h2>
+          <div class="where">
+            <a href="freight_atlas--map.html">Use the map</a>
+            <a href="freight_atlas--layers.html">Layer reference</a>
+            <a href="freight_atlas--gallery.html">Maps Gallery</a>
+            <a href="freight_atlas--downloads.html">Download freight data</a>
+            <a href="freight_atlas--the_plan.html">The 2024 State Freight Plan</a>
+            <a href="measures_and_data--data--hpms_ris_attributes.html">HPMS / RIS attributes</a>
+          </div>
+
+          <h2 id="revision-log">Revision log</h2>
+          <ul>
+            <li>2026-07-10 · fourteen plan datasets uploaded and categorised "Freight Atlas" after the plan-maps crosstab.</li>
+            <li>2026-07 · nine gap layers added to the map for plan figures it did not yet draw. They are freight demand intensity, disadvantaged populations, truck crash density, top 10 bottlenecks, bottleneck segments, undesignated truck parking, business density, Thruway and TRANSEARCH total value.</li>
+            <li>2026-07-27 · downloads generated for the 23 dataset versions that had none.</li>
+            <li>2026-07-31 · the home's TRANSEARCH sub-line reworded so the 2021 base year is not read as 2023.</li>
+            <li>2026-08-25 · the mode-share chart replaced by the plan's static figures. The Freight Atlas agrees with the plan by rule.</li>
+            <li>2026-09-05 · this index created.</li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Data Manager catalog, Freight Atlas category, read 2026-09-04: the 30 publicly readable sources, with type, categories, description and columns as quoted in the tables; no update interval declared; modified dates 2026-06-29 to 2026-08-10.</li>
+            <li>Live Freight Atlas map, read 2026-09-05: 8 categories, 39 layers, 39 symbologies with legends and hover fields; layer notes "freight plan gap layer (2026-07)" and "plan Fig 28 / Fig 23 gap layer (2026-07)".</li>
+            <li>2024 Freight Plan maps × data inventory × Freight Atlas crosstab (2026-07-10): 33 plan maps (14 reproducible, 11 loaded without a layer, 8 missing data); 57 inventory sources; the 2026-07-10 uploads; the gap list G1 to G7.</li>
+            <li>Freight Atlas home (live): "the living, interactive companion to the 2024 New York State Freight Plan"; "data &amp; downloads · 52 datasets"; "every layer to download in CSV, GeoJSON, Shapefile, or GeoPackage … No login"; "936.5 M tons across all five modes · S&amp;P TRANSEARCH 2021 Base Year · +34% forecast to 2050"; "the 2021↔2050 vintage toggle". About &amp; The Plan: the TRANSEARCH 2012/2040 and 2021/2050 documents.</li>
+            <li>Ticket 2197830 (2026-07-30, resolved 2026-07-31): "S&amp;P TRANSEARCH 2023" read as a base year. Ticket 2214651 (2026-08-24, resolved 2026-08-25): the mode chart made static "so that the values in the atlas agree exactly with the values in the freight plan"; the five mode shares. Ticket 2195719 (2026-07-21, resolved 2026-07-27): "Some of the data does not have a download button"; 23 downloads generated, coverage 53 of 53. Ticket 2197778 (2026-07-29): the Data &amp; Downloads sign-in wall and its cause.</li>
+            <li>Datasets pattern design, source page: tabs Overview · Table · Map · Metadata, version selector, export formats CSV, GeoJSON, Shapefile, GeoPackage and XLSX.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 3)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="freight_atlas--layers.html">Layer reference</a>
+          <a href="freight_atlas--the_plan.html">The 2024 State Freight Plan</a>
+          <a href="measures_and_data--data--hpms_ris_attributes.html">HPMS / RIS attributes</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

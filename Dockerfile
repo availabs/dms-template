@@ -1,5 +1,6 @@
 # DMS Template Server — extends the upstream dms-server runtime with this
-# repo's app-owned datatype plugins (data-types/) loaded via DMS_EXTRA_DATATYPES.
+# repo's app-owned datatype plugins (data-types/) loaded via DMS_EXTRA_DATATYPES,
+# and its page-delete side effect (hooks/) loaded via DMS_PAGE_DELETE_HOOK.
 #
 # Build:  docker build -t dms-template-server .
 # Run:    docker run -d --env-file .env -p 5555:5555 \
@@ -15,6 +16,7 @@
 #   DMS_AUTH_DB_ENV       Auth database config name
 #   DMS_STORAGE_TYPE      'local' (default) or 's3'
 #   DMS_EXTRA_DATATYPES   Set by this image to /app/data-types/register-datatypes.js
+#   DMS_PAGE_DELETE_HOOK  Set by this image to /app/hooks/register_page_delete_hooks.js
 
 FROM node:22-bookworm-slim
 
@@ -81,12 +83,19 @@ RUN npm install --omit=dev
 #      ClickHouse + Postgres:     the pgEnv's <env>.config.json (db configs volume/baked per deploy)
 COPY data-types ./data-types
 
+# 4) Template-owned page-delete side effects, loaded via DMS_PAGE_DELETE_HOOK.
+#    The bootstrap (`register_page_delete_hooks.js`) lives inside `hooks/` and
+#    uses sibling-relative requires (`require('./npmrds_report_page_delete_hook')`,
+#    etc.) — same shape as `data-types/register-datatypes.js` above.
+COPY hooks ./hooks
+
 # Persistent storage: host ID, upload temp files, local file storage.
 VOLUME /app/src/dms/packages/dms-server/var
 
 ENV NODE_ENV=production \
     PORT=5555 \
-    DMS_EXTRA_DATATYPES=/app/data-types/register-datatypes.js
+    DMS_EXTRA_DATATYPES=/app/data-types/register-datatypes.js \
+    DMS_PAGE_DELETE_HOOK=/app/hooks/register_page_delete_hooks.js
 
 EXPOSE 5555
 
@@ -106,4 +115,13 @@ WORKDIR /app/src/dms/packages/dms-server
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
     CMD node -e "fetch('http://localhost:' + (process.env.PORT || 5555) + '/graph', {method:'POST',headers:{'Content-Type':'application/json'},body:'{}'}).then(()=>process.exit(0)).catch(()=>process.exit(1))"
 
-CMD ["node", "--max-http-header-size=1048576", "src/index.js"]
+# --max-old-space-size: Node's default old-space cap is ~4GB regardless of how
+# much RAM the host has. The full-app /sync/delta handler loads the entire
+# change_log backlog for an app into heap and then holds a JSON.stringify copy
+# of it alongside the parsed rows, which at the default limit OOM-crashed this
+# container in a restart loop (~48s per cycle) once the mitigat-ny-prod backlog
+# reached ~37k revisions / ~292MB. 16GB is a deliberate stopgap ceiling, not a
+# fix — the delta payload still needs bounding upstream. Keep this flag until
+# that lands. NOTE: a command-line flag takes precedence over NODE_OPTIONS, so
+# this value holds even if an .env sets NODE_OPTIONS to something else.
+CMD ["node", "--max-http-header-size=1048576", "--max-old-space-size=16384", "src/index.js"]

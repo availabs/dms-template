@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>NPMRDS travel times · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  measures_and_data--data--npmrds_travel_times.html · IA page 70 · type data. Phase 3, 2026-09-05.
+  Sources: Data Manager metadata "NPMRDS Production V6" (description + columns) and "NPMRDS Raw Data Downloads" (RITIS); PROVENANCE §1
+  (2 mph floor, 101.7 mph), §2, §4 (sub-second), §5 (14.47B, eras), §8 (R5 planned); TSMO Data & Methodology 2184101 (14.0B, ~2 weeks,
+  daily batch, API terms); platform documentation plan §03 (Jan 2017 → Aug 2026); ticket 2211525 (NHS + expanded network);
+  legacy overview 225868 (INRIX via CATT Lab; HERE 2016–2018); data-quality atlas via the coverage measure page (88.1 %, 59.6 %).
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="data" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · data</div>
+          <h1 class="doc-title">NPMRDS travel times.</h1>
+          <p class="doc-lede">The probe travel-time table every other number on the platform derives from: one row per segment per 5-minute epoch, three vehicle streams in the row, since January 2017. The datasheet for analysts and developers who want the raw feed or need to know what it does not contain.</p>
+          <div class="stamps">
+            <span class="type">data</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-05</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="overview">Overview</h2>
+          <p><strong>The National Performance Management Research Data Set (NPMRDS) is the Federal Highway Administration's (FHWA) licensed feed of probe-vehicle travel times.</strong> New York's extract covers the National Highway System (NHS) plus the expanded network NYSDOT licenses beyond it. The Data Manager catalogues the platform's copy as "NPMRDS Production V6" and describes it as "the main table of NPMRDS data which is updated weekly. This data is Epoch-level travel times for TMCs and it combines the all-vehicles, passengers, and trucks into one row per TMC-Epoch."</p>
+          <p>One row is one TMC segment in one 5-minute epoch. It carries up to three travel times, for all vehicles, passenger vehicles and freight trucks, and a data-density code for each. The streams arrive independently; a row can have an all-vehicle value and no truck value. The 2024 documentation names the provider as INRIX via the CATT Lab at the University of Maryland, with HERE supplying 2016 to 2018.</p>
+          <div class="callout basis"><span class="k">basis</span>Counts on this page are statewide, the full monitored network, all three streams, with the date of the count in each sentence.</div>
+
+          <h2 id="coverage-and-vintage">Coverage and vintage</h2>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Source</th><th>Span</th><th>Lag</th><th>Cadence</th><th>Gaps</th></tr></thead>
+            <tbody>
+              <tr><td>NPMRDS travel times</td><td>January 2017 to present. 14.47 billion records through August 2026; 14.0 billion through May 2026 at the TSMO Data &amp; Methodology page's 2026-06-22 query</td><td>About 2 weeks</td><td>Daily batch per the TSMO Data &amp; Methodology page's refresh-cadence table. The catalog description says weekly. The live page is the authority</td><td>Completeness moves in nine eras; overnight and truck data are thin; no record below 2 mph</td></tr>
+            </tbody>
+          </table></div>
+          <p>Coverage is not stationary. Daytime epoch coverage moves in nine month-aligned eras between 2017 and 2026, from 28.0 % to 67.0 %. Across the published years, all-vehicle bins reporting runs 36.3 % to 51.5 % and truck bins 8.0 % to 23.5 %. 88.1 % of records rest on four probes or fewer, and trucks are absent from 59.6 % of records. <a href="measures_and_data--concepts--coverage_eras_and_comparability.html">Coverage eras and comparability</a> carries the era table. The segment set changes every year with the map; see <a href="measures_and_data--data--tmc_network.html">TMC network</a>.</p>
+
+          <h2 id="schema">Schema</h2>
+          <p>The stored columns, from the Data Manager's column list. The catalog also exposes derived query fields (earliest and latest date, year, month) that are not stored columns.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Field</th><th>Type</th><th>Sample value</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>tmc</code></td><td>string</td><td>120N14364</td><td>The TMC segment id the observation keys on; one direction of one road piece.</td></tr>
+              <tr><td><code>date</code></td><td>date</td><td>—</td><td>Calendar date of the epoch.</td></tr>
+              <tr><td><code>epoch</code></td><td>integer</td><td>—</td><td>The 5-minute slice of the day, 288 per day. Numbered 0 to 287: epoch 0 is 00:00–00:04, and the hour is the epoch divided by 12.</td></tr>
+              <tr><td><code>travel_time_all_vehicles</code></td><td>number</td><td>—</td><td>Travel time across the segment for all probe vehicles, in seconds, recorded to 0.01 s. Absent when no probe reported.</td></tr>
+              <tr><td><code>travel_time_passenger_vehicles</code></td><td>number</td><td>—</td><td>Travel time for the passenger-vehicle stream, in seconds.</td></tr>
+              <tr><td><code>travel_time_freight_trucks</code></td><td>number</td><td>—</td><td>Travel time for the freight-truck stream, in seconds. Absent on 59.6 % of records.</td></tr>
+              <tr><td><code>data_density_all_vehicles</code></td><td>string</td><td>—</td><td>The vendor's density code for the all-vehicle stream, a coarse indicator of how many probes fed the value. Codes A, B and C: A for 1–4 probe vehicles, B for 5–9, C for 10 or more, per the NPMRDS data specification; most records carry A.</td></tr>
+              <tr><td><code>data_density_passenger_vehicles</code></td><td>string</td><td>—</td><td>Density code for the passenger stream.</td></tr>
+              <tr><td><code>data_density_freight_trucks</code></td><td>string</td><td>—</td><td>Density code for the truck stream.</td></tr>
+              <tr><td><code>state</code></td><td>string</td><td>NY</td><td>State of the segment. Seconds, recorded to 0.01 s; sub-second values on very short segments are correct.</td></tr>
+            </tbody>
+          </table></div>
+          <p>A missing travel time means no probe reported on that segment in that epoch. The platform stores nothing in its place and does not interpolate. Read a blank as "not observed", never as zero.</p>
+
+          <h2 id="how-it-is-produced">How it is produced</h2>
+          <ol class="steps">
+            <li>Raw NPMRDS files are downloaded from the RITIS system. Each download is kept as a version of the raw-downloads source, so a load can be traced to the file it came from.</li>
+            <li>The raw data is processed into the production table. Each processing run also rebuilds the enhanced TMC network shapefile for that vintage.</li>
+            <li>Nothing is imputed and nothing is dropped by the platform. The feed arrives already filtered upstream: zero of 1,695,358,623 CY 2025 records fall below 2 mph, and the maximum implied speed is 101.7 mph, with 99 records above 100 mph and a 7,700-fold drop at that boundary. What the upstream clamp removed cannot be audited from this side.</li>
+            <li>Downstream, the Macro View measures average epochs into 15-minute bins; the TSMO excessive-delay series reads 5-minute slices; Corridor View joins epochs to the network live. See <a href="measures_and_data--concepts--peak_periods_and_epochs.html">Peak periods and epochs</a>.</li>
+          </ol>
+          <p>Sub-second travel times are correct, not corrupt. 8,292,469 CY 2025 records (0.489 %) are under one second, all on segments shorter than 0.05 miles; a 53-foot segment at 38.5 mph legitimately takes 0.94 s. A relative epoch screen that removes readings extreme for their own segment and isolated in space and time is planned and not yet applied.</p>
+
+          <h2 id="uses-and-limits">Uses and limits</h2>
+          <p>This table feeds everything: the MAP-21 dataset and the analytical series are built from it by selecting a year, the excessive-delay series reads its 5-minute slices, Reports and Route Comparison chart it per route, Corridor View replays it. Its limits are the platform's limits. Coverage moves in eras and biases reliability up and delay down when thin. Overnight is the thinnest period. The truck stream is sparse enough that TTTR cannot meet its precision bar on any segment. The slowest readings are clamped before arrival. Very short segments produce sub-second times and fragile percentiles. None of these is fixed by the platform; each is stated beside the measure it affects.</p>
+
+          <h2 id="distribution">Distribution</h2>
+          <ul>
+            <li><strong>Macro View download.</strong> The CSV or GeoPackage package carries computed measures per segment and year, with coverage and era columns and a <code>PM3_README.txt</code>. It does not carry raw epochs. See <a href="npmrds--macro_view--download.html">Download data from the Macro View</a>.</li>
+            <li><strong>Data Manager.</strong> The source page lists the table's versions, columns and metadata. Whether the source page offers a raw epoch extract is not documented; the documented routes to the data are the Macro View download and the Data Manager API.</li>
+            <li><strong>Data Manager API.</strong> The same endpoint the dashboards render from. A key is issued on sign-in; the public allowance is 10,000 requests per day. See <a href="developers--data_manager_api.html">Data Manager API</a>.</li>
+          </ul>
+
+          <h2 id="where-this-appears">Where this appears</h2>
+          <div class="where">
+            <a href="npmrds--macro_view.html">Macro View</a>
+            <a href="npmrds--segment.html">Segment (TMC) page</a>
+            <a href="npmrds--reports--start_from_template.html">Reports</a>
+            <a href="npmrds--route_comparison.html">Route Comparison</a>
+            <a href="tsmo--corridor_view.html">Corridor View</a>
+            <a href="measures_and_data--data--excessive_delay_series.html">Excessive-delay series</a>
+          </div>
+
+          <h2 id="revision-log">Revision log</h2>
+          <ul>
+            <li>2026-08-28 · the Measures &amp; Methodology rewrite published the upstream-filtering and sub-second findings.</li>
+            <li>2026-09-05 · this datasheet created.</li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs"><li>NPMRDS data-quality report (CY 2025): hour = epoch ÷ 12 and 15-minute bin = epoch ÷ 3, so epochs run 0–287; 88.1 % of records rest on four vehicles or fewer (density code A).</li><li>NPMRDS data specification (RITIS/INRIX): data-density codes A (1–4 vehicles), B (5–9), C (10+).</li><li>pm3 provenance record §4: travel time recorded to 0.01 s; sub-second values are correct.</li>
+            <li>Data Manager, "NPMRDS Production V6": the description quoted above and the column list. "NPMRDS Raw Data Downloads": "single downloads of NPMRDS data from the RITIS system".</li>
+            <li>pm3 provenance record §1 (0 of 1,695,358,623 records below 2 mph; 101.7 mph; 99 records above 100 mph), §4 (8,292,469 sub-second records, 0.489 %; 53 feet at 38.5 mph = 0.94 s; recorded to 0.01 s), §5 (14.47 billion records, 2017-01 to 2026-08; nine eras, 28.0 % to 67.0 %), §8 (relative epoch screening planned).</li>
+            <li>TSMO Data &amp; Methodology page: source catalog ("54,249 TMCs · 14.0B 5-min records · 2017 → May 2026 · lag ~2 weeks"; coverage stats queried 2026-06-22); refresh-cadence table ("daily batch · ~2-week lag"); Downloads &amp; API ("key on sign-in · 10,000 req/day public").</li>
+            <li>NPMRDS home, hero copy as corrected 2026-08-24 (ticket 2211525): "the NHS plus the expanded network NYSDOT licenses beyond it".</li>
+            <li>2024 NPMRDS documentation, Overview: "The current provider of the data is INRIX via the CATT Lab at the University of Maryland. The data was provided by HERE from 2016-2018."; "There are 288 5-minute epochs in a given day."</li>
+            <li>Macro View measure record and NPMRDS data-quality atlas, via the Data coverage measure page: 36.3–51.5 % and 8.0–23.5 % bins reporting; 88.1 % of records on four probes or fewer; trucks absent from 59.6 %.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-05 created (phase 3)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--data--tmc_network.html">TMC network</a>
+          <a href="measures_and_data--measures--coverage.html">Data coverage</a>
+          <a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

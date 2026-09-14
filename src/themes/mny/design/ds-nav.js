@@ -69,6 +69,9 @@
       { f: 'plan-status-admin.html', t: 'plan status · admin panel' },
       { f: 'plan-status-plan.html', t: 'plan status · in the plan' },
     ]},
+    { key: 'lhmp', label: 'LHMP Design', dir: 'pages/lhmp', landing: 'home.html', pages: [
+      { f: 'home.html', t: 'plan home (county template)' },
+    ]},
     { key: 'reports', label: 'Reports', dir: 'reports', landing: 'actions-qa.html', pages: [
       { f: 'actions-qa.html', t: 'actions data quality' },
       { f: 'duplicate-actions.html', t: 'duplicate actions' },

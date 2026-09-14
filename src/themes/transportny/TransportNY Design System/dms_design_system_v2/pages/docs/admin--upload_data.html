@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Upload a dataset · Admin · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  admin--upload_data.html · IA page 88 · type how-to. Phase 6b, 2026-09-08.
+  Labels from code: datasets/pages/CreatePage.jsx (Create Dataset · Type · Name · Create · Cancel); gis_dataset/pages/Create/
+  {uploadFile,selectLayer,schemaEditor,publish} (File Metadata · Select Layer · Layer Analysis · Field Names Mappings · Publish);
+  gis_dataset/pages/Uploads (Upload Views · Id · Event Type · Timestamp); file_upload/CreatePage.jsx (Select a File · File Info ·
+  Directory Path · Description · Upload File); dms-server dama/upload/routes.js (accepted extensions, zip extraction, error text).
+  Order of steps from skills/uploading-gis-and-tabular-datasets.md and uploading-download-files.md.
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Admin · how-to</div>
+          <h1 class="doc-title">Upload a dataset.</h1>
+          <p class="doc-lede">Create a source, upload a GIS or tabular file, decide what its columns are called, and publish it as the source's first version. At the end you have a dataset page with a description, a column list and one version, ready to curate, map or download. This page assumes you have a file and an administrator account.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-08</span>
+            <span>owner · —</span>
+            <span class="gated">requires an administrator account</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="before-you-start">Before you start</h2>
+          <p>Sign in and open the dataset catalog — <span class="ui">Data &amp; Downloads</span> in the Freight Atlas, or the catalog entry in the product you administer. Creating a dataset needs <span class="ui">All (*)</span> or the create right on the catalog: full access, level 10, in the earlier scheme. The <span class="ui">Add</span> control shows for any signed-in account, but the page it opens is refused without that authority.</p>
+          <p>The upload accepts <code>.csv</code>, <code>.tsv</code>, <code>.xlsx</code>, <code>.xls</code>, <code>.shp</code>, <code>.gpkg</code>, <code>.geojson</code> and <code>.json</code>, alone or inside a <code>.zip</code>, from which the first supported file is loaded. A Shapefile must be zipped, being a set of files.</p>
+          <p>Decide the type first — it cannot be changed afterwards. GIS files get geometry a map can draw; tabular files get columns a table or a graph reads.</p>
+
+          <h2 id="steps">Steps</h2>
+          <ol class="steps">
+            <li>Select <span class="ui">Add</span> in the catalog toolbar.<span class="result">The <span class="ui">Create Dataset</span> page opens.</span></li>
+            <li>Open <span class="ui">Type</span> and choose <span class="ui">gis_dataset</span> for geometry or <span class="ui">csv_dataset</span> for a table; <a href="#the-data-types-on-offer">The data types on offer</a> lists the rest.<span class="result">The <span class="ui">Create</span> button is replaced by that type's upload panel.</span></li>
+            <li>Enter the name readers will see in <span class="ui">Name</span>, as a title. Until you do the panel reads "Please enter a datasource name."</li>
+            <li>Select the file chooser and pick your file.<span class="result">A <span class="ui">File Metadata</span> table appears with <span class="ui">Name</span>, <span class="ui">Last Modified</span>, <span class="ui">Size</span> and <span class="ui">File Upload Status</span>, which runs from "Sending GIS File to server" to "GIS File Analysis Complete". Stay here.</span></li>
+            <li>Choose the layer in <span class="ui">Select Layer</span>. Only one loads at a time, so a file with two layers needs two datasets.<span class="result"><span class="ui">Layer Analysis</span> counts the features per <span class="ui">Geometry Type</span> under <span class="ui">Feature Count</span>, after reading "Analyzing Layer... please wait."</span></li>
+            <li>Check <span class="ui">Field Names Mappings</span>: each row pairs an <span class="ui">Upload File Columns</span> entry with the <span class="ui">Database Column Name</span> it is stored under. Keep those lowercase, underscored and recognisable a year later; display names come later, on <a href="admin--manage_data.html#column-metadata">the metadata page</a>.</li>
+            <li>Tick <span class="ui">Omit</span> on any column you do not want loaded — a duplicate, an unusable field, anything identifying a person. The header checkbox omits every column at once.</li>
+            <li>Tick <span class="ui">Mbtile</span> on the columns a map will draw or label with: it decides which values travel with the map tiles.</li>
+            <li>Select <span class="ui">Publish</span>.<span class="result">The button reads "Publishing..." and the page moves to the source's <span class="ui">Upload Views</span> list, which is the load's own log.</span></li>
+            <li>Open this load's row and read its events — <span class="ui">Id</span>, <span class="ui">Event Type</span>, <span class="ui">Timestamp</span>. When <span class="ui">Event Type</span> reaches <span class="ui">FINAL</span> the data is in; a load that stops short of it failed, so see <a href="#troubleshooting">Troubleshooting</a>.</li>
+            <li>Open <span class="ui">Overview</span> and check that <span class="ui">Columns</span> counts what you expected and <span class="ui">Versions</span> holds one version.</li>
+            <li>Write the description, the column display names and the download files before you tell anyone it exists — all on <a href="admin--manage_data.html">Manage a dataset</a>.</li>
+          </ol>
+
+          <div class="callout caution"><span class="k">caution</span>A new dataset is <strong>private</strong>: its creator has every permission and nobody else has any. Grant access on the <span class="ui">Admin</span> tab — see <a href="admin--manage_data.html#access-and-deletion">Access and deletion</a>.</div>
+
+          <h2 id="what-you-now-have">What you now have</h2>
+          <p>A dataset with one version, an <span class="ui">Overview</span> tab and, for a GIS dataset, <span class="ui">Table</span> and <span class="ui">Map</span>. Nothing is downloadable yet, and nothing is on a page — those are <a href="admin--map_editor.html">the Map Editor</a> and <a href="admin--add_map_to_page.html">adding a map to a page</a>.</p>
+
+          <h2 id="a-flat-file-instead-of-a-dataset">A flat file instead of a dataset</h2>
+          <p>A PDF, an image or a download bundle has no columns. Choose <span class="ui">file_upload</span> as the <span class="ui">Type</span>, enter a name of four characters or more, and select <span class="ui">Select a File</span>. The panel shows <span class="ui">File Info</span>, an optional <span class="ui">Directory Path:</span> and a <span class="ui">Description:</span>; <span class="ui">Upload File</span> then makes the file a version, served from <span class="ui">Versions</span> with a <span class="ui">Download</span> button. Very large bundles can be refused by the server in front of the platform.</p>
+
+          <h2 id="the-data-types-on-offer">The data types on offer</h2>
+          <p>The first four are generic. The rest run a named pipeline over data already on the platform, with their own inputs instead of a file.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Type</th><th>What it does</th><th>Input</th></tr></thead>
+            <tbody>
+              <tr><td><span class="ui">gis_dataset</span></td><td>Loads a file with geometry; the dataset gets <span class="ui">Table</span> and <span class="ui">Map</span> tabs and can be drawn by a map</td><td>A GIS file, or a zip of one</td></tr>
+              <tr><td><span class="ui">csv_dataset</span></td><td>Loads a tabular file; columns only, no geometry</td><td>A CSV, TSV or spreadsheet, or a zip of one</td></tr>
+              <tr><td><span class="ui">file_upload</span></td><td>Stores a file for download; each upload is a version</td><td>Any file</td></tr>
+              <tr><td><span class="ui">internal_table</span></td><td>A table the platform holds and can edit in place; the default when no type is chosen</td><td>Rows entered or uploaded later</td></tr>
+              <tr><td><span class="ui">map21</span> · <span class="ui">pm3</span></td><td>Computes the federal MAP-21 dataset and the analytical series from the travel-time data</td><td>A travel-time source and one or more years — see <a href="admin--map21_pm3_sources.html">Create the map21 / pm3 sources</a></td></tr>
+              <tr><td>The other named types</td><td>Load or derive one of the platform's own series (travel times, events, excessive delay, traffic counts, road network)</td><td>Each has its own panel; not documented here</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="settings">Settings</h2>
+          <p>The upload panel's controls, in the order they appear.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Control</th><th>What it does</th><th>Values</th><th>Default</th></tr></thead>
+            <tbody>
+              <tr><td><span class="ui">Type</span></td><td>The data type, and so the whole flow. Cannot be changed after publishing</td><td>The list above</td><td><span class="ui">Create new</span>, which loads no panel</td></tr>
+              <tr><td><span class="ui">Name</span></td><td>The dataset's public name; must contain a letter or a digit</td><td>Text; placeholder <span class="ui">Dataset name</span></td><td>Empty</td></tr>
+              <tr><td><span class="ui">Select Layer</span></td><td>Which layer or sheet of the file is loaded</td><td>The layers the analysis found</td><td>The first one</td></tr>
+              <tr><td><span class="ui">Database Column Name</span></td><td>The name the column is stored and queried under</td><td>Text, or a name already on the dataset when you are adding a version</td><td>Taken from the file's own column name</td></tr>
+              <tr><td><span class="ui">Omit</span></td><td>Drops the column from the load</td><td>Per column, or all from the header</td><td>Off</td></tr>
+              <tr><td><span class="ui">Mbtile</span></td><td>Keeps the column in the map tiles</td><td>Per column, or all from the header</td><td>Off</td></tr>
+              <tr><td><span class="ui">Publish</span></td><td>Starts the load; reads "Publishing..." while it runs and "Error..." if the request is refused</td><td>—</td><td>—</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul>
+            <li>One layer per dataset: a file with several layers or sheets needs one upload each.</li>
+            <li>Do not leave the page between the file and <span class="ui">Publish</span>: the staged file is cleaned up between sessions, and a late publish fails.</li>
+            <li>A version must carry the dataset's columns. Data that has changed shape needs a new dataset.</li>
+            <li>Column types are guessed. Identifier columns in a tabular file — codes such as <code>31-33</code>, ids with leading zeros — are read as numbers and refuse to load.</li>
+            <li>A failed publish can leave the dataset with no version. Add a version to that one rather than making a near-duplicate.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="the-file-was-refused">The file was refused</h3>
+          <p>"Unsupported file type" means the extension is not one of the eight; convert the file. "No supported data file found in archive" means the zip held nothing readable — often a Shapefile missing its parts — so rebuild it around the data file, with your system's own zip tool. A GIS file can also be refused because the server's geospatial library is unavailable, which the message says: <a href="help.html">report</a> that one.</p>
+          <h3 id="the-log-stops-before-final">The log stops before FINAL</h3>
+          <p>The load failed. The event list names the step, not the reason. Check the two common causes — a numeric column holding text, a staged file that expired — then <a href="help.html">report it</a> with the load's id.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="admin--manage_data.html">Manage a dataset</a></li>
+            <li><a href="admin--map_editor.html">Map Editor</a></li>
+            <li><a href="developers--downloads_and_formats.html">Bulk downloads and formats</a></li>
+            <li><a href="admin--users_and_permissions.html">Users and permissions</a></li>
+            <li><a href="freight_atlas--downloads.html">Download freight data</a></li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Create Dataset page code (datasets pattern, the build being deployed): <span class="ui">Create Dataset</span>, <span class="ui">Type</span> with <span class="ui">Create new</span> and one entry per registered data type, <span class="ui">Name</span> with the placeholder <span class="ui">Dataset name</span>, <span class="ui">Create</span> / <span class="ui">Cancel</span>, the name validation, and the private-by-default access a new dataset is created with.</li>
+            <li>Upload flow code (gis_dataset create pages, shared by the tabular type): <span class="ui">File Metadata</span> with <span class="ui">Name</span> · <span class="ui">Last Modified</span> · <span class="ui">Size</span> · <span class="ui">File Upload Status</span> and its four status strings; <span class="ui">Select Layer</span>; <span class="ui">Layer Analysis</span> with <span class="ui">Geometry Type</span> · <span class="ui">Feature Count</span> and "Analyzing Layer... please wait."; <span class="ui">Field Names Mappings</span> with <span class="ui">Upload File Columns</span> · <span class="ui">Database Column Name</span> · <span class="ui">Omit</span> · <span class="ui">Mbtile</span>; <span class="ui">Publish</span> · "Publishing..." · "Error...".</li>
+            <li>Upload log code: the <span class="ui">Upload Views</span> list and the per-load event table (<span class="ui">Id</span> · <span class="ui">Event Type</span> · <span class="ui">Timestamp</span>), and the <span class="ui">FINAL</span> event type.</li>
+            <li>Server upload route (dms-server dataset upload): the accepted extensions <code>.csv</code> <code>.tsv</code> <code>.xlsx</code> <code>.xls</code> <code>.shp</code> <code>.gpkg</code> <code>.geojson</code> <code>.json</code>, zip extraction and first-supported-file selection, and the three error messages quoted above.</li>
+            <li>Flat-file upload code (file_upload create page): <span class="ui">Select a File</span>, the four-character name minimum, <span class="ui">File Info</span>, <span class="ui">Directory Path:</span>, <span class="ui">Description:</span>, <span class="ui">Upload File</span>; one version per file.</li>
+            <li>Upload procedures (platform skills, GIS and tabular datasets; flat files for download): the order of the steps, the staged-file expiry, the identifier-column typing failure, the orphaned-dataset retry advice, and the upload size limit in front of the platform.</li>
+            <li>Uploading Data (docs page, 2025-09-30): the earlier wording of the same flow, including the zip requirement, the layer selector, the column-name convention and the <span class="ui">Omit</span> box.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-08 created (phase 6b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="admin.html">Admin hub</a>
+          <a href="admin--manage_data.html">Manage a dataset</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

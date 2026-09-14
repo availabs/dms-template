@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Create the map21 / pm3 sources · Admin · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  admin--map21_pm3_sources.html · IA page 92 · type how-to. Phase 6b, 2026-09-08.
+  Procedure re-set from docs-dump 1997398 (Map21 / PM3 Sources, 2026-03-04), with the labels replaced by the current ones from
+  data-types/map21/pages/create.jsx and data-types/pm3/pages/create.jsx (NPMRDS Production Source · Year / Years · % of tmc ·
+  Add Source / Add View / Publishing...), data-types/pm3/index.js (view_id no longer accepted; one view per year, version = the
+  year), data-types/map21/index.js. Framing from measures_and_data--data--pm3_and_map21.html (the June 15 federal cycle).
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="how-to" data-applies-to="all">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Admin · how-to</div>
+          <h1 class="doc-title">Create the map21 and pm3 sources.</h1>
+          <p class="doc-lede">The yearly rebuild behind the MAP-21 PM3 pages and the analytical series: choose the travel-time source and the year, and the platform computes a dataset of per-segment measures from it. Run once a calendar year, in time for the federal filing. This page assumes the year's travel-time data is loaded and complete.</p>
+          <div class="stamps">
+            <span class="type">how-to</span>
+            <span>applies to · all products</span>
+            <span>last reviewed · 2026-09-08</span>
+            <span>owner · —</span>
+            <span class="gated">requires an administrator account</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-these-two-datasets-are">What these two datasets are</h2>
+          <p>Both are computed from the travel-time data, one segment at a time; neither is a file anyone uploads. The <strong>MAP-21 dataset</strong> is the federal one: one calendar year of reliability and delay measures in the column order the federal Highway Performance Monitoring System expects, and the basis of the Travel Time Metrics file New York files with FHWA each <strong>June 15</strong>. The <strong>analytical dataset</strong> is the platform's own: the same measures, one version per year, with the extra columns and quality flags the dashboards use. The two are not interchangeable, and the platform's figures are never called federal. <a href="measures_and_data--data--pm3_and_map21.html">PM3 and MAP-21 datasets</a> is the datasheet for both.</p>
+          <p>One administrator runs this once a year, after the calendar year's travel-time data is complete and before the June filing. The <a href="npmrds--map21.html">MAP-21 PM3 pages</a> compute their figures live from the dataset it creates, so the year appears on them as soon as the load finishes.</p>
+
+          <h2 id="before-you-start">Before you start</h2>
+          <p>Sign in and open the dataset catalog. Creating a dataset needs <span class="ui">All (*)</span>, the earlier scheme's level 10; adding a year to one that exists needs <span class="ui">Create version</span>.</p>
+          <p>Know three things first: which travel-time source to compute from, since the wrong one silently produces the wrong numbers; which completed calendar year; and whether you are creating a dataset or adding to one — a new federal year is a new version on the existing MAP-21 dataset unless the reporting method has changed.</p>
+          <p>Set aside time: the load reads a year of travel times for the whole reporting network, and reports in the task log, not on the screen you started it from.</p>
+
+          <h2 id="steps">Steps</h2>
+          <p>The federal MAP-21 dataset, one year.</p>
+          <ol class="steps">
+            <li>Select <span class="ui">Add</span> in the catalog toolbar, then set <span class="ui">Type</span> to <span class="ui">map21</span>.<span class="result">The panel changes to the MAP-21 inputs.</span></li>
+            <li>Enter a <span class="ui">Name</span> that says what it is and which year it covers.</li>
+            <li>Choose the travel-time source in <span class="ui">NPMRDS Production Source</span> — the production one, not a test or a partial load.<span class="result"><span class="ui">Year</span> becomes usable, limited to the years that source holds.</span></li>
+            <li>Set <span class="ui">Year</span> to the calendar year you are reporting, and leave <span class="ui">% of tmc</span> at 100 — the share of a segment that must have data, and the federal figure is computed at the full share.</li>
+            <li>Select <span class="ui">Add Source</span>.<span class="result">It reads "Publishing...", then the load's task page opens.</span></li>
+            <li>Watch the task page: <span class="ui">Task:</span>, <span class="ui">Status:</span>, <span class="ui">Worker:</span> and, while it runs, <span class="ui">Progress:</span>, with the events as <span class="ui">Event ID</span> · <span class="ui">Type</span> · <span class="ui">Message</span> · <span class="ui">Created At</span>.<span class="result">A failure shows <span class="ui">Error:</span> with the reason. Do not start a second load over the same year.</span></li>
+            <li>When it finishes, check the version's row count on <span class="ui">Overview</span> against the size of that year's reporting network.</li>
+            <li>Open the <a href="npmrds--map21.html">MAP-21 PM3 pages</a>, select the new year, and compare the figures with last year's before anyone else does.</li>
+            <li>To add next year to this dataset rather than creating another, select <span class="ui">Add Version</span> on its <span class="ui">Admin</span> tab and use the same panel; the button reads <span class="ui">Add View</span> there.</li>
+          </ol>
+
+          <h2 id="the-analytical-dataset-and-its-years">The analytical dataset and its years</h2>
+          <p>Same panel, one difference: it takes several years at once, because the dashboards need them together.</p>
+          <ol class="steps">
+            <li>Select <span class="ui">Add</span>, set <span class="ui">Type</span> to <span class="ui">pm3</span>, enter a <span class="ui">Name</span>, and choose the same <span class="ui">NPMRDS Production Source</span>.<span class="result">The <span class="ui">Years</span> row fills with one selectable chip per year that source holds.</span></li>
+            <li>Select every year you want, and leave <span class="ui">% of tmc</span> at 100.</li>
+            <li>Select <span class="ui">Add Source</span> and watch the task page.<span class="result">The load creates <strong>one version per year</strong>, each named for its four-digit year: three years give three versions.</span></li>
+            <li>Next year, use <span class="ui">Add Version</span> with just the new year.<span class="result">A new version appears alongside the others, which are untouched.</span></li>
+          </ol>
+
+          <h2 id="what-you-now-have">What you now have</h2>
+          <p>A MAP-21 dataset with one version for the reported year, and an analytical dataset with one version per year. Both are ordinary datasets — description, columns, an <span class="ui">Access</span> list, a <span class="ui">Tasks</span> log — curated on <a href="admin--manage_data.html">Manage a dataset</a>. The pages read them live, so check the figures before announcing the year.</p>
+
+          <h2 id="settings">Settings</h2>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Control</th><th>What it does</th><th>Values</th><th>Default</th></tr></thead>
+            <tbody>
+              <tr><td><span class="ui">Type</span></td><td>Which of the two datasets you are building</td><td><span class="ui">map21</span> · <span class="ui">pm3</span></td><td>—</td></tr>
+              <tr><td><span class="ui">NPMRDS Production Source</span></td><td>The travel-time source the measures are computed from</td><td>Every travel-time source on the platform, named with its identifier</td><td>Nothing selected</td></tr>
+              <tr><td><span class="ui">Year</span> (map21)</td><td>The single calendar year to report</td><td>Whole years, limited to those the chosen source holds</td><td>The most recent year that source holds</td></tr>
+              <tr><td><span class="ui">Years</span> (pm3)</td><td>The calendar years to compute, one version each</td><td>One chip per year the source holds; any number of them</td><td>None selected</td></tr>
+              <tr><td><span class="ui">% of tmc</span></td><td>The share of a segment that must have data for the segment to be used</td><td>0.1 to 100</td><td>100</td></tr>
+              <tr><td><span class="ui">Add Source</span> · <span class="ui">Add View</span></td><td>Starts the load; the second label appears when the dataset already exists</td><td>Reads "Publishing..." while the request is sent</td><td>—</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="limits-and-gotchas">Limits and gotchas</h2>
+          <ul>
+            <li>The button does not appear until a <span class="ui">Name</span>, a source and a year are all set.</li>
+            <li>An analytical load cannot append to an existing version: it creates a version per year, and a request that tries to append is refused outright.</li>
+            <li>The two datasets have been separate code paths since August 2026, with a test that fails if the analytical one borrows from the federal one. Never present a platform figure as the submitted one.</li>
+            <li>The earlier procedure had a fourth step, an aggregate dataset built from an analytical one. There is no such data type in this build.</li>
+            <li>A dataset built at anything but 100 <span class="ui">% of tmc</span> qualifies a different set of segments, is not comparable with the federal figure, and should say so in its description.</li>
+            <li>The load is long and reports only in the task log. A sleeping browser does not stop it; a second load over the same year duplicates the work.</li>
+          </ul>
+
+          <h2 id="troubleshooting">Troubleshooting</h2>
+          <h3 id="the-year-i-need-is-not-in-the-list">The year I need is not in the list</h3>
+          <p>The year list comes from the source you chose, so a missing year means that source does not hold it. Pick the production source, or load the year's travel-time data first.</p>
+          <h3 id="the-task-failed">The task failed</h3>
+          <p>The <span class="ui">Error:</span> line names the reason and the events show the step it reached; an incomplete year of travel times is the common cause. Fix the input and run the load again on the same dataset with <span class="ui">Add Version</span>.</p>
+          <h3 id="the-figures-differ-from-the-federal-file">The figures differ from the federal file</h3>
+          <p>They are expected to differ slightly. The MAP-21 pages compute from the platform's dataset; the file filed with FHWA is fixed at submission and carries any corrections the validator required. See <a href="measures_and_data--data--pm3_and_map21.html#uses-and-limits">Uses and limits</a> and <a href="measures_and_data--federal_vs_analytical.html">Federal PM3 and what this site publishes</a>.</p>
+
+          <h2 id="what-next">What next</h2>
+          <ul>
+            <li><a href="measures_and_data--data--pm3_and_map21.html">PM3 and MAP-21 datasets</a></li>
+            <li><a href="npmrds--map21.html">MAP-21 PM3 reporting pages</a></li>
+            <li><a href="admin--manage_data.html">Manage a dataset</a></li>
+            <li><a href="measures_and_data--methodology_changes.html">Methodology changes</a></li>
+            <li><a href="npmrds--macro_view--download.html">Download data from the Macro View</a></li>
+          </ul>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Map21 / PM3 Sources (docs page, 2026-03-04): the runbook this page re-sets — add a new source, choose the type, name it, choose the production travel-time source, choose the year or years, keep the share of segments at 100 %, and publish; and the note that several years are required to build the MAP-21 pages' components.</li>
+            <li>MAP-21 create panel code (the build being deployed): <span class="ui">NPMRDS Production Source</span> listing every travel-time source with its identifier, <span class="ui">Year</span> bounded by the years that source holds, <span class="ui">% of tmc</span> defaulting to 100, and <span class="ui">Add Source</span> / <span class="ui">Add View</span> / "Publishing..."; the navigation to the load's task page.</li>
+            <li>Analytical create panel code: <span class="ui">Years</span> as one selectable chip per year, and the same source and share controls.</li>
+            <li>Analytical publish route: one view per year with the four-digit year as its version, and the refusal of a request that names a version to append to, with the reason given in the response.</li>
+            <li>Task page code: <span class="ui">Task:</span> · <span class="ui">Status:</span> · <span class="ui">Worker:</span> · <span class="ui">Source:</span> · <span class="ui">Error:</span> · <span class="ui">Progress:</span> and the event columns.</li>
+            <li><a href="measures_and_data--data--pm3_and_map21.html">PM3 and MAP-21 datasets</a>: the June 15 federal cycle, the two files and the expected difference between them, the CY 2025 rejection and its correction, and the August 2026 separation of the two code paths with its guard test.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-08 created (phase 6b)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="admin.html">Admin hub</a>
+          <a href="measures_and_data--data--pm3_and_map21.html">PM3 and MAP-21 datasets</a>
+          <a href="npmrds--map21.html">MAP-21 PM3 reporting pages</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

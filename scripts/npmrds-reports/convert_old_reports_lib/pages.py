@@ -27,12 +27,13 @@ def to_snake_case(s):
 def compute_report_slug(title, index="0", exclude_id=None):
     """Mirrors the page editor's getUrlSlug() (same file) so a converted
     page's slug is born equal to what the admin UI would independently
-    compute from parent+title -- the scheme 34/37 already-converted pages
-    live on today, not the report_<old_id> scheme this function used to
+    compute from parent+title -- the scheme already-converted pages
+    live on today (reports/<title>, renamed 2026-09-02 from converted_reports/<title>),
+    not the report_<old_id> scheme this function used to
     return. That scheme was never stable: the editor's updateTitle()
     recomputes url_slug from the title on every save (intentional platform
     behavior, see find_page_by_old_report_id's docstring), so a page minted
-    as report_<old_id> silently flipped to converted_reports/<title> the
+    as report_<old_id> silently flipped to reports/<title> the
     first time anyone opened/saved it -- and flipped BACK to report_<old_id>
     on every --replace reconversion, breaking whatever URL was live in the
     meantime. Minting the same slug the UI converges to means reconversion

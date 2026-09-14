@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Layer reference · Freight Atlas · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="reference" data-applies-to="freight_atlas">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Freight Atlas · reference</div>
+          <h1 class="doc-title">Layer reference.</h1>
+          <p class="doc-lede">Every layer on the Freight Atlas map, category by category: what it shows, the dataset it draws, its legend labels and, where it has them, the views you can switch between. Written from the live map configuration, read 2026-09-05, and the catalog's dataset descriptions. The layer-side counterpart of <a href="measures_and_data--data--freight_atlas_sources.html">Freight Atlas sources</a>.</p>
+          <div class="stamps">
+            <span class="type">reference</span>
+            <span>applies to · Freight Atlas (www/freightatlas)</span>
+            <span>last reviewed · 2026-09-07</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="how-to-read-this-page">How to read this page</h2>
+          <p>A layer is one row in the map's <span class="ui">Map layers</span> panel: a styled drawing of one dataset, with a legend and the fields shown when you hover. The map has 39 layers in 8 categories. <strong>Layer</strong> is the row's name as published. <strong>What it shows</strong> comes from the layer's configuration and the dataset's description, with the data year where the description states one. <strong>Source</strong> is the dataset's catalog name, linked to its entry in the sources index; "not publicly readable" means the layer draws a dataset without a public catalog entry. <strong>Legend / filters</strong> gives the legend labels, and for the five layers with views, the <span class="ui">Show</span> options in order, first one default. Legend ranges are abbreviated as the map shows them (K thousand, M million, B billion). "No hover fields" marks the 13 layers that show no popup.</p>
+          <div class="callout basis"><span class="k">basis</span>Extent is New York State unless the row says otherwise; several federal datasets cover the whole country and are drawn as delivered. Data years are the datasets' own vintages, not the upload dates. TRANSEARCH layers draw the 2021 base year of the 2023 release.</div>
+
+          <h2 id="geographies">Geographies</h2>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Layer</th><th>What it shows</th><th>Source</th><th>Legend / filters</th></tr></thead>
+            <tbody>
+              <tr><td>Counties</td><td>County outlines as a frame for other layers. The dataset also holds population (2012 and 2022), employment by industry and educational attainment. Hover shows the county under a raw field name.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#geographies">NY County Statistics</a></td><td>Counties</td></tr>
+              <tr><td>REDC Regions</td><td>The Regional Economic Development Council regions. The plan's maps use them as a background, and gallery tiles turn this layer on for that purpose. Hover: <span class="ui">REDC Region</span>.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#geographies">NY REDC Statistics</a></td><td>REDC Regions</td></tr>
+              <tr><td>NYS MPOs</td><td>The boundaries of New York's metropolitan planning organizations, the plan's Figure 74. Hover: <span class="ui">MPO Name</span> · <span class="ui">MPO Acronym</span>.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#geographies">NYS MPOs</a></td><td>No legend labels</td></tr>
+              <tr><td>Census Tracts</td><td>Census tract outlines. The dataset carries FEMA National Risk Index factors (2022); the layer shows tract identity only. Hover: <span class="ui">County Name</span> · <span class="ui">Census Tract</span> · <span class="ui">Census Tract FIPS Code</span>.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#geographies">NRI Census Tracts USA</a></td><td>Census Tracts</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="freight-facilities">Freight Facilities</h2>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Layer</th><th>What it shows</th><th>Source</th><th>Legend / filters</th></tr></thead>
+            <tbody>
+              <tr><td>Freight Intermodal Facilities</td><td>Access lines to freight intermodal facilities: the Federal Highway Administration's National Highway System intermodal connectors for New York, 2022 snapshot with 2019 attributes. No hover fields.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#freight-facilities">Freight Intermodal Facilities 2022</a></td><td>Freight Intermodal Facilities</td></tr>
+              <tr><td>Pipeline System</td><td>Energy Information Administration (EIA) pipelines across North America, 2023: petroleum product, crude oil, hydrocarbon gas liquids and natural gas. Draws REDC regions behind the lines. Hover: <span class="ui">Operator Name</span> · <span class="ui">Pipeline Name</span> · <span class="ui">Pipeline Range</span> · <span class="ui">Operator</span> · <span class="ui">Status</span> · <span class="ui">Product Type</span>.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#freight-facilities">North American Pipelines · North American Pipelines (Shoreline)</a></td><td>Pipeline System</td></tr>
+              <tr><td>Border Crossings</td><td>Border crossing points, with the mode where known and the 2022 inbound truck volume where the plan's consultant recorded one. Hover: <span class="ui">Crossing Point Name</span>.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#freight-facilities">Border Crossings</a></td><td>Border Crossings</td></tr>
+              <tr><td>Air Cargo Facilities</td><td>The major cargo airports (Bureau of Transportation Statistics, 2022 inbound and outbound tons), one colour per airport. Hover: <span class="ui">Name</span> · <span class="ui">ID</span> · <span class="ui">Elevation</span> · <span class="ui">Acreage</span> · <span class="ui">Commercial Operations</span> · <span class="ui">Commuter Operations</span> · <span class="ui">Air Taxi Operations</span>.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#freight-facilities">Major Airports NY</a></td><td>WESTCHESTER COUNTY · ELMIRA/CORNING RGNL · FREDERICK DOUGLASS/GREATER ROCHESTER INTL · BUFFALO NIAGARA INTL · SYRACUSE HANCOCK INTL · NIAGARA FALLS INTL · JOHN F KENNEDY INTL · LONG ISLAND MAC ARTHUR · GRIFFISS INTL · PLATTSBURGH INTL · Other</td></tr>
+              <tr><td>Pipeline Terminals</td><td>Rail terminals that load and unload crude oil, compiled by EIA from public data for terminals active in 2017 and 2018, across the north-east, coloured by state. Hover: <span class="ui">Company</span> · <span class="ui">Site</span> · <span class="ui">City</span> · <span class="ui">State</span> · <span class="ui">Petroleum Administration for Defense District (PADD)</span> · <span class="ui">Source</span> · <span class="ui">Period</span>.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#freight-facilities">Pipeline Terminals</a></td><td>NEW YORK · PENNSYLVANIA · NEW JERSEY · CONNECTICUT · MASSACHUSETTS · VERMONT</td></tr>
+              <tr><td>Truck Parking Inventory Buffer</td><td>Two point layers: truck parking sites in New York, and sites in the 15-mile buffer around the state (2023). Name, stop type, bathrooms and spaces. Hover: <span class="ui">Name</span> · <span class="ui">Type</span> · <span class="ui">Bathrooms</span> · <span class="ui">Address</span> · <span class="ui">State</span> · <span class="ui">Notes</span>.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#freight-facilities">Truck Parking Inventory · Truck Parking Inventory Buffer</a></td><td>Truck Parking Inventory · Truck Parking Inventory Buffer</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="maritime-network">Maritime Network</h2>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Layer</th><th>What it shows</th><th>Source</th><th>Legend / filters</th></tr></thead>
+            <tbody>
+              <tr><td>Canal System</td><td>The state canal system (2016), name only. Hover: <span class="ui">Canal Name</span>.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#maritime-network">NYS Canal System</a></td><td>NYS Canal System</td></tr>
+              <tr><td>Marine Highways</td><td>The marine highway routes of the Maritime Administration's program that touch New York, M-87, M-90, M-95 and M-295, drawn in and beyond the United States. Hover: <span class="ui">name</span>.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#maritime-network">Marine Highways (International)</a></td><td>Marine Highways</td></tr>
+              <tr><td>Major Ports</td><td>Major maritime ports as points, one colour per port, in New York and neighbouring states. The panel shows this layer as <span class="ui">Major Maritime Ports</span>. Hover shows port name, state, latitude and longitude under raw field names.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#maritime-network">Maritime Ports</a></td><td>Port Authority of New York and New Jersey · Albany Port District · Port of Ogdensburg · South Jersey Port Corporation · New Bedford Port Authority · Buffalo · Port of Coeymans · Wilmington · Erie · New Haven · Other</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="rail-network">Rail Network</h2>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Layer</th><th>What it shows</th><th>Source</th><th>Legend / filters</th></tr></thead>
+            <tbody>
+              <tr><td>2024 Core Rail Freight Network</td><td>The State Freight Core Rail Network, updated for the plan (2023), coloured by corridor type: the plan's Figure 39. The published panel still shows the name with a "v2" suffix. Hover: owner, operator, class, line name, track rights, STRACNET flag, clearance and other rail attributes.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#rail-network">NYS Freight Core Rail Network</a></td><td>Last Mile · Statewide · National</td></tr>
+              <tr><td>Core Rail Freight Network by Class</td><td>The same lines coloured by railroad class: the plan's Figure 34 by class rather than operator. The published panel still shows a "v4" suffix. Hover: the same rail attributes.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#rail-network">NYS Freight Core Rail Network</a></td><td>Class I · Class II · Class III</td></tr>
+              <tr><td>Rail Served Facilities</td><td>Rail-served facilities in and near New York (Bureau of Transportation Statistics, 2021), with intermodal type, nearest city and operator added by the plan's consultant. Hover: <span class="ui">Railroad Type</span> · <span class="ui">Facility Name</span> · <span class="ui">City</span> · <span class="ui">State</span>.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#rail-network">Rail Served Facilities</a></td><td>Rail-Served Facilities</td></tr>
+              <tr><td>STRACNET</td><td>The Strategic Rail Corridor Network lines, drawn from the core rail dataset's STRACNET flag. No hover fields.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#rail-network">NYS Freight Core Rail Network</a></td><td>P · F · D The codes are the dataset's own; the site's metadata does not expand them.</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="road-network">Road Network</h2>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Layer</th><th>What it shows</th><th>Source</th><th>Legend / filters</th></tr></thead>
+            <tbody>
+              <tr><td>New York State Freight Core Highway Network</td><td>The Freight Core Highway Network (FCHN) with its critical corridors, coloured by annual average daily traffic (AADT) in nine bins. Hover: <span class="ui">GIS ID</span> · <span class="ui">DOT ID</span> · <span class="ui">Road Name</span> · <span class="ui">Route</span> · <span class="ui">Direction</span> · <span class="ui">Municipality Name</span> · <span class="ui">County Name</span> · <span class="ui">Region</span> · <span class="ui">MPO</span> · <span class="ui">REDC Region</span> · <span class="ui">AADT Value</span> · <span class="ui">AADT Actual</span> · <span class="ui">AADT Single</span> · <span class="ui">AADT Combo</span> · <span class="ui">Functional</span> · <span class="ui">Total Lanes</span> · <span class="ui">Divided</span> · <span class="ui">One-Way</span> · <span class="ui">Toll</span> · <span class="ui">Shape Length</span>.</td><td>Not publicly readable (<a href="measures_and_data--data--freight_atlas_sources.html#road-network">sources index</a>)</td><td>1.51K - 16.58K · 16.58K - 29.66K · 29.66K - 44.15K · 44.15K - 62.12K · 62.12K - 81.93K · 81.93K - 102.66K · 102.66K - 128.08K · 128.08K - 162.47K · 162.47K - 268.69K · No data</td></tr>
+              <tr><td>National Freight Highway Network</td><td>The Federal Highway Administration's National Highway Freight Network (NHFN) in New York, by component. Hover: <span class="ui">Route Name</span> · <span class="ui">Route ID</span> · <span class="ui">PIN</span> · <span class="ui">NHFN Type</span> · <span class="ui">NHFN Type (#)</span> · <span class="ui">Begin Mile Point</span> · <span class="ui">End Mile Point</span> · <span class="ui">Designation</span> · <span class="ui">Freight Project</span> · <span class="ui">Year Added</span> · <span class="ui">Location Error</span>.</td><td>Not publicly readable (<a href="measures_and_data--data--freight_atlas_sources.html#road-network">sources index</a>)</td><td>Other Interstate portions not on the PHFS (non-PHFS) · Primary Highway Freight System (PHFS) · Critical Urban Freight Corridors (CUFCs) · Critical Rural Freight Corridors (CRFCs)</td></tr>
+              <tr><td>Roads</td><td>The Highway Performance Monitoring System (HPMS) road network for New York (Federal Highway Administration, 2018) as plain lines. No hover fields.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#road-network">New York HPMS</a></td><td>Roads</td></tr>
+              <tr><td>NYC Truck Routes</td><td>New York City's designated truck routes (NYC DOT open data, 2023). No hover fields.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#road-network">New York City Truck Routes</a></td><td>One label repeating the dataset's file name</td></tr>
+              <tr><td>STRAHNET</td><td>The Strategic Highway Network's routes and connectors in New York, drawn from the State Freight Core Highway Network dataset. Hover: <span class="ui">Route</span> · <span class="ui">Type</span>.</td><td>Not publicly readable (<a href="measures_and_data--data--freight_atlas_sources.html#road-network">sources index</a>)</td><td>1 STRAHNET · 2 STRAHNET Connector</td></tr>
+              <tr><td>Road Condition</td><td>Pavement roughness on the National Highway System subset of HPMS, exported 2020, as the International Roughness Index (IRI) in three bins; higher is rougher. Hover: <span class="ui">Route Name</span> · <span class="ui">Route Number</span> · <span class="ui">IRI (Roughness Indicator)</span> · <span class="ui">IRI Year</span> · <span class="ui">F System</span> · <span class="ui">Through Lanes</span> · <span class="ui">AADT</span> · <span class="ui">Surface Type</span> · <span class="ui">Rutting</span> · <span class="ui">Faulting</span> · <span class="ui">Cracking</span>.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#road-network">Road Condition</a></td><td>21 - 100 · 100 - 173 · 173 - 857</td></tr>
+              <tr><td>New York State Thruway</td><td>The Thruway, as the HPMS roads owned by the state toll authority: the plan's Figure 28, added in July 2026. No hover fields.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#road-network">New York HPMS</a></td><td>NYS Thruway (toll system)</td></tr>
+              <tr><td>Traffic Volume &amp; Road Attributes</td><td>HPMS roads coloured by the view you pick; AADT by default, nine bins. Renamed from "Road Performance Measures" on 2026-07-27. The legend block is titled with the view. Hover shows route name, route number, route id and AADT under raw field names.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#road-network">New York HPMS</a></td><td>Views: AADT · F System · AADT (Combination Trucks) · AADT (Single Trucks) · Through Lanes · Toll Roads · National Highway System. AADT legend: 1 - 5.80K · 5.80K - 13.48K · 13.48K - 23.92K · 23.92K - 37.68K · 37.68K - 57.27K · 57.27K - 83.16K · 83.16K - 113.57K · 113.57K - 149.76K · 149.76K - 277.75K · No data</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="network-and-commodity-data">Network and Commodity Data</h2>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Layer</th><th>What it shows</th><th>Source</th><th>Legend / filters</th></tr></thead>
+            <tbody>
+              <tr><td>USDA Apple Orchard Locations</td><td>Apple orchard areas from United States Department of Agriculture data (2023), drawn with counties, REDC regions and rail lines as context. Hover: <span class="ui">County Name</span> on counties, <span class="ui">REDC Region</span> on regions, line name and railroad types on rail, <span class="ui">ID</span> on an orchard.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#network-and-commodity-data">USDA Apple Orchard Locations</a></td><td>No legend labels</td></tr>
+              <tr><td>Dairy Cow Inventory by County</td><td>Counties shaded by dairy cow count, 2021 (state agriculture department data). Hover: <span class="ui">County Name</span> · <span class="ui">Cow Count (2021)</span>.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#network-and-commodity-data">Dairy Cow Inventory by County</a></td><td>0 - 200 · 200 - 6.80K · 6.80K - 14.30K · 14.30K - 22.50K · ≥ 22.50K · No data</td></tr>
+              <tr><td>Alternative Fuel Corridors</td><td>Designated alternative fuel corridors across the United States (Bureau of Transportation Statistics, 2023), one fuel at a time. Hover lists the dataset's fields under raw names.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#network-and-commodity-data">Alternative Fuel Corridors</a></td><td>Views: EV · Compressed Natural Gas · Liquefied Natural Gas · Propane (LPG) · Hydrogen. Legend for the default view: EV</td></tr>
+              <tr><td>Freight Demand Intensity</td><td>Moody's Analytics freight-demand score per census block group (2021), as prepared for the plan: Figure 4's shading. Five bins. No hover fields.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#network-and-commodity-data">Freight Demand Intensity</a></td><td>0 - 0.92 · 0.92 - 2.71 · 2.71 - 6.06 · 6.06 - 16.07 · 16.07 - 7.53K · No data</td></tr>
+              <tr><td>Disadvantaged Populations (DAC Rank)</td><td>Census tracts by the percentile rank of a disadvantaged-communities index built from Environmental Protection Agency indicators of locational disadvantage: Figure 60's shading. No hover fields.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#network-and-commodity-data">Disadvantaged Populations NY</a></td><td>1st–20th percentile · 21st–40th · 41st–60th · 61st–80th · 81st–100th</td></tr>
+              <tr><td>Business Locations Density (Data Axle 2019)</td><td>A heat map of business locations from a licensed 2019 Data Axle extract, the shading behind the plan's Figures 4 and 5. No hover fields.</td><td>Not publicly readable, licensed (<a href="measures_and_data--data--freight_atlas_sources.html#network-and-commodity-data">sources index</a>)</td><td>Sparse · Moderate · Dense · Densest</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="transearch-freight-movement">Transearch Freight Movement</h2>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Layer</th><th>What it shows</th><th>Source</th><th>Legend / filters</th></tr></thead>
+            <tbody>
+              <tr><td>STCC Transearch Value</td><td>TRANSEARCH 2021 value on directional road links for one commodity group at a time, by Standard Transportation Commodity Code (STCC), nine bins. The popup shows the Farm Products tonnage and value whichever commodity is on the map. Hover: <span class="ui">STCC 1 (Farm Products) Tonnage</span> · <span class="ui">STCC 1 (Farm Products) Value</span> · route sign · heading.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#transearch-freight-movement">Transearch Directional Selected Commodities</a></td><td>Views: Farm Products · Metallic Ores · Coal · Crude Oil, LNG &amp; Nat Gasoline · Nonmetallic Minerals · Ordnance · Food Products · Dairy Products · Tobacco Products · Textile Mill Products. Legend: 1.11K - 114.78M · 114.78M - 350.50M · 350.50M - 706.07M · 706.07M - 1.28B · 1.28B - 2.15B · 2.15B - 3.25B · 3.25B - 4.83B · 4.83B - 7.83B · 7.83B - 10.85B · No data</td></tr>
+              <tr><td>STCC Transearch Tonnage</td><td>The same links by 2021 tonnage, with two more commodity groups. The same popup caveat applies. Hover: <span class="ui">STCC 1 (Farm Products) Tonnage</span> · <span class="ui">STCC 1 (Farm Products) Value</span> · <span class="ui">Route Sign</span> · <span class="ui">Heading</span>.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#transearch-freight-movement">Transearch Directional Selected Commodities</a></td><td>Views: the ten above, then Apparel &amp; Finished Textile · Lumber &amp; Wood Products. Legend: 1.2 - 193.22K · 193.22K - 583.84K · 583.84K - 1.17M · 1.17M - 1.97M · 1.97M - 3.15M · 3.15M - 4.74M · 4.74M - 6.91M · 6.91M - 13.03M · 13.03M - 17.99M · No data</td></tr>
+              <tr><td>Transearch Totals</td><td>Total 2021 tonnage, or total value, on directional road links: the plan's Figure 22. Hover: <span class="ui">Total Tonnage</span> · <span class="ui">Route Sign</span> · <span class="ui">Heading</span>.</td><td>Not publicly readable (<a href="measures_and_data--data--freight_atlas_sources.html#transearch-freight-movement">sources index</a>)</td><td>Views: Total Tonnage · Total Value. Legend: 9 - 2.69M · 2.69M - 7.73M · 7.73M - 15.57M · 15.57M - 26.98M · 26.98M - 43.20M · 43.20M - 62.74M · 62.74M - 98.45M</td></tr>
+              <tr><td>Transearch Total Value</td><td>Total 2021 value on directional road links in seven bins: the plan's Figure 23, added in July 2026. No hover fields.</td><td>Not publicly readable (<a href="measures_and_data--data--freight_atlas_sources.html#transearch-freight-movement">sources index</a>)</td><td>1.49K - 49.30M · 49.30M - 215.45M · 215.45M - 564.64M · 564.64M - 1.41B · 1.41B - 4.42B · 4.42B - 14.88B · 14.88B - 182.70B · No data</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="safety-and-performance">Safety &amp; Performance</h2>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Layer</th><th>What it shows</th><th>Source</th><th>Legend / filters</th></tr></thead>
+            <tbody>
+              <tr><td>Truck Crash Density (2018-2022)</td><td>A heat map of truck crashes in New York, 2018 to 2022 (NYSDOT): the plan's Figure 51. No hover fields.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#safety-and-performance">Truck Crash Data</a></td><td>Sparse · Moderate · Dense · Densest</td></tr>
+              <tr><td>Top 10 Truck Bottlenecks</td><td>The 2022 freight bottlenecks NYSDOT recognises as its top ten, as points: the plan's Figure 57. No hover fields.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#safety-and-performance">Top Ten Truck Bottlenecks NYSDOT</a></td><td>Top 10 Truck Bottlenecks</td></tr>
+              <tr><td>Truck Bottleneck Segments</td><td>The top truck bottleneck segments for total excessive delay, truck travel time reliability and AADT on the 2021 segment network. No hover fields.</td><td><a href="measures_and_data--data--freight_atlas_sources.html#safety-and-performance">Truck Bottleneck Segments v2</a></td><td>Truck Bottleneck Segments</td></tr>
+              <tr><td>Undesignated Truck Parking (ATRI)</td><td>Clusters of undesignated truck parking identified by the American Transportation Research Institute (ATRI), licensed: the plan's Figures 53 and 54. No hover fields.</td><td>Not publicly readable, licensed (<a href="measures_and_data--data--freight_atlas_sources.html#safety-and-performance">sources index</a>)</td><td>Undesignated Truck Parking Clusters</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="layers-that-read-the-same-dataset">Layers that read the same dataset</h2>
+          <p>Several layers are different drawings of one dataset, so their downloads are the same file. The three core rail layers, <span class="ui">2024 Core Rail Freight Network</span>, <span class="ui">Core Rail Freight Network by Class</span> and <span class="ui">STRACNET</span>, all read NYS Freight Core Rail Network. <span class="ui">Roads</span>, <span class="ui">New York State Thruway</span> and <span class="ui">Traffic Volume &amp; Road Attributes</span> all read New York HPMS. <span class="ui">STCC Transearch Value</span> and <span class="ui">STCC Transearch Tonnage</span> share one dataset, as do <span class="ui">Transearch Totals</span> and <span class="ui">Transearch Total Value</span>. Two layers read two datasets each: <span class="ui">Pipeline System</span> and <span class="ui">Truck Parking Inventory Buffer</span>. One readable Freight Atlas dataset, NY State Bridge Inventory, has no layer.</p>
+
+          <h2 id="names-suffixes-and-recent-changes">Names, suffixes and recent changes</h2>
+          <ul>
+            <li>The panel labels a row with the dataset drawing's own name, so two layers read differently from this page: <span class="ui">Major Ports</span> appears as <span class="ui">Major Maritime Ports</span>, and on the published map the two core rail layers carry "v2" and "v4". The suffixes distinguished drafts of the same drawing; they do not mean different data. The rename that drops them awaits publishing.</li>
+            <li>A legend block is titled with the inner layer name, which for STRAHNET, STRACNET, the core rail layers, NYC Truck Routes and the Transearch layers is the dataset's provenance name rather than the panel name. Match a block to a layer by its labels.</li>
+            <li>Nine layers were added in July 2026 to draw plan figures the map lacked: Freight Demand Intensity, Disadvantaged Populations (DAC Rank), Business Locations Density, Truck Crash Density, Top 10 Truck Bottlenecks, Truck Bottleneck Segments, Undesignated Truck Parking (ATRI), New York State Thruway and Transearch Total Value.</li>
+            <li>"Road Performance Measures" became <span class="ui">Traffic Volume &amp; Road Attributes</span> on 2026-07-27 and moved from <span class="ui">Safety &amp; Performance</span> to <span class="ui">Road Network</span>; a layer named "Freight Network Performance Measures" was removed in July 2026 as a duplicate.</li>
+            <li>Legend labels for the air cargo, port and terminal layers are the datasets' own upper-case names.</li>
+          </ul>
+
+          <h2 id="vocabulary">Vocabulary</h2>
+          <dl class="defs">
+            <dt>AADT · truck AADT</dt><dd>Annual average daily traffic: the average number of vehicles a day on a road segment. The truck-only counts appear as <span class="ui">AADT (Single Trucks)</span> and <span class="ui">AADT (Combination Trucks)</span>, single-unit and combination trucks; the FCHN popup shows them as <span class="ui">AADT Single</span> and <span class="ui">AADT Combo</span>.</dd>
+            <dt>ATRI</dt><dd>The American Transportation Research Institute, whose licensed truck-parking clusters the undesignated parking layer draws.</dd>
+            <dt>DAC rank</dt><dd>The percentile rank of a disadvantaged-communities index built from Environmental Protection Agency indicators of locational disadvantage, such as walkability, air pollution and commute length.</dd>
+            <dt>FCHN</dt><dd>The Freight Core Highway Network, New York's designated core highway network for freight, created in the 2019 plan and extended by 4,497 miles in the 2024 plan.</dd>
+            <dt>IRI</dt><dd>The International Roughness Index, a pavement roughness measure; the layer's hover label calls it a roughness indicator, and a higher value is a rougher road.</dd>
+            <dt>Last Mile</dt><dd>The third corridor type of the core rail network's legend, after <span class="ui">National</span> and <span class="ui">Statewide</span>, drawn light since July 2026. It is the third tier of the plan's core rail network, below National and Statewide, as the plan's Figure 39 labels it.</dd>
+            <dt>NHFN · PHFS · CUFC · CRFC</dt><dd>The National Highway Freight Network, the Federal Highway Administration's designated freight network, and its components: the Primary Highway Freight System, other Interstate portions not on the PHFS, Critical Urban Freight Corridors and Critical Rural Freight Corridors.</dd>
+            <dt>PADD</dt><dd>Petroleum Administration for Defense District, the Energy Information Administration's regional grouping shown in the terminals popup.</dd>
+            <dt>REDC</dt><dd>Regional Economic Development Council; the plan's maps use the REDC regions as their background.</dd>
+            <dt>STCC</dt><dd>Standard Transportation Commodity Code, the commodity classification TRANSEARCH uses; the Transearch layers filter by its top-level groups.</dd>
+            <dt>STRACNET</dt><dd>The Strategic Rail Corridor Network, the rail lines flagged in the core rail dataset; the plan's Figure 19 draws it with STRAHNET.</dd>
+            <dt>STRAHNET</dt><dd>The Strategic Highway Network, the highways designated for defence mobility, drawn as routes and connectors.</dd>
+            <dt>TRANSEARCH</dt><dd>S&amp;P Global's commodity-flow database. The plan and the map use the 2023 release with a 2021 base year, written "TRANSEARCH 2021 base year (2023 release)".</dd>
+          </dl>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Live Freight Atlas map section, read 2026-09-05: 8 categories, 39 layer rows, each layer's legend labels, hover fields, views and default view, bundled context layers, and the published names.</li>
+            <li>Data Manager catalog, Freight Atlas category, read 2026-09-04: dataset names, descriptions and provenance notes with vintages, as indexed in <a href="measures_and_data--data--freight_atlas_sources.html">Freight Atlas sources</a>.</li>
+            <li>2024 Freight Plan maps × data inventory × Freight Atlas crosstab (2026-07-10): the figure each layer reproduces; the licensed status of the Data Axle and ATRI datasets.</li>
+            <li>Gallery and legend task record (2026-07-13): the nine gap layers and their dates; the Thruway layer's ownership filter; the STRACNET codes left as delivered; rail class labels changed to Class I, II, III.</li>
+            <li>Feedback records 2195642 (2026-07-27, rename and move), 2197855 (2026-07-31, suffixes removed in the draft), 2192904 (2026-07-16, core rail recolour), 2192901 (2026-07-16, legend title renamed to <span class="ui">Air Cargo Facilities</span>).</li>
+            <li>Freight Atlas About &amp; The Plan page, published 2026-08-05: "FCHN +4,497 mi" in the what-changed table. Federal Highway Administration: the National Highway Freight Network components and STRAHNET; Energy Information Administration: PADD.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-07 created (phase 5)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--data--freight_atlas_sources.html">Freight Atlas sources</a>
+          <a href="freight_atlas--map.html">Use the map</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

@@ -28,6 +28,16 @@ import vocab from './vocabulary.json';
 // one from whatever's currently loaded, the same "very similar charts, different color scales"
 // problem Ryan flagged for Route Map applying equally here.
 import colorBreaks from './colorBreaks.json';
+// Semi-reverted 2026-09-02 (Ryan): round 80 (above) wired colorBreaks.json's
+// static [min,max] into every GridGraph/single-series-BarGraph's color scale,
+// same as Route Map's choropleth. Ryan walked that back for charts only —
+// maps keep the static scale (queried/built differently, can have load
+// issues that make a consistent legend worth more there); non-map charts go
+// back to a per-section, data-computed domain. This flag is the switch — see
+// its use in composeMeasureConfig's `displayPatch.colors` below.
+// colorBreaks.json/composeMapConfig.js are untouched; flip this back to true
+// to re-apply static breaks to charts without re-deriving any of that wiring.
+const APPLY_STATIC_BREAKS_TO_CHARTS = false;
 // report-authoring-ux-overhaul.md Tier 6A (2026-08-20): the same time-of-day/day-of-week helpers
 // QuickControls'/AddGraphModal's own "When" pill already use, reused here (not re-derived) so the
 // auto-title's phrasing of a window never drifts from what the pill itself shows for it.
@@ -60,6 +70,83 @@ export const GRAPH_TYPE_OPTIONS = [
     { value: 'LineGraph', label: 'Line Graph' },
     { value: 'GridGraph', label: 'Grid Graph' },
 ];
+
+// Per-graph-type default `display.legend.position` for a FRESHLY-CREATED NPMRDS graph — Ryan's
+// call, 2026-09-01: bottom for now, may change, and may want to differ per graph type later (e.g.
+// bottom for Line, right for Bar) — this map is the one place to make that call, not a scattered
+// literal. GridGraph gets its own key/value: its legend is a linear color-scale gradient, not a
+// per-series swatch list, so it uses the corner-based position vocabulary
+// (`LEGEND_POSITION_OPTIONS_GRID` below) instead of plain top/bottom — 'bottom' isn't one of its
+// valid positions (see `ComponentRegistry/graph_new/config.jsx`'s `legendForGridGraph` control
+// group), so it defaults to the closest analog, 'bottom-right'.
+//
+// Deliberately NOT read by `composeMeasureConfig()` itself — see
+// `planning/transportny/tasks/current/graph-legend-position-quickcontrol.md`'s design note: this
+// function's own convention is to fully re-compose/overwrite every field it owns (colors/tooltip/
+// legend.show) on EVERY apply, which is right for those fields but would be wrong for `position` —
+// it would silently stomp a manual override (Settings drawer, or the QuickControls Legend pill)
+// the next time an author touched any other pill on the same card. `applyDefaultLegendPosition`
+// below is called once, only at genuine section-creation time, by each of this app's 3 independent
+// "mint a brand-new graph section" call sites (`useAddGraphSection.js`, `compose_bridge.mjs`,
+// `report_build.mjs`) — never on a re-pick of an existing section.
+export const DEFAULT_LEGEND_POSITION_BY_GRAPH_TYPE = {
+    // History: bottom (2026-09-01) → top / top-right (2026-09-04) → top-right for every graph
+    // type (2026-09-11).
+    //
+    // The bare `top` the charts used until now CENTRED the legend over the plot, which only ever
+    // looked deliberate while the graph-native title shared that row with it (the
+    // `titleInlineWithLegend` arrangement). That title is gone — the card's header band owns it
+    // now — so a centred legend floats over nothing. `top-right` puts it in the corner, where it
+    // reads as chrome rather than as a caption, and matches GridGraph, which has always been there.
+    //
+    // ⚠ `top-right` on a Bar/Line/Pie/Treemap/Sunburst chart rendered NOTHING AT ALL before
+    // 2026-09-11 — those five wrappers matched `position` with strict equality against the four
+    // bare edges, so a corner value hit no branch and the legend silently disappeared. The shared
+    // helpers in `graph_new/components/utils.js` fix that; this default depends on them, so it
+    // cannot be cherry-picked back to a build that lacks them.
+    //
+    // Still just an author-overridable default — the per-graph Legend Position control is
+    // unaffected, and now offers all eight positions for every graph type.
+    BarGraph: 'top-right',
+    LineGraph: 'top-right',
+    GridGraph: 'top-right',
+};
+
+// Seeds `state.display.legend.position` with this app's own default for `graphType`, once, for a
+// brand-new section — see the map above for the full "why here, why not composeMeasureConfig"
+// reasoning. No-op for Table (no chart legend concept) or a state with no `display` at all (Map's
+// own compose branch, which never calls this). Safe to call unconditionally; callers don't need
+// their own Table/Map gate.
+export function applyDefaultLegendPosition(state, graphType) {
+    if (!state?.display || graphType === 'Table') return;
+    const position = DEFAULT_LEGEND_POSITION_BY_GRAPH_TYPE[graphType] || 'bottom';
+    state.display.legend = { ...(state.display.legend || {}), position };
+}
+
+// The author-facing option set for a "Legend Position" control — mirrors the DMS Settings drawer's
+// own `legend` control group (`ComponentRegistry/graph_new/config.jsx`), so QuickControls' Legend
+// pill never drifts from what the drawer offers.
+//
+// ONE list as of 2026-09-11. It used to be split, GridGraph getting the corners and everything
+// else the four bare edges — not a design choice, a workaround: only GridGraph's wrapper actually
+// rendered a corner position, and the others silently dropped the legend entirely. All six handle
+// all eight now (graph_new/components/utils.js), so the split has nothing left to express.
+export const LEGEND_POSITION_OPTIONS = [
+    { value: 'right', label: 'Right' },
+    { value: 'left', label: 'Left' },
+    { value: 'top', label: 'Top' },
+    { value: 'top-right', label: 'Top Right' },
+    { value: 'top-left', label: 'Top Left' },
+    { value: 'bottom', label: 'Bottom' },
+    { value: 'bottom-right', label: 'Bottom Right' },
+    { value: 'bottom-left', label: 'Bottom Left' },
+];
+// Kept as an alias so nothing that imported the GridGraph-specific list breaks; both names now
+// resolve to the same single list.
+export const LEGEND_POSITION_OPTIONS_GRID = LEGEND_POSITION_OPTIONS;
+export function legendPositionOptionsFor(graphType) {
+    return LEGEND_POSITION_OPTIONS;
+}
 
 export const MEASURE_OPTIONS = Object.entries(vocab.measures).map(([value, m]) => ({
     value, label: m.label,
@@ -290,6 +377,45 @@ const TMC_GRAIN_MEASURE_OVERRIDE = {
     aadt: { expr: 'table1.aadt as aadt', fn: 'avg' },
 };
 
+// Row-height source for a per-TMC GridGraph ("1 row = 1 tmc") — TMC segment length
+// (`table1.miles`, the same META_JOIN column speed/length/aadt/etc. already read for their own
+// math). `max()` not `avg()`: every row in a GridGraph's yAxis group is already scoped to exactly
+// one TMC (buildGridBreakdownColumn, above), so `miles` is constant within the group — `max` just
+// reads it out without ClickHouse's nested-aggregate rejection (same rationale as
+// TMC_GRAIN_MEASURE_OVERRIDE above). Unconditional for every per-TMC GridGraph pick, same
+// "not an author-facing toggle" rule buildGridBreakdownColumn's own comment states for the row
+// dimension itself. Verified live on DMS page tsmo2/corridor_view (build_tsmo2_corridor_view.mjs),
+// whose main time-space grid carries the identical `round(max(meta.miles),3) as rowmiles` column
+// targeted "height" — see planning/transportny/tasks/current/gridgraph-row-height-scaling.md.
+const GRID_ROW_HEIGHT_MEASURE = { expr: 'round(max(table1.miles),3) as tmc_miles', fn: 'exempt' };
+
+function buildGridHeightColumn() {
+    return buildMeasureYAxisColumn(GRID_ROW_HEIGHT_MEASURE, 'height');
+}
+
+// travelTime is normally the ONLY measure with requiresJoin: [] (see the note near
+// composeTableMeasuresConfig below) — its vocabulary.json expression is deliberately written
+// with bare, unqualified column names, correct only when NO join exists at all (the base table
+// stays unaliased in that case). ANY join forced in for a query travelTime is part of breaks that
+// invariant: the base table gets aliased `ds`, and META_JOIN carries its own `tmc` column too, so
+// travelTime's bare `tmc` becomes an ambiguous reference between `ds.tmc` and `table1.tmc`. One
+// `ds.`-qualified twin of the expression, reused at every call site that can force such a join —
+// today that's `composeTableMeasuresConfig`'s multi-measure union join (`QUALIFIED_EXPR_WHEN_
+// TABLE_HAS_JOIN`, further down) and, as of this round, a per-TMC GridGraph's forced-in height
+// column (`GRID_HEIGHT_FORCED_JOIN_MEASURE_OVERRIDE`, right below) — kept as ONE literal so the
+// two can never independently drift.
+const TRAVELTIME_JOIN_QUALIFIED_EXPR =
+    "arraySum(mapValues(avgMapIf(map(ds.tmc, toFloat64(ds.travel_time_all_vehicles)), ds.travel_time_all_vehicles != 0))) / 60 as travel_time_all_vehicles";
+
+// Building a GridGraph row-height column (above) forces META_JOIN in regardless of which measure
+// was picked — see TRAVELTIME_JOIN_QUALIFIED_EXPR's comment for why that needs travelTime's
+// expression qualified. Same "explicit override for the one measure this affects" pattern as
+// TMC_GRAIN_MEASURE_OVERRIDE above — used ONLY when the join is being forced in for the
+// row-height column, never for a plain travelTime pick with no GridGraph breakdown.
+const GRID_HEIGHT_FORCED_JOIN_MEASURE_OVERRIDE = {
+    travelTime: { expr: TRAVELTIME_JOIN_QUALIFIED_EXPR, fn: 'exempt' },
+};
+
 // "Summary" (one bar per route, no time bucket) reuses every measure's
 // existing `expr`/`fn` verbatim EXCEPT avgHoursOfDelay — confirmed by reading
 // convert_old_reports_lib/expressions.py: SPEED_SUMMARY_EXPR/TRAVEL_TIME_EXPR/
@@ -420,8 +546,24 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
     // when this happens.
     if (isUnsupportedSummaryMeasure(resolutionKey, measureKey, summaryDelayGrainKey)) return null;
     const isAvgDelaySummary = resolutionKey === 'summary' && measureKey === 'avgHoursOfDelay';
+
+    // Per-TMC row breakdown ("1 row = 1 tmc") is unconditional for every GridGraph pick (see
+    // buildGridBreakdownColumn's own comment) — and so, as of this round, is the matching row
+    // HEIGHT column scaling each row to the TMC's real length, so a GridGraph reads as a true
+    // space-time diagram instead of uniform slivers. See buildGridHeightColumn and
+    // GRID_HEIGHT_FORCED_JOIN_MEASURE_OVERRIDE above for why this needs its own forced join and
+    // (for travelTime specifically) a re-qualified measure expression. Computed before
+    // yAxisMeasure/join below because both need to know whether the join is being forced in.
+    const gridBreakdownColumn = graphType === 'GridGraph' ? buildGridBreakdownColumn(externalSourceColumns) : null;
+    const gridHeightColumn = gridBreakdownColumn ? buildGridHeightColumn() : null;
+    const forcedJoinMeasureOverride = gridHeightColumn && !measure.requiresJoin?.length
+        ? GRID_HEIGHT_FORCED_JOIN_MEASURE_OVERRIDE[measureKey]
+        : null;
+
     const yAxisMeasure = isAvgDelaySummary
         ? { ...measure, expr: avgDelaySummaryExpr(SUMMARY_DELAY_BUCKET_EXPR[summaryDelayGrainKey]) }
+        : forcedJoinMeasureOverride
+        ? { ...measure, ...forcedJoinMeasureOverride }
         : measure;
 
     // GridGraph's value column targets "color" (per-cell heat), every other
@@ -429,8 +571,12 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
     const yAxisTarget = graphType === 'GridGraph' ? 'color' : 'yAxis';
     const yAxisColumn = buildMeasureYAxisColumn(yAxisMeasure, yAxisTarget);
     const xAxisColumn = buildXAxisColumn(resolutionKey, externalSourceColumns);
-    const gridBreakdownColumn = graphType === 'GridGraph' ? buildGridBreakdownColumn(externalSourceColumns) : null;
-    const join = buildJoin(measure);
+    // gridHeightColumn forces META_JOIN into the join set even for a measure (only travelTime
+    // today) that wouldn't otherwise need one — Set-dedup preserves table1/table2 ordering for
+    // every measure that already lists META_JOIN, so this is a no-op there.
+    const join = gridHeightColumn
+        ? buildJoinFromKeys([...new Set([...(measure.requiresJoin || []), 'META_JOIN'])])
+        : buildJoin(measure);
     const isDifference = comparisonModeKey === 'difference';
 
     const resolution = vocab.resolutions[resolutionKey];
@@ -486,7 +632,17 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
         // format for the first time). Explicit `format: null` is a no-op format
         // (GridGraph.jsx only calls d3format() when `format` is a truthy string),
         // so the tmc value renders as its own raw string.
-        displayPatch.yAxis = { format: null };
+        //
+        // `showGridLines: false` (2026-09-02, Ryan — reports only, this branch is
+        // already GridGraph-gated): GridGraph's y-axis is the categorical tmc-row
+        // breakdown, not a numeric scale — horizontal gridlines there just add
+        // visual noise between cell rows, unlike a LineGraph/BarGraph's real
+        // numeric axis where they're a useful reference. Overrides the shared
+        // `defaultState`/`ChartDefaults` default of `true` (see graph_new/config.jsx
+        // and graph_new/theme.js) for GridGraph specifically, without touching
+        // that shared default for Line/BarGraph or for GridGraph sections created
+        // outside the NPMRDS report picker/converter.
+        displayPatch.yAxis = { format: null, showGridLines: false };
     }
     // Plain-mode color scale. `defaultColors` is the base template's own
     // flat palette of distinct route-identity swatches — correct for a
@@ -523,11 +679,14 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
         // at all) silently keep today's per-section dynamic range — same
         // "compose nothing extra" contract every other optional field in this
         // file already follows.
+        //
+        // Semi-reverted 2026-09-02 — see APPLY_STATIC_BREAKS_TO_CHARTS's own
+        // comment near the colorBreaks.json import above.
         const staticBreaks = colorBreaks.measures[measureKey];
         displayPatch.colors = {
             type: 'scheme', scheme: 'rdylgn', reverse: measure.reverseColors,
             ...(graphType === 'BarGraph' ? { byValue: true } : {}),
-            ...(staticBreaks ? { domainMin: staticBreaks.domain[0], domainMax: staticBreaks.domain[1] } : {}),
+            ...(APPLY_STATIC_BREAKS_TO_CHARTS && staticBreaks ? { domainMin: staticBreaks.domain[0], domainMax: staticBreaks.domain[1] } : {}),
         };
     } else {
         displayPatch.colors = defaultColors || null;
@@ -548,7 +707,15 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
         // formats it as "M:SS" instead, which a viewer reads directly as a duration and which
         // keeps whole-second precision. `yFormat` covers LineGraph's own tooltip read (see
         // GraphComponent.jsx's hoverComp comment); `valueFormat` covers every other chart type.
-        ...(measureKey === 'travelTime' ? { valueFormat: 'duration_mmss', yFormat: 'duration_mmss' } : {}),
+        // Explicitly cleared to null (not omitted) for every OTHER measure — applyMeasurePickToState
+        // MERGES display.tooltip onto the existing state rather than replacing it, so omitting
+        // these keys here would leave a stale 'duration_mmss' from a PRIOR travelTime pick applied
+        // to the newly-picked measure's own (non-duration) values. Live-reported 2026-09-02:
+        // switching a GridGraph from Travel Time to Speed (Truck) kept the tooltip in M:SS. Same
+        // "re-picking must fully determine every display field it touches" rule the xAxis/yAxis
+        // format-clearing above and the legend `show` below already follow.
+        valueFormat: measureKey === 'travelTime' ? 'duration_mmss' : null,
+        yFormat: measureKey === 'travelTime' ? 'duration_mmss' : null,
     };
     // "summary" has no categorize-targeted column to key a legend off (the categorize
     // column IS the x-axis here — see buildXAxisColumn), so the legend would otherwise
@@ -563,7 +730,7 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
     displayPatch.legend = { show: resolutionKey !== 'summary' };
 
     return {
-        columns: [yAxisColumn, xAxisColumn, gridBreakdownColumn].filter(Boolean),
+        columns: [yAxisColumn, xAxisColumn, gridBreakdownColumn, gridHeightColumn].filter(Boolean),
         join,
         comparisonSeriesCombine: isDifference ? { mode: 'difference', ...(anchorInvert ? { invert: true } : {}) } : null,
         displayPatch,
@@ -590,8 +757,11 @@ export function composeMeasureConfig({ graphType, measureKey, resolutionKey, com
 //
 // A literal lookup, not a regex rewrite: exactly one measure needs this today. Add another entry
 // here, by measure key, if a future zero-`requiresJoin` measure ever needs the same treatment.
+// Shares its one expression with GRID_HEIGHT_FORCED_JOIN_MEASURE_OVERRIDE above (both trace back
+// to TRAVELTIME_JOIN_QUALIFIED_EXPR) — same fix, two call sites that can each force a join a
+// zero-join measure wasn't written for.
 const QUALIFIED_EXPR_WHEN_TABLE_HAS_JOIN = {
-    travelTime: 'arraySum(mapValues(avgMapIf(map(ds.tmc, toFloat64(ds.travel_time_all_vehicles)), ds.travel_time_all_vehicles != 0))) / 60 as travel_time_all_vehicles',
+    travelTime: TRAVELTIME_JOIN_QUALIFIED_EXPR,
 };
 
 // Table-only: `TableCell.jsx` renders a column's raw value verbatim with NO formatting unless
@@ -889,29 +1059,86 @@ export function composeTableMeasuresConfig({ measureKeys, resolutionKey, externa
  * Different => the author typed something of their own => never touched again. Ryan's explicit
  * call, 2026-08-20: no new field, keep the mechanism obvious at the call site instead.
  */
+// A window restricts along two INDEPENDENT axes — time of day, and day of week — and they are
+// reported separately (see windowTitleFragment) so a card can say which one its series disagree on
+// instead of collapsing both into one vague phrase.
+// Mirrors the tokens QuickControls' "When" pill displays for the same state, so the two can't drift.
+function timeOfDayFragment(window) {
+    if (!window?.start || !window?.end) return '';
+    const preset = PEAK_PRESETS.find((p) => p.startTime === window.start && p.endTime === window.end);
+    return preset ? preset.label : timeOfDayToken(window.start, window.end);
+}
+function weekdaysFragment(window) {
+    return summarizeWeekdays(window?.weekdays) || '';
+}
+
 // report-authoring-ux-overhaul.md Tier 6A (2026-08-20): Ryan's own report — Peak Selector/DoW
 // picks on the "When" pill didn't move the title, only Measure did. `composeAutoTitle` already
 // receives the full resolved pick (routeWindows/routeIds included, see applyMeasurePickToState's
-// call site) — it simply never read them. This reads the SAME "first assigned route's own window"
-// convention QuickControls' own When pill already uses to compute ITS displayed token
-// (`pick.routeWindows?.[routeIds[0]]?.[0]`, QuickControls/index.jsx) so the title's phrasing can
-// never drift from what the pill shows for the same state. Renders nothing (same as before this
-// fix) whenever the window is unrestricted (all day, every day) — an unrestricted graph's title
-// looks exactly as it did before this change.
+// call site) — it simply never read them. Renders nothing whenever the window is unrestricted
+// (all day, every day), so an unrestricted graph's title is unaffected.
+//
+// 2026-09-11 — it used to read ONLY the first assigned route's first window, borrowing the
+// convention QuickControls' pill uses for its own token. That is fine for a pill, which describes
+// one thing you are about to change, and wrong for a title, which describes the whole chart: a
+// card plotting AM Peak, PM Peak and Off-Peak side by side announced itself as "AM Peak", which is
+// not a simplification but a false claim about what the bars contain. It now reads EVERY window on
+// every assigned route and only names one when they genuinely agree; otherwise it says so.
 function windowTitleFragment(pick) {
     const routeIds = pick.routeIds || [];
-    const window = pick.routeWindows?.[routeIds[0]]?.[0];
-    if (!window) return '';
+    const windows = routeIds.flatMap((id) => pick.routeWindows?.[id] || []).filter(Boolean);
+    if (!windows.length) return '';
+    // The two axes are reported independently, because a card whose series share a time-of-day
+    // window but differ on days is a different (and much more interesting) fact than one whose
+    // series are on three different peaks. Collapsing both into "multiple time windows" said
+    // nothing about WHICH axis disagreed — and on snapshot's line graph it read as simply wrong,
+    // because the series there differ only on weekends.
+    //
+    // NOTE this deliberately says nothing about DATE ranges. Two series over different years are
+    // the normal case for a comparison chart, not an inconsistency worth captioning.
+    const each = (fn) => [...new Set(windows.map(fn))];
+    const times = each(timeOfDayFragment);
+    const days = each(weekdaysFragment);
     const parts = [];
-    if (window.start && window.end) {
-        const preset = PEAK_PRESETS.find((p) => p.startTime === window.start && p.endTime === window.end);
-        parts.push(preset ? preset.label : timeOfDayToken(window.start, window.end));
-    }
-    const daysSummary = summarizeWeekdays(window.weekdays);
-    if (daysSummary) parts.push(daysSummary);
+    if (times.length > 1) parts.push('multiple time windows');
+    else if (times[0]) parts.push(times[0]);
+    if (days.length > 1) parts.push('mixed days');
+    else if (days[0]) parts.push(days[0]);
     return parts.join(', ');
 }
 
+// How each resolution reads as the "by ..." clause of a title. `summary` is deliberately absent:
+// a summary graph is one bar per route with no x grouping at all, so "Average speed" is the whole
+// title and "by summary" would be noise.
+const RESOLUTION_TITLE_PHRASES = {
+    '5-minutes':  'by 5-minute epoch',
+    '15-minutes': 'by 15-minute epoch',
+    'hour':       'by hour of day',
+    'day':        'by day',
+    'weekday':    'by day of week',
+    'month':      'by month',
+};
+
+const sentenceCase = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
+
+/**
+ * The auto-composed title for a pick.
+ *
+ * 2026-09-11 — this moved from the graph-native title (`display.title.title`, drawn inside the
+ * chart box) to the SECTION title, and got the vocabulary it needed to earn that slot. It used to
+ * emit the bare measure label, which was fine as a caption under a hand-written section title
+ * ("Daily Average Speed By Month" / "Speed (mph)") and useless as the only title on the card. See
+ * planning/transportny/tasks/current/report-graph-card-header-and-titles.md.
+ *
+ * Sentence case, per the design system's graph-card contract clause 1 ("the title token is
+ * cardTitleSM rendered sentence-case"). Each measure's `titlePhrase` in vocabulary.json is stored
+ * mid-sentence ("average speed", "AADT") so a prefix composes cleanly and one capitalisation at
+ * the end handles both — lowercasing a phrase that starts with an acronym does not.
+ *
+ * STILL A PURE FUNCTION OF THE PICK, which is load-bearing: `isTitleDirty` decides whether an
+ * author has typed their own title by recomputing what this would have produced for the PREVIOUS
+ * pick and comparing. Anything read from outside `pick` breaks that check.
+ */
 export function composeAutoTitle(pick) {
     if (!pick) return '';
     // Reliability's own bin (not year — composeAutoTitle only ever receives `pick`, no route date
@@ -919,16 +1146,59 @@ export function composeAutoTitle(pick) {
     const reliabilityBin = (pick.graphType === 'Table' && pick.includeReliability && pick.resolution === 'summary')
         ? resolveReliabilityBin(pick.routeIds, pick.routeWindows)
         : null;
-    const measureLabel = pick.graphType === 'Table'
-        ? [...(pick.measures || []).map((k) => vocab.measures[k]?.label), reliabilityBin ? `Reliability (${RELIABILITY_BIN_LABELS[reliabilityBin]})` : null].filter(Boolean).join(', ')
-        : (vocab.measures[pick.measure]?.label || '');
-    if (!measureLabel) return '';
-    // Mirrors route_compare_template.py's own f"Route Compare, {title}" naming convention. Gated
-    // the same as composeTableMeasuresConfig's own routeCompare check — the title shouldn't claim
-    // "Route Compare" when the resolution means no delta column actually got composed.
-    const prefix = (pick.graphType === 'Table' && pick.routeCompare && pick.resolution === 'summary') ? 'Route Compare, ' : '';
+    // Table (Info Box / Route Compare) keeps the label list: it is a grid of several measures at
+    // once, so a single "average speed by month" sentence would misdescribe it.
+    if (pick.graphType === 'Table') {
+        const measureLabel = [
+            ...(pick.measures || []).map((k) => vocab.measures[k]?.label),
+            reliabilityBin ? `Reliability (${RELIABILITY_BIN_LABELS[reliabilityBin]})` : null,
+        ].filter(Boolean).join(', ');
+        if (!measureLabel) return '';
+        // Mirrors route_compare_template.py's own f"Route Compare, {title}" naming convention.
+        // Gated the same as composeTableMeasuresConfig's own routeCompare check — the title
+        // shouldn't claim "Route Compare" when the resolution means no delta column composed.
+        const prefix = (pick.routeCompare && pick.resolution === 'summary') ? 'Route Compare, ' : '';
+        const when = windowTitleFragment(pick);
+        return when ? `${prefix}${measureLabel} — ${when}` : `${prefix}${measureLabel}`;
+    }
+
+    const phrase = vocab.measures[pick.measure]?.titlePhrase;
+    if (!phrase) return '';
+    // Difference mode plots `anchor - other`, one series that is a delta — neither raw value
+    // survives to the client (clickhouse.js's diff-mode join), so the title is the only place the
+    // card says so. "Difference in" rather than a "Difference" suffix keeps it readable once the
+    // resolution clause lands: "Difference in average speed by hour of day".
+    const head = pick.comparisonMode === 'difference' ? `difference in ${phrase}` : phrase;
+    // A GridGraph is a TMC × time grid, so its x grouping is only half its grain — a line and a
+    // grid of the same measure at the same resolution otherwise compose the SAME title, which is
+    // wrong on a page that shows both (snapshot, seasonality, one_week_study, and 5 more all do).
+    // Naming the extra dimension is not widget prose: `by TMC and 5-minute epoch` describes what a
+    // row of the chart IS, and is the fact that distinguishes it from the line.
+    const by = pick.graphType === 'GridGraph'
+        ? (RESOLUTION_TITLE_PHRASES[pick.resolution] || '').replace(/^by /, 'by TMC and ') || 'by TMC'
+        : (RESOLUTION_TITLE_PHRASES[pick.resolution] || '');
     const when = windowTitleFragment(pick);
-    return when ? `${prefix}${measureLabel} — ${when}` : `${prefix}${measureLabel}`;
+    return sentenceCase([[head, by].filter(Boolean).join(' '), when].filter(Boolean).join(' — '));
+}
+
+/**
+ * The auto-composed KICKER — the quiet meta line that sits at the right edge of the card's header
+ * band, written to the section's `description` attribute (see section_components.jsx's
+ * `headerKicker` token). Deliberately carries what the title CAN'T: the unit, and the time window
+ * in its own words. Repeating the measure here would waste the only other line the card has.
+ *
+ * Pure function of the pick, same contract as composeAutoTitle, so the same pristine-check works.
+ */
+export function composeAutoKicker(pick) {
+    if (!pick) return '';
+    const units = pick.graphType === 'Table'
+        ? [...new Set((pick.measures || []).map((k) => vocab.measures[k]?.units).filter(Boolean))].join(' · ')
+        : (vocab.measures[pick.measure]?.units || '');
+    // windowTitleFragment renders nothing for an unrestricted graph — say so rather than leaving
+    // the reader to assume it, since "all day, every day" is a real and load-bearing claim about
+    // what the bars contain.
+    const when = windowTitleFragment(pick) || 'all day, every day';
+    return [units, when].filter(Boolean).join(' · ');
 }
 
 // `priorPick` is whatever `state.display._measurePick` held BEFORE this apply (undefined on a
@@ -938,4 +1208,40 @@ export function composeAutoTitle(pick) {
 export function isTitleDirty({ currentTitle, priorPick }) {
     if (!currentTitle) return false;
     return currentTitle !== composeAutoTitle(priorPick);
+}
+
+// The kicker's twin of the above. Separate rather than folded in, because the two are edited
+// independently: an author can retitle a card and still want the meta line to track the measure.
+export function isKickerDirty({ currentDescription, priorPick }) {
+    if (!currentDescription) return false;
+    return currentDescription !== composeAutoKicker(priorPick);
+}
+
+/**
+ * The SECTION-attribute patch a measure pick implies — `{ title?, description? }`, already
+ * pristine-checked, ready to merge into one `updateAttribute` call.
+ *
+ * Why a returned patch rather than a write: the title lives on the section ROW, and
+ * `applyMeasurePickToState` only ever sees the section's element-data. Every caller writes the
+ * row through its own channel (`actions.updateAttribute` in the UI, a plain object literal in
+ * report_build.mjs / useAddGraphSection.js), and two sequential single-key writes would clobber
+ * each other — both derive from the same captured `value`. So the shared code composes and the
+ * caller merges once. The thing that must never drift between callers is the COMPOSITION, and
+ * that is what lives here.
+ *
+ * A caller that ignores the return value gets exactly the old behaviour: no section title.
+ */
+export function composeSectionTitlePatch({ currentTitle, currentDescription, priorPick, nextPick }) {
+    const patch = {};
+    if (!isTitleDirty({ currentTitle, priorPick })) {
+        const title = composeAutoTitle(nextPick);
+        // Never blank a title that exists. An unknown measure composes '' (see composeAutoTitle),
+        // and replacing a real title with nothing would leave the card anonymous.
+        if (title) patch.title = title;
+    }
+    if (!isKickerDirty({ currentDescription, priorPick })) {
+        const description = composeAutoKicker(nextPick);
+        if (description) patch.description = description;
+    }
+    return Object.keys(patch).length ? patch : null;
 }

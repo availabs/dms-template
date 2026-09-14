@@ -17,6 +17,7 @@ export const pickerModalTheme = {
   countLabel: 'tabular-nums',
   sortPill: 'inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide text-slate-400',
   sortPillValue: 'text-slate-600 font-medium normal-case tracking-normal',
+  sortSelect: 'text-slate-600 font-medium normal-case tracking-normal bg-transparent border border-slate-200 rounded px-1 py-0.5 text-[11px] cursor-pointer hover:border-slate-300 focus:outline-none focus:border-slate-400',
 
   footerNoteBar: 'flex items-center justify-between gap-3 text-[11px] text-slate-400 pt-1.5 mt-1 border-t border-slate-100',
 };

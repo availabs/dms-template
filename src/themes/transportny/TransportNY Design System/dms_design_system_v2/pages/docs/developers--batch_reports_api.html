@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Batch Reports API · Developers · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  developers--batch_reports_api.html · IA page 85 · type reference. Phase 6a, 2026-09-08.
+  Sources: docs-dump 1715527 (Batch Reports API, 2026-02-04: endpoint, request and response bodies, four examples, Data Columns and Data
+  Sources tables, page routes, "Both routes require authentication") — bodies and tables verbatim; 489118 (the earlier tool's CSV upload
+  format, 2024-07-23); avail-falcor batchreports/index.js (route "/batchreports/:pgEnv/:viewId", method post, JSON.parse(req.body),
+  no token check in the handler) and index.js (mounted after jwtAuth); build-route-comparison-page.md (retirement list: the two page
+  routes, the endpoint, the saved-report table); npmrds--route_comparison.html (agreed with).
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="reference" data-applies-to="developers">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Developers · reference</div>
+          <h1 class="doc-title">Batch Reports API.</h1>
+          <p class="doc-lede">One REST endpoint that takes a list of routes as TMC lists with time windows, and a list of columns, and returns speed, travel time and hours of delay per route and column. It is the service behind the earlier Batch Reports tool and retires with Route Comparison. For developers who still call it, and for anyone porting a script.</p>
+          <div class="stamps">
+            <span class="type">reference</span>
+            <span>applies to · Developers</span>
+            <span>last reviewed · 2026-09-08</span>
+            <span>owner · —</span>
+            <span class="upcoming">retires with Route Comparison</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="status">Status</h2>
+          <div class="callout caution"><span class="k">retires with Route Comparison</span>The endpoint, the two pages that call it and the table of saved batch reports are the earlier Batch Reports tool. <a href="npmrds--route_comparison.html">Route Comparison</a> replaces the tool; when it is released the endpoint is retired with it. Until then this page describes the endpoint as its reference of 2026-02-04 and the server code have it. Saved batch reports are not carried over.</div>
+
+          <h2 id="the-endpoint">The endpoint</h2>
+<pre class="code">POST https://graph.availabs.org/batchreports/npmrds2/982
+Content-Type: application/json</pre>
+          <p>The server route is <code>/batchreports/:pgEnv/:viewId</code>. The two segments name the data environment and the travel-time view the numbers are computed from; the reference gives them as above and no other values are documented. The body is JSON text. Times are turned into 5-minute epochs on the server; the first column in <code>columns</code> is the base.</p>
+
+          <h2 id="request-body">Request body</h2>
+<pre class="code">{
+  id: string,              // UUID for this request batch
+  routes: [
+    {
+      uuid: string,        // unique identifier for this route instance
+      rid: number,         // route ID
+      name: string,        // route name
+      tmcs: string[],      // array of TMC codes
+      startTime: string,   // "HH:mm:ss" format
+      endTime: string,     // "HH:mm:ss" format
+      startDate: string,   // optional, "YYYY-MM-DD" format
+      endDate: string,     // optional, "YYYY-MM-DD" format
+      [columnName]: {      // dates for each column
+        startDate: string,
+        endDate: string
+      }
+    }
+  ],
+  columns: [
+    {
+      uuid: string,
+      name: string,
+      dateSelection: "from-route" | "user-defined" | "relative",
+      relativeDate: string,       // if dateSelection is "relative"
+      descriptor: string,
+      startDate: string,          // "YYYY-MM-DD"
+      endDate: string,            // "YYYY-MM-DD"
+      dataColumns: [
+        {
+          key: "speed" | "speed-pc" | "traveltime" | "traveltime-pc" | "delay" | "delay-pc",
+          header: string,
+          base: string
+        }
+      ],
+      dataSource: "travel_time_all_vehicles" | "travel_time_freight_trucks" | "travel_time_passenger_vehicles",
+      isBase: boolean,
+      overrides: {
+        aadt: number | null,
+        threshold: number | null,
+        speed: number | null
+      }
+    }
+  ],
+  useBaseAsReference: boolean  // use first column as reference for percent change
+}</pre>
+          <p>A route carries its TMC list and a daily time window, and one date range per column, keyed by the column's name. A column names its data source, its date selection and its data columns. Keys ending in <code>-pc</code> are percent changes against the base column; <code>useBaseAsReference</code> selects which of the two values is the denominator. <code>overrides</code> replaces the AADT, the delay threshold speed or the speed used in the delay calculation for that column.</p>
+
+          <h2 id="response">Response</h2>
+<pre class="code">{
+  id: string,     // same UUID as request
+  data: [
+    {
+      uuid: string,           // route UUID
+      [columnName]: {
+        speed: number | null,
+        "speed-pc": number | null,
+        traveltime: number | null,
+        "traveltime-pc": number | null,
+        delay: number | null,
+        "delay-pc": number | null
+      }
+    }
+  ]
+}</pre>
+          <p>One entry per route, keyed by the route's <code>uuid</code>; under it one object per column, holding only the data columns that column asked for. A value is <code>null</code> where the window had no data.</p>
+
+          <h2 id="data-columns">Data columns</h2>
+          <p>The <code>key</code> values a column may request, with the header the tool used.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Key</th><th>Header</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>speed</code></td><td>Speed</td><td>Average speed in mph</td></tr>
+              <tr><td><code>speed-pc</code></td><td>Speed Percent Change</td><td>Percent change from reference</td></tr>
+              <tr><td><code>traveltime</code></td><td>Travel Time</td><td>Total travel time</td></tr>
+              <tr><td><code>traveltime-pc</code></td><td>Travel Time Percent Change</td><td>Percent change from reference</td></tr>
+              <tr><td><code>delay</code></td><td>Hours of Delay</td><td>Total hours of delay</td></tr>
+              <tr><td><code>delay-pc</code></td><td>Hours of Delay Percent Change</td><td>Percent change from reference</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="data-sources">Data sources</h2>
+          <p>The <code>dataSource</code> values, one per vehicle stream of the <a href="measures_and_data--data--npmrds_travel_times.html">NPMRDS travel times</a> table.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Value</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>travel_time_all_vehicles</code></td><td>Freight Trucks and Passenger Vehicles</td></tr>
+              <tr><td><code>travel_time_freight_trucks</code></td><td>Freight Trucks only</td></tr>
+              <tr><td><code>travel_time_passenger_vehicles</code></td><td>Passenger Vehicles only</td></tr>
+            </tbody>
+          </table></div>
+
+          <h2 id="four-scenarios">Four scenarios</h2>
+          <p>The reference's own examples, verbatim, with <code>${API_HOST}</code> standing for <code>https://graph.availabs.org</code>. The TMC codes and values are the reference's illustrations, not live figures.</p>
+
+          <h3 id="single-route-with-speed-data">Single route with speed data</h3>
+          <p>Speed for one route in the morning peak of one quarter.</p>
+<pre class="code">curl -X POST "${API_HOST}/batchreports/npmrds2/982" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "routes": [
+      {
+        "uuid": "route-uuid-001",
+        "rid": 12345,
+        "name": "I-87 Northbound - Albany to Saratoga",
+        "tmcs": ["120+04567", "120+04568", "120+04569"],
+        "startTime": "06:00:00",
+        "endTime": "09:00:00",
+        "Base": {
+          "startDate": "2024-01-01",
+          "endDate": "2024-03-31"
+        }
+      }
+    ],
+    "columns": [
+      {
+        "uuid": "col-uuid-001",
+        "name": "Base",
+        "dateSelection": "from-route",
+        "startDate": "2024-01-01",
+        "endDate": "2024-03-31",
+        "dataColumns": [
+          { "key": "speed", "header": "Speed", "base": "speed" }
+        ],
+        "dataSource": "travel_time_all_vehicles",
+        "isBase": true,
+        "overrides": { "aadt": null, "threshold": null, "speed": null }
+      }
+    ],
+    "useBaseAsReference": true
+  }'
+
+<span class="c">→</span>
+{
+  "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+  "data": [
+    { "uuid": "route-uuid-001", "Base": { "speed": 58.42 } }
+  ]
+}</pre>
+
+          <h3 id="year-over-year-comparison">Year-over-year comparison</h3>
+          <p>Speed and travel time for two routes across 2023 and 2024, with the 2024 column carrying percent changes against 2023.</p>
+<pre class="code">curl -X POST "${API_HOST}/batchreports/npmrds2/982" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "b2c3d4e5-f6a7-8901-bcde-f23456789012",
+    "routes": [
+      {
+        "uuid": "route-uuid-001",
+        "rid": 12345,
+        "name": "I-87 Northbound",
+        "tmcs": ["120+04567", "120+04568"],
+        "startTime": "07:00:00",
+        "endTime": "19:00:00",
+        "2023 Data": { "startDate": "2023-01-01", "endDate": "2023-12-31" },
+        "2024 Data": { "startDate": "2024-01-01", "endDate": "2024-12-31" }
+      },
+      {
+        "uuid": "route-uuid-002",
+        "rid": 12346,
+        "name": "I-90 Eastbound",
+        "tmcs": ["120+05001", "120+05002", "120+05003"],
+        "startTime": "07:00:00",
+        "endTime": "19:00:00",
+        "2023 Data": { "startDate": "2023-01-01", "endDate": "2023-12-31" },
+        "2024 Data": { "startDate": "2024-01-01", "endDate": "2024-12-31" }
+      }
+    ],
+    "columns": [
+      {
+        "uuid": "col-uuid-001",
+        "name": "2023 Data",
+        "dateSelection": "user-defined",
+        "startDate": "2023-01-01",
+        "endDate": "2023-12-31",
+        "dataColumns": [
+          { "key": "speed", "header": "Speed", "base": "speed" },
+          { "key": "traveltime", "header": "Travel Time", "base": "traveltime" }
+        ],
+        "dataSource": "travel_time_all_vehicles",
+        "isBase": true,
+        "overrides": { "aadt": null, "threshold": null, "speed": null }
+      },
+      {
+        "uuid": "col-uuid-002",
+        "name": "2024 Data",
+        "dateSelection": "user-defined",
+        "startDate": "2024-01-01",
+        "endDate": "2024-12-31",
+        "dataColumns": [
+          { "key": "speed", "header": "Speed", "base": "speed" },
+          { "key": "speed-pc", "header": "Speed Percent Change", "base": "speed" },
+          { "key": "traveltime", "header": "Travel Time", "base": "traveltime" },
+          { "key": "traveltime-pc", "header": "Travel Time Percent Change", "base": "traveltime" }
+        ],
+        "dataSource": "travel_time_all_vehicles",
+        "isBase": false,
+        "overrides": { "aadt": null, "threshold": null, "speed": null }
+      }
+    ],
+    "useBaseAsReference": true
+  }'
+
+<span class="c">→</span>
+{
+  "id": "b2c3d4e5-f6a7-8901-bcde-f23456789012",
+  "data": [
+    {
+      "uuid": "route-uuid-001",
+      "2023 Data": { "speed": 62.15, "traveltime": 12.45 },
+      "2024 Data": { "speed": 59.83, "speed-pc": -3.73, "traveltime": 13.02, "traveltime-pc": 4.58 }
+    },
+    {
+      "uuid": "route-uuid-002",
+      "2023 Data": { "speed": 55.20, "traveltime": 18.72 },
+      "2024 Data": { "speed": 57.45, "speed-pc": 4.08, "traveltime": 17.98, "traveltime-pc": -3.95 }
+    }
+  ]
+}</pre>
+
+          <h3 id="hours-of-delay-with-overrides">Hours of delay with overrides</h3>
+          <p>Delay for one corridor over a summer, with the AADT and the threshold speed overridden.</p>
+<pre class="code">curl -X POST "${API_HOST}/batchreports/npmrds2/982" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "c3d4e5f6-a7b8-9012-cdef-345678901234",
+    "routes": [
+      {
+        "uuid": "route-uuid-001",
+        "rid": 12345,
+        "name": "US-9 Corridor",
+        "tmcs": ["120+06001", "120+06002"],
+        "startTime": "06:00:00",
+        "endTime": "21:00:00",
+        "Base": { "startDate": "2024-06-01", "endDate": "2024-08-31" }
+      }
+    ],
+    "columns": [
+      {
+        "uuid": "col-uuid-001",
+        "name": "Base",
+        "dateSelection": "from-route",
+        "startDate": "2024-06-01",
+        "endDate": "2024-08-31",
+        "dataColumns": [
+          { "key": "speed", "header": "Speed", "base": "speed" },
+          { "key": "delay", "header": "Hours of Delay", "base": "delay" }
+        ],
+        "dataSource": "travel_time_all_vehicles",
+        "isBase": true,
+        "overrides": {
+          "aadt": 25000,
+          "threshold": 45,
+          "speed": null
+        }
+      }
+    ],
+    "useBaseAsReference": true
+  }'
+
+<span class="c">→</span>
+{
+  "id": "c3d4e5f6-a7b8-9012-cdef-345678901234",
+  "data": [
+    { "uuid": "route-uuid-001", "Base": { "speed": 42.18, "delay": 1523.67 } }
+  ]
+}</pre>
+
+          <h3 id="freight-trucks-only">Freight trucks only</h3>
+          <p>Truck speed and travel time for one quarter, all day.</p>
+<pre class="code">curl -X POST "${API_HOST}/batchreports/npmrds2/982" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "d4e5f6a7-b8c9-0123-def0-456789012345",
+    "routes": [
+      {
+        "uuid": "route-uuid-001",
+        "rid": 12345,
+        "name": "I-81 Freight Corridor",
+        "tmcs": ["120+07001", "120+07002", "120+07003"],
+        "startTime": "00:00:00",
+        "endTime": "23:59:59",
+        "Q1 2024": { "startDate": "2024-01-01", "endDate": "2024-03-31" }
+      }
+    ],
+    "columns": [
+      {
+        "uuid": "col-uuid-001",
+        "name": "Q1 2024",
+        "dateSelection": "user-defined",
+        "startDate": "2024-01-01",
+        "endDate": "2024-03-31",
+        "dataColumns": [
+          { "key": "speed", "header": "Speed", "base": "speed" },
+          { "key": "traveltime", "header": "Travel Time", "base": "traveltime" }
+        ],
+        "dataSource": "travel_time_freight_trucks",
+        "isBase": true,
+        "overrides": { "aadt": null, "threshold": null, "speed": null }
+      }
+    ],
+    "useBaseAsReference": true
+  }'
+
+<span class="c">→</span>
+{
+  "id": "d4e5f6a7-b8c9-0123-def0-456789012345",
+  "data": [
+    { "uuid": "route-uuid-001", "Q1 2024": { "speed": 54.32, "traveltime": 22.15 } }
+  ]
+}</pre>
+
+          <h2 id="sign-in">Sign-in</h2>
+          <p>The reference says of the two pages that "Both routes require authentication". The endpoint is another matter: its handler reads no token, and the server continues without one, so a request such as the examples above, which carry no <code>Authorization</code> header, is answered. If you send a token, send it as the <code>Authorization</code> header, as for the <a href="developers--data_manager_api.html#sign-in-and-what-returns-without-a-token">Data Manager API</a>.</p>
+
+          <h2 id="the-legacy-pages">The legacy pages</h2>
+          <p>Two page routes call the endpoint, both behind sign-in.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Path</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><code>/batchreportsnew</code></td><td>Main batch reports page</td></tr>
+              <tr><td><code>/batchreportsnew/report/:batchreportId</code></td><td>Load a saved batch report</td></tr>
+            </tbody>
+          </table></div>
+          <p>The tool those pages replaced took its routes from an uploaded CSV. The 2024 page for it documents the format: no header row; four columns in order, a unique alphanumeric id, a start date and an end date as <code>MM/DD/YYYY hh:mm:ss</code>, and the TMCs of the route joined with the pipe character. A correctly formatted row, from that page:</p>
+<pre class="code">080966_100554011_DELAY REDUCTION_1,08/24/2018 00:00:00,08/24/2018 23:59:00,120+05065|120+05065</pre>
+          <p>Neither page is in the NPMRDS side navigation. <a href="npmrds--route_comparison.html">Compare routes across periods</a> describes the successor and what it does today.</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>Batch Reports API (docs page, 2026-02-04): the endpoint, the request and response bodies, the four example calls and responses, the Data Columns and Data Sources tables, the page routes and "Both routes require authentication (auth: true)", all quoted verbatim.</li>
+            <li>Batch Reports (docs page, 2024-07-23): the tool's overview and "CSV File Format", including the example row.</li>
+            <li>Data server code (avail-falcor): <code>batchreports/index.js</code>, <code>path: "/batchreports/:pgEnv/:viewId"</code>, <code>method: "post"</code>, <code>JSON.parse(req.body)</code>, <code>timeToEpoch</code>, the base column as <code>columns[0]</code>, <code>-pc</code> keys as percent-change columns, no token check in the handler; <code>index.js</code>, mounted after <code>jwtAuth</code>, which continues without a token.</li>
+            <li>Route Comparison build task (2026-07-17 to 2026-08-07): the retirement list naming the two page routes, the endpoint and the saved-report table; "Saved batch reports (if any exist …) are NOT migrated". <a href="npmrds--route_comparison.html">Compare routes across periods</a> (this documentation): status as a draft tool.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-08 created (phase 6a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="developers.html">Developers hub</a>
+          <a href="npmrds--route_comparison.html">Compare routes across periods</a>
+          <a href="measures_and_data--data--npmrds_travel_times.html">NPMRDS travel times</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

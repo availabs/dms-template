@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Data coverage · Measures &amp; Data · TransportNY docs</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+  <link rel="stylesheet" href="_docs.css">
+</head>
+<body class="tny-pane font-proxima">
+<!--
+  measures_and_data--measures--coverage.html · IA page 57 · type measure. Phase 2a, 2026-09-04.
+  Sources: macroview/measures.js coverage (verbatim; 36.3–51.5 % / 8.0–23.5 % bins), _seed 281670 card + §04, PROVENANCE §5 §11,
+  pm3/lib/eras.js (ALL_VEHICLE_ERAS, TRUCK_ERAS with daytime coverage), downloadManifest MEASURED.coverage,
+  data-quality atlas (88.1 % ≤ 4 probes, 59.6 % no trucks).
+-->
+<div class="docs-shell">
+  <aside class="docs-side" aria-label="Documentation navigation">
+    <div class="brand"><img src="../../assets/nys_logo_white.svg" alt="New York State"><span>TransportNY</span></div>
+    <nav id="docsSidebar"></nav>
+  </aside>
+
+  <div class="docs-main">
+    <div class="docs-wrap">
+      <main data-doc-type="measure" data-applies-to="npmrds">
+        <div class="crumbs" id="docsCrumbs"></div>
+        <header>
+          <div class="doc-kicker">Measures &amp; Data · measure</div>
+          <h1 class="doc-title">Data coverage.</h1>
+          <p class="doc-lede">How much of the travel-time feed actually arrived for a segment, as two percentages. Coverage describes the input, not the road, and it confounds every other measure. Read it first.</p>
+          <div class="stamps">
+            <span class="type">measure</span>
+            <span>applies to · NPMRDS Macro View (www/npmrds)</span>
+            <span>methodology 2026-08 (pm3 analytical series)</span>
+            <span>last reviewed · 2026-09-04</span>
+            <span>owner · —</span>
+          </div>
+        </header>
+
+        <div class="doc-body">
+          <h2 id="what-it-answers">What it answers</h2>
+          <p><strong>How much of the underlying data actually arrived for this segment.</strong> Two percentages on the same 0-100 scale. Bins reporting is how much of a bin-based measure's own input arrived — the sample size its percentiles rest on. Epochs reporting is how much of the raw 5-minute feed arrived, and is lower by construction, since a bin counts as present when any one of its three epochs did.</p>
+          <div class="callout basis"><span class="k">basis</span>Figures on this page are statewide, the full monitored network, with the stream, period and years named in each sentence.</div>
+
+          <h2 id="how-it-is-computed">How it is computed</h2>
+          <ol class="steps">
+            <li>For the selected stream, all vehicles or freight trucks, and the selected period, count the 15-minute bins where that stream had a value. A bin where the feed had a row but the stream had no value does not count.</li>
+            <li>Count the bins the period could hold in that year: its hours times its day-of-week mask. An AM peak holds 4,176 bins in 2025; an overnight period holds 14,600.</li>
+            <li>Divide: bins present over bins possible. Repeat for 5-minute epochs to get epochs reporting.</li>
+          </ol>
+          <div class="formula">coverage = present ÷ possible
+            <span class="var">bins reporting = 15-minute bins with a value for the stream ÷ bins the period could hold in the year</span>
+            <span class="var">epochs reporting = 5-minute epochs present ÷ epochs the period could hold</span>
+            <span class="var">epochs reporting ÷ bins reporting × 3 = the mean number of epochs behind each bin, a measure of probe depth</span>
+          </div>
+
+          <h2 id="parameters-and-edge-rules">Parameters and edge rules</h2>
+          <ul>
+            <li><strong>Controls:</strong> <span class="ui">stream</span> (all vehicles or trucks) and <span class="ui">peak period</span>.</li>
+            <li><strong>Published once per stream per bin</strong>, not once per measure. The all-vehicle AM-peak figure is LOTTR's sample; the overnight truck figure is the sample both TTTR and TTTR₈₀ rest on; the all-hours figure is what TED reads.</li>
+            <li><strong>Denominators are per bin</strong>, derived from that bin's own hours and days, never shared.</li>
+            <li><strong>The PM-peak ambiguity does not apply here.</strong> Coverage publishes 16:00–19:59 and 15:00–18:59 as separate bins, so either denominator is unambiguous.</li>
+          </ul>
+
+          <h2 id="the-choices-made-and-why">The choices made, and why</h2>
+          <ul>
+            <li><strong>Coverage is published as a measure in its own right</strong>, in its own menu group, so it cannot be mistaken for a property of traffic.</li>
+            <li><strong>Two percentages, not one.</strong> Their ratio recovers probe depth, which is the term the sparsity bias actually tracks. Publishing only the bin figure would let a reader reason about sparsity with the sign inverted: removing bins deflates LOTTR, while thinning the probes behind each surviving bin inflates it, and the second effect dominates real sparsity.</li>
+            <li><strong>The bin count is the count of bins where the stream had a value.</strong> Counting feed rows had inflated the truck figure roughly two times.</li>
+          </ul>
+
+          <h2 id="how-much-to-trust-it">How much to trust it</h2>
+          <p>Coverage is a count, not an estimate, so it carries no precision band. What matters is that it is not stationary. Daytime epoch coverage moves in nine abrupt, month-aligned eras between 2017 and 2026, from 28.0 % to 67.0 %, stepping down as often as up. Across the published years, all-vehicle bins reporting runs 36.3 % to 51.5 % and truck bins 8.0 % to 23.5 %.</p>
+          <div class="tablewrap"><table class="docs">
+            <thead><tr><th>Era</th><th>Months</th><th class="num">Daytime coverage</th><th>What happened</th></tr></thead>
+            <tbody>
+              <tr><td>E1</td><td>2017-01 to 2018-09</td><td class="num">37.4 %</td><td>early feed, 36,000-segment network</td></tr>
+              <tr><td>E2</td><td>2018-10 to 2018-12</td><td class="num">28.0 %</td><td>late-2018 decline</td></tr>
+              <tr><td>E3</td><td>2019-01 to 2020-02</td><td class="num">34.8 %</td><td>network expansion to 46,000 segments, +32.7 % on 2019-01-01</td></tr>
+              <tr><td>E4</td><td>2020-03 to 2020-12</td><td class="num">31.0 %</td><td>COVID: traffic, not feed</td></tr>
+              <tr><td>E5</td><td>2021-01 to 2023-05</td><td class="num">43.5 %</td><td>growth era</td></tr>
+              <tr><td>E6</td><td>2023-06 to 2024-07</td><td class="num">36.3 %</td><td>step down</td></tr>
+              <tr><td>E7</td><td>2024-08 to 2024-11</td><td class="num">67.0 %</td><td>high regime</td></tr>
+              <tr><td>E8</td><td>2024-12 to 2026-01</td><td class="num">41.6 %</td><td>settled; the era CY 2025 sits in</td></tr>
+              <tr><td>E9</td><td>2026-02 onward</td><td class="num">54.8 %</td><td>new high</td></tr>
+            </tbody>
+          </table></div>
+          <p>The truck stream has its own eras: 6.4 % daytime coverage through 2020, 13.4 % from 2021-01, 18.0 % from 2023-06 and 23.0 % from 2026-02. At 2023-06 the two streams moved in opposite directions.</p>
+
+          <h2 id="worked-example">Worked example</h2>
+          <p>CY 2025 sits entirely inside era E8, which is why its measure analysis is era-clean. CY 2024 touches E6, E7 and E8, so its annual coverage figure is a mixture of three regimes.</p>
+          <p><div class="callout note"><span class="k">example pending</span>A per-segment worked example with live values (the figures named above, read from the Macro View or the TSMO page with this measure selected) is still pending; the statewide figures on this page are measured values with their sources listed under References.</div></p>
+
+          <h2 id="known-limits">Known limits</h2>
+          <ul>
+            <li><strong>Thin data biases the two measure families in opposite directions.</strong> It inflates the reliability ratios and deflates the delay measures. They will disagree under a coverage change rather than both drifting one way.</li>
+            <li><strong>88.1 % of records rest on four probes or fewer</strong>, and trucks are absent from 59.6 % of records outright.</li>
+            <li><strong>Coverage counts presence, not quality.</strong> A bin with one probe counts the same as a bin with forty. Use the epochs-to-bins ratio for depth.</li>
+          </ul>
+
+          <h2 id="comparability-across-years-and-versions">Comparability across years and versions</h2>
+          <p>Compare within a coverage era, or state that you are crossing one. Every published row carries an era tag for each stream and a flag when the year crosses a boundary. Use the tag that matches the measure's stream: all vehicles for LOTTR, PHED and TED; trucks for TTTR and TTTR₈₀. See <a href="measures_and_data--concepts--coverage_eras_and_comparability.html">Coverage eras and comparability</a>.</p>
+
+          <h2 id="where-this-appears">Where this appears</h2>
+          <div class="where">
+            <a href="npmrds--macro_view.html#check-coverage-before-you-trust-a-pattern">Macro View · check coverage first</a>
+            <a href="npmrds--macro_view--download.html">Macro View download</a>
+            <a href="npmrds--segment.html">Segment (TMC) page</a>
+            <a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a>
+            <a href="npmrds--reports--start_from_template.html">Reports · thin coverage on a short route</a>
+          </div>
+
+          <h2 id="revision-log">Revision log</h2>
+          <ul>
+            <li>2026-08 · coverage published as a measure. It restores the older "percent bins reporting" figure, now per stream and per period, and adds epochs reporting.</li>
+            <li>2026-08-28 · the Measures &amp; Methodology rewrite published.</li>
+            <li>2026-09-04 · this page created.</li>
+          </ul>
+
+          <h2 id="reproducibility">Reproducibility</h2>
+          <p>Build a Macro View download with <span class="ui">Coverage</span> selected, or add the coverage and era columns to any other measure's download. The <code>PM3_README.txt</code> in the package lists the eras the year touches. See <a href="npmrds--macro_view--download.html">Download data from the Macro View</a>.</p>
+
+          <h2 id="references">References</h2>
+          <ol class="refs">
+            <li>pm3 provenance record §5 (nine eras, two calendars, rule R9) and §11 (two percentages, the depth ratio, per-bin denominators of 4,176 and 14,600, the separate PM-peak bins).</li>
+            <li>pm3 coverage-eras module: the era table above, with daytime coverage per era, and the truck eras.</li>
+            <li>pm3 download manifest, MEASURED block: opposite-direction bias and the era warnings.</li>
+            <li>Macro View measure record: the verbatim strings and the 36.3–51.5 % / 8.0–23.5 % ranges.</li>
+            <li>NPMRDS data-quality atlas: 88.1 % of records on four probes or fewer; trucks absent from 59.6 %.</li>
+            <li>Measures &amp; Methodology page, published 2026-08-28: the roughly two-times truck inflation the bin-count fix removed.</li>
+          </ol>
+        </div>
+
+        <footer class="doc-foot">
+          <div class="helpful"><span>Was this page helpful?</span><button type="button">Yes</button><button type="button">No</button><span class="text-slate-400">· feedback lands in the ticket queue once live</span></div>
+          <div class="prevnext" id="docsPrevNext"></div>
+          <div class="history"><span class="k">page history</span> · 2026-09-04 created (phase 2a)</div>
+        </footer>
+      </main>
+
+      <aside class="docs-rail" aria-label="On this page">
+        <nav id="docsToc"></nav>
+        <div class="docs-related">
+          <div class="k">related</div>
+          <a href="measures_and_data--coverage_and_freshness.html">Coverage and freshness</a>
+          <a href="measures_and_data--measures--lottr.html">LOTTR</a>
+          <a href="measures_and_data--measures--tttr.html">TTTR</a>
+          <a href="glossary.html">Glossary</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+<script src="_docs-nav.js"></script>
+<script src="../../ds-nav.js"></script>
+</body>
+</html>

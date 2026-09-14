@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MitigateNY &mdash; County Template QA Progress</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'mny-900': '#2D3E4C', 'mny-700': '#37576B', 'mny-400': '#6D96AE',
+            'mny-200': '#C5D7E0', 'mny-100': '#E0EBF0', 'mny-50': '#F3F8F9',
+            'mny-y700': '#EAAD43', 'mny-y500': '#F1CA87', 'mny-y50': '#FCF6EC',
+            'mny-red': '#DD524C', 'mny-redk': '#AA2E26', 'mny-grn': '#54B99B',
+          },
+          fontFamily: {
+            display: ['"Oswald"', 'sans-serif'],
+            proxima: ['"Source Sans 3"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:ital,wght@0,400;0,600;0,700;1,400&display=swap">
+  <link rel="stylesheet" href="../theme/index.css.additions">
+  <style>
+    code{overflow-wrap:anywhere}
+    .tbl{width:100%;border-collapse:collapse;font-size:13px}
+    .tbl th{text-align:left;font-family:"Oswald",sans-serif;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:#37576B;border-bottom:2px solid #C5D7E0;padding:8px 10px;white-space:nowrap}
+    .tbl td{border-bottom:1px solid #E0EBF0;padding:9px 10px;vertical-align:top;color:#2D3E4C}
+    .tbl tbody tr:nth-child(even){background:#F7FAFB}
+    .num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+    .wrap{overflow-x:auto;min-width:0;-webkit-overflow-scrolling:touch}
+    .pill{display:inline-block;white-space:nowrap;border-radius:9999px;border-width:1px;padding:1px 8px;font-family:"Oswald",sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.03em;font-weight:600}
+    .pdone{background:rgba(84,185,155,.15);color:#1F6E5A;border-color:rgba(84,185,155,.45)}
+    .popen{background:rgba(234,173,67,.18);color:#8A6412;border-color:rgba(234,173,67,.45)}
+    .pdef{background:rgba(109,150,174,.18);color:#37576B;border-color:rgba(109,150,174,.45)}
+    /* before / after pair */
+    .ba{display:grid;grid-template-columns:1fr;gap:0;border:1px solid #E0EBF0;border-radius:12px;overflow:hidden}
+    @media(min-width:760px){.ba{grid-template-columns:1fr 1fr}}
+    .bx{padding:16px 18px}
+    .bfore{background:rgba(221,82,76,.05);border-bottom:1px solid #E0EBF0}
+    @media(min-width:760px){.bfore{border-bottom:0;border-right:1px solid #E0EBF0}}
+    .bafter{background:rgba(84,185,155,.06)}
+    .bx h4{font-family:"Oswald",sans-serif;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;margin-bottom:8px}
+    .bignum{font-family:"Oswald",sans-serif;font-size:34px;line-height:1;font-weight:500;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+    .bx ul{margin-top:8px;padding-left:16px;list-style:disc}
+    .bx li{font-size:13.5px;line-height:1.55;margin-top:3px;color:#37576B}
+    .imp{border-left:4px solid #EAAD43;background:#FCF6EC;padding:13px 16px;border-radius:0 8px 8px 0;margin-top:14px}
+    .imp h5{font-family:"Oswald",sans-serif;font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;font-weight:700;color:#8A6412}
+  </style>
+</head>
+<body class="min-h-screen"
+      style="background-color:#F4F4F4;background-image:linear-gradient(0deg,rgba(244,244,244,0.96),rgba(244,244,244,0.96)),url('../assets/mny/topolines.png');background-size:500px;">
+
+<div data-dms="layoutGroup" data-name="header">
+  <div class="w-full h-full flex-1 flex flex-row">
+    <div class="flex flex-1 w-full flex-col relative min-h-[200px]">
+      <div class="w-full grid grid-cols-6 md:grid-cols-12">
+        <div class="col-span-6 md:col-span-12">
+          <div class="relative w-full lg:h-[480px] flex flex-col lg:flex-row bg-fit bg-center justify-center">
+            <div class="lg:order-last flex-1 rounded-bl-[395px] bg-gradient-to-r from-[#213440] to-[#1A2732]">
+              <div class="absolute inset-0 opacity-[0.04] rounded-bl-[395px] overflow-hidden pointer-events-none"
+                   style="background:url('../assets/mny/topolines.png');background-size:500px;"></div>
+            </div>
+            <div class="lg:flex-1 top-[150px] sm:top-0">
+              <div class="w-full lg:max-w-[656px] h-full lg:ml-auto flex items-center pt-[100px] sm:pt-[118px] lg:pt-[80px]">
+                <div class="pr-[64px] xl:pl-0 px-[15px]">
+                  <div class="flex flex-col gap-1">
+                    <div class="px-1 z-[5]">
+                      <div class="flex items-center gap-1 font-proxima text-mny-700 text-[14px] sm:text-[16px] font-semibold leading-none">
+                        Explore Progress &middot; QA Programme
+                      </div>
+                    </div>
+                    <div class="text-[36px] sm:text-[72px] tracking-[0px] items-center font-medium font-display text-mny-900 sm:leading-[100%] uppercase">
+                      QA Progress<br>Before &amp; After
+                    </div>
+                  </div>
+                  <div class="font-proxima text-[16px] leading-[24px] text-mny-700 w-full p-1 pt-2 max-w-[470px]">
+                    What the county template looked like before this QA effort, what it looks like now,
+                    and what each fix prevented.
+                  </div>
+                  <div class="flex flex-wrap items-center gap-2 mt-4 px-1">
+                    <span class="px-3 py-1.5 bg-mny-grn border border-mny-grn rounded-full shadow-sm font-proxima text-[12px] font-[700] text-white">5 issue classes closed</span>
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] font-[600] text-mny-900">56 open &middot; 296 deferred by decision</span>
+                    <span class="px-3 py-1.5 bg-white border border-mny-100 rounded-full shadow-sm font-proxima text-[12px] text-mny-400">pattern 1300890 &middot; 1 Sep 2026</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="fixed top-0 z-20 max-w-[1440px] left-[50%] -translate-x-[50%] w-full md:px-4 md:pt-[32px] xl:px-[64px] pointer-events-none">
+  <nav>
+    <div class="px-[24px] py-[16px] w-full bg-white h-20 flex items-center md:rounded-lg shadow pointer-events-auto relative">
+      <div class="flex items-center w-full h-full max-w-[1400px] mx-auto">
+        <a href="#"><div class="h-12 pl-3 pr-2 flex items-center"><img class="min-h-12" src="../assets/mny/mnyLogo.svg" alt="MitigateNY"></div></a>
+        <div class="hidden md:flex items-center flex-1 h-full overflow-x-auto">
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Know the Environment</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Assess Risk</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[500] text-mny-700 px-2 cursor-pointer">Plan to Act</div>
+          <div class="md:w-fit whitespace-nowrap font-proxima text-[16px] font-[600] text-mny-900 px-2 cursor-pointer border-b-2 border-mny-y700">Explore Progress</div>
+        </div>
+        <div class="hidden md:flex h-full items-center justify-end min-w-[110px]">
+          <button class="bg-white flex justify-between items-center h-[48px] w-[217px] py-[8px] pr-[8px] pl-[24px] border border-mny-100 rounded-[1000px] shadow-sm">
+            <span class="uppercase text-mny-900 font-medium text-[12px]">Search</span>
+            <div class="bg-mny-700 p-[10px] rounded-full"><svg xmlns="http://www.w3.org/2000/svg" class="text-white" width="12" height="12" viewBox="0 0 16 16" fill="currentColor"><!-- icon: Search --><path d="M15,14.3L10.7,10c1.9-2.3,1.6-5.8-0.7-7.7S4.2,0.7,2.3,3S0.7,8.8,3,10.7c2,1.7,5,1.7,7,0l4.3,4.3L15,14.3z M2,6.5 C2,4,4,2,6.5,2S11,4,11,6.5S9,11,6.5,11S2,9,2,6.5z"/></svg></div>
+          </button>
+          <div class="flex p-1 items-center"><div class="flex p-2 justify-center items-center">
+            <div class="size-8 border border-mny-100 rounded-full flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="size-6 fill-mny-700" viewBox="0 0 16 16" fill="currentColor"><!-- icon: UserAvatar --><path d="M8,2c1.4,0,2.5,1.1,2.5,2.5S9.4,7,8,7S5.5,5.9,5.5,4.5S6.6,2,8,2 M8,1C6.1,1,4.5,2.6,4.5,4.5S6.1,8,8,8s3.5-1.6,3.5-3.5S9.9,1,8,1z"/><path d="M13,15h-1v-2.5c0-1.4-1.1-2.5-2.5-2.5h-3C5.1,10,4,11.1,4,12.5V15H3v-2.5C3,10.6,4.6,9,6.5,9h3c1.9,0,3.5,1.6,3.5,3.5V15z"/></svg>
+            </div>
+          </div></div>
+        </div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<!-- HEADLINE MOVEMENT -->
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1 min-w-0">
+        <div class="pt-8 pb-2 px-2">
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-grn">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Hazard pages showing the wrong measures</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">15 &rarr; 0</p>
+              <p class="font-proxima text-[11px] text-[#1F6E5A] font-[600] mt-1">of 16</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-grn">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Rows shown per measures table</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">249 &rarr; 11</p>
+              <p class="font-proxima text-[11px] text-[#1F6E5A] font-[600] mt-1">statewide &rarr; this county</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-grn">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Shared state text left editable</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">22 &rarr; 0</p>
+              <p class="font-proxima text-[11px] text-[#1F6E5A] font-[600] mt-1">398 of 398 protected</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-grn">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Empty leftover sections on live pages</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">67 &rarr; 0</p>
+              <p class="font-proxima text-[11px] text-[#1F6E5A] font-[600] mt-1">removed from every page</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-grn">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Sections awaiting a requirement tag</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">308 &rarr; 1</p>
+              <p class="font-proxima text-[11px] text-[#1F6E5A] font-[600] mt-1">tagging programme</p>
+            </div>
+            <div class="bg-white rounded-[12px] shadow-md p-4 border-l-4 border-mny-grn">
+              <p class="font-proxima text-[12px] text-mny-700 font-[500] uppercase leading-[140%]">Components refreshing on demand</p>
+              <p class="font-display text-[30px] text-mny-900 font-[500] leading-[1] tracking-[-0.03em] mt-1 tabular-nums">0 &rarr; 132</p>
+              <p class="font-proxima text-[11px] text-[#1F6E5A] font-[600] mt-1">all author-edited sources</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="max-w-[1440px] mx-auto">
+  <div class="flex-1 flex items-start flex-col items-stretch max-w-full">
+    <div class="flex flex-1 md:px-4 xl:px-[64px]">
+      <div class="h-full flex-1 min-w-0">
+        <div data-dms="layoutGroup" data-name="content">
+          <div class="bg-white rounded-[12px] shadow-md p-5 sm:p-8 my-4 min-w-0">
+
+            <!-- SUMMARY TABLE -->
+            <h2 class="font-display text-[26px] uppercase text-mny-900 font-[500] leading-tight">Position at a glance</h2>
+            <div class="wrap mt-4">
+              <table class="tbl">
+                <thead><tr><th>Issue</th><th class="num">Before</th><th class="num">Now</th><th>Status</th><th>Risk it carried</th></tr></thead>
+                <tbody>
+                  <tr><td>Hazard pages reporting measures through a retired column</td><td class="num">15</td><td class="num">0</td><td><span class="pill pdone">closed</span></td><td>Mitigation strategy evidence built on a column scheduled for deletion</td></tr>
+                  <tr><td>Measures tables unscoped to their hazard</td><td class="num">15</td><td class="num">0</td><td><span class="pill pdone">closed</span></td><td>Identical statewide list on all 16 hazard pages</td></tr>
+                  <tr><td>State plan narrative editable by county authors</td><td class="num">21</td><td class="num">0</td><td><span class="pill pdone">closed</span></td><td>Shared content alterable from any county</td></tr>
+                  <tr><td>Permission set but granting nobody</td><td class="num">1</td><td class="num">0</td><td><span class="pill pdone">closed</span></td><td>Passed every audit while protecting nothing</td></tr>
+                  <tr><td>Sections in the tagging programme still unresolved</td><td class="num">308</td><td class="num">1</td><td><span class="pill pdone">closed</span></td><td>Plan could not be audited element-by-element from the site</td></tr>
+                  <tr><td>Empty leftover components sitting on live pages</td><td class="num">67</td><td class="num">0</td><td><span class="pill pdone">closed</span></td><td>Readers could not tell an unfinished section from a broken one</td></tr>
+                  <tr><td>Data sections showing nothing, or a fraction of the county</td><td class="num">3</td><td class="num">0</td><td><span class="pill pdone">closed</span></td><td>Populated county data was not reaching the page</td></tr>
+                  <tr><td>Components with explicit refresh behaviour</td><td class="num">0</td><td class="num">132</td><td><span class="pill pdone">closed</span></td><td>Authors could be served the data as it was before their edit</td></tr>
+                  <tr><td>Sections with no federal requirement tag</td><td class="num">10</td><td class="num">9</td><td><span class="pill popen">open</span></td><td>Cannot be audited element-by-element from the site</td></tr>
+                  <tr><td>Retired columns still bound, not displayed</td><td class="num">62</td><td class="num">47</td><td><span class="pill popen">open</span></td><td>Latent &mdash; breaks when the source is cleaned up</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <hr class="my-8 border-mny-100">
+
+            <h2 class="font-display text-[26px] uppercase text-mny-900 font-[500] leading-tight">The fixes, and what they prevented</h2>
+
+            <!-- 1 -->
+            <div class="mt-6">
+              <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-3">
+                <span class="pill pdone">closed</span>
+                <h3 class="font-display text-[19px] text-mny-900 font-[600] uppercase">1 &middot; Mitigation measures on every hazard page</h3>
+              </div>
+              <div class="ba">
+                <div class="bx bfore">
+                  <h4 class="text-[#AA2E26]">Before</h4>
+                  <p class="bignum text-[#AA2E26]">15 of 16</p>
+                  <ul>
+                    <li>Categorised through a column the data steward had renamed <strong>&ldquo;Category-Deprecated&rdquo;</strong> &mdash; displayed <em>and</em> used as the filter</li>
+                    <li>Each stored <strong>249 rows</strong>: the statewide measures catalogue, not the county's</li>
+                    <li>Six columns, older configuration format</li>
+                    <li>No warning anywhere &mdash; every component stored the pre-deprecation title</li>
+                  </ul>
+                </div>
+                <div class="bx bafter">
+                  <h4 class="text-[#1F6E5A]">After</h4>
+                  <p class="bignum text-[#1F6E5A]">16 of 16</p>
+                  <ul>
+                    <li>Retired column unbound everywhere</li>
+                    <li><strong>11 rows</strong> each &mdash; scoped to the hazard the page is about</li>
+                    <li>Five columns, current format, all sixteen identical</li>
+                    <li>Verified section by section on 1 Sep</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="imp">
+                <h5>Implication of leaving it</h5>
+                <p class="font-proxima text-[14px] text-mny-700 mt-1 max-w-[80ch]">
+                  The measures inventory is the evidence a plan offers for its mitigation strategy. Every
+                  hazard page was presenting the <strong>same 249 statewide entries</strong>, so the
+                  hazard-specific analysis a reviewer expects was not hazard-specific at all. Separately,
+                  a retired column is retired because it is going to be removed &mdash; when that happened,
+                  <strong>all fifteen tables would have failed at once</strong>, on every county built from
+                  this template, with no prior signal.
+                </p>
+              </div>
+            </div>
+
+            <!-- 2 -->
+            <div class="mt-10">
+              <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-3">
+                <span class="pill pdone">closed</span>
+                <h3 class="font-display text-[19px] text-mny-900 font-[600] uppercase">2 &middot; Protection on shared state plan narrative</h3>
+              </div>
+              <div class="ba">
+                <div class="bx bfore">
+                  <h4 class="text-[#AA2E26]">Before</h4>
+                  <p class="bignum text-[#AA2E26]">377 / 398</p>
+                  <ul>
+                    <li>21 narrative cards carried <strong>no restriction at all</strong></li>
+                    <li>1 more appeared protected but named no user and no group &mdash; it granted nothing</li>
+                    <li>2 carried an extra individual grant nobody had recorded</li>
+                    <li>Concentrated on flooding (6), hurricane (4), ice storm (3)</li>
+                  </ul>
+                </div>
+                <div class="bx bafter">
+                  <h4 class="text-[#1F6E5A]">After</h4>
+                  <p class="bignum text-[#1F6E5A]">398 / 398</p>
+                  <ul>
+                    <li>All restricted to the <strong>LHMP Template Editor</strong> group</li>
+                    <li>Value taken from the 374 existing cards, not assumed</li>
+                    <li>Every write verified: one field changed, placement untouched</li>
+                    <li>Independently re-counted afterwards: 0 remaining</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="imp">
+                <h5>Implication of leaving it</h5>
+                <p class="font-proxima text-[14px] text-mny-700 mt-1 max-w-[80ch]">
+                  This narrative is <strong>shared state content</strong>, not county content. An
+                  unrestricted card can be edited by any county author, and there is no review step between
+                  that edit and the text other counties inherit. The exposure was <strong>5% of the shared
+                  narrative</strong>, sitting on the highest-traffic hazard pages. The card that
+                  <em>looked</em> protected but granted nobody anything is the more instructive case: it
+                  would have passed any audit that checks whether the setting exists rather than what it says.
+                </p>
+              </div>
+            </div>
+
+            <!-- 3 -->
+            <div class="mt-10">
+              <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-3">
+                <span class="pill pdone">closed</span>
+                <h3 class="font-display text-[19px] text-mny-900 font-[600] uppercase">3 &middot; Mapping the plan to its federal requirements</h3>
+              </div>
+              <div class="ba">
+                <div class="bx bfore">
+                  <h4 class="text-[#AA2E26]">Before</h4>
+                  <p class="bignum text-[#AA2E26]">308</p>
+                  <ul>
+                    <li>308 sections carried no 44 CFR 201.6 tag, so no part of the plan could be traced to the requirement it satisfies</li>
+                    <li>67 of them were <strong>empty leftovers</strong> that should not have been on a page at all</li>
+                    <li>No way to tell a section that needed a tag from one that could never have one</li>
+                  </ul>
+                </div>
+                <div class="bx bafter">
+                  <h4 class="text-[#1F6E5A]">After</h4>
+                  <p class="bignum text-[#1F6E5A]">307 / 308</p>
+                  <ul>
+                    <li><strong>167 sections tagged</strong> against the requirement they satisfy</li>
+                    <li><strong>67 empty components removed</strong> from their pages</li>
+                    <li>56 ruled genuinely not applicable, on the record rather than by omission</li>
+                    <li>1 left open pending a decision on which requirement applies</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="imp">
+                <h5>Implication of leaving it</h5>
+                <p class="font-proxima text-[14px] text-mny-700 mt-1 max-w-[80ch]">
+                  Requirement tags are what let the plan be audited <strong>element by element from the site
+                  itself</strong>, rather than by someone reading the whole thing and cross-referencing by
+                  hand. Untagged, the county has no defensible way to show a reviewer which page satisfies
+                  which federal element. The 67 removals matter for a second reason: an empty, untitled
+                  section on a live page is indistinguishable from a broken one, and every county built from
+                  this template inherited all 67.
+                </p>
+              </div>
+            </div>
+
+            <!-- 4 -->
+            <div class="mt-10">
+              <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-3">
+                <span class="pill pdone">closed</span>
+                <h3 class="font-display text-[19px] text-mny-900 font-[600] uppercase">4 &middot; Sections that were showing nothing, or a fraction of the county</h3>
+              </div>
+              <div class="ba">
+                <div class="bx bfore">
+                  <h4 class="text-[#AA2E26]">Before</h4>
+                  <p class="bignum text-[#AA2E26]">0 &middot; 12</p>
+                  <ul>
+                    <li><strong>Hazards Impacted By Climate Change</strong> returned <strong>0 rows</strong> &mdash; a blank table on the climate change page</li>
+                    <li><strong>Planning Participants</strong> returned <strong>12</strong> of the county's participants</li>
+                    <li><strong>Jurisdictional Annex</strong> links resolved by place name instead of by id, so annex links did not reach the right record</li>
+                  </ul>
+                </div>
+                <div class="bx bafter">
+                  <h4 class="text-[#1F6E5A]">After</h4>
+                  <p class="bignum text-[#1F6E5A]">17 &middot; 106</p>
+                  <ul>
+                    <li>Climate change table returns <strong>17 hazards</strong></li>
+                    <li>Participants table returns <strong>106</strong> &mdash; nearly nine times the previous figure</li>
+                    <li>Annex links resolve by id again; the table serves all 22 jurisdictions</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="imp">
+                <h5>Implication of leaving it</h5>
+                <p class="font-proxima text-[14px] text-mny-700 mt-1 max-w-[80ch]">
+                  These are sections whose content <strong>existed in the database and was not reaching the
+                  page</strong>. A blank hazards table reads as &ldquo;this county assessed no climate
+                  hazards&rdquo;; a participants list showing 12 of 106 understates the planning process a
+                  plan is required to evidence. Neither announced itself &mdash; both rendered cleanly, just
+                  with the wrong content, which is the hardest class of defect to notice from the outside.
+                </p>
+              </div>
+            </div>
+
+            <!-- 5 -->
+            <div class="mt-10">
+              <div class="flex flex-wrap items-baseline gap-x-3 gap-y-1 mb-3">
+                <span class="pill pdone">closed</span>
+                <h3 class="font-display text-[19px] text-mny-900 font-[600] uppercase">5 &middot; Making data refresh behaviour explicit</h3>
+              </div>
+              <div class="ba">
+                <div class="bx bfore">
+                  <h4 class="text-[#AA2E26]">Before</h4>
+                  <p class="bignum text-[#AA2E26]">0</p>
+                  <ul>
+                    <li>No component stated how it should refresh; each inferred it from an unrelated setting</li>
+                    <li>Components on author-edited datasets could serve a cached view</li>
+                    <li>Some were explicitly set to the wrong behaviour</li>
+                    <li>The first sweep reported this complete while <strong>covering only half the template</strong></li>
+                  </ul>
+                </div>
+                <div class="bx bafter">
+                  <h4 class="text-[#1F6E5A]">After</h4>
+                  <p class="bignum text-[#1F6E5A]">132</p>
+                  <ul>
+                    <li>All 132 components on the six author-edited sources set to <strong>always re-fetch</strong></li>
+                    <li>The 33 the original sweep could not see are now included</li>
+                    <li>Rule recorded: internal data re-fetches, external data caches</li>
+                    <li>Only 2 remain unset, both control types with no such setting</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="imp">
+                <h5>Implication of leaving it</h5>
+                <p class="font-proxima text-[14px] text-mny-700 mt-1 max-w-[80ch]">
+                  These are the datasets authors actively edit. Without an explicit refresh setting a
+                  component can show an author <strong>the version of the data that existed before they
+                  edited it</strong> &mdash; which reads as the edit having failed, and invites it being
+                  entered a second time. The last 33 were the ones the original sweep had been blind to:
+                  they sat behind a <strong>&ldquo;complete, 0 outstanding&rdquo; result that was
+                  measured over half the template</strong>, and would not have been found by re-running it.
+                </p>
+              </div>
+            </div>
+
+            <hr class="my-8 border-mny-100">
+
+            <h2 class="font-display text-[26px] uppercase text-mny-900 font-[500] leading-tight">What remains, and what it risks</h2>
+            <div class="wrap mt-4">
+              <table class="tbl">
+                <thead><tr><th>Open</th><th class="num">Items</th><th>If left</th><th>Effort</th></tr></thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Retired columns still bound</strong></td><td class="num">47</td>
+                    <td>Invisible today, but these break the moment the source is cleaned up &mdash; the same failure mode as fix 1, deferred rather than removed.</td>
+                    <td>27 components; unbind or migrate</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Sections with no requirement tag</strong></td><td class="num">9</td>
+                    <td>The plan cannot be audited element-by-element from the site itself, which is the reason tagging exists.</td>
+                    <td>Authoring, 9 sections</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="font-proxima text-[14px] text-mny-700 mt-4 max-w-[76ch]">
+              A further <strong>296 items are deferred by decision</strong> &mdash; unresolvable sources are
+              scheduled for a separate update, blank tables are expected in a template where the county has
+              no rows to show, and 43 untagged sections were left untagged deliberately because tags broke
+              the design and the requirement is met elsewhere. All are recorded so they are not re-raised.
+            </p>
+
+            <hr class="my-8 border-mny-100">
+
+            <h2 class="font-display text-[26px] uppercase text-mny-900 font-[500] leading-tight">Confidence and coverage</h2>
+            <div class="wrap mt-4">
+              <table class="tbl">
+                <thead><tr><th>Dimension</th><th>Covered</th><th>Not covered</th></tr></thead>
+                <tbody>
+                  <tr><td>Sections examined</td><td>1,123 visible draft sections across 26 pages</td><td>320 hidden sections; 33 of the pattern's 59 pages</td></tr>
+                  <tr><td>Data sources</td><td>10 fully readable</td><td><strong>192 components sit on 15 sources that cannot be read</strong>, so the retired-column check could not run on them</td></tr>
+                  <tr><td>Maps</td><td>&mdash;</td><td><strong>37 map sections were not audited</strong> &mdash; the largest remaining gap</td></tr>
+                  <tr><td>Rendered pages</td><td>&mdash;</td><td>Draft content displays only behind a login, so findings come from stored settings and live source definitions</td></tr>
+                  <tr><td>Other counties</td><td>&mdash;</td><td>Suffolk, Schenectady and Delaware drafts not scanned; they inherit from this template</td></tr>
+                  <tr><td>Verification of fixes</td><td>Every write checked field-by-field against a pre-write backup, then re-counted from a separate scan</td><td>&mdash;</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="font-proxima text-[13px] text-mny-400 mt-5">
+              Pattern 1300890, draft sections, 1 Sep 2026. Item-level detail:
+              <code>county-template-qa-draft.html</code> and <code>county-template-qa-draft.csv</code>.
+              Method: <code>planning/shared/component-qa-prompt.md</code>.
+            </p>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="../ds-nav.js"></script>
+</body>
+</html>
+
