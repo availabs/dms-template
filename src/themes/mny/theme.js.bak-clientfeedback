@@ -1309,19 +1309,7 @@ const theme = {
         //
         // Contain shows the whole drawing at 240px tall and centres it, which is
         // exactly what the mockup draws.
-        // 240, not 258: the LHMP focus card and the hazard bar list sit side by side in
-        // the same band, and the client asked for their heights balanced now that the
-        // "<hazard> profile" pill has come off the card. Measured on /home at 1440:
-        // focus grid 408px vs graph grid 390px, and the 18px delta is exactly this image.
-        imgBreakout: "w-full h-[240px] object-contain object-center",
-
-        // County-profile card art. `img5XL` is bare `w-full`, so the SAME 1024x1024 render
-        // is 391px in a 1/3 column and 284px in the 1/4 columns below it — the two rows of
-        // cards on /home disagreed by 107px. This caps the art at the narrower row's size
-        // while staying fluid below that width, so the two rows read as one system.
-        // `block mx-auto` because a capped img would otherwise sit left in a wider card
-        // (the cell wrapper is text-start/justify-items-start).
-        imgCardArt: "block w-full max-w-72 max-h-72 object-contain mx-auto",
+        imgBreakout: "w-full h-[258px] object-contain object-center",
         imgDefault: 'max-w-[50px] max-h-[50px]',
 
         // `leading-[1.35]`: the content layoutGroup sets `leading-7` (28px) on the
