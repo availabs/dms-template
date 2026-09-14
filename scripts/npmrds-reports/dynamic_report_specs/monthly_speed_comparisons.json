@@ -26,7 +26,6 @@
     },
     {
       "key": "speed_by_month",
-      "title": "Daily average speed by month",
       "graphType": "BarGraph",
       "measure": "speed",
       "resolution": "month",
@@ -53,7 +52,6 @@
     },
     {
       "key": "grid_speed",
-      "title": "Average speed by TMC by epoch",
       "graphType": "GridGraph",
       "measure": "speed",
       "resolution": "5-minutes",
@@ -61,7 +59,6 @@
     },
     {
       "key": "speed_by_weekday",
-      "title": "Average speed by day of week",
       "graphType": "BarGraph",
       "measure": "speed",
       "resolution": "weekday",
@@ -69,7 +66,6 @@
     },
     {
       "key": "delay_by_weekday",
-      "title": "Total hours of delay by day of week",
       "graphType": "BarGraph",
       "measure": "hoursOfDelay",
       "resolution": "weekday",

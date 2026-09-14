@@ -85,7 +85,6 @@
     },
     {
       "key": "year_grid",
-      "title": "TMC grid graph, speed",
       "graphType": "GridGraph",
       "measure": "speed",
       "resolution": "5-minutes",

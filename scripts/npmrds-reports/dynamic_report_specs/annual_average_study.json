@@ -114,7 +114,6 @@
     },
     {
       "key": "bar_summary",
-      "title": "Route bar graph summary, speed",
       "graphType": "BarGraph",
       "measure": "speed",
       "resolution": "summary",
@@ -148,7 +147,6 @@
     },
     {
       "key": "bar_weekday",
-      "title": "Route bar graph, speed — day of week",
       "graphType": "BarGraph",
       "measure": "speed",
       "resolution": "weekday",
@@ -156,7 +154,6 @@
     },
     {
       "key": "bar_by_day",
-      "title": "Route bar graph, speed — avg speed by day",
       "graphType": "BarGraph",
       "measure": "speed",
       "resolution": "day",
@@ -164,7 +161,6 @@
     },
     {
       "key": "grid_current",
-      "title": "TMC grid graph, speed",
       "graphType": "GridGraph",
       "measure": "speed",
       "resolution": "5-minutes",
@@ -172,7 +168,6 @@
     },
     {
       "key": "bar_by_month",
-      "title": "Route bar graph, speed — avg speed by month",
       "graphType": "BarGraph",
       "measure": "speed",
       "resolution": "month",

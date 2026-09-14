@@ -98,11 +98,37 @@ try {
     '/src/dms/packages/dms/src/patterns/page/components/sections/components/ComponentRegistry/graph_new/config.jsx');
   const spreadsheetCfg = await server.ssrLoadModule(
     '/src/dms/packages/dms/src/patterns/page/components/sections/components/ComponentRegistry/spreadsheet/config.jsx');
+  const rsd = await server.ssrLoadModule(
+    '/src/themes/transportny/components/ReportRouteList/reportSectionDefaults.js');
   const avlGraph = graphCfg.default;
   const spreadsheet = spreadsheetCfg.default;
 
   for (const req of requests) {
     if (!req.key) throw new Error(`request missing "key": ${JSON.stringify(req)}`);
+    // Caption-only request (2026-09-11): `{ key, kickerPick }` returns the composed meta line for
+    // an already-finished `_measurePick` — the unit plus the time window — for the section's
+    // `description` attribute (themev2.js's `headerKicker`). Separate from the compose shapes above
+    // because it runs LATE: the kicker names the route windows, which only exist after route
+    // assignment, long after a graph TEMPLATE is composed. Routed through this bridge rather than
+    // mirrored in Python for the reason this file exists at all — a second implementation is how
+    // the two sides drift.
+    // Section-chrome request: `{ key, sectionDefaults: true }` returns `{ border, activeStyle }`.
+    // Exists so the Python converter doesn't keep a second copy of two literals that must match
+    // what report_build.mjs and useAddGraphSection.js stamp — a card's chrome ending up different
+    // depending on which path created it is the exact failure reportSectionDefaults.js was written
+    // to prevent, and a Python mirror would reintroduce it across a language boundary where no
+    // grep would catch the drift.
+    if (req.sectionDefaults) {
+      results[req.key] = {
+        border: rsd.DEFAULT_GRAPH_SECTION_BORDER,
+        activeStyle: rsd.DEFAULT_GRAPH_SECTION_STYLE,
+      };
+      continue;
+    }
+    if (req.kickerPick) {
+      results[req.key] = cmc.composeAutoKicker(req.kickerPick) || null;
+      continue;
+    }
     const isTable = req.graphType === 'Table';
     const componentCfg = isTable ? spreadsheet : avlGraph;
     // Fresh defaultState per request (structuredClone, same as

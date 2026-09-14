@@ -126,10 +126,68 @@ for a comparison chart. Live result on snapshot: the line graph reads `mph · mi
 summaries `mph · multiple time windows`. Ryan: *"ohhh ok, got it. just the time needs to be
 aligned."*
 
-### Open / next
+### Round 3, same day — clipping, composer-named cards, the converter
 
-- **The converter** (`convert_old_reports_lib/`) does NOT stamp `activeStyle`/title/kicker/legend
-  position yet, so a newly converted old report still gets the old look. Decision 3 asked for this.
+1. **Titles were clipping their descenders.** Measured, not eyeballed: `clientHeight 15` vs
+   `scrollHeight 18` on every card. `truncate` brings `overflow: hidden`, and my `leading-none` made
+   the line box exactly the font size against 18px of Oswald ink, so every g/p/y lost its tail. The
+   row is `items-center`, so there was never anything to gain by tightening it — now
+   `leading-[1.4]`, 0 of 13 clipped. Theme-only fix; no rebuild needed.
+
+2. **The composer now names cards where it can** — *"i like `tt by hour of day` better than
+   `route line graph, speed`. the TYPE of graph is kind of obvious a lot of time, so thats useless
+   prose."* Agreed, but a blanket drop breaks 12 pages: a composed title is a pure function of
+   (measure, resolution, mode, window), so cards differing only by ROUTE or DATE compose
+   identically — `monthly_congestion`'s twelve months all become "Total hours of delay by day".
+   Measured the collisions first, then applied two guards:
+   - drop the spec title only where the composed one is **unique on its page**, and
+   - keep it when it mentions something the composer structurally cannot know — a year, a month, a
+     season, `%n`, "trailing", "before/after", NB/SB. ("Route map, avg. hours of delay — 3 years ago
+     (by day)" is unique, and composes to "Average hours of delay by day", silently dropping the
+     years.)
+   - Map / Info Box / Route Compare are excluded outright: `report_build.mjs` composes their state
+     on a branch that never sets `_sectionPatch`, so dropping their title leaves the card blank.
+
+   **Result: 28 titles handed to the composer, 88 kept.** Verified afterwards that the 12 pages have
+   **no blank titles** and no duplicates beyond the 9 that were already in the committed specs
+   (7 of them `%n` pairs that resolve to different route names at view time).
+
+   Also added **grain to GridGraph's composed title** — `by TMC and 5-minute epoch`. Not widget
+   prose: it is the second dimension a grid actually has, and without it a grid and a line of the
+   same measure composed the same title on 8 of the 12 pages.
+
+   ⚠ **Ryan's own example still survives on `snapshot`**: `line_speed` keeps "Route line graph,
+   speed" because a BarGraph and a LineGraph of the same measure at the same resolution both
+   compose "Average speed by 5-minute epoch" — there, the shape genuinely is the only difference.
+   Open question below.
+
+3. **The converter now produces report cards** (`convert_old_reports_lib/convert_report.py`).
+   `build_graph_section_data` emitted no `border`, `activeStyle` or `description` at all. Both
+   literals and the caption now come back from `compose_bridge.mjs` — two new request shapes,
+   `{sectionDefaults: true}` and `{kickerPick}` — rather than being mirrored in Python, for the
+   reason that bridge exists: a Python copy of `reportSectionDefaults.js` reintroduces cross-path
+   drift across a language boundary no grep would cross.
+   - The caption is composed **after** the section loop, because it names route windows that only
+     exist once route assignment has run. The converter's `_measurePick` carries no `measure`, so
+     that comes from the template's own `BRIDGE_GRAPH_SPECS` entry via the `_appliedTemplate` stamp.
+   - Only graph sections are stamped. The first attempt carded `ReportPageHeader` too, putting a
+     second border around a card that already had one — fixed by recording the framework-section
+     count before the loop.
+   - Verified by re-converting old report **1041** → `reports/year_over_year_beginner_inner_loop_wb_0`
+     (page 2224449): framework sections untouched, all 21 graph cards carded, captions carrying the
+     old report's real windows (`hours · 7a–7p, Weekdays only`). **A scratch page — delete it when
+     you're done looking.**
+   - A graph whose template isn't in `BRIDGE_GRAPH_SPECS` (e.g. `tmc_travel_time_line_graph`) gets
+     the card but no caption. Safe fallback, not a silent wrong value.
+   - **Converted titles are left alone.** They are the original report author's own wording, not
+     generated prose, and there is no reliable way to tell which of hundreds are widget-prose.
+
+**Pre-existing, NOT introduced here:** that converted report renders 1 SQL error — a 262 KB inline
+date list (`position 262139`) from a 2016-2022 comparison exceeding the query length limit. The
+sibling page converted weeks ago (`reports/year_over_year_beginner_inner_loop_wb`) throws the
+identical error at the same byte position. Worth its own ticket; nothing to do with this work.
+
+### Open / next
 - **The `line_speed` spec asymmetry is still there** — comparing a full-week Current Year against a
   weekday-only Trailing 3 Years is arguably not like-for-like. The caption now surfaces it
   (`mixed days`) instead of hiding it. Ryan's call whether the spec should change; not touched.
@@ -352,7 +410,14 @@ All three answered and built the same day — see "Round 2" above. Kept as a rec
 3. ~~A multi-window graph's kicker names only the first window~~ — rebuilt twice; now reports the
    time-of-day and day-of-week axes independently.
 
-Still open: whether the composer should name the cards outright instead of the specs' own titles.
+**Still open — the bar-vs-line collision.** On `snapshot`, `bar_speed_wholeday` and `line_speed`
+plot the same measure at the same resolution, so both compose "Average speed by 5-minute epoch" and
+the uniqueness guard keeps the spec's "Route line graph, speed" — exactly the phrasing Ryan called
+useless prose. There the graph shape IS the only difference. Three ways out, none obviously right:
+name the shape only when a page actually has both (`… (line)` / `… (bars)`); give one of them a
+hand-written title that says why it exists; or drop one of the two graphs. Needs his call.
+
+Superseded: whether the composer should name the cards outright instead of the specs' own titles.
 The design system's own drawn examples ("Travel time by hour of day") are the composer's shape, not
 the specs' structural names ("Route line graph, speed"). Deleting `title` from a spec already falls
 through to the composer, so this is a one-line change per graph if wanted.
