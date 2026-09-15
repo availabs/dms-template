@@ -102,5 +102,4 @@ Eight open questions.
 
 ## Shared
 
-_(no active items — platform-level dms-template work that isn't tied to a single project goes here:
-shared theme infrastructure, `data-types/`, deployment/build config, CLI/tooling.)_
+- [ ] [Make tessera_v6 the site-wide default theme](./shared/tasks/current/tessera-default-theme.md) — any pattern with no explicit `theme.selectedTheme` (including every project's admin pattern, which hardcodes `selectedTheme:"default"`) now resolves to `tessera_v6` instead of the library's bare built-in theme. `src/themes/index.js` gained a `default` loader entry; required a companion library fix (`collectThemeNames` never requested `'default'` — see [`src/dms/planning/tasks/current/collect-theme-names-default-sentinel.md`](../src/dms/planning/tasks/current/collect-theme-names-default-sentinel.md)). Projects with an explicit theme are unaffected. Admin re-skinning per-project is deliberately out of scope (later task). Code changes done 2026-09-11; live testing checklist open.
