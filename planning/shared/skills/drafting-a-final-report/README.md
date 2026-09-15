@@ -15,7 +15,8 @@ that ships as a **designed HTML document first** and a **Word document second**.
 | File | What it is |
 |---|---|
 | [`README.md`](./README.md) | This file — the agnostic method. Read it start to finish before drafting. |
-| [`nysdot-ppdaf.md`](./nysdot-ppdaf.md) | The NYSDOT PPDAF final report: source inventory, the verified facts, design decisions, and what's still open. Read it if you are touching that report, and skim it as a worked example if you are starting another one. |
+| [`nysdot-ppdaf.md`](./nysdot-ppdaf.md) | The NYSDOT PPDAF final report: source inventory, the verified facts, the author's voice profile, design decisions, and what's still open. Read it if you are touching that report, and skim it as a worked example if you are starting another one. |
+| [`html2docx.py`](./html2docx.py) | The HTML → Word converter. Structure-aware, not generic: it walks the TransportNY design-system document shell and emits real Word constructs. Copy and adapt the selectors for another design system. |
 
 ---
 
@@ -292,20 +293,130 @@ review from "what do you think" into a decision list.
 
 ---
 
+## 4b · Writing in the author's voice
+
+A final report goes out under a person's name. If they have written others, match them — and ask for
+the back catalogue *before* drafting rather than after.
+
+### Build a voice profile first
+
+Extract 4–6 of their prior reports (same recipe as §1), read the **most recent two closely** and skim
+the rest for drift, then write the conventions down explicitly before touching the draft. Look for:
+
+| Dimension | What to record |
+|---|---|
+| **Person** | First person plural, or institutional third person? This is the single biggest lever. |
+| **Headings** | Sentence-shaped with terminal periods, or noun phrases? Numbered? |
+| **Sentence rhythm** | Short and punchy, or longer and comma-rich? Do they use fragments for emphasis? |
+| **Recommendation grammar** | How does a recommendation open? Is it hedged? Does it carry a cost rationale? |
+| **Structural habits** | Recurring sections that are not in the contract template — an "About this Document", a "Scope Challenges", a "Strengths / Needs" pair. |
+| **Vocabulary tells** | Words they reach for that a model would not: `utilize`, `a variety of`, `it should be noted that`, `the following`, `outlined below`. |
+| **Candour** | Do they write plainly about overruns, deferrals and mistakes? Many agency authors do, and it reads as authority. |
+| **Tables vs prose** | Some authors carry the argument in tables and use prose to connect them. |
+
+### The transformation, mechanically
+
+Once profiled, the rewrite is largely a set of substitutions. For the NYSDOT report these were:
+
+- **Person.** Every `we / our / us` becomes `AVAIL`, `the research team`, `this report`. Verify with a
+  regex at the end; the count should be zero.
+- **Headings.** `The delay measures had to be rebuilt` becomes `Revision of the Excessive Delay
+  Measures`. Noun phrases, no terminal periods. *Keep the claim* — move it into the first sentence of
+  the section, where it reads as a finding rather than as a headline.
+- **Recommendations.** `We recommend X` becomes `AVAIL recommends X`, with the reason attached.
+- **Aphorisms.** Cut most closing one-liners ("That is the method.", "It costs nothing but nerve.").
+  Keep one or two where the point genuinely needs the emphasis.
+- **Em-dash asides.** Reduce by roughly two thirds. Model prose over-uses them; most agency authors
+  do not.
+- **Adopted sections.** Add the structural habits from the profile. The NYSDOT v1 gained an *About
+  this Document*, an *Identified Needs and Open Items* table, and a *Scope Challenges* section, all
+  lifted from the author's own earlier reports — and all three made the report better, not merely
+  more like him.
+
+### What not to change
+
+Structure, findings, figures, tables and every number carry over unchanged. A voice pass is a voice
+pass. Diff the two files afterwards and confirm that no figure moved.
+
+### Keep the draft
+
+Write the voiced version as a **separate file** and leave the draft in place. The draft is the record
+of what was found; the v1 is the deliverable. State in the v1's header comment which file it derives
+from and what changed.
+
+### A note on drift
+
+An author who has been writing for a decade is not a single style. Ask which era to target. The
+NYSDOT author's own instruction was that his later writing had been moving toward the model's
+register, so the target was a blend: institutional person and noun-phrase headings from him,
+analytical density and findings-first ordering from the draft.
+
+---
+
 ## 5 · The Word conversion
 
 Do this **after** the HTML is approved, not before.
 
-1. Get the agency's reference `.docx` template if one exists; otherwise build one with the agency's
-   heading styles, and use it as the Pandoc reference doc.
-2. `pandoc report.html -o report.docx --reference-doc=agency-template.docx`
-3. Expect to do by hand: the cover page, the table-of-contents field, figure/table numbering as Word
-   fields if the agency wants cross-references, and the DOT F 1700.7 grid (build it as a Word table,
-   not converted).
-4. Re-check every figure after conversion; Pandoc will resize them.
-5. Produce the PDF from Word, not from the browser, so the pagination matches the print copies.
+**Pandoc is the obvious tool and it was not available on this machine**, which turned out to be
+fortunate: a structure-aware converter produces a markedly better document than `pandoc -o x.docx`
+does, because a report's HTML carries a great deal of design chrome that should not survive the trip.
+[`html2docx.py`](./html2docx.py) is that converter and is the recommended starting point.
 
----
+### What it does
+
+Parses the report with BeautifulSoup and walks the known structure, mapping:
+
+| HTML | Word |
+|---|---|
+| `<header>` | A hand-built title page: kicker, title, lede, cover image, a borderless three-column prepared-for/by/through table, contract line |
+| the disclaimer card | Its own page — Heading 1 plus body |
+| the DOT F 1700.7 grid | A real Word table with merged cells, on its own page |
+| — | A `TOC \o "1-2" \h \z \u` **field**, so Word builds the contents itself |
+| `<h2>` / `<h3>` / `<h4>` | Heading 1 / 2 / 3, with section numbers injected from a section-id map |
+| `.prose-tny p` and `li` | `TNYBody` / `TNYBullet`, with HTML indentation whitespace stripped |
+| `<strong>`, `<em>`, `.tny-mono` | Bold, italic and Consolas runs — inline formatting is preserved, not flattened |
+| `table.tny` plus `<caption>` | Word table, `Table Grid`, brand-colored borders, shaded header and total rows, caption as a styled paragraph above |
+| `figure` plus `figcaption` | Centred image at 6.3in plus caption paragraph, `keep_with_next` on the image |
+| a grid of `.tny-card` stat cards | A two-column Word table; the big number becomes 20pt bold, so the figures keep their prominence without CSS grid |
+| `.tny-card-ink` / `-bone` callouts | Chip becomes a gold small-caps lead-in; body becomes indented `TNYCallout` |
+| kickers, rules, layout-only divs | Dropped |
+
+It also defines the paragraph styles (`TNYBody`, `TNYBullet`, `TNYLead`, `TNYCell`,
+`TNYTableCaption`, `TNYFigCaption`, `TNYCallout`), restyles Heading 1–3 to the brand, sets Letter
+size with 1in margins, and adds a footer carrying the report title and a `PAGE` field.
+
+### Adapting it
+
+Change `SRC` / `OUT`, the colour constants, and the class names in `emit_node()`. The section walker
+is driven by `<section id>` values; update `SECTION_NUMBERS` and the page-break list.
+
+### What still needs hand work in Word
+
+1. **Update the TOC field** — select it, right-click, Update entire table. The script inserts a note
+   saying so; delete the note before sending.
+2. **The cover.** The script produces a clean typographic cover. If the agency wants full-bleed art
+   behind the title, do that in Word.
+3. **Cross-references.** Figure and table numbers are baked into the caption text rather than being
+   Word fields. Fine for a deliverable; wrong if the agency wants live cross-references.
+4. **Page breaks.** The script breaks before each top-level section. Check for orphaned headings and
+   over-long tables.
+5. **The PDF** comes from Word rather than the browser, so that pagination matches the print copies.
+
+### Sanity-check the output
+
+```python
+from docx import Document
+d = Document(path)
+print([p.text for p in d.paragraphs if p.style.name == 'Heading 1'])
+print('words:', sum(len(p.text.split()) for p in d.paragraphs)
+                + sum(len(c.text.split()) for t in d.tables for r in t.rows for c in r.cells))
+print('tables:', len(d.tables), 'images:', len(d.inline_shapes))
+```
+
+Confirm that every top-level section is present, that the word count is the right order of magnitude,
+and that the image count equals the figure count plus the cover. Non-ASCII rendering as `?` in a
+Windows console is a console encoding artefact rather than a document problem — check `repr()` before
+chasing it.
 
 ## 6 · Checklist
 
@@ -322,3 +433,8 @@ Do this **after** the HTML is approved, not before.
 - [ ] Tag balance verified; page rendered and scrolled end to end.
 - [ ] Print stylesheet present; card grids stack; tables are real tables.
 - [ ] Review-notes block at the end of the draft.
+- [ ] If the author has prior reports: voice profile built, and the voiced version written as a
+      separate file with the draft retained.
+- [ ] First-person count is zero, if the profile calls for institutional third person.
+- [ ] Word document: TOC field present, headings numbered, every figure embedded, tables are real
+      tables, and word count and image count verified against the HTML.

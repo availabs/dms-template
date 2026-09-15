@@ -1,11 +1,17 @@
 # NYSDOT PPDAF final report — project file
 
-**Project:** TransportNY · **Deliverable:** Task 7 of Task Assignment SP-20-03 · **Status:** first
-HTML pass drafted 2026-09-15, awaiting user feedback; final HTML and `.docx` to follow.
+**Project:** TransportNY · **Deliverable:** Task 7 of Task Assignment SP-20-03 ·
+**Status:** v1 HTML and `.docx` delivered 2026-09-15.
 
-Working file: `src/themes/transportny/TransportNY Design System/dms_design_system_v2/reports/nysdot-ppdaf-final-report.html`
+| File | Role |
+|---|---|
+| `…/dms_design_system_v2/reports/nysdot-ppdaf-final-report.html` | **Working draft.** First pass, model voice. Retained as the record of what was found. Do not delete. |
+| `…/reports/nysdot-ppdaf-final-report-v1.html` | **The deliverable, HTML.** Voice-revised, plus two figures the draft lacked. Same structure, findings and numbers. |
+| `…/reports/Final_report_draft_v1.docx` | **The deliverable, Word.** Built from the v1 HTML by [`html2docx.py`](./html2docx.py). ~19,900 words, 18 tables, 15 images. |
 
-Method: [`README.md`](./README.md) in this folder.
+Method: [`README.md`](./README.md) in this folder. The converter is
+[`html2docx.py`](./html2docx.py); rebuild with
+`python planning/shared/skills/drafting-a-final-report/html2docx.py` after editing the v1 HTML.
 
 ---
 
@@ -188,7 +194,49 @@ merge 2025 · `devtny.org` dev environment established June 2025.
 
 ---
 
-## 4 · Design decisions made in the first pass
+## 3b · The author's voice profile
+
+Built from the reports in
+`references/NYSDOT Final Report/Final Reports Authored by Eric Krans/`. The v1 HTML is written to
+this profile. Read this before editing the v1 prose, so the edit does not drift back.
+
+**Sources read.** NYS Multi-Hazard Mitigation SOW Final Report (2021) — the closest analogue and the
+richest source; NPMRDS Final Report (2021) — the prior phase of this same project; NYSAMPO Shared-Use
+Transit Recommendations (2023); NY SHAReD Program Guidelines (2024); CTP FY19 / FY20 / FY22 Final
+Reports (2021–2025).
+
+### The conventions
+
+| Dimension | The convention |
+|---|---|
+| **Person** | Institutional third person throughout. `AVAIL`, `the research team`, `NYSDOT`, `DHSES`. **No first person anywhere** — not one `we`, `our` or `us` across six reports. |
+| **Headings** | Noun phrases, no terminal period. "Software Market Analysis", "Shared-Use Recommendations", "Identified Strengths and Needs", "Scope Challenges". |
+| **Recommendations** | Open with `AVAIL recommends …`, often several in a row, each with its reason. Hedged and practical: "Prior to expending any additional resources on software or support, NYSDOT should consider at least making an effort to begin …" |
+| **Sentence rhythm** | Medium-to-long, comma-rich, unhurried. Very few fragments. No aphoristic closers. |
+| **Vocabulary tells** | `utilize` (never `use`), `a variety of`, `the following`, `outlined below`, `provides`, `it should be noted that`, `in order to`, `Consideration:` |
+| **Structure habits** | An **"About this Document"** opener; **"Identified Strengths and Needs"** with a `Needs` sub-list; a **"Scope Challenges"** section that names cost overruns and their causes candidly; per-task **Delivery Reports**. |
+| **Tables** | Heavy use. Strengths/Weaknesses pairs, Values/Activities/Measures of Success, Software/Specializations. The argument often lives in the table and the prose connects them. |
+| **Candour** | Unusual and load-bearing. The Multi-Hazard report states plainly that delivery cost roughly 50 % more than budgeted and enumerates why, including "AVAIL did not accurately account for …" and "AVAIL took great risk in agreeing to that interpretation". |
+| **Warmth** | Rationed to one sentence per report, usually at the end of a strengths section: "… this programmatic modernization can be a long-term triumph for DHSES." |
+
+### The blend actually used
+
+The author's instruction was that his later writing has been moving toward the register of the
+model-written draft, so v1 is a blend rather than a reversion:
+
+- **From him:** institutional person, noun-phrase headings, `AVAIL recommends`, the vocabulary tells,
+  the Scope Challenges and About-this-Document sections, longer sentences.
+- **From the draft:** findings-first ordering, the density of measured figures, the stat-card
+  executive summary, stating absences explicitly, the dated change log.
+
+### Verification
+
+```bash
+# should print 0
+python -c "import re;s=open(P,encoding='utf-8').read();print(len(re.findall(r'\b(we|our|us)\b',re.sub(r'<!--.*?-->','',s,flags=re.S),re.I)))"
+```
+
+## 4 · Design decisions
 
 - **Document shell, not app shell.** Existing model: `reports/npmrds-data-quality-report.html`.
   `_shared.css` subset inlined verbatim.
@@ -201,8 +249,31 @@ merge 2025 · `devtny.org` dev environment established June 2025.
   each major section and `break-inside: avoid` on cards/tables/figures.
 - The cover image is a **placeholder** (`macro-01-overview.png`); Attachment A requires cover art and
   the `.docx` should get a proper full-bleed treatment.
-- The report ends with a **review-notes card** listing open questions, possible additions, possible
-  cuts, missing figures and the conversion path.
+- The draft ends with a **review-notes card** listing open questions, possible additions, possible
+  cuts, missing figures and the conversion path. **The v1 does not carry that card** — it is a client
+  deliverable, and the review notes live here instead (§5).
+
+### Added in v1
+
+- **Two figures captured 2026-09-15** from the live production site, bringing the total to 14:
+  Figure 10, Corridor View (I-495 WB, Queens, 7 June 2026), and Figure 14, an incident page. Figure
+  14 is the strongest figure in the report: it shows the §4.5 timestamp finding as a practitioner
+  encounters it, with three fields of the Response Timeline reading *not recorded* under a band
+  headed "TIM timestamps · honest gaps". Event ORI1238298991, the highest-attributed-delay crash of
+  June 2026.
+- **The capture could not use the documented Playwright recipe.** TSMO's documentation says the
+  product reads without an account; the production deployment redirects an unauthenticated context to
+  `Transport NY Auth` on every route. The shots were taken through an already-signed-in Chrome
+  session instead, and are consequently 1568×744 rather than the 1920×1150 house convention. Both
+  facts are recorded in `assets/screens/README.md`. **The auth discrepancy is worth raising with
+  NYSDOT** — either the deployment is gated and the docs are aspirational, or the gate is a
+  misconfiguration.
+- **Section 5 was restructured** to the author's Multi-Hazard pattern: 5.1 Task Delivery Accounting,
+  5.2 Adoption and Use, 5.3 Identified Needs and Open Items, **5.4 Scope Challenges (new)**,
+  5.5 Server and Hosting Recommendation.
+- **Section 4 headings became noun phrases**, with the claim moved into each section's first
+  sentence.
+- The Word document numbers the top-level headings (1–8) and carries a live TOC field.
 
 ---
 
@@ -221,12 +292,21 @@ merge 2025 · `devtny.org` dev environment established June 2025.
 - Two or three **named MPO use cases** written up as short boxes.
 - A **platform architecture schematic** for §2.1 and a **project timeline graphic** for §1.3. The
   2021 report had figures for both (Figures 5 and 6); they could be redrawn.
-- Three more captures: **Corridor View** (time-space grid), an **incident page**, and the
-  **Data Manager catalog**. None exists in the design-system asset set.
+- The **Data Manager catalog** capture. Corridor View and the incident page were captured for v1;
+  the catalog was not, because the Data & Downloads page asks visitors without an account to sign in
+  (a known issue recorded in the platform docs) and capturing it would misrepresent the public view.
 
-**Possible cuts for the Word version**
+**Possible cuts**
 - Appendix D (change log) is long — could reduce to the six Methodology-labelled entries.
 - §3.8 and §3.9 could merge.
+
+**Word document, remaining hand work**
+- Update the TOC field in Word (right-click → Update entire table) and delete the instruction note
+  beneath it.
+- The cover is typographic; if NYSDOT wants full-bleed art behind the title, do it in Word.
+- Figure and table numbers are baked into caption text rather than Word fields. Convert only if
+  NYSDOT wants live cross-references.
+- Produce the PDF from Word, not the browser, so pagination matches the fifteen bound copies.
 
 **Facts deliberately not asserted**
 - Exact user counts, exact download counts, exact quarterly-report count.
