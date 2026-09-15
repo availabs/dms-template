@@ -30,6 +30,7 @@
 // present) for this specific tool's own history.
 
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
+import { structuralKey, columnsOf, matchBaselineQuery } from './probe_corpus_keys.mjs';
 import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -84,12 +85,13 @@ function runProbe(entry) {
   mkdirSync(PROBE_OUT, { recursive: true });
   const args = [PROBE, entry.url, '--no-shot', '--out', PROBE_OUT];
   if (entry.authRequired) args.push('--auth');
-  // Optional per-entry override of report_probe.mjs's own default 6000ms settle wait — a page
-  // with an above-average section count AND a Route Map (whose vector-tile requests routinely
-  // take >6s under this dev stack, confirmed live 2026-08-17 investigating dynamic_report_
-  // one_week_study's flaky "was blank → has content" diffs: `--wait 15000` reliably settles
-  // every section to 0 pending requests, `--wait 6000` sometimes catches 4 of them mid-fetch)
-  // needs longer than that default to reliably reach a stable render before the SVG census runs.
+  // `wait` is a legacy per-entry escape hatch and should normally be absent. It existed because
+  // report_probe.mjs used to settle on `networkidle` + a fixed dwell, so a page with many sections
+  // or a Route Map needed a hand-tuned number (one_week_study carried `wait: 20000`). That model
+  // was the harness's main source of non-determinism and was replaced 2026-09-14 by a real
+  // quiescence settle, which adapts to whatever the machine is doing — so every override was
+  // deleted from the manifest. `--wait` is now only a minimum FLOOR; setting one just makes the
+  // run slower without making it more reliable.
   if (entry.wait) args.push('--wait', String(entry.wait));
   console.log(`  node ${path.relative(REPO, PROBE)} ${entry.url} ${entry.authRequired ? '--auth ' : ''}${entry.wait ? `--wait ${entry.wait} ` : ''}--no-shot`);
   try {
@@ -122,6 +124,7 @@ function isReportContentQuery(decoded) {
   return decoded.includes('"uda"') && (decoded.includes('"options"') || decoded.includes('"colorDomain"'));
 }
 
+
 function seriesCountFor(capture) {
   // Same technique as report_probe.mjs's own --expect: count `"label":"` occurrences in the
   // decoded seriesVariants text rather than re-parsing the nested stringified JSON.
@@ -136,7 +139,41 @@ function seriesCountFor(capture) {
 function looksLikeFailedLoad(raw) {
   const netErr = raw.consoleErrors.some(e => /net::ERR_/.test(e));
   const trivialBody = (raw.bodyText || '').trim().length < 50;
-  return netErr || trivialBody;
+  // The original guard caught only HARD failures. It did not catch the failure mode that actually
+  // bit this harness: a PARTIAL load, where the page returns a full-length body and no net::ERR_
+  // but half its sections have not finished fetching. Those dumps diffed as "section blank" and
+  // "query no longer fires" findings that did not reproduce (measured 2026-09-14: two identical
+  // corpus runs, only 3 of 17 blocker-instances repeated), and `--capture` on one would have
+  // frozen blank sections into the baseline as legitimate.
+  //
+  // report_probe.mjs now settles on real quiescence and reports whether it got there, so the
+  // honest check is simply to trust that flag — plus two corroborating signals it cannot see:
+  // requests still in flight at close, and a report page that produced no sections at all.
+  const unsettled = raw.settle ? raw.settle.ok !== true : false;
+  const leftInFlight = (raw.stillPending || []).length > 0;
+  const noSections = (raw.sections || []).length === 0;
+  return netErr || trivialBody || unsettled || leftInFlight || noSections || isExpiredAuth(raw);
+}
+
+// An expired dev token does not error — the app just renders its logged-out shell, which reads as
+// a page with no sections. Recurring enough to name explicitly rather than let an operator chase
+// it as a regression (it is called out in the probe docs and in more than one task file).
+function isExpiredAuth(raw) {
+  const t = (raw.bodyText || '');
+  return /Welcome back\.|Sign in to continue|Log in to continue/i.test(t) && (raw.sections || []).length <= 1;
+}
+
+// Why a given dump was rejected — so the operator sees the cause, not just a refusal.
+function failedLoadReason(raw) {
+  const r = [];
+  if (isExpiredAuth(raw)) r.push('EXPIRED AUTH TOKEN — re-mint with `bash scratchpad/npmrds-sub/mint_token.sh`');
+  if (raw.consoleErrors.some(e => /net::ERR_/.test(e))) r.push('net::ERR_ in console');
+  if ((raw.bodyText || '').trim().length < 50) r.push('body under 50 chars');
+  if (raw.settle && raw.settle.ok !== true) r.push(`probe never settled (${raw.settle.reason}, ${raw.settle.ms}ms, ${raw.settle.pending} in flight)`);
+  else if (!raw.settle) r.push('dump predates the settle field — re-run the probe');
+  if ((raw.stillPending || []).length) r.push(`${raw.stillPending.length} request(s) in flight at close`);
+  if ((raw.sections || []).length === 0) r.push('no sections found at all');
+  return r.join('; ');
 }
 
 function normalize(raw) {
@@ -146,7 +183,17 @@ function normalize(raw) {
       // "has content" = real SVG ink OR a real-sized canvas — Map sections render via MapLibre
       // WebGL/canvas, never SVG, and an SVG-only check reads a correctly-rendered map as
       // permanently blank (found live 2026-08-10 on the Dynamic Report corpus candidate).
-      hasContent: (s.svgs.length > 0 && s.svgs.some(v => v.paths + v.rects + v.circles > 0)) || (s.canvases || []).length > 0,
+      // "has content" = real SVG ink, OR a real-sized canvas, OR numeric value cells.
+      //  - canvas: Map sections render via MapLibre WebGL, never SVG (found live 2026-08-10).
+      //  - valueCells: Info Box / Route Compare render numbers in plain divs — no svg, no canvas,
+      //    no <table>. Without this they read as permanently blank and go unmonitored (3 sections
+      //    across the corpus). Measured live: populated Info Box 10, Route Compare 8, versus 0 for
+      //    both a report title header and a genuinely empty graph. The test is > 0 rather than a
+      //    tuned floor, because the count scales with series/routes/columns — any floor above zero
+      //    would misjudge a small section (a one-measure, one-route Info Box renders one or two).
+      hasContent: (s.svgs.length > 0 && s.svgs.some(v => v.paths + v.rects + v.circles > 0))
+        || (s.canvases || []).length > 0
+        || (s.valueCells || 0) > 0,
     })),
     consoleErrorSignatures: [...new Set(raw.consoleErrors)],
     pageErrorSignatures: [...new Set(raw.pageErrors)],
@@ -158,13 +205,30 @@ function normalize(raw) {
     // diverge later in the string (found live 2026-08-10: a 160-char prefix collapsed 43 distinct
     // queries into 31 keys, producing false "series count changed" diffs against its own fresh
     // baseline). Truncate only for display, at print time, never for matching.
-    graphSummary: raw.graphCaptures
-      .filter(c => isReportContentQuery(c.decoded))
-      .map(c => ({
-        decodedKey: c.decoded,
-        status: c.status,
-        seriesCount: seriesCountFor(c),
-      })),
+    // DEDUPLICATED by structural identity. A page routinely fires the same query more than once
+    // (re-render, refetch) and the count is not stable: one_week_study captured 29 queries that
+    // are only 18 distinct ones, 11 of them fired twice. Matching fire-for-fire then reported 11
+    // "query no longer fires" Majors against its OWN freshly-captured baseline, simply because
+    // the next run fired each of them once. The question this check exists to answer is whether a
+    // query still fires at all — `fires` is kept for information but is never a finding.
+    graphSummary: (() => {
+      const byIdentity = new Map();
+      for (const c of raw.graphCaptures.filter(x => isReportContentQuery(x.decoded))) {
+        const sk = structuralKey(c.decoded);
+        const cols = columnsOf(c.decoded);
+        const id = sk + '||' + cols.join(',');
+        const prev = byIdentity.get(id);
+        if (prev) { prev.fires++; continue; }
+        byIdentity.set(id, {
+          decodedKey: c.decoded,
+          columns: cols,
+          status: c.status,
+          seriesCount: seriesCountFor(c),
+          fires: 1,
+        });
+      }
+      return [...byIdentity.values()];
+    })(),
   };
 }
 
@@ -207,11 +271,28 @@ function diffSnapshots(baseline, current) {
 
   // Match /graph captures between runs by decoded query text, not array position — capture order
   // isn't guaranteed stable across runs even when nothing changed.
+  // Matched structurally rather than by exact query text — see probe_corpus_keys.mjs for why, and
+  // for the subset rule on column lists. `used` keeps it 1:1 so two baseline queries cannot both
+  // claim the same current one.
+  const usedCurrent = new Set();
   for (const bg of baseline.graphSummary) {
-    const cg = current.graphSummary.find(g => g.decodedKey === bg.decodedKey);
+    const cg = matchBaselineQuery(bg, current.graphSummary, usedCurrent);
     if (!cg) { push('Major', `a previously-captured /graph query no longer fires: ${bg.decodedKey.slice(0, 100)}...`); continue; }
+    usedCurrent.add(cg);
     if (bg.seriesCount !== cg.seriesCount) {
       push('Major', `series count changed for "${bg.decodedKey.slice(0, 80)}...": ${bg.seriesCount} → ${cg.seriesCount}`);
+    }
+    // Same query, different text: a relabel, an added/removed column, or a shifted date window.
+    // Reported so drift stays visible and re-baselining is an informed choice — but NOT as a
+    // Major, because it is authoring/schema movement, not a regression.
+    if (bg.decodedKey !== cg.decodedKey) {
+      push('Info', `query text drifted (same query structurally — labels/columns/date values): ${bg.decodedKey.slice(0, 70)}...`);
+    }
+  }
+
+  for (const cg of current.graphSummary) {
+    if (!usedCurrent.has(cg)) {
+      push('Info', `a /graph query fired that the baseline does not have: ${cg.decodedKey.slice(0, 70)}...`);
     }
   }
 
@@ -257,17 +338,30 @@ const today = new Date().toISOString().slice(0, 10);
 for (const entry of entries) {
   console.log(`\n== ${entry.key} ==`);
   let raw;
-  try {
-    raw = runProbe(entry);
-  } catch (e) {
-    console.log(`  ERROR: ${e.message}`);
-    anyBlockerOrMajor = true;
-    continue;
+  // Retry a bad load rather than surfacing it as a finding. A page that fails to load is a fact
+  // about this machine at this moment, not about the code under test, and letting one transient
+  // failure count as a Blocker is a large part of why this suite's output could not be trusted.
+  // The retry is bounded and its reason is printed, so a page that is GENUINELY broken still
+  // fails — it just fails consistently instead of intermittently.
+  const ATTEMPTS = 3;
+  let loadProblem = null;
+  for (let attempt = 1; attempt <= ATTEMPTS; attempt++) {
+    try {
+      raw = runProbe(entry);
+    } catch (e) {
+      loadProblem = e.message;
+      console.log(`  attempt ${attempt}/${ATTEMPTS}: probe error — ${e.message.split('\n')[0]}`);
+      raw = null;
+      continue;
+    }
+    if (!looksLikeFailedLoad(raw)) { loadProblem = null; break; }
+    loadProblem = failedLoadReason(raw);
+    console.log(`  attempt ${attempt}/${ATTEMPTS}: unusable dump — ${loadProblem}`);
+    raw = null;
   }
-  if (looksLikeFailedLoad(raw)) {
-    console.log(`  PROBE FAILED TO LOAD THE PAGE (network error or trivial body — not a code` +
-      ` finding) — retry, not capturing/diffing this entry this run`);
-    console.log(`    consoleErrors: ${raw.consoleErrors.slice(0, 2).join(' | ')}`);
+  if (!raw) {
+    console.log(`  PROBE COULD NOT PRODUCE A TRUSTWORTHY DUMP after ${ATTEMPTS} attempts — ${loadProblem}`);
+    console.log(`  NOT capturing or diffing this entry. This is an environment/load problem, not a code finding.`);
     anyBlockerOrMajor = true;
     continue;
   }

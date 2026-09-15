@@ -1,9 +1,44 @@
 # Graph-card padding + legend quality pass (Phase 5)
 
-**Project:** TransportNY · **Topic:** themes · **Status:** **LEGEND VALUES SET + live-verified and
-owner-reviewed 2026-09-11.** The submodule half's pass 1 and pass 2 items 1-2 are DONE. This site's
-**legend** token values are authored and rendering; the **tooltip** and **padding** values are still
-unset, pending submodule items 3 and 4. · **Started:** 2026-09-09
+**Project:** TransportNY · **Topic:** themes · **Status:** **LEGEND + TOOLTIP VALUES SET,
+live-verified and owner-reviewed (legend 2026-09-11, tooltip 2026-09-14).** The submodule half's
+pass 1, pass 2 items 1-2, and item 3 (tooltip) are DONE. The **card padding** value is still unset,
+pending submodule item 4. · **Started:** 2026-09-09
+
+### Tooltip tokens — authored 2026-09-14
+
+```js
+tooltip:          "rounded-[8px] bg-white border border-zinc-950/10 text-slate-700 text-[12px] shadow-lg font-proxima"
+tooltipTitle:     "font-proxima text-[12px] font-semibold leading-5 text-slate-900 border-b border-zinc-950/10"
+tooltipValue:     "text-right tabular-nums text-slate-900"
+tooltipRow:       "py-0.5"
+tooltipRowActive: "border-slate-300"
+```
+
+**Why not the value that was already sitting there.** `tooltip` had carried
+`rounded-[6px] bg-[#0F1722] text-white text-[12px] px-2.5 py-1.5 shadow-lg font-proxima` as dead
+scaffolding for years; it went live the moment the submodule wired the token, and looked wrong
+immediately. Three concrete reasons, not taste:
+
+1. It was the **only dark surface in this design system.** Every popover, modal, drawer and card
+   is `bg-white` + `border-zinc-950/10` + a shadow. `navigableMenu`'s popover is the closest
+   analogue to a tooltip and is exactly that.
+2. `#0F1722` is used **as an ink colour** everywhere else (`hover:text-[#0F1722]`), never a fill.
+3. A dark fill **inverts the contrast the series palettes were built for** — `seqSpeedPalette` and
+   `catPalette` are chosen to sit on a white plot, so pale greens glowed and dark reds sank.
+
+**No padding in the `tooltip` token, deliberately.** The tooltip BODY keeps its own `px-2 pt-1
+pb-2`, so a padded container double-pads the panel. Measured live: container `6px 10px` + body
+`4px 8px 8px` before; container `0px` after.
+
+**`tooltipRow: "py-0.5"` is the fix for the active-row marker**, not a colour change. The row's
+2px highlight border had no vertical padding and sat directly on the text, which read as cramped
+rather than selected. Padding was tested in isolation from colour, and the owner accepted grey
+(`border-slate-300`) once it had room to breathe.
+
+**Verify:** `http://www.localhost:5173/npmrds/reports/snapshot?routes=2207390&asOf=2026-08-20` —
+hover any graph. Expect a white panel with a hairline border, a 12px semibold title over a light
+rule, right-aligned tabular numbers, and the hovered row outlined in light grey.
 
 ### What is authored on this site now (`themev2.js`, the `avlGraph` block)
 
