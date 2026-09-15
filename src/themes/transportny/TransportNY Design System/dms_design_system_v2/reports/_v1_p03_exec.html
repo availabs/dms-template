@@ -1,0 +1,369 @@
+
+  <!-- ══════════════════════════════════════════════════════════════════
+       EXECUTIVE SUMMARY
+       Attachment A: "a non-technical summary of the research and its
+       findings." Written to stand alone, so that it can also serve as the
+       basis for the one-page project summary required by Task 7.
+       ══════════════════════════════════════════════════════════════════ -->
+  <section id="exec" class="page-break py-12 border-b border-zinc-950/5">
+
+    <div class="flex items-center gap-2 mb-3">
+      <span class="kicker">// executive summary</span>
+      <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+    </div>
+
+    <h2 class="font-display font-semibold text-[32px] leading-[1.1] tracking-tight text-[#0F1722] max-w-[30ch]">
+      From a Reporting Tool to a Statewide Planning and Performance Platform
+    </h2>
+
+    <div class="grid grid-cols-1 lg:grid-cols-[1.35fr_1fr] gap-10 mt-6">
+      <div class="prose-tny">
+        <p>
+          With the Federal Highway Administration&rsquo;s release of the National Performance Management
+          Research Data Set (NPMRDS) in 2013, NYSDOT engaged the Research Foundation for SUNY, on behalf
+          of the University at Albany&rsquo;s Albany Visualization and Informatics Lab (AVAIL), to support
+          the efficient and effective analysis of this extensive database of archived travel times by road
+          segment. By 2021 that partnership had produced a working web-based platform for congestion and
+          reliability reporting. This task assignment asked a larger question: whether that single tool
+          could be extended to serve as the state&rsquo;s shared planning and performance data platform.
+        </p>
+        <p>
+          It could. <strong>TransportNY</strong> now carries three public products over a single sign-in,
+          a single data layer, a single map-authoring environment and a single documentation set. NPMRDS
+          answers how fast, how reliable and how congested a road is. TSMO answers how a region&rsquo;s
+          congestion, reliability, incidents and work zones performed over a year. The Freight Atlas is
+          the interactive companion to the 2024 New York State Freight Plan. NYSDOT files its federal
+          MAP-21 PM3 and HPMS submittals from the platform, and the state&rsquo;s metropolitan planning
+          organizations utilize it in developing their transportation improvement programs and their
+          congestion management processes.
+        </p>
+        <p>
+          The more consequential result of the assignment is what building and operating the platform
+          revealed about the data underneath it. Reliability and delay measures that the federal rule
+          treats as settled proved, on New York&rsquo;s network, to be sensitive to conditions the rule
+          does not address: how many vehicles were actually observed on a segment, how long the segment
+          is, which year&rsquo;s network map the measure was computed on, and how old the traffic count
+          paired with it is. A substantial portion of the technical work of the last two years consisted
+          of measuring those sensitivities, correcting what could be corrected, and publishing what could
+          not be corrected as a stated limitation rather than a silent one.
+        </p>
+        <p>
+          <strong>Project status.</strong> All seven contract tasks are delivered or in final review. The
+          three products completed design review, AVAIL quality assurance and NYSDOT acceptance review and
+          moved to production between August and September 2026. A 95-page documentation set is written
+          and awaiting NYSDOT&rsquo;s review. The CY 2025 federal submittal was accepted in June 2026.
+          Section 5.3 enumerates the needs that remain open, and Section 5.4 documents the scope
+          challenges encountered over the five years of the assignment.
+        </p>
+        <p>
+          <strong>Direction.</strong> The successor scope broadens PPDAF into an <em>Integrated</em>
+          framework, IPPDAF, adding land use and commuting, transit and modal accessibility, health, air
+          quality and greenhouse-gas impacts, weather and resiliency, and engineering-grade speed and
+          volume estimates. It also invites other NYSDOT research partners to build inside the same
+          authentication and data ecosystem rather than beside it. AVAIL&rsquo;s recommended sequencing
+          for that work is provided in Section 6.5.
+        </p>
+      </div>
+
+      <!-- at-a-glance stat stack -->
+      <div class="space-y-4">
+        <div class="tny-card tny-card-ink p-5">
+          <div class="chip text-white/60 mb-3">The platform, September 2026</div>
+          <div class="grid grid-cols-2 gap-y-4 gap-x-4">
+            <div>
+              <div class="font-display font-semibold text-[27px] leading-none tabular-nums">14.5B</div>
+              <div class="font-proxima text-[11.5px] leading-[1.35] text-white/70 mt-1">five-minute probe records since Jan 2017</div>
+            </div>
+            <div>
+              <div class="font-display font-semibold text-[27px] leading-none tabular-nums">52,473</div>
+              <div class="font-proxima text-[11.5px] leading-[1.35] text-white/70 mt-1">road segments on the 2026 TMC map</div>
+            </div>
+            <div>
+              <div class="font-display font-semibold text-[27px] leading-none tabular-nums">3.7M</div>
+              <div class="font-proxima text-[11.5px] leading-[1.35] text-white/70 mt-1">TRANSCOM events, filtered to New York</div>
+            </div>
+            <div>
+              <div class="font-display font-semibold text-[27px] leading-none tabular-nums">3</div>
+              <div class="font-proxima text-[11.5px] leading-[1.35] text-white/70 mt-1">public products on one sign-in</div>
+            </div>
+            <div>
+              <div class="font-display font-semibold text-[27px] leading-none tabular-nums">39</div>
+              <div class="font-proxima text-[11.5px] leading-[1.35] text-white/70 mt-1">Freight Atlas map layers over 52 datasets</div>
+            </div>
+            <div>
+              <div class="font-display font-semibold text-[27px] leading-none tabular-nums">95</div>
+              <div class="font-proxima text-[11.5px] leading-[1.35] text-white/70 mt-1">documentation pages, written Sept 2026</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tny-card p-5">
+          <div class="chip text-slate-500 mb-3">The assignment</div>
+          <table class="tny">
+            <tbody>
+              <tr><td class="txt">Task assignment</td><td>SP-20-03</td></tr>
+              <tr><td class="txt">Notice to proceed</td><td>26 Jun 2021</td></tr>
+              <tr><td class="txt">Original end date</td><td>30 Sep 2023</td></tr>
+              <tr><td class="txt">Extended end date</td><td>30 Sep 2026</td></tr>
+              <tr><td class="txt">Original budget</td><td>$906,500</td></tr>
+              <tr class="total"><td class="txt">Extended budget</td><td>$1,693,500</td></tr>
+            </tbody>
+          </table>
+          <p class="font-proxima text-[11.5px] leading-[1.45] text-slate-500 mt-3">
+            The September 2023 extension also retitled the assignment, from
+            <i>Technical Support for Use of the National Performance Management Research Data Set</i> to
+            <i>Research, Development and Support of an Integrated Planning and Performance Data and
+            Analytics Framework</i>. The title change is the clearest single statement of what the project
+            became.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── what was built ──────────────────────────────────────────── -->
+    <h3 class="font-display font-medium text-[19px] leading-[1.2] text-[#0F1722] mt-11">Products Delivered</h3>
+    <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mt-1.5 max-w-[80ch]">
+      Three products serving three audiences, supported by four pieces of shared infrastructure that allow
+      NYSDOT staff, rather than software developers, to add data, author maps and publish pages.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-5">
+      <div class="tny-card p-5 flex flex-col">
+        <div class="chip text-[#CA8A04] mb-2">Product 01</div>
+        <div class="font-display font-medium text-[17px] text-[#0f1722]">NPMRDS</div>
+        <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 mt-2 flex-1">
+          Speed, travel time and reliability for any segment or route over any period. Four tools:
+          Reports, which charts one route over time from twelve templates; the Macro View, which shows one
+          measure for one year across every segment; Route Comparison; and the MAP-21 PM3 pages that carry
+          the federal figures.
+        </p>
+        <div class="mt-3 pt-3 border-t border-zinc-950/5 chip text-slate-500 leading-[1.9]">
+          7 published measures<br>869 legacy reports &middot; 32 rebuilt<br>federal submittal source of record
+        </div>
+      </div>
+      <div class="tny-card p-5 flex flex-col">
+        <div class="chip text-[#CA8A04] mb-2">Product 02</div>
+        <div class="font-display font-medium text-[17px] text-[#0f1722]">TSMO</div>
+        <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 mt-2 flex-1">
+          Operations dashboards covering a year, statewide or by NYSDOT region: Congestion, Reliability,
+          Incidents and Work Zones. Two explorers accompany them &mdash; Incident Search, which reaches
+          every TRANSCOM event, and Corridor View, which replays one corridor through one day as a
+          time-space speed grid.
+        </p>
+        <div class="mt-3 pt-3 border-t border-zinc-950/5 chip text-slate-500 leading-[1.9]">
+          4 dashboards &middot; 2 explorers<br>11 NYSDOT regions<br>3.7M events since 2014
+        </div>
+      </div>
+      <div class="tny-card p-5 flex flex-col">
+        <div class="chip text-[#CA8A04] mb-2">Product 03</div>
+        <div class="font-display font-medium text-[17px] text-[#0f1722]">Freight Atlas</div>
+        <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 mt-2 flex-1">
+          The 2024 State Freight Plan presented as a live map: 39 layers in 8 categories, a gallery
+          presenting the plan&rsquo;s own figures as ready-made views, a download catalog behind every
+          layer, and the plan&rsquo;s goals and strategies. It serves the public as well as planners.
+        </p>
+        <div class="mt-3 pt-3 border-t border-zinc-950/5 chip text-slate-500 leading-[1.9]">
+          39 layers &middot; 52 datasets<br>22 of 33 plan maps live<br>4 export formats per dataset
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-4">
+      <div class="tny-card tny-card-tint p-4">
+        <div class="font-display font-medium text-[14px] text-[#0f1722]">Data Manager</div>
+        <p class="font-proxima text-[12px] leading-[1.55] text-slate-600 mt-1.5">
+          A single catalog for every dataset the platform serves, providing versions, column metadata,
+          per-dataset permissions and generated downloads. It replaced three separate catalogs.
+        </p>
+      </div>
+      <div class="tny-card tny-card-tint p-4">
+        <div class="font-display font-medium text-[14px] text-[#0f1722]">Map Editor</div>
+        <p class="font-proxima text-[12px] leading-[1.55] text-slate-600 mt-1.5">
+          Point a layer at a dataset version, style it, write its legend and save it. Every Freight Atlas
+          layer is authored here by NYSDOT or AVAIL staff rather than written in code.
+        </p>
+      </div>
+      <div class="tny-card tny-card-tint p-4">
+        <div class="font-display font-medium text-[14px] text-[#0f1722]">Site Management</div>
+        <p class="font-proxima text-[12px] leading-[1.55] text-slate-600 mt-1.5">
+          Users, groups and access levels across all products, together with a public status page and an
+          issue tracker fed by a bug-report form available on every page.
+        </p>
+      </div>
+      <div class="tny-card tny-card-tint p-4">
+        <div class="font-display font-medium text-[14px] text-[#0f1722]">APIs and downloads</div>
+        <p class="font-proxima text-[12px] leading-[1.55] text-slate-600 mt-1.5">
+          The same read API the dashboards render from, available to consultants and agency developers,
+          with a per-dataset export route in CSV, GeoJSON, Shapefile and GeoPackage.
+        </p>
+      </div>
+    </div>
+
+    <!-- ── findings ────────────────────────────────────────────────── -->
+    <h3 class="font-display font-medium text-[19px] leading-[1.2] text-[#0F1722] mt-12">Principal Findings</h3>
+    <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mt-1.5 max-w-[80ch]">
+      Six findings that changed how the platform computes or presents a figure. Each is treated at length
+      in <a class="tny-link" href="#s4">Section&nbsp;4</a>.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 mt-5">
+
+      <div class="tny-card p-5 flex flex-col">
+        <div class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#B45309]">88.1%</div>
+        <div class="font-display font-medium text-[14px] text-[#0f1722] mt-2 leading-tight">of probe records rest on four vehicles or fewer</div>
+        <p class="font-proxima text-[12px] leading-[1.55] text-slate-600 mt-2 flex-1">
+          NPMRDS labels every record by the number of probes it averaged. Across 1.70&nbsp;billion New York
+          records for CY&nbsp;2025, only <b class="text-[#0f1722]">3.1&nbsp;%</b> reached the top band of
+          ten or more. The federal reliability measures are computed on this sample.
+        </p>
+        <div class="mt-3 flex gap-0.5 h-2">
+          <div class="bar bar-bad" style="width:88.1%"></div><div class="bar" style="width:8.8%"></div><div class="bar bar-ok" style="width:3.1%"></div>
+        </div>
+      </div>
+
+      <div class="tny-card p-5 flex flex-col">
+        <div class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#B45309]">3.4&times;</div>
+        <div class="font-display font-medium text-[14px] text-[#0f1722] mt-2 leading-tight">thin data inflates apparent unreliability</div>
+        <p class="font-proxima text-[12px] leading-[1.55] text-slate-600 mt-2 flex-1">
+          AM-peak LOTTR crosses the federal 1.50 threshold on <b class="text-[#0f1722]">38.2&nbsp;%</b> of
+          segments with 50&ndash;249 observations, and on <b class="text-[#0f1722]">11.1&nbsp;%</b> of those
+          with 2,000 or more. Same network, same year.
+        </p>
+      </div>
+
+      <div class="tny-card p-5 flex flex-col">
+        <div class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#37576B]">2.5&times;</div>
+        <div class="font-display font-medium text-[14px] text-[#0f1722] mt-2 leading-tight">increase in the value of a vehicle-hour</div>
+        <p class="font-proxima text-[12px] leading-[1.55] text-slate-600 mt-2 flex-1">
+          The flat $20 per vehicle-hour was replaced in June 2026 with a class-weighted rate &mdash;
+          <b class="text-[#0f1722]">$52</b> passenger, <b class="text-[#0f1722]">$42</b> single-unit truck,
+          <b class="text-[#0f1722]">$77</b> combination truck &mdash; applied from each segment&rsquo;s own
+          traffic mix. The network blend is $50&ndash;55.
+        </p>
+      </div>
+
+      <div class="tny-card p-5 flex flex-col">
+        <div class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#37576B]">51%</div>
+        <div class="font-display font-medium text-[14px] text-[#0f1722] mt-2 leading-tight">of statewide delay is not recurrent</div>
+        <p class="font-proxima text-[12px] leading-[1.55] text-slate-600 mt-2 flex-1">
+          On the rebuilt CY&nbsp;2025 series: <b class="text-[#0f1722]">310.86M</b> vehicle-hours of
+          excessive delay statewide, <b class="text-[#0f1722]">157.07M</b> of it attributed to events
+          &mdash; 46.84M to construction and 4.82M to accidents.
+        </p>
+      </div>
+
+      <div class="tny-card p-5 flex flex-col">
+        <div class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#B45309]">1 in 5</div>
+        <div class="font-display font-medium text-[14px] text-[#0f1722] mt-2 leading-tight">incidents carries a usable clearance time</div>
+        <p class="font-proxima text-[12px] leading-[1.55] text-slate-600 mt-2 flex-1">
+          Measured across all 3.7&nbsp;million TRANSCOM events: <i>all lanes reopened</i> is present on
+          <b class="text-[#0f1722]">42.7&nbsp;%</b>, <i>incident verified</i> on
+          <b class="text-[#0f1722]">20.1&nbsp;%</b>, and <i>response on scene</i> on
+          <b class="text-[#0f1722]">0.3&nbsp;%</b>. Incident-management performance cannot presently be
+          measured from this feed.
+        </p>
+      </div>
+
+      <div class="tny-card p-5 flex flex-col">
+        <div class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#37576B]">36k&rarr;52k</div>
+        <div class="font-display font-medium text-[14px] text-[#0f1722] mt-2 leading-tight">the road network is not a fixed panel</div>
+        <p class="font-proxima text-[12px] leading-[1.55] text-slate-600 mt-2 flex-1">
+          The segment map is reissued annually and the data retroactively re-referenced. Segments grew
+          from approximately 36,000 in 2017 to 52,473 in 2026. A route built on one year&rsquo;s map can
+          gain or lose segments on another.
+        </p>
+      </div>
+    </div>
+
+    <!-- ── status / direction ──────────────────────────────────────── -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 mt-12">
+      <div>
+        <h3 class="font-display font-medium text-[19px] leading-[1.2] text-[#0F1722]">Task Status</h3>
+        <div class="tny-card mt-4 p-5">
+          <table class="tny">
+            <caption>Contract task status at 15 September 2026</caption>
+            <thead><tr><th>Task</th><th>Status</th></tr></thead>
+            <tbody>
+              <tr><td class="txt">1 &nbsp;Quarterly reporting</td><td>Delivered, every quarter</td></tr>
+              <tr><td class="txt">2 &nbsp;Dataset and application integration</td><td>Delivered</td></tr>
+              <tr><td class="txt">3 &nbsp;Customization of analysis features</td><td>Delivered</td></tr>
+              <tr><td class="txt">4 &nbsp;Partner coordination</td><td>Delivered, ongoing</td></tr>
+              <tr><td class="txt">5 &nbsp;Quick-turnaround visualization</td><td>Delivered on request</td></tr>
+              <tr><td class="txt">6 &nbsp;User resources and documentation</td><td>Written; NYSDOT review open</td></tr>
+              <tr class="total"><td class="txt">7 &nbsp;Final report and summary</td><td>This document</td></tr>
+            </tbody>
+          </table>
+          <p class="font-proxima text-[12px] leading-[1.6] text-slate-600 mt-3">
+            Two items remain substantively open and are enumerated in
+            <a class="tny-link" href="#s5">Section&nbsp;5.3</a>. The 95-page documentation set is written
+            but not yet published, pending NYSDOT&rsquo;s review, and three declared Macro View measures
+            &mdash; free-flow speed, emissions and network attributes &mdash; are specified but not yet
+            computed. Each of the three is blocked on a decision or a data join rather than on
+            development effort.
+          </p>
+        </div>
+      </div>
+
+      <div>
+        <h3 class="font-display font-medium text-[19px] leading-[1.2] text-[#0F1722]">Recommended Priorities</h3>
+        <div class="tny-card mt-4 p-5">
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-600">
+            The 2026 extension scope retains the seven-task frame and widens the subject matter. PPDAF
+            becomes <b>IPPDAF</b>: the same platform, opened as a framework that other NYSDOT partners
+            build inside. AVAIL recommends the following five priorities, in the order presented:
+          </p>
+          <ol class="mt-3 space-y-2.5">
+            <li class="flex gap-3">
+              <span class="chip text-[#CA8A04] pt-0.5">01</span>
+              <span class="font-proxima text-[12.5px] leading-[1.55] text-slate-700">
+                <b class="text-[#0f1722]">Complete the measurement work already underway.</b> Publish
+                free-flow speed, join the network attributes, confirm the emission-rate table, and place
+                precision bands beside every published figure.</span>
+            </li>
+            <li class="flex gap-3">
+              <span class="chip text-[#CA8A04] pt-0.5">02</span>
+              <span class="font-proxima text-[12.5px] leading-[1.55] text-slate-700">
+                <b class="text-[#0f1722]">Work zone safety and reliability.</b> A federal measure is
+                anticipated, and New York does not yet have a work-zone data feed adequate to meet it.
+                Scoping began in August 2026.</span>
+            </li>
+            <li class="flex gap-3">
+              <span class="chip text-[#CA8A04] pt-0.5">03</span>
+              <span class="font-proxima text-[12.5px] leading-[1.55] text-slate-700">
+                <b class="text-[#0f1722]">Routing, detours and resiliency.</b> The bridge-detour prototype
+                and the road-redundancy score are the foundation of the scenario capability the Department
+                has requested repeatedly.</span>
+            </li>
+            <li class="flex gap-3">
+              <span class="chip text-[#CA8A04] pt-0.5">04</span>
+              <span class="font-proxima text-[12.5px] leading-[1.55] text-slate-700">
+                <b class="text-[#0f1722]">Land use, employment and commuting.</b> The business-points work
+                conducted in 2026 is the foundation for freight generation, accessibility and
+                origin&ndash;destination analysis.</span>
+            </li>
+            <li class="flex gap-3">
+              <span class="chip text-[#CA8A04] pt-0.5">05</span>
+              <span class="font-proxima text-[12.5px] leading-[1.55] text-slate-700">
+                <b class="text-[#0f1722]">Open the framework.</b> Onboard the first outside application,
+                for which the CUNY Employer Data Viewer is the named pilot, and publish the
+                interoperability guidance that allows the next partner to arrive without AVAIL in the
+                middle.</span>
+            </li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <div class="tny-card tny-card-bone p-6 mt-6 max-w-[92ch]">
+      <div class="chip text-[#8a6d1f] mb-2">Summary statement</div>
+      <p class="font-proxima text-[15px] leading-[1.7] text-slate-800">
+        New York now has a single, open, documented environment in which travel-time, operations and
+        freight data are held together, where the federal figures are produced and the analytical figures
+        are permitted to improve, and where a planner rather than a programmer can add a dataset, author a
+        map and publish a page. With continued attention to documentation, user training and data
+        completeness at the source, this platform can serve as durable public infrastructure for
+        transportation decision making in New York State. The task of the successor assignment is to widen
+        what the platform holds without relaxing the discipline that makes its figures citable.
+      </p>
+    </div>
+  </section>
