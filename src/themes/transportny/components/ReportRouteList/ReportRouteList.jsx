@@ -9,86 +9,15 @@ import { useGraphPublish } from './useGraphPublish';
 import { useAddGraphSection } from './useAddGraphSection';
 import { useDynamicReportRoutes, distinctRouteSlotGroups, routeSlotGroupKey, mergeSlotWithCatalogRow } from './useDynamicReportRoutes';
 import { useRouteMileage } from './useRouteMileage';
-import { resolveRouteDates, TODAY_ANCHOR_COMP_ID, defaultAnchorDate, resolvedRouteLabel } from './relativeDateResolution';
-import { resolveReportDisplayText } from './resolveReportDisplayText';
-import { ROUTE_CATALOG_PARAM_KEY } from './useGraphPublish';
+import { resolveRouteDates, TODAY_ANCHOR_COMP_ID, defaultAnchorDate } from './relativeDateResolution';
+import {
+  routesToSlots, slotsToStaticRoutes, catalogFromResolvedRoutes,
+  freezeSectionDisplayText, dynamicReportFilters, staticReportFilters,
+} from './reportKindConversion';
 import { formatDateShort } from './utils';
 import RouteRow from './RouteRow';
 import RouteTagBrowserModal from '../RouteTagBrowserModal/RouteTagBrowserModal';
 import AddGraphModal from '../AddGraphModal/AddGraphModal';
-
-// A static route's catalog-snapshot fields, baked in at add time (`useReportRow.js`'s `addRoutes`,
-// old-converter's `build_route_entry`) — stripped by `convertStaticToDynamic` below when turning a
-// route into a slot, since a slot re-resolves them live from `?routes=` at view time instead of
-// carrying a frozen copy (dynamic-reports-authoring-gaps.md sub-item 4). Deliberately does NOT
-// include `route_comp_ids` (the converter-era comp-merge compatibility field) — that one must
-// survive the conversion or an already-converted report's graphs bound to an absorbed comp id would
-// stop resolving; see that sub-item's own "Correction" note for the confirmed-live repro.
-const CATALOG_SNAPSHOT_FIELDS = [
-  'tmc_array', 'id', 'route_id', 'description', 'points', 'metadata',
-  'conflation_array', 'conflation_version', 'created_at', 'created_by', 'updated_at',
-  'isValid', 'graphIds',
-];
-
-// Dynamic → static (sub-item 4): freezes any live `%n`/`%y` substitution baked into a graph
-// SECTION's own title/caption — a completely different data location from routes[] (a section
-// row's `title` field and its `element['element-data']`-embedded `display.description`, not
-// anything RRL's own `routes` storage touches). Found live 2026-09-09 on the real
-// `bi_directional` template: every one of its 14 graph titles ("Hours of Delay - %n") went
-// permanently blank after "- " once converted to static — same root cause as the route-name
-// bug (the broadcast catalog's `catalogRouteName` no longer exists once static, so `%n`
-// silently substitutes to empty) but a different consumer that fix never touched. Reuses
-// `resolveReportDisplayText` — the SAME mechanism a live Dynamic Report already resolves
-// titles/captions through (see that file's own doc comment) — fed a `pageState`-shaped catalog
-// built from `resolvedList` instead of the live broadcast, so this needs no new substitution
-// logic of its own. A safe no-op for any section with no `%n`/`%y` token (every non-report
-// section, and any already-literal title/caption) by construction — `resolveReportDisplayText`
-// itself guarantees this. Operates on whichever `draft_sections`/`sections` array is handed in;
-// the two can carry genuinely different content (see `reference_draft_vs_published_sections_
-// different_ids.md`), so both must be checked independently rather than assumed in sync.
-function freezeSectionDisplayText(sectionList, catalog) {
-  const fakePageState = { filters: [{ searchKey: ROUTE_CATALOG_PARAM_KEY, type: 'action', values: catalog }] };
-  let changed = false;
-  const next = (sectionList || []).map((section) => {
-    const elementData = section?.element?.['element-data'];
-    if (typeof elementData !== 'string') return section;
-    let state;
-    try {
-      state = JSON.parse(elementData);
-    } catch (e) {
-      return section;
-    }
-    const display = state?.display;
-    const routeIds = display?._measurePick?.routeIds;
-    const invert = display?.comparisonSeries?.combine?.invert;
-    const isAutoDiffCaption = Boolean(display?._autoDiffCaption);
-    const newTitle = resolveReportDisplayText(section.title, { routeIds, invert, pageState: fakePageState });
-    const newDescription = isAutoDiffCaption
-      ? resolveReportDisplayText(undefined, { routeIds, invert, isAutoDiffCaption: true, pageState: fakePageState })
-      : resolveReportDisplayText(display?.description, { routeIds, invert, pageState: fakePageState });
-    const titleChanged = newTitle !== section.title;
-    // Auto-diff-caption: only freeze if it actually resolved (real anchor + compares found) —
-    // `null` means "can't resolve yet," and leaving `_autoDiffCaption`/no `description` alone in
-    // that case reproduces today's own "renders nothing" transient state rather than risking
-    // wiping a caption based on an incomplete catalog.
-    const descriptionChanged = isAutoDiffCaption ? newDescription != null : newDescription !== display?.description;
-    if (!titleChanged && !descriptionChanged) return section;
-    changed = true;
-    const nextState = {
-      ...state,
-      display: {
-        ...display,
-        ...(descriptionChanged ? { description: newDescription, _autoDiffCaption: false } : {}),
-      },
-    };
-    return {
-      ...section,
-      ...(titleChanged ? { title: newTitle } : {}),
-      element: { ...section.element, 'element-data': JSON.stringify(nextState) },
-    };
-  });
-  return { changed, sections: next };
-}
 
 export default function ReportRouteList() {
   const { apiLoad, apiUpdate, updateAttribute, pageState, setActionParam, clearActionParam, item, editPageMode } = useContext(PageContext) || {};
@@ -348,48 +277,15 @@ export default function ReportRouteList() {
   // Static → dynamic (sub-item 4): converts every currently-added route into a slot, grouping any
   // that already share a real catalog id (a static report can already have 2+ routes sharing one
   // id with different dates — the exact static-side equivalent of `route_slot_group`, per that
-  // sub-item's design note), strips the catalog-snapshot fields (CATALOG_SNAPSHOT_FIELDS above —
+  // sub-item's design note), strips the catalog-snapshot fields (CATALOG_SNAPSHOT_FIELDS, reportKindConversion.js —
   // a slot re-resolves those live instead), then immediately previews the SAME real routes via
   // `?routes=` so the switch flip is visually a no-op. Ryan's explicit ask (2026-09-09): switching
   // modes with routes already on the report must not lose or change anything.
   const convertStaticToDynamic = async () => {
-    // Group by shared real catalog id ONLY for routes with no existing `route_slot_group` marker
-    // — an existing one is a deliberate signal (this report was already Dynamic once, converted
-    // to static, and is now converting back) that must be preserved verbatim, independent of
-    // whether the routes it names currently happen to share a real id. Found live 2026-09-09: the
-    // real `bi_directional` template's own NB (`$0`) and SB (`$1`) groups both temporarily
-    // referenced the same test route (from an earlier live-verification pass) — re-deriving
-    // grouping purely by shared id collapsed them into ONE group, silently discarding the NB/SB
-    // split (a real viewer would then only be asked to pick ONE route, showing identical data for
-    // both directions). Only a plain, never-been-dynamic static report (no route ever carries
-    // `route_slot_group`) needs the shared-id heuristic at all — this is the fallback for that
-    // case only, unchanged from before.
-    // Sub-item 4's own open question 3 ("static→dynamic naming: leave a static route's name
-    // exactly as authored, no auto-`%n`/`%y`") — reversed 2026-09-09 per Ryan's live bug report on
-    // a real converted route: a static route's literal name (e.g. "Ocean Pkwy," carried over from
-    // when it was picked via "+ Add Route") froze permanently into the new slot instead of
-    // templating, so it never re-resolved to whichever real route a viewer later picks, and showed
-    // that same stale literal name even fully unresolved. Every new slot now defaults to `"%n
-    // (%y)"`, identical to `handleAddRouteSlot`'s own default for a brand-new slot — converting a
-    // route into a slot now behaves exactly like it was always an untouched, freshly-added slot,
-    // not a special "keep the old name frozen" case. `%n`/`%y`-templated names are already exempt
-    // from the add-time dedup collision check (`useReportRow.js`'s `dedupeAgainst`) precisely
-    // because several slots literally named `"%n (%y)"` is the norm, not a collision — same as
-    // every catalog template's own multi-slot groups.
-    const seenIdToGroupCompId = new Map();
-    const slots = routes.map((r) => {
-      const realId = r.id ?? r.route_id;
-      const slot = { ...r, name: '%n (%y)' };
-      CATALOG_SNAPSHOT_FIELDS.forEach((f) => delete slot[f]);
-      if (r.route_slot_group == null && realId != null) {
-        if (seenIdToGroupCompId.has(realId)) {
-          slot.route_slot_group = seenIdToGroupCompId.get(realId);
-        } else {
-          seenIdToGroupCompId.set(realId, r.route_comp_id);
-        }
-      }
-      return slot;
-    });
+    // Slot-ification (grouping rules, catalog-snapshot stripping, the `"%n (%y)"` name reset) now
+    // lives in reportKindConversion.js, shared verbatim with ReportPageHeader's "Save as…" so both
+    // paths mean the same thing by "dynamic" — see that file for the live bugs behind each rule.
+    const slots = routesToSlots(routes);
 
     await persistRoutes(slots);
     // `item.filters` isn't guaranteed to already be a real array — on a fresh page load (not yet
@@ -398,12 +294,7 @@ export default function ReportRouteList() {
     // `parseIfJSON` for `pageState.filters`. Found live 2026-09-09: `bi_directional`, freshly
     // loaded, threw `(item.filters || []).filter is not a function` here — `item.filters` was a
     // string, not an array. `parseIfJSON` is a safe no-op when it's already a real array/object.
-    const withoutDynamicFilters = parseIfJSON(item.filters, []).filter(f => f.type !== 'routeSlots' && f.type !== 'baseDate');
-    const nextFilters = [
-      ...withoutDynamicFilters,
-      { id: 'dyn-report-routes', searchKey: 'routes', useSearchParams: true, values: '', type: 'routeSlots' },
-      { id: 'dyn-report-asof', searchKey: 'asOf', useSearchParams: true, values: '', type: 'baseDate' },
-    ];
+    const nextFilters = dynamicReportFilters(parseIfJSON(item.filters, []));
     updateAttribute?.('', '', { filters: nextFilters });
     await apiUpdate({ data: { id: item.id, filters: nextFilters }, skipNavigate: true });
 
@@ -445,13 +336,10 @@ export default function ReportRouteList() {
     // 2026-09-09: leaving raw tokens baked into a permanent static name showed as a blank/broken
     // label forever after (the header pill/chart legend read `" (2026)"` — `%n` silently
     // substituted to empty, since `catalogRouteName` no longer exists once static).
-    // `resolvedRouteLabel` is a safe no-op for any name with no tokens (a custom literal name
+    // `slotsToStaticRoutes` (reportKindConversion.js) is a safe no-op for a name with no tokens
     // carries straight through unchanged). Must run BEFORE `catalogRouteName` is dropped below —
     // that's the field `%n` substitutes from.
-    const newRoutes = resolvedList.map((r) => {
-      const { catalogRouteName, ...rest } = r;
-      return { ...rest, name: resolvedRouteLabel(r) };
-    });
+    const newRoutes = slotsToStaticRoutes(resolvedList);
     await persistRoutes(newRoutes);
 
     // Freeze any live %n/%y substitution baked into a graph SECTION's own title/caption too —
@@ -470,19 +358,14 @@ export default function ReportRouteList() {
     // attribute write can do. This matches how every OTHER edit on this page already behaves:
     // draft changes need an explicit Publish to go live. The `routes[]` freeze above is the
     // one exception, only because `reports_snap_2` has no draft/published split at all.
-    const catalog = resolvedList.map((r) => ({
-      route_comp_id: r.route_comp_id, name: r.name, dateFormula: r.dateFormula,
-      derivedFromRoute: r.derivedFromRoute, color: r.color, startDate: r.startDate,
-      endDate: r.endDate, tmc_array: r.tmc_array, catalogRouteName: r.catalogRouteName,
-    }));
+    const catalog = catalogFromResolvedRoutes(resolvedList);
     const draftResult = freezeSectionDisplayText(item.draft_sections, catalog);
 
     // See `convertStaticToDynamic`'s identical comment above — `item.filters` may be an
     // unparsed JSON string on a fresh page load. Combined into one apiUpdate with the draft
     // section freeze above (both write to this same page row) rather than two sequential calls.
-    const withoutDynamicFilters = parseIfJSON(item.filters, []).filter(f => f.type !== 'routeSlots' && f.type !== 'baseDate');
     const patch = {
-      filters: withoutDynamicFilters,
+      filters: staticReportFilters(parseIfJSON(item.filters, [])),
       ...(draftResult.changed ? { draft_sections: draftResult.sections } : {}),
     };
     updateAttribute?.('', '', patch);
