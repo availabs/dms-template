@@ -5,13 +5,15 @@
 graph-theme tuning remain deferred per Ryan's call, see below). **Phase 2 CLOSED 2026-09-05**
 (RRL panel restructure, DONE + live-verified 2026-09-04, plus a same-day-after-ship Save/Discard +
 collapsed-row-reweight follow-up 2026-09-05 — see "Phase 2 follow-up" and "Phase 2 — CLOSED" below).
-Phase 3 resolved (decision log). **Remaining: Phase 4** (Dynamic Reports, Item 2 — SCOPED 2026-09-05
-into [`dynamic-reports-authoring-gaps.md`](./dynamic-reports-authoring-gaps.md) — **sub-items 1, 2,
-and 3 DONE + live-verified (1 and 3: 2026-09-05; 2: 2026-09-08), only sub-item 4 remains**;
-**all 12 catalog templates regenerated + republished 2026-09-08 with `%n`/`%y` naming, see that
-file's "Catalog regeneration" section — one real bug found live (difference-graph captions on 3
-templates), fix proposed, pending Ryan's call**) **and
-Phase 5** (open-ended polish, Item 4 remainder) — Phase 5 not started. · **Started:** 2026-09-04
+Phase 3 resolved (decision log). **Phase 4 CLOSED 2026-09-09** (Dynamic Reports, Item 2 — SCOPED
+2026-09-05 into
+[`dynamic-reports-authoring-gaps.md`](../completed/dynamic-reports-authoring-gaps.md) — **all four
+sub-items DONE + live-verified (1 and 3: 2026-09-05; 2: 2026-09-08; 4: 2026-09-09)**, including the
+12-catalog-template regeneration with `%n`/`%y` naming and the combined title/caption live-resolution
+fix, both closed out in that file). **Remaining: Phase 5** (open-ended graph/section polish, Item 4
+remainder) — SCOPED 2026-09-09, split into `graph-card-padding-and-legend-theming.md` (+ a submodule
+task for the actual token work), pending Ryan's review of a design artifact before implementation.
+· **Started:** 2026-09-04
 
 ## Phase 2 follow-up (2026-09-05): explicit Save/Discard replaces auto-save row editing
 
@@ -510,25 +512,31 @@ as a decision log rather than deleted, per the "date everything, don't rewrite h
   do a broad pass on titles later on, we can." Not scheduled; revisit only if requested. Noted as
   backlog in Phase 5.
 
-### Phase 4 — Dynamic Reports (Item 2) — SCOPED 2026-09-05, split into its own task file
+### Phase 4 — Dynamic Reports (Item 2) — CLOSED 2026-09-09, all four sub-items DONE
 
 The single biggest item by architectural complexity — all four sub-asks are new work on top of a
 "core mechanism DONE" state, with no prior scoping anywhere for the static↔dynamic conversion piece.
 Given `dynamic-reports-and-route-tags.md` is already large, this got its **own new task file**
 (cross-linking back to it), per this section's own instruction:
-[`dynamic-reports-authoring-gaps.md`](./dynamic-reports-authoring-gaps.md) — current-state grounding
-for all four sub-items. **Sub-item 1 (`%n`/`%y` route-slot name templating) DONE + live-verified
-2026-09-05**, including a real bug found+fixed along the way (`useGraphPublish.js`'s broadcast route
-catalog was missing `catalogRouteName`). **Sub-item 3 (header preview-swap button) DONE +
-live-verified 2026-09-05** — needed RRL to start broadcasting its own `routeSourceInfo`/route `id`s
-(the header had no join source of its own), see that file's own section for the full record.
-**Sub-item 2 (Add Route Slot: reuse vs. distinct) DONE + live-verified 2026-09-08** — confirmed
-UI-only as scoped, no resolution/persistence/converter change needed; see that file's own section
-for the design decisions and full record. **Sub-item 4 (static↔dynamic conversion) SCOPED
-2026-09-08** — a full design proposal exists (graphs need zero changes, confirmed by reading the
-`route_comp_id`-keyed binding), with 3 open questions needing Ryan's steer before it's built; see
-that file's own section, the only piece of Phase 4 not yet implemented. Sequence within the item,
-smallest/least-coupled first:
+[`dynamic-reports-authoring-gaps.md`](../completed/dynamic-reports-authoring-gaps.md) — current-state
+grounding for all four sub-items. **Sub-item 1 (`%n`/`%y` route-slot name templating) DONE +
+live-verified 2026-09-05**, including a real bug found+fixed along the way (`useGraphPublish.js`'s
+broadcast route catalog was missing `catalogRouteName`); all 12 catalog templates regenerated +
+republished 2026-09-08 with `%n`/`%y` naming, plus a combined fix making graph titles/captions
+live-resolve instead of baking a static route name at build time (bi_directional's hardcoded
+"Northbound"/"Southbound" claim among the bugs this closed). **Sub-item 3 (header preview-swap
+button) DONE + live-verified 2026-09-05** — needed RRL to start broadcasting its own
+`routeSourceInfo`/route `id`s (the header had no join source of its own), see that file's own section
+for the full record. **Sub-item 2 (Add Route Slot: reuse vs. distinct) DONE + live-verified
+2026-09-08** — confirmed UI-only as scoped, no resolution/persistence/converter change needed; see
+that file's own section for the design decisions and full record. **Sub-item 4 (static↔dynamic
+conversion) DONE + live-verified 2026-09-09** — full bidirectional conversion built, 3 more real bugs
+found live on the actual `bi_directional` template and fixed same day (a JSON-string `item.filters`
+crash, `%n`/`%y` tokens going permanently blank on frozen section titles, and a grouping-collapse bug
+merging two distinct route-slot groups into one); see that file's own section for the full record,
+including a handful of residual untested edge cases (2+ distinct route-slot groups through either
+conversion direction) left as non-blocking gaps. Sequence within the item, smallest/least-coupled
+first:
 
 1. `%n` / `%y` route-slot name variable substitution (template-name resolution only); default a new
    slot's name to `%n`.
@@ -542,7 +550,7 @@ smallest/least-coupled first:
    routes or empty slots. Biggest unknown, do last within this item and expect it to need its own
    design pass before implementation.
 
-### Phase 5 — Open-ended graph/section polish (Item 4, remainder)
+### Phase 5 — Open-ended graph/section polish (Item 4, remainder) — SCOPED 2026-09-09
 
 Deliberately last — these are "spend time and use judgment" asks rather than bounded fixes, and some
 overlap with Phase 1/3 levers (padding, legends), so doing them after those land avoids re-tuning the
@@ -554,6 +562,23 @@ same knobs twice.
 - **Backlog, not scheduled:** a broad pass migrating titles from graph-native to section-level
   everywhere (see Phase 3 decision log) — explicitly deferred by Ryan 2026-09-04, revisit only if he
   asks for it.
+
+**Grounded + scoped 2026-09-09**, split into its own task file:
+[`graph-card-padding-and-legend-theming.md`](./graph-card-padding-and-legend-theming.md). Both
+bullets turned out to share one root cause: `theme.avlGraph.chartDefaults` already carries brand
+axis fonts/colors/gridlines (`avlgraph-theme-integration.md`/`graph-axis-font-theming.md`, DONE
+2026-06-03), but the legend never got that treatment — `Legend.jsx` takes no theme prop at all, and
+the card padding is one untouched Tailwind class (`p-4`) identical between core and every brand.
+Found a real, reproducible bug along the way: the scale/gradient legend's outermost tick clips
+against the card's own right edge on every GridGraph/bar report page (confirmed live on
+`reports/snapshot`, DOM-measured). Since the actual fix touches the DMS submodule
+(`graph_new/theme.js`/`Legend.jsx`/`GraphComponent.jsx`), that half is tracked at
+`src/dms/planning/tasks/current/avlgraph-legend-and-padding-theming.md` per the root `CLAUDE.md`
+task-routing rule. A design artifact demonstrates the proposed token surface (legend/font/spacing/
+tooltip) across the real NPMRDS look plus two illustrative alternate skins, proving it's genuine
+per-brand control rather than a transportny-only tweak:
+https://claude.ai/code/artifact/9ffcc86a-768e-4fef-9f14-f9abeb76d545 — pending Ryan's review before
+any code is written.
 
 ## Open questions
 

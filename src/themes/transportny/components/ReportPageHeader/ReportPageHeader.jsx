@@ -8,8 +8,11 @@ import { publish, updateTitle } from '../../../../dms/packages/dms/src/patterns/
 import { getUrlSlug } from '../../../../dms/packages/dms/src/patterns/page/pages/_utils';
 import { reportPageHeaderTheme } from './ReportPageHeader.theme';
 import { ROUTE_CATALOG_PARAM_KEY, ROUTE_SOURCE_INFO_PARAM_KEY } from '../ReportRouteList/useGraphPublish';
-import { resolvedRouteLabel, TODAY_ANCHOR_COMP_ID, defaultAnchorDate } from '../ReportRouteList/relativeDateResolution';
+import { resolvedRouteLabel, TODAY_ANCHOR_COMP_ID, defaultAnchorDate, resolveRouteDates } from '../ReportRouteList/relativeDateResolution';
 import { useReportCatalogRow } from './useReportCatalogRow';
+import { useSaveAsReport } from './useSaveAsReport';
+import SaveAsReportModal from './SaveAsReportModal';
+import { useDynamicReportRoutes, distinctRouteSlotGroups } from '../ReportRouteList/useDynamicReportRoutes';
 import TagsEditor from '../TagsEditor/TagsEditor';
 import RouteTagBrowserModal from '../RouteTagBrowserModal/RouteTagBrowserModal';
 
@@ -40,6 +43,7 @@ export default function ReportPageHeader() {
   const [shareCopied, setShareCopied] = useState(false);
   const [routesOpen, setRoutesOpen] = useState(true);
   const [isRouteSwapOpen, setIsRouteSwapOpen] = useState(false);
+  const [isSaveAsOpen, setIsSaveAsOpen] = useState(false);
 
   // Inline title editor (h1) — same mechanism as the Bottom toolbar's Filter icon → Page Name
   // field (settingsPane.jsx), reused verbatim via the shared `updateTitle` so title/url_slug
@@ -189,6 +193,69 @@ export default function ReportPageHeader() {
   // anchor, since this just needs to land on the landing page, not a specific band on it.
   const reportsHomeHref = resolveMountPath('/reports', mountBaseUrl, siteRootPaths);
 
+  // ── "Save as…" (report-save-as-copy.md) ────────────────────────────────────────────────
+  // Duplicates this report into a new sibling page, optionally converting it between static and
+  // dynamic on the way. Offered in BOTH view and edit mode: the highest-value case is a viewer
+  // who wants their own copy of someone else's report, which never involves entering edit mode.
+  // Gated on a signed-in user — the copy's ownership `user:` tag needs a real id.
+  const { loadSource, source: saveAsSource, loadingSource, saveAs, saving: saveAsSaving, error: saveAsError } =
+    useSaveAsReport({ item, dataItems, apiLoad, apiUpdate, user, app, mountBaseUrl, siteRootPaths, isDynamicReport });
+
+  // Converting a Dynamic Report COPY to static needs the same fully-resolved route objects RRL's
+  // own in-place conversion uses (`effectiveRoutes`) — NOT the broadcast `routeCatalog` above,
+  // which is deliberately a lossy subset (no `route_slot_group`, `description`, `metadata`,
+  // conflation fields…) and would quietly degrade every route it froze. So the resolution is
+  // reproduced here from the same inputs RRL feeds it: the report's stored slots (from this
+  // header's own catalog fetch), the `?routes=` ids, and RRL's broadcast `routeSourceInfo`.
+  // Only fetches while the dialog is actually open.
+  const saveAsRouteIds = useMemo(() => (
+    isDynamicReport
+      ? (Array.isArray(routeSlotFilter.values) ? routeSlotFilter.values : [routeSlotFilter.values]).filter(Boolean)
+      : []
+  ), [isDynamicReport, routeSlotFilter]);
+
+  const { resolvedRoutes: saveAsResolvedRoutes, resolvedGroupRoutes: saveAsResolvedGroups } = useDynamicReportRoutes({
+    apiLoad,
+    routeSourceInfo,
+    slots: saveAsSource?.routes || [],
+    routeIds: saveAsRouteIds,
+    enabled: isSaveAsOpen && isDynamicReport && Boolean(saveAsSource),
+  });
+
+  // Identical shape to RRL's `effectiveRoutes` (the Today anchor is joined in so a derived route's
+  // blank dates resolve, then dropped again — it's a resolution helper, never a real route).
+  const saveAsEffectiveRoutes = useMemo(() => (
+    resolveRouteDates([
+      ...saveAsResolvedRoutes,
+      { route_comp_id: TODAY_ANCHOR_COMP_ID, name: 'Today (view time)', startDate: anchorDateStr, endDate: anchorDateStr },
+    ]).filter((rt) => rt.route_comp_id !== TODAY_ANCHOR_COMP_ID)
+  ), [saveAsResolvedRoutes, anchorDateStr]);
+
+  // Same test RRL's own `groupsFullyResolved` uses — every distinct slot group has a real catalog
+  // route behind it, which also catches a stale `?routes=` id that never matched a row (a raw
+  // id-count check wouldn't). A viewer can't reach this dialog with unresolved routes at all (the
+  // entry gate blocks the page first); an author in edit mode can, and gets the Static option
+  // disabled rather than a second blocking picker.
+  const canConvertToStatic = useMemo(() => {
+    if (!isDynamicReport) return true;
+    const groups = distinctRouteSlotGroups(saveAsSource?.routes || []);
+    return groups.length > 0 && saveAsResolvedGroups.length === groups.length;
+  }, [isDynamicReport, saveAsSource, saveAsResolvedGroups]);
+
+  const saveAsSiblings = useMemo(
+    () => (dataItems || []).filter((d) => (d.parent || null) === (item?.parent || null)),
+    [dataItems, item?.parent]
+  );
+
+  const openSaveAs = () => { setIsSaveAsOpen(true); loadSource(); };
+
+  const handleSaveAsConfirm = async ({ title, kind }) => {
+    const result = await saveAs({ title, kind, editMode: Boolean(editPageMode), resolvedRoutes: saveAsEffectiveRoutes });
+    if (!result) return; // error surfaced in the dialog; keep it open so the input isn't lost
+    setIsSaveAsOpen(false);
+    navigate(result.path);
+  };
+
   const canEdit = Boolean(editPageMode);
   const d = state?.display || {};
 
@@ -321,6 +388,16 @@ export default function ReportPageHeader() {
                 <Icon icon="Printer" className={t.actionIcon} /><span className={t.actionLabel}>Print</span>
               </Button>
             ) : null}
+            {/* "Save as" is a CONTRASTIVE label — it only means anything next to a plain "Save".
+                In edit mode there is one (Done, which publishes), so it reads correctly. A viewer
+                has no save at all, so "Save as" names a contrast that isn't on screen; they get
+                the literal action instead (Ryan, 2026-09-15). Same button, same dialog either way. */}
+            {Button && user?.id ? (
+              <Button activeStyle="compact" onClick={openSaveAs}>
+                <Icon icon="Copy" className={t.actionIcon} />
+                <span className={t.actionLabel}>{editPageMode ? 'Save as' : 'Save a copy'}</span>
+              </Button>
+            ) : null}
             {Button && editPath && publicPath ? (
               <Button activeStyle="default" onClick={handleEditToggle}>
                 <Icon icon="PencilEditSquare" /><span className={t.actionLabel}>{editPageMode ? 'Done' : 'Edit'}</span>
@@ -407,6 +484,21 @@ export default function ReportPageHeader() {
           ) : null}
         </div>
       ) : null}
+
+      <SaveAsReportModal
+        open={isSaveAsOpen}
+        onClose={() => setIsSaveAsOpen(false)}
+        onConfirm={handleSaveAsConfirm}
+        sourceTitle={item?.title}
+        siblings={saveAsSiblings}
+        isDynamicReport={isDynamicReport}
+        sourceTags={saveAsSource?.tags}
+        user={user}
+        saving={saveAsSaving}
+        error={saveAsError}
+        loadingSource={loadingSource}
+        canConvertToStatic={canConvertToStatic}
+      />
 
       {isDynamicReport ? (
         <RouteTagBrowserModal

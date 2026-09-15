@@ -38,6 +38,7 @@ import AddPageButton from "./components/AddPageButton";
 import ReportRouteList from "./components/ReportRouteList"
 import ReportPageHeader from "./components/ReportPageHeader"
 import { npmrdsMeasureMenu } from "./components/MeasurePicker"
+import { resolveLegendUnit } from "./components/MeasurePicker/resolveLegendUnit"
 import { calloutStatMenu } from "./components/CalloutStatPicker"
 import { npmrdsQuickControls } from "./components/QuickControls"
 import RouteComparison from "./components/RouteComparison"
@@ -1970,6 +1971,10 @@ const lexical = {
 // ─────────────────────────────────────────────────────────────────────────────
 const graph = {
   options: { activeStyle: 0 },
+  // Optional hook read by graph_new/index.jsx: supplies the DEFAULT text for a legend's title
+  // slot when a section hasn't set `display.legend.title` itself. Lives beside `_measurePick`'s
+  // own writer rather than in the library — see resolveLegendUnit.js's header for why.
+  resolveLegendUnit,
   styles: [{
     name: "default",
     // Built-in chart padding (consumed by graph_new/GraphComponent's outer div) —
@@ -1983,9 +1988,42 @@ const graph = {
     subtitle:     "font-mono text-[10.5px] uppercase tracking-wider text-slate-500 text-right",
     axis:         "stroke-zinc-950/15",
     grid:         "stroke-zinc-950/5",
-    tooltip:      "rounded-[6px] bg-[#0F1722] text-white text-[12px] px-2.5 py-1.5 shadow-lg font-proxima",
-    legend:       "flex items-center gap-4 font-mono text-[10.5px] uppercase tracking-wider text-slate-500",
-    legendSwatch: "h-0.5 w-4",
+    // Tooltip chrome. The authored value here used to be `bg-[#0F1722] text-white … px-2.5
+    // py-1.5` — dead scaffolding that went live 2026-09-14 when the token was wired, and looked
+    // wrong the moment it was seen against a real report: it was the ONLY dark surface in this
+    // design system (every popover, modal, drawer and card is white + `border-zinc-950/10` + a
+    // shadow), and `#0F1722` is otherwise an ink colour, not a fill. A dark fill also inverts
+    // the contrast the series palettes were built for — they are chosen to sit on a white plot,
+    // so pale greens glowed and dark reds sank.
+    //
+    // It now matches `navigableMenu`'s popover, the closest analogue: a small floating panel.
+    // NOTE the absence of padding — the tooltip BODY carries its own `px-2 pt-1 pb-2`, so a
+    // padded token double-pads the panel.
+    tooltip:      "rounded-[8px] bg-white border border-zinc-950/10 text-slate-700 text-[12px] shadow-lg font-proxima",
+    // The historical title is `font-bold text-lg leading-6 border-b-2` — an 18px bold heading
+    // with a 2px rule above 12px rows, which is what made the tooltip read as unfinished next
+    // to the themed legend.
+    tooltipTitle: "font-proxima text-[12px] font-semibold leading-5 text-slate-900 border-b border-zinc-950/10",
+    tooltipValue: "text-right tabular-nums text-slate-900",
+    // Row padding. The row's 2px highlight border sits directly on the text with no vertical
+    // padding of its own, so the active row reads as cramped rather than selected.
+    tooltipRow:   "py-0.5",
+    // The row highlight is `border-current`, so it would otherwise inherit whatever text colour
+    // the container sets. Stated explicitly rather than inherited.
+    tooltipRowActive: "border-slate-300",
+    // These two were authored as DEAD scaffolding and went live 2026-09-10 when the legend
+    // gained its class-token layer. Layout is component-owned now (the legend picks grid vs
+    // flex from its own orientation), so `legend` must carry NO display/alignment class: the
+    // original value led with `flex items-center`, which fought `grid grid-cols-1` on the
+    // vertical variant. Spacing and typography only.
+    legend:       "gap-4 font-mono text-[10.5px] uppercase tracking-wider text-slate-500",
+    // A thin rule rather than a block swatch, as authored — but the token REPLACES the
+    // historical `w-4 h-4 rounded mr-1`, so it has to carry its own gap or the dash abuts
+    // the label.
+    legendSwatch: "h-0.5 w-4 mr-2",
+    // The gradient legend's unit/title line (see Legend.jsx's LegendTitle). Deliberately quieter
+    // than the tick numerals it labels — it is a caption for the ramp, not a second data value.
+    legendTitle:  "font-mono text-[9.5px] uppercase tracking-wider text-slate-400 mb-0.5",
     catPalette:     ["#6F6F6F", "#E5A646", "#94C24E", "#E160A4", "#F2CB3D"],
     seqSpeedPalette:["#D6453B", "#E8843F", "#F2E18A", "#A8D26B", "#3FA34D"],
     primary:        "#1F3F8F",
@@ -2294,6 +2332,59 @@ const pages = {
       // "Open visual question" note), not this row, so there's nothing to
       // visually match here.
       headerExtensionsRow: "px-3 pb-2",
+    },
+    {
+      // ── Report graph card (2026-09-11) ────────────────────────────────────
+      // The graph-card contract's clause 1, drawn in npmrds-report.html:677-686:
+      // "Header h-10, one line: title · measure chip · quick-control pills right ·
+      // kebab last. No separate section title above the card — the header IS the
+      // title." Selected per-section by `value.activeStyle: "reportCard"`, stamped
+      // only by the paths that mint a report graph section (report_build.mjs,
+      // useAddGraphSection.js, the converter). NOT site-wide on purpose: npmrds_docs
+      // has 133 titled sections and `status` 26, and a documentation page has no
+      // business wearing a bordered card band.
+      //
+      // Every other key is inherited from styles[0] (getComponentTheme merges the
+      // default style under a named one), so this block is only the delta.
+      //
+      // An un-regenerated report section carries `activeStyle: "reportInlineTitle"`,
+      // which matches no style here and therefore resolves to styles[0] — the old
+      // look, unchanged, with no guard needed. That is the whole no-backfill story.
+      name: "reportCard",
+      // One 40px row. `pr-10` is not decoration: the section's Settings kebab is
+      // absolutely positioned at the wrapper's top-right (`menuPosition`, top-2/right-2)
+      // and would otherwise sit on top of whatever ends the row.
+      headerRow:       "flex w-full items-center gap-3 h-10 pl-4 pr-10 border-b border-zinc-950/10",
+      // Drops styles[0]'s `uppercase` and its `pb-2`: the contract renders this title
+      // sentence-case, and vertical rhythm is the row's fixed height now.
+      headerInner:     "flex-1 min-w-0 flex flex-row items-center gap-3",
+      headerTitleWrap: "flex-1 min-w-0",
+      // Deliberately NOT the `cardTitleSM` text token, which is the same 15px face but
+      // UPPERCASE — see the contract: "rendered sentence-case".
+      //
+      // The leading is load-bearing, not taste: `truncate` brings `overflow: hidden`, so a line
+      // box shorter than the font's full ink height CLIPS descenders. At `leading-none` the box
+      // was exactly 15px against 18px of Oswald ink, and every g/p/y on every card lost its tail
+      // (measured: clientHeight 15, scrollHeight 18). The row is `items-center`, so a taller line
+      // box stays vertically centred — there was never anything to gain by tightening it.
+      headerTitle:     `${F_DISP} font-medium text-[15px] leading-[1.4] tracking-tight ${INK} truncate`,
+      // The right-hand meta line, fed by the section's `description`. Quiet on purpose:
+      // it is a caption for the card, not a second title. Amber is reserved for band
+      // heads (a `kicker` paragraph naming a GROUP of graphs) — a `// NN` on every card
+      // would stop meaning anything.
+      //
+      // `hidden xl:block` is how this row resolves its one real width conflict. In page-edit
+      // mode the Quick Controls pills share this slot, and a half-width card cannot hold the
+      // title, the meta line and four pills. Rather than have the band guess which to drop,
+      // the caption simply yields below xl — so a wide card shows both, and a narrow one in
+      // edit mode shows the controls, which are the thing you came to use.
+      headerKicker:    "shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 hidden xl:block",
+      headerActions:   "flex items-center shrink-0",
+      // Quick Controls move INTO the row (they render only in page-edit mode, see
+      // QuickControls/index.jsx's `editPageMode` gate, so in view mode this slot is the
+      // kicker's alone and nothing competes).
+      headerExtensionsInline: true,
+      headerExtensionsInlineRow: "shrink-0 flex items-center justify-end gap-1.5",
     }],
   },
 

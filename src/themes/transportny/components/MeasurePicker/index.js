@@ -27,6 +27,7 @@ import {
     composeTableMeasuresConfig,
     composeAutoTitle,
     isTitleDirty,
+    composeSectionTitlePatch,
     ensureSelfBoundSubscriber,
     GRAPH_TYPE_OPTIONS,
     MEASURE_OPTIONS,
@@ -35,7 +36,7 @@ import {
     DEFAULT_PICK,
     BASE_SOURCE,
 } from './composeMeasureConfig';
-import { applyMapMeasureToState } from './composeMapConfig';
+import { applyMapMeasureToState, composeMapSectionTitlePatch } from './composeMapConfig';
 import { selfParamKey } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/buildUdaConfig';
 import { reconcileComparisonSeriesColumnOnState } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/useDataWrapperAPI';
 
@@ -220,14 +221,14 @@ export function applyMeasurePickToState(state, pick, { externalSourceColumns, de
 
     ensureSelfBoundSubscriber(state);
 
-    // Tier 5B: populate/refresh the title, UNLESS the author has already typed their own (see
-    // `isTitleDirty`'s own doc comment for the no-new-field mechanism). Obvious at this call
-    // site on purpose — a future reader shouldn't have to go read composeAutoTitle/isTitleDirty
-    // just to see WHETHER a title write happens here, only to understand HOW "dirty" is decided.
-    const currentTitle = state.display.title?.title;
-    if (!isTitleDirty({ currentTitle, priorPick })) {
-        state.display.title = { ...state.display.title, title: composeAutoTitle(pick) };
-    }
+    // The auto-title used to land HERE, in `display.title.title` — the chart's own in-card title,
+    // drawn by GraphComponent's GraphTitle. It moved to the SECTION title on 2026-09-11: a report
+    // card shows one title now, in its header band, and 315 of 383 report sections had ended up
+    // carrying both (one of them the identical string twice). `applyMeasurePick` composes the
+    // section patch and hands it to the caller — see composeSectionTitlePatch.
+    //
+    // Existing sections keep whatever is already in `display.title`; clearing it is the
+    // regeneration/migration's job, not something to do silently on an unrelated re-pick.
 
     // Remembers the full pick so reopening the menu/Quick Controls shows the right checkmarks/
     // summary. `graphType`/`measure`/`resolution`/`comparisonMode`/`anchorInvert` are pure
@@ -263,7 +264,7 @@ export function applyMeasurePickToState(state, pick, { externalSourceColumns, de
 // QuickControls' "When" pill writes on a Map card the exact way it did before this list was fixed.
 const MAP_MEASURE_PICK_FIELDS = ['weekdays', 'start', 'end', 'routeIds', 'routeWindows'];
 
-export function applyMeasurePick({ state, dwAPI, currentComponent, apiHost, allRoutes }, partial) {
+export function applyMeasurePick({ state, dwAPI, currentComponent, apiHost, allRoutes, sectionValue }, partial) {
     // Map has no AVL-Graph-shaped compose path (columns/join/display.graphType/
     // comparisonSeries.combine, per composeMeasureConfig's own GRAPH_TYPE_OPTIONS comment) —
     // short-circuits to its own, much smaller, symbologies-shaped update instead of the AVL-Graph
@@ -294,12 +295,33 @@ export function applyMeasurePick({ state, dwAPI, currentComponent, apiHost, allR
             draft.display._measurePick = nextPick;
             if ('measure' in partial) applyMapMeasureToState(draft, { measureKey, apiHost, priorMeasureKey });
         });
-        return;
+        // Map's own section-title patch. It has no `graphType`/`resolution` to compose a sentence
+        // from (MAP_MEASURE_PICK_FIELDS above), so it uses Map's own small composer — the same
+        // one that used to write `display.title` here, now aimed at the section row like every
+        // other card. Map has no in-card title render path at all, so that write was invisible.
+        return composeMapSectionTitlePatch({
+            currentTitle: sectionValue?.title,
+            priorMeasureKey,
+            measureKey,
+        });
     }
 
     const pick = { ...DEFAULT_PICK, ...(state?.display?._measurePick || {}) };
     const nextPick = { ...pick, ...partial };
+    // Captured BEFORE the apply below overwrites `_measurePick` — this is the pick the section's
+    // current title was generated from, which is what the pristine check compares against.
+    const priorPick = state?.display?._measurePick;
     const hasDataset = !!state?.externalSource?.source_id;
+    // `{ title?, description? }` for the SECTION row, or null. Returned rather than written,
+    // because the section row is not this function's to write — see composeSectionTitlePatch's
+    // own doc comment for why (two single-key writes off the same captured `value` clobber each
+    // other). A caller that ignores it gets the pre-2026-09-11 behaviour exactly.
+    const sectionPatch = () => composeSectionTitlePatch({
+        currentTitle: sectionValue?.title,
+        currentDescription: sectionValue?.description,
+        priorPick,
+        nextPick,
+    });
     let applied = false;
     dwAPI.setState(draft => {
         applied = applyMeasurePickToState(draft, nextPick, {
@@ -314,7 +336,7 @@ export function applyMeasurePick({ state, dwAPI, currentComponent, apiHost, allR
             allRoutes,
         });
     });
-    if (!applied) return;
+    if (!applied) return null;
     // Round 79: Info Box's `grain: 'tmc'` shape (composeTableMeasuresConfig)
     // deliberately has NO `__series` column — its categorize column IS `tmc`
     // instead (`info_box_templates.py`'s own proven shape, live since round
@@ -327,7 +349,7 @@ export function applyMeasurePick({ state, dwAPI, currentComponent, apiHost, allR
     // second categorize column here, colliding with the `tmc` one. Skipped
     // only for this one converter-only pick shape; every other caller
     // (`grain` unset/`'route'`) is unaffected.
-    if (nextPick.grain === 'tmc') return;
+    if (nextPick.grain === 'tmc') return sectionPatch();
     // Separate imperative call, same two-call pattern the built-in
     // Comparison Series "Enabled" toggle already uses elsewhere in
     // sectionMenu.jsx — adds the synthetic `__series` categorize column
@@ -344,6 +366,7 @@ export function applyMeasurePick({ state, dwAPI, currentComponent, apiHost, allR
         const col = draft.columns.find(c => c.origin === 'comparison-series');
         if (col && !col.customName) col.customName = 'Route';
     });
+    return sectionPatch();
 }
 
 // Difference graphs return `anchor - other`; the server treats
@@ -366,11 +389,20 @@ function getAnchorRouteOptions({ sectionState, pageState }) {
     return variants.map((v, idx) => ({ value: idx === 1, label: v?.label || `Route ${idx + 1}` }));
 }
 
-export function npmrdsMeasureMenu({ state, dwAPI, currentComponent, isEdit, canEditSection, siblingSections = [], sectionState, pageState }) {
+export function npmrdsMeasureMenu({ state, dwAPI, currentComponent, isEdit, canEditSection, siblingSections = [], sectionState, pageState, actions }) {
     const pick = { ...DEFAULT_PICK, ...(state?.display?._measurePick || {}) };
     const reportPage = isReportPage(siblingSections);
 
-    const applyPick = (partial) => applyMeasurePick({ state, dwAPI, currentComponent }, partial);
+    // Same contract as QuickControls' own applyPick: `applyMeasurePick` writes the element state
+    // through dwAPI and RETURNS the section-attribute patch (auto title + kicker, pristine-checked)
+    // for the caller to write, because the section row isn't reachable from element state. This
+    // drawer only ever runs under SectionEdit, where a single-key write is safe — but it uses the
+    // multi-key channel anyway so the two entry points stay identical.
+    const applyPick = (partial) => {
+        const sectionPatch = applyMeasurePick(
+            { state, dwAPI, currentComponent, sectionValue: sectionState?.value }, partial);
+        if (sectionPatch) actions?.updateAttributes?.(sectionPatch);
+    };
 
     const summary = [
         MEASURE_OPTIONS.find(o => o.value === pick.measure)?.label,
