@@ -92,6 +92,7 @@
       { f: 'admin-panel-status-v4.html', t: 'admin panel status v4 · six families, dropped sections quarantined' },
       { f: 'county-template-qa.html', t: 'county template front-end QA' },
       { f: 'mny-transcribe-skills-to-git.html', t: 'transcribe skills → git' },
+      { f: 'oneida-transcription-readiness.html', t: 'oneida 2020 HMP · transcription readiness' },
     ]},
   ];
 
