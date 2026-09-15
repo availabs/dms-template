@@ -4,6 +4,13 @@
 // chunk, fetched only when that theme name is actually needed. See
 // planning/shared/bundle-size-log.md for why this exists.
 const loaders = {
+  // 'default' is the sentinel getPatternTheme (src/dms's ui/useTheme.js) falls
+  // back to for any pattern with no selectedTheme, and what the admin pattern
+  // hardcodes for every project (patterns/admin/siteConfig.jsx). Pointing it
+  // at tessera_v6 makes tessera DMS's new default look — everywhere nothing
+  // more specific was chosen, admin panels included, across every project in
+  // this repo — without touching any project's own explicit selectedTheme.
+  default:       () => import('./tessera/tessera-theme-v6'),
   catalyst:      () => import('./catalyst/theme'),
   transportny:   () => import('./transportny/theme'),
   transportnyv2: () => import('./transportny/themev2'),
