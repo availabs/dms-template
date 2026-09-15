@@ -1988,7 +1988,29 @@ const graph = {
     subtitle:     "font-mono text-[10.5px] uppercase tracking-wider text-slate-500 text-right",
     axis:         "stroke-zinc-950/15",
     grid:         "stroke-zinc-950/5",
-    tooltip:      "rounded-[6px] bg-[#0F1722] text-white text-[12px] px-2.5 py-1.5 shadow-lg font-proxima",
+    // Tooltip chrome. The authored value here used to be `bg-[#0F1722] text-white … px-2.5
+    // py-1.5` — dead scaffolding that went live 2026-09-14 when the token was wired, and looked
+    // wrong the moment it was seen against a real report: it was the ONLY dark surface in this
+    // design system (every popover, modal, drawer and card is white + `border-zinc-950/10` + a
+    // shadow), and `#0F1722` is otherwise an ink colour, not a fill. A dark fill also inverts
+    // the contrast the series palettes were built for — they are chosen to sit on a white plot,
+    // so pale greens glowed and dark reds sank.
+    //
+    // It now matches `navigableMenu`'s popover, the closest analogue: a small floating panel.
+    // NOTE the absence of padding — the tooltip BODY carries its own `px-2 pt-1 pb-2`, so a
+    // padded token double-pads the panel.
+    tooltip:      "rounded-[8px] bg-white border border-zinc-950/10 text-slate-700 text-[12px] shadow-lg font-proxima",
+    // The historical title is `font-bold text-lg leading-6 border-b-2` — an 18px bold heading
+    // with a 2px rule above 12px rows, which is what made the tooltip read as unfinished next
+    // to the themed legend.
+    tooltipTitle: "font-proxima text-[12px] font-semibold leading-5 text-slate-900 border-b border-zinc-950/10",
+    tooltipValue: "text-right tabular-nums text-slate-900",
+    // Row padding. The row's 2px highlight border sits directly on the text with no vertical
+    // padding of its own, so the active row reads as cramped rather than selected.
+    tooltipRow:   "py-0.5",
+    // The row highlight is `border-current`, so it would otherwise inherit whatever text colour
+    // the container sets. Stated explicitly rather than inherited.
+    tooltipRowActive: "border-slate-300",
     // These two were authored as DEAD scaffolding and went live 2026-09-10 when the legend
     // gained its class-token layer. Layout is component-owned now (the legend picks grid vs
     // flex from its own orientation), so `legend` must carry NO display/alignment class: the

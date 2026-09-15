@@ -22,7 +22,10 @@
 //   node scripts/npmrds-reports/report_probe.mjs report_11 --eval scratchpad/npmrds-sub/tmp/my_probe.mjs
 //
 // Options:
-//   --wait <ms>       settle time after networkidle (default 6000)
+//   --wait <ms>       MINIMUM dwell before the page may be declared settled (default 0). Settling
+//                     itself is quiescence-based; this is only a floor for callers that want one.
+//   --settle-quiet <ms>  how long all-quiet must hold before settling (default 1500)
+//   --settle-cap <ms>    hard ceiling on settling; exceeding it marks the dump unsettled (default 90000)
 //   --grep <substr>   only include /graph captures whose decoded request matches (repeatable);
 //                     response bodies are stored only for matches unless --bodies
 //   --bodies          store response bodies for ALL /graph captures (default: only --grep matches,
@@ -77,7 +80,11 @@ if (!target || target.startsWith('--')) {
   process.exit(2);
 }
 const opts = {
-  wait: 6000,
+  // `--wait` is now a FLOOR, not the settle mechanism. Settling is quiescence-based (see
+  // settleForQuiescence below); this only guarantees a minimum dwell for callers that pass it.
+  wait: 0,
+  settleQuiet: 1500,
+  settleCap: 90000,
   greps: [],
   bodies: false,
   section: null,
@@ -96,6 +103,8 @@ for (let i = 1; i < argv.length; i++) {
   const a = argv[i];
   const next = () => argv[++i];
   if (a === '--wait') opts.wait = Number(next());
+  else if (a === '--settle-quiet') opts.settleQuiet = Number(next());
+  else if (a === '--settle-cap') opts.settleCap = Number(next());
   else if (a === '--grep') opts.greps.push(next());
   else if (a === '--block') opts.block.push(next());
   else if (a === '--bodies') opts.bodies = true;
@@ -142,6 +151,24 @@ const graphCaptures = [];
 const sqlErrors = []; // /graph responses whose 200 body still carries a DB error string — see below
 const pending = new Map(); // api-origin requests with no response yet
 let apiResponses = 0;
+// Wall-clock of the last api-origin request OR response. Quiescence is measured from this rather
+// than from Playwright's `networkidle`, which fires in the GAPS of a Falcor waterfall: a section's
+// query is only issued once that section mounts, so "no connections for 500ms" is routinely true
+// long before the page has finished fetching. See settleForQuiescence.
+let lastApiActivityAt = Date.now();
+// Largest observed gap between consecutive api activity. A Falcor waterfall does not fetch
+// continuously — a section's query is only issued once that section mounts, so the page goes
+// quiet BETWEEN stages. Any fixed quiet threshold shorter than the longest such lull declares
+// the page finished mid-load. Measured on one_week_study: a lull > 1500ms let the probe settle
+// at 8.3s having fired 37 of its 43 queries, with 6 still in flight at close. So the threshold
+// is derived from the page's own cadence instead of guessed.
+let maxApiGapMs = 0;
+const noteApiActivity = () => {
+  const now = Date.now();
+  const gap = now - lastApiActivityAt;
+  if (gap > maxApiGapMs && gap < 60000) maxApiGapMs = gap;
+  lastApiActivityAt = now;
+};
 let graphTotal = 0;
 const navStart = Date.now(); // ms reference for graphCaptures[].tMs — diagnoses render-vs-fetch timing gaps
 
@@ -162,15 +189,19 @@ if (opts.block.length) {
   });
 }
 page.on('request', req => {
-  if (req.url().startsWith(opts.api)) pending.set(req, decodeURIComponent(req.url()).slice(0, 300));
+  if (req.url().startsWith(opts.api)) {
+    pending.set(req, decodeURIComponent(req.url()).slice(0, 300));
+    noteApiActivity();
+  }
 });
-page.on('requestfailed', req => pending.delete(req));
+page.on('requestfailed', req => { if (pending.delete(req)) noteApiActivity(); });
 page.on('response', async resp => {
   const req = resp.request();
   pending.delete(req);
   const u = resp.url();
   if (!u.startsWith(opts.api)) return;
   apiResponses++;
+  noteApiActivity();
   if (resp.status() !== 200) badResponses.push({ status: resp.status(), url: u.slice(0, 200) });
   if (!u.includes('/graph')) return;
   graphTotal++;
@@ -188,13 +219,98 @@ page.on('response', async resp => {
   graphCaptures.push({ method: req.method(), status: resp.status(), decoded, body: (opts.bodies || matched) ? body : null, tMs: Date.now() - navStart });
 });
 
-console.log(`probing ${url} (wait ${opts.wait}ms after networkidle)`);
-try {
-  await page.goto(url, { waitUntil: 'networkidle', timeout: 120000 });
-} catch (e) {
-  console.log(`goto did not reach networkidle (${e.message.split('\n')[0]}) — continuing anyway`);
+// Cheap render signature, built from the SAME selectors the section census below uses, so
+// "stable" here means stable in exactly the dimension the golden-corpus diff compares. Counting
+// ink (path/rect/circle) rather than just svg presence is what distinguishes a mounted-but-empty
+// chart from a drawn one — the difference between a real "blank" finding and a mid-fetch artifact.
+const renderSignature = () => page.evaluate(() => {
+  const cells = [...document.querySelectorAll('div.relative.group')]
+    .filter(el => !el.parentElement.closest('div.relative.group'));
+  let ink = 0, big = 0;
+  for (const el of cells) {
+    for (const svg of el.querySelectorAll('svg')) {
+      const r = svg.getBoundingClientRect();
+      if (r.width < 100 || r.height < 60) continue;
+      big++;
+      ink += svg.querySelectorAll('path').length + svg.querySelectorAll('rect').length
+           + svg.querySelectorAll('circle').length;
+    }
+    for (const c of el.querySelectorAll('canvas')) {
+      const r = c.getBoundingClientRect();
+      if (r.width >= 100 && r.height >= 60) big++;
+    }
+  }
+  return `${cells.length}|${big}|${ink}`;
+}).catch(() => 'evaluate-failed');
+
+// Wait for the PAGE to go quiet, not for the network to have a gap.
+//
+// The old model was `goto(waitUntil:'networkidle')` + a fixed `--wait`, and it is the single
+// source of this harness's non-determinism (measured 2026-09-14: two identical corpus runs gave
+// 8 blockers/56 majors vs 9/51, with only 3 of 17 blocker-instances reproducing). Two reasons it
+// fails: `networkidle` fires during the gaps of a Falcor waterfall, and a fixed dwell is a guess
+// that loses whenever the dev server is slower than the day the number was tuned — last /graph
+// responses were measured landing as late as 12.6s against a 6s default.
+//
+// Settled means all three at once, held for `settleQuiet`:
+//   1. zero api-origin requests in flight
+//   2. no api request/response activity
+//   3. the render signature unchanged
+// Condition 3 matters on its own: charts draw a frame or two AFTER their data lands, so network
+// quiet alone can still catch a chart mid-paint.
+async function settleForQuiescence() {
+  const t0 = Date.now();
+  let sig = await renderSignature();
+  let sigStableSince = Date.now();
+  let polls = 0;
+  while (Date.now() - t0 < opts.settleCap) {
+    await page.waitForTimeout(250);
+    polls++;
+    const next = await renderSignature();
+    if (next !== sig) { sig = next; sigStableSince = Date.now(); }
+    const now = Date.now();
+    const quietFor = now - lastApiActivityAt;
+    const stableFor = now - sigStableSince;
+    // Never declare settled before the app has actually talked to the API — at t=0 the page has
+    // made no requests, so all three conditions are trivially true and the probe would capture a
+    // blank page as a finished one.
+    if (apiResponses === 0) {
+      if (now - t0 > 20000) {
+        return { ok: false, reason: 'no api response within 20s', ms: now - t0, pending: pending.size, polls };
+      }
+      continue;
+    }
+    // Quiet for longer than the biggest lull this page has already shown, so a waterfall that
+    // pauses 2s between stages is not mistaken for a finished page. Bounded so a single slow
+    // request cannot stretch the run indefinitely.
+    const required = Math.min(Math.max(opts.settleQuiet, maxApiGapMs * 2), 15000);
+    if (pending.size === 0 && quietFor >= required && stableFor >= opts.settleQuiet
+        && now - t0 >= opts.wait) {
+      return { ok: true, reason: `quiescent (quiet ${quietFor}ms >= ${required}ms, max lull ${maxApiGapMs}ms)`,
+               ms: now - t0, pending: 0, polls, signature: sig };
+    }
+  }
+  return { ok: false, reason: 'settle cap reached', ms: Date.now() - t0, pending: pending.size, polls, signature: sig };
 }
-await page.waitForTimeout(opts.wait);
+
+console.log(`probing ${url} (quiescence settle: quiet ${opts.settleQuiet}ms, cap ${opts.settleCap}ms${opts.wait ? `, floor ${opts.wait}ms` : ''})`);
+let navOk = true;
+try {
+  // domcontentloaded, not networkidle — the wait that matters happens in settleForQuiescence, and
+  // asking goto to also guess at idleness just adds a second, differently-wrong timer.
+  await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 120000 });
+} catch (e) {
+  navOk = false;
+  console.log(`goto failed (${e.message.split('\n')[0]}) — continuing, but the dump is marked unsettled`);
+}
+const settle = await settleForQuiescence();
+if (!navOk) { settle.ok = false; settle.reason = `navigation failed; ${settle.reason}`; }
+console.log(`settle: ${settle.ok ? 'OK' : 'NOT SETTLED'} — ${settle.reason} after ${settle.ms}ms `
+  + `(${settle.polls} polls, ${settle.pending} still in flight)`);
+if (!settle.ok) {
+  console.log('  WARNING: this dump is NOT a trustworthy snapshot — sections may read blank purely');
+  console.log('  because their queries had not returned. Do not baseline or diff it.');
+}
 
 // SVG census + body text. DMS report pages render each section as a
 // div.relative.group cell with a div.font-display title and avl-graph svgs;
@@ -221,6 +337,21 @@ const sections = await page.evaluate(() => {
   const canvasInfo = c => ({ w: Math.round(c.getBoundingClientRect().width), h: Math.round(c.getBoundingClientRect().height) });
   const graphCanvases = el => [...el.querySelectorAll('canvas')].map(canvasInfo).filter(c => c.w >= 100 && c.h >= 60);
 
+  // InfoBox and RouteCompare sections render their data as NUMBERS IN PLAIN DIVS — no SVG, no
+  // canvas, not even a <table>. An svg/canvas-only census reads a fully populated Info Box as
+  // permanently blank, which means those sections are effectively unmonitored: the suite would
+  // notice one disappearing but not its contents breaking. Counting leaf elements whose ENTIRE
+  // text is a number-like token separates them cleanly. Measured live 2026-09-14:
+  //   Info Box 10, Route Compare 8   |   report title header 0, genuinely empty graph 0
+  //
+  // The test is simply > 0, NOT some tuned floor. The count scales with however many series,
+  // routes and columns a section happens to carry, so any threshold above zero would misjudge a
+  // SMALL one — a single-measure, single-route Info Box can legitimately render one or two cells.
+  // Zero means nothing rendered; anything above zero means it did.
+  const NUMERIC_CELL = /^[-+]?[$]?\d[\d,]*(\.\d+)?%?$|^\d{1,2}:\d{2}$/;
+  const valueCellCount = el => [...el.querySelectorAll('*')]
+    .filter(e => !e.children.length && NUMERIC_CELL.test((e.textContent || '').trim())).length;
+
   const cells = [...document.querySelectorAll('div.relative.group')]
     .filter(el => !el.parentElement.closest('div.relative.group')); // outermost only
   const out = cells
@@ -232,6 +363,7 @@ const sections = await page.evaluate(() => {
       title: ([...el.querySelectorAll('.font-display')].map(e => e.textContent.trim()).find(t => t !== 'Add') || '').slice(0, 80),
       svgs: graphSvgs(el),
       canvases: graphCanvases(el),
+      valueCells: valueCellCount(el),
     }))
     .filter(s => s.title || s.svgs.length || s.canvases.length);
   if (out.length) return out;
@@ -244,12 +376,12 @@ const sections = await page.evaluate(() => {
       const svgs = el.querySelectorAll('svg');
       const canvases = el.querySelectorAll('canvas');
       if (svgs.length || canvases.length) {
-        out.push({ title, svgs: [...svgs].map(svgInfo), canvases: [...canvases].map(canvasInfo) });
+        out.push({ title, svgs: [...svgs].map(svgInfo), canvases: [...canvases].map(canvasInfo), valueCells: valueCellCount(el) });
         return;
       }
       el = el.parentElement;
     }
-    out.push({ title, svgs: [], canvases: [] });
+    out.push({ title, svgs: [], canvases: [], valueCells: 0 });
   });
   return out;
 });
@@ -286,6 +418,15 @@ if (opts.shot) {
 }
 
 const stillPending = [...pending.values()];
+// Retroactive honesty: requests that started AFTER settle returned mean the page was not actually
+// finished, whatever the settle loop concluded. Downgrade the flag so consumers (probe_corpus's
+// looksLikeFailedLoad) reject the dump rather than diff a half-loaded page.
+if (stillPending.length && settle.ok) {
+  settle.ok = false;
+  settle.reason = `settled, then ${stillPending.length} request(s) started before capture`;
+  settle.pending = stillPending.length;
+  console.log(`settle: DOWNGRADED — ${settle.reason}`);
+}
 await browser.close();
 
 // ---- report ---------------------------------------------------------------
@@ -293,7 +434,10 @@ await browser.close();
 // WebGL/canvas, never SVG — see graphCanvases above).
 const hasSvgInk = s => s.svgs.length > 0 && s.svgs.some(v => v.paths + v.rects + v.circles > 0);
 const hasCanvas = s => (s.canvases || []).length > 0;
-const blankSections = sections.filter(s => !hasSvgInk(s) && !hasCanvas(s));
+// Data rendered as numbers in divs (Info Box / Route Compare) — see valueCellCount in the census.
+// > 0, not a tuned floor: the count scales with series/routes/columns.
+const hasValueCells = s => (s.valueCells || 0) > 0;
+const blankSections = sections.filter(s => !hasSvgInk(s) && !hasCanvas(s) && !hasValueCells(s));
 console.log(`\n== ${slug} ==`);
 console.log(`api responses: ${apiResponses}  /graph: ${graphTotal} (captured ${graphCaptures.length})` +
   `  non-200: ${badResponses.length}  console errors: ${consoleErrors.length}` +
@@ -309,6 +453,7 @@ for (const s of sections) {
   const c = (s.canvases || [])[0];
   const state = hasCanvas(s) ? `canvas ${s.canvases.length}, first: ${c.w}x${c.h}`
     : !s.svgs.length ? 'NO SVG/CANVAS'
+    : hasValueCells(s) ? `${ s.valueCells } value cell(s)`
     : !hasSvgInk(s) ? 'EMPTY SVG'
     : `${s.svgs.length} svg(s), first: ${v.w}x${v.h} paths=${v.paths} rects=${v.rects} circles=${v.circles}`;
   console.log(`  [${state}] ${s.title}`);
@@ -358,7 +503,7 @@ if (opts.expect) {
 
     if (g.title) {
       const section = sections.find(s => s.title === g.title);
-      const rendered = section && (hasSvgInk(section) || hasCanvas(section));
+      const rendered = section && (hasSvgInk(section) || hasCanvas(section) || hasValueCells(section));
       record(`graph "${g.key}": section "${g.title}" rendered non-empty`, Boolean(rendered),
         !section ? 'no census section with this title' : rendered ? 'has non-empty SVG/canvas content' : 'NO SVG/CANVAS or EMPTY SVG');
     }
@@ -379,6 +524,7 @@ if (opts.json) {
   const jsonPath = path.join(opts.out, `probe_${slug}.json`);
   writeFileSync(jsonPath, JSON.stringify({
     url, when: new Date().toISOString(), opts: { ...opts, out: undefined },
+    settle,
     consoleErrors, pageErrors, badResponses, stillPending, sqlErrors, sections, bodyText,
     graphTotal, graphCaptures, evalResult, expectResult,
   }, null, 1));
