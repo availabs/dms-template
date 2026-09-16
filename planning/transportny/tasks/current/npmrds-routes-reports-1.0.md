@@ -31,18 +31,19 @@ scoping-only task, or part of the routing-plugin sub-arc. What is genuinely open
 |---|------|-------|------|-------|
 | 1 | **Info Box multi-measure support** — `convert_report.py`/`convert_template.py` build only ONE measure per Info Box graph. 869 dropped-measure instances across **524 reports**. `build_route_info_box_section_state_multi` already exists but isn't used on this path. | `old-reports-conversion.md` | Large | **Needs Ryan's call.** The single biggest lever on conversion coverage. Scoped as a follow-on at round 85, never built. |
 | 2 | **Literal `LOTTR`/`TTTR` measures** — 10 reports, currently invisible inside the generic `extra_measures_dropped` bucket. | `old-reports-conversion.md` | Small | Ryan at round 85: keep them for real, "somewhat soon… idk if mandatory." Entangled with #1. |
-| 3 | **Publish the All Reports list page** — built and verified live, but draft-only; only the `/edit` route has ever been exercised. | `npmrds-all-reports-list-page.md` | Small | Shippable now. `/npmrds/reports/list`. |
-| 4 | **GridGraph Part 1 live-verification** — built and unit-verified against `composeMeasureConfig`, never run against a real dev-DB query. | `gridgraph-row-height-scaling.md` | Small | Row-height-by-TMC-length is visibly working elsewhere; this is the NPMRDS default path specifically. |
-| 5 | **Deploy the updated dms-server** for the delete-cascade fix. | `delete-cascade-source-view-orphans.md` | — | User-owned action, not a code task. |
+| ~~3~~ | **DONE 2026-09-16 (Ryan).** ~~Publish the All Reports list page~~ — built and verified live, but draft-only; only the `/edit` route has ever been exercised. | `npmrds-all-reports-list-page.md` | Small | Shippable now. `/npmrds/reports/list`. |
+| ~~4~~ | **DONE 2026-09-16 (Ryan).** ~~GridGraph Part 1 live-verification~~ — built and unit-verified against `composeMeasureConfig`, never run against a real dev-DB query. | `gridgraph-row-height-scaling.md` | Small | Row-height-by-TMC-length is visibly working elsewhere; this is the NPMRDS default path specifically. |
+| ~~5~~ | **DONE 2026-09-16 (Ryan).** ~~Deploy the updated dms-server~~ for the delete-cascade fix. | `delete-cascade-source-view-orphans.md` | — | User-owned action, not a code task. |
 | 6 | Old-report known gaps: Route Compare anchor row ordering inconsistent; Travel Time Route Map colour scale is static. | `old-reports-conversion.md` | Small | Both user-reported, both still listed open in that file's gap register. |
 
 **Conversion coverage as of round 85 (2026-08-31):** clean (page-producible **and** full)
-conversions **290 / 870**, up from 184 in one change; `full` 309→483; `no_equivalent` instances
-534→49. Item #1 above is what stands between that and a substantially higher number.
+conversions **290 / 870**; `full` 309→483; `no_equivalent` instances 534→49.
 
-**The open scope question for 1.0:** is 290/870 clean conversions the 1.0 bar, or does the
-multi-measure Info Box work (item #1, affecting 524 reports) need to land first? That is a product
-decision, not a technical one, and nothing in the docs records an answer.
+> **Correction, 2026-09-16.** An earlier version of this file said item #1 "is what stands between
+> that and a substantially higher number." That is wrong. `extra_measures_dropped` does **not**
+> affect whether a report is classified full/clean — only the PRIMARY measure's mapping does
+> (`old-reports-conversion.md`, gap register). Item #1 buys **fidelity** (a converted Info Box
+> showing all the columns the old one showed) and will not move the 290/870 figure at all.
 
 ### Not in 1.0 — explicitly deferred by prior decision
 

@@ -288,6 +288,22 @@ INFO_BOX_LENGTH_TITLES = {"route": "Route Length", "tmc": "TMC Length"}
 INFO_BOX_AADT_TITLES = {"route": "Route AADT", "tmc": "TMC AADT"}
 INFO_BOX_DELAY_TITLES = {"route": "Route Hours of Delay", "tmc": "TMC Hours of Delay"}
 
+# Old (measure, dataColumn) bucket -> the INFO_BOX_SPEC_MEASURES key that
+# builds it. Derived from the five single-measure buckets above rather than
+# restated, so a bucket edit can't silently desync the two. Used by the
+# multi-measure Info Box path to translate an old graph's whole displayData
+# list into the vocabulary `build_route_info_box_section_state` speaks; a
+# measure with no entry here has no Info Box support and stays gap-logged.
+# Note `avgTT-byDateRange` and plain `travelTime` both land on "travelTime"
+# (INFO_BOX_TRAVELTIME_BUCKETS already treats them as one bucket).
+INFO_BOX_MEASURE_BY_BUCKET = {
+    INFO_BOX_BUCKET: "speed",
+    INFO_BOX_LENGTH_BUCKET: "length",
+    INFO_BOX_AADT_BUCKET: "aadt",
+    INFO_BOX_DELAY_BUCKET: "hoursOfDelay",
+    **{bucket: "travelTime" for bucket in INFO_BOX_TRAVELTIME_BUCKETS},
+}
+
 # ── Round 21: per-report/per-comp reliability BIN selection ─────────────────
 # Every Info Box template hardcoded the pm3 join's reliability bin to 'amp'
 # (AM peak), regardless of what the report's own comps actually asked for.

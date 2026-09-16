@@ -14,7 +14,7 @@ from .info_box_templates import ensure_bar_graph_summary_pm3_template, ensure_in
 from .route_compare_template import ensure_route_compare_template
 from .route_map import GEOMETRY_TILE_VIEWS, ensure_route_map_avghoursofdelay_template, ensure_route_map_hoursofdelay_template, ensure_route_map_none_template, ensure_route_map_speed_template, ensure_route_map_traveltime_template
 from .compose_bridge import call_compose_bridge
-from .section_builders import analyze_graph, build_cloned_section_data, build_graph_section_data, load_page_template, resolve_difference_pair, resolve_tmc_array, template_framework_sections
+from .section_builders import analyze_graph, build_cloned_section_data, build_graph_section_data, build_info_box_multi_template, build_route_compare_multi_template, load_page_template, resolve_difference_pair, resolve_tmc_array, template_framework_sections
 from .pages import compute_report_slug, delete_converted_page, ensure_parent_page, ensure_route_in_catalog, find_page_by_old_report_id
 
 # ── Main conversion ──────────────────────────────────────────────────────────
@@ -193,11 +193,34 @@ def convert_report(old_id, dry_run=False, replace=False):
     info_box_tmpl_name = {}
     info_box_bin_year = {}
     info_box_gap_logged = set()
+    info_box_multi_tmpl = {}
     for g, info in analyzed:
         grain = INFO_BOX_GRAIN.get(info["type"])
         if not grain:
             continue
         gid = g.get("id")
+        # Multi-measure Info Box (2026-09-16): the old tool showed one column
+        # per displayData measure in a single box. Composed fresh rather than
+        # cloned from a named template — see build_info_box_multi_template for
+        # why the two paths differ. Only measures with a real Info Box bucket
+        # are consumed; anything else stays in the extra_measures_dropped gap,
+        # rewritten below to list only what actually went unbuilt. Falls
+        # through to the single-measure dispatch when <2 are supported.
+        if len(info.get("measures") or []) > 1:
+            multi_tmpl, consumed, residual = build_info_box_multi_template(
+                info, grain, graph_templates, dry_run)
+            if multi_tmpl is not None:
+                info_box_multi_tmpl[gid] = multi_tmpl
+                for gap in gaps:
+                    if (gap.get("kind") == "extra_measures_dropped"
+                            and gap.get("graph") == gid):
+                        gap["detail"] = residual
+                        gap["consumed"] = consumed
+                gaps[:] = [gap for gap in gaps
+                           if not (gap.get("kind") == "extra_measures_dropped"
+                                   and gap.get("graph") == gid
+                                   and not gap.get("detail"))]
+                continue
         measure_col = (info["measure"], info["data_column"])
         if measure_col in INFO_BOX_TRAVELTIME_BUCKETS:
             # Round 38 (Phase B) + round 40 (plain `travelTime` alias): plain
@@ -287,10 +310,40 @@ def convert_report(old_id, dry_run=False, replace=False):
     # unmapped_graph gap below, same as any other uncovered combination.
     route_compare_tmpl_name = {}
     route_compare_gap_logged = set()
+    route_compare_multi_tmpl = {}
     for g, info in analyzed:
         if info["type"] != "Route Compare Component":
             continue
         gid = g.get("id")
+        # Multi-measure Route Compare (2026-09-16): same gap as the Info Box
+        # branch above — the old component shows one column per measure, the
+        # converter only ever built the primary. Composed fresh via
+        # build_route_compare_section_state_multi rather than cloned from a
+        # minted template. Route Compare's own preconditions still apply: the
+        # dataColumn bucket, and >= 2 assigned comps (a base plus at least one
+        # compare row). Deliberately NOT gated on the primary being `speed`
+        # the way the single-measure path below is — for a multi-column table
+        # every consumed measure is just a column, so which one happens to be
+        # first carries no meaning. That lets 5 corpus graphs whose primary is
+        # travelTime/hoursOfDelay convert at all, where today they fall
+        # through to the generic unmapped_graph gap.
+        if (len(info.get("measures") or []) > 1
+                and info["data_column"] == ROUTE_COMPARE_BUCKET[2]
+                and len(info["assigned"]) >= 2):
+            multi_tmpl, consumed, residual = build_route_compare_multi_template(
+                info, graph_templates, dry_run)
+            if multi_tmpl is not None:
+                route_compare_multi_tmpl[gid] = multi_tmpl
+                for gap in gaps:
+                    if (gap.get("kind") == "extra_measures_dropped"
+                            and gap.get("graph") == gid):
+                        gap["detail"] = residual
+                        gap["consumed"] = consumed
+                gaps[:] = [gap for gap in gaps
+                           if not (gap.get("kind") == "extra_measures_dropped"
+                                   and gap.get("graph") == gid
+                                   and not gap.get("detail"))]
+                continue
         if info["measure"] not in MEASURE_EXPR:
             continue  # outside this round's supported measure — generic gap below
         # Resolution is deliberately NOT part of this match (2026-07-20):
@@ -402,6 +455,14 @@ def convert_report(old_id, dry_run=False, replace=False):
         if gid in route_diff_gap_logged:
             skipped.append(g)
             continue  # specific reason already gap-logged in the pre-pass
+        # Composed (not minted/cloned) — carries its own template-shaped dict
+        # rather than a name to look up in graph_templates.
+        if gid in info_box_multi_tmpl:
+            convertible.append((g, info, info_box_multi_tmpl[gid]))
+            continue
+        if gid in route_compare_multi_tmpl:
+            convertible.append((g, info, route_compare_multi_tmpl[gid]))
+            continue
         tmpl_name = (info_box_tmpl_name.get(gid) if is_info_box
                     else route_compare_tmpl_name.get(gid) if is_route_compare
                     else route_map_tmpl_name.get(gid) if is_route_map

@@ -1,9 +1,9 @@
 import json
 
 from .config import COMPONENT_TYPE, PAGE_TEMPLATE_ID, PAGE_TYPE
-from .vocab import COLOR_RANGE_GRAPH_TYPES, DEFAULT_DISPLAY_DATA, DIFFERENCE_GRAPH_TYPES, INFO_BOX_GRAIN, MEASURE_NAMES, PM3_VIEW_BY_YEAR, RELIABILITY_BIN_LABELS, SINGLE_ACTIVE_COMP_TYPES
+from .vocab import COLOR_RANGE_GRAPH_TYPES, DEFAULT_DISPLAY_DATA, DIFFERENCE_GRAPH_TYPES, INFO_BOX_GRAIN, INFO_BOX_MEASURE_BY_BUCKET, MEASURE_NAMES, PM3_VIEW_BY_YEAR, RELIABILITY_BIN_LABELS, SINGLE_ACTIVE_COMP_TYPES
 from .expressions import AADT_OVERRIDE_SUBS, ROUTE_MAP_AVGDELAY_RESOLUTION_SLUG, ROUTE_MAP_AVGDELAY_VALUE_EXPR_BY_RESOLUTION
-from .template_specs import MEASURE_EXPR
+from .template_specs import BRIDGE_GRAPH_SPECS, MEASURE_EXPR
 from .db import dms, now_iso, old_falcor_get
 from .info_box_templates import build_route_info_box_section_state_multi, ensure_info_box_aadt_template, ensure_info_box_delay_template, ensure_info_box_length_template, ensure_info_box_speed_template, ensure_info_box_traveltime_template, ensure_pm3_join_template
 from .route_compare_template import build_route_compare_section_state_multi, ensure_route_compare_template
@@ -466,6 +466,11 @@ def analyze_graph(g, comps_by_id, gaps):
                 res_of(c) == state_res for c in order) else default_res
             assigned = [c for c in order if res_of(c) == winning_res]
 
+    # Every measure the old graph asked to display, primary first. Only the
+    # Info Box path consumes more than `measure` (one column per measure in
+    # one box) — every other graph type is genuinely single-measure, so this
+    # is carried alongside `measure` rather than replacing it.
+    measures = []
     if gtype == "Hours of Delay Graph":
         measure = "hoursOfDelay"
         cost_per_hour = state.get("costPerHour")
@@ -588,7 +593,23 @@ def analyze_graph(g, comps_by_id, gaps):
     # reports 520/179's raw graph_comps): an empty/missing state.title falls
     # back to "{type}, {data}", not a blank section title.
     title = state.get("title") or "{type}, {data}"
-    title = title.replace("{data}", MEASURE_NAMES.get(measure, measure))
+    # `{data}` is the measure name. For an Info Box the box may hold several
+    # measures as columns (see build_info_box_multi_template), and naming only
+    # the primary understates it — "Route Info Box, Speed" over a box that also
+    # shows Travel Time, Length and AADT. Name all of them, in the order the
+    # columns are composed. Every other graph type is single-measure and keeps
+    # the original substitution exactly.
+    title_measures = [measure]
+    if gtype in INFO_BOX_GRAIN:
+        consumed, _ = info_box_consumed_measures(measures, data_column)
+        if len(consumed) >= 2:
+            title_measures = consumed
+    elif gtype == "Route Compare Component":
+        consumed, _ = route_compare_consumed_measures(measures)
+        if len(consumed) >= 2:
+            title_measures = consumed
+    title = title.replace(
+        "{data}", ", ".join(MEASURE_NAMES.get(m, m) for m in title_measures))
     title = title.replace("{type}", gtype or "")
     # Captured before the {name} replace below so callers can tell whether
     # THIS graph's own title template ever carried a name-derived
@@ -626,11 +647,130 @@ def analyze_graph(g, comps_by_id, gaps):
         dated_names.append(f"{name}, {year}" if year and year not in name else name)
     comp_names_dated = ", ".join(dated_names)
     description = (state.get("message") or {}).get("text", "")
-    return {"type": gtype, "measure": measure, "resolution": resolution,
+    return {"type": gtype, "measure": measure, "measures": measures or [measure],
+            "resolution": resolution,
             "data_column": data_column, "assigned": assigned,
             "title": title.strip(), "description": description,
             "had_name_token": had_name_token, "comp_names": comp_names,
             "comp_names_dated": comp_names_dated}
+
+
+def info_box_consumed_measures(measures, data_column):
+    """Split an old Info Box graph's displayData into the measures this
+    converter can actually build (`consumed`, in INFO_BOX_SPEC_MEASURES terms,
+    de-duplicated and order-preserving) and the ones it can't (`residual`, in
+    the old tool's own keys).
+
+    Single source of truth for that split so the composed box and the section
+    TITLE can never disagree about which measures the box contains — they are
+    decided in two different places (analyze_graph builds the title before the
+    converter has decided whether the multi path fires at all).
+
+    Note `avgTT-byDateRange` and plain `travelTime` both map to "travelTime",
+    so a graph asking for both yields ONE consumed entry, not two.
+    """
+    consumed, residual = [], []
+    for measure in measures or []:
+        spec = INFO_BOX_MEASURE_BY_BUCKET.get((measure, data_column))
+        if spec is None:
+            residual.append(measure)
+        elif spec not in consumed:
+            consumed.append(spec)
+    return consumed, residual
+
+
+def route_compare_consumed_measures(measures):
+    """Route Compare's counterpart to info_box_consumed_measures. Its supported
+    set is narrower — `MEASURE_EXPR` (speed/travelTime today) — and needs no
+    bucket lookup, since Route Compare has no per-measure dataColumn dimension
+    (ROUTE_COMPARE_BUCKET's own resolution slot is deliberately not matched on;
+    see convert_report's pre-pass). Same single-source-of-truth role: the
+    composed table and the section title both read this.
+    """
+    consumed = [m for m in dict.fromkeys(measures or []) if m in MEASURE_EXPR]
+    residual = [m for m in (measures or []) if m not in MEASURE_EXPR]
+    return consumed, residual
+
+
+def build_route_compare_multi_template(info, templates, dry_run):
+    """Route Compare counterpart to build_info_box_multi_template — same gap,
+    same shape, same wrapper trick (see that function for why the composed
+    state is wrapped in a template-row shape rather than teaching the pipeline
+    a second section shape).
+
+    `build_route_compare_section_state_multi` already existed for the
+    spec-driven path; this is the converter wiring it never had. Callers must
+    still apply Route Compare's own preconditions (dataColumn bucket, >= 2
+    assigned comps) — this only decides the measure split.
+
+    Returns (tmpl, consumed, residual), or (None, [], measures) when fewer
+    than 2 measures are supported, in which case the caller falls through to
+    the existing single-measure path.
+    """
+    consumed, residual = route_compare_consumed_measures(info.get("measures"))
+    if len(consumed) < 2:
+        return None, [], list(info.get("measures") or [])
+
+    element_type, state = build_route_compare_section_state_multi(
+        consumed, templates, dry_run)
+    name = f"route_compare_multi[{'+'.join(consumed)}]"
+    return ({"id": name,
+             "data": {"name": name, "elementType": element_type,
+                      "updatedAt": None, "stateJson": json.dumps(state)}},
+            consumed, residual)
+
+
+def build_info_box_multi_template(info, grain, templates, dry_run):
+    """Compose a multi-measure Info Box for an old graph that asked for more
+    than one displayData measure, and return it wrapped in the same
+    template-row SHAPE the rest of the conversion pipeline passes around.
+
+    The old tool's real Route/TMC Info Box shows N measures as N columns in
+    one box; `analyze_graph` only ever classified the primary one, so every
+    other column was dropped into the `extra_measures_dropped` gap (869
+    instances / 524 reports corpus-wide). The composition itself already
+    existed — `build_route_info_box_section_state_multi`, built 2026-08-12 for
+    the spec-driven `report_build.mjs` path — but was never reachable from the
+    automatic converter, because the two build sections differently: the
+    converter mints-and-clones a NAMED template per single measure, while the
+    multi path composes fresh through one compose_bridge call (deliberately —
+    no single named row can be the source of truth for an arbitrary combo).
+
+    Rather than teach the whole pipeline a second section shape, this wraps
+    the composed state in the minimal template-row shape its consumers read
+    (`build_graph_section_data` reads data.stateJson/data.elementType,
+    `applied_template_stamp` reads id/data.name/data.updatedAt). The synthetic
+    name is deliberately NOT a BRIDGE_GRAPH_SPECS key, which is what makes the
+    kicker-caption pass skip it — the same no-caption outcome Info Box already
+    had as a cloned template.
+
+    Partial support is intentional: measures with no Info Box bucket are
+    returned as `residual` for the caller to gap-log, and the box is still
+    built from whatever is supported. Returns (tmpl, consumed, residual), or
+    (None, [], measures) when fewer than 2 measures are supported — in which
+    case the caller should fall through to the existing single-measure path.
+    """
+    consumed, residual = info_box_consumed_measures(
+        info.get("measures"), info["data_column"])
+    if len(consumed) < 2:
+        return None, [], list(info.get("measures") or [])
+
+    element_type, state = build_route_info_box_section_state_multi(
+        consumed, grain, templates, dry_run)
+    name = f"{grain}_info_box_multi[{'+'.join(consumed)}]"
+    return ({"id": name,
+             "data": {"name": name, "elementType": element_type,
+                      "updatedAt": None, "stateJson": json.dumps(state)}},
+            consumed, residual)
+
+
+def _spec_measure_key(tmpl):
+    """The new-side measure key for an applied graph template, or None.
+
+    `BRIDGE_GRAPH_SPECS` is keyed by template name and is the same mapping the
+    kicker-caption pass uses to turn an applied template back into a measure.
+    """
+    return (BRIDGE_GRAPH_SPECS.get((tmpl.get("data") or {}).get("name")) or {}).get("measureKey")
 
 
 def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph,
@@ -805,6 +945,23 @@ def build_graph_section_data(page_id, tmpl, tracking_id, info, gaps, old_graph,
                 cid: [{"weekdays": window["weekdays"], "start": window["start"], "end": window["end"]}]
                 for cid in info["assigned"]
             },
+            # The measure this graph is bound to, in NEW-side vocabulary. Every graph
+            # tooltip and legend unit depends on it: `graph_new/index.jsx` asks the theme
+            # for `resolveLegendUnit(display)`, whose first line is
+            # `display?._measurePick?.measure` — no key, no unit, so converted reports
+            # rendered bare numbers ("30.4" where the legend beside it said "mph") while
+            # spec/UI-built reports showed units. resolveLegendUnit's own header assumes
+            # "existing sections already store `_measurePick.measure`", which was true of
+            # every writer EXCEPT this one.
+            #
+            # Sourced from BRIDGE_GRAPH_SPECS keyed on the applied template's name, not
+            # from `info["measure"]`: that is the OLD tool's key space (it contains things
+            # like `avgTT-byDateRange` that no new-side vocabulary entry matches), whereas
+            # BRIDGE_GRAPH_SPECS is the authoritative old-template -> new-measure mapping
+            # and is already what the kicker-caption pass uses for exactly this translation
+            # (convert_report.py). Absent entry => key omitted entirely, which is precisely
+            # the pre-2026-09-16 behaviour, so nothing can regress.
+            **({"measure": _spec_measure_key(tmpl)} if _spec_measure_key(tmpl) else {}),
         }
     state_json = json.dumps(state)
     return {
