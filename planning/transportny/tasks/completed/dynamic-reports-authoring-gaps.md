@@ -16,6 +16,10 @@ for the full design, Ryan's 3 answered open questions, implementation, a real bu
 during live-verification (frozen `%n`/`%y` tokens going permanently blank), and the verification
 record. · **Started:** 2026-09-05
 
+**Follow-up fix 2026-09-16 (sub-item 1 residue): Quick Controls Routes pill/picker showed raw
+`%n %y` templates.** Found live by Ryan — see "Quick Controls Routes picker showed the raw template"
+below. Fixed + live-verified same day; golden corpus 8/8 PASS.
+
 **Closed 2026-09-09.** Residual gaps, none blocking: 2+ *distinct* route-slot groups (a real NB/SB-
 shaped report) never exercised live through sub-item 3's swap or either direction of sub-item 4's
 conversion (only single-group and 2-slots-sharing-1-group were); a few other narrow testing-checklist
@@ -1533,3 +1537,67 @@ Scratch page: `reports/claude_scratch_pct_template` (id 2218565) — **kept, not
 - `planning/transportny/tasks/current/dynamic-reports-and-route-tags.md` — the underlying "core
   mechanism DONE" Dynamic Reports build this extends; read before implementing.
 - `src/themes/transportny/components/ReportRouteList/README.md` — component's own design history.
+
+
+## Quick Controls Routes picker showed the raw template (2026-09-16)
+
+**Found by Ryan, live.** On every report's graph-header Quick Controls row (a TransportNY
+theme-only add-on, `src/themes/transportny/components/QuickControls/index.jsx`), the **Routes** pill
+and the route list inside its picker popover labelled each route with the route's *stored* `name`.
+On a Dynamic Report that stored name is a `%n (%y)`-style template, so the picker read `%N (%Y)` even
+while the page was being previewed with real routes supplied in `?routes=` — the same routes the RRL
+panel two feet to the left was already showing by their real names.
+
+Sub-item 1 built the `%n`/`%y` grammar and wired it through RRL's own rows, the chart legend, the
+header's routes disclosure and graph titles/captions. Quick Controls was simply not on that list —
+it reads the broadcast route catalog (`ROUTE_CATALOG_PARAM_KEY`, `useGraphPublish.js`) directly, and
+that catalog has always carried the raw `name` plus the `catalogRouteName`/`dateFormula`/dates a
+consumer needs to resolve it (deliberately — see the field's own comment there). Quick Controls just
+never ran the resolution step.
+
+**Fix — one shared choke point, `relativeDateResolution.js`:**
+
+- New export **`routeDisplayLabel(route)`** — "what do we CALL this route in author-facing chrome":
+  `resolvedRouteLabel(route)` when `route.catalogRouteName != null` (the per-route "a real route was
+  actually supplied" signal), the raw `route.name` otherwise.
+- This is not new behavior — it is `RouteRow.jsx`'s own collapsed-title rule (2026-09-08, Ryan's
+  "it would just show the placeholder there") **extracted verbatim**, so the two surfaces can't
+  drift. `RouteRow.jsx` now calls the shared function; its behavior is unchanged.
+- The `catalogRouteName != null` guard is the load-bearing half: calling `resolvedRouteLabel`
+  unconditionally would substitute `%y` from the dates alone (which resolve with no real route at
+  all) while `%n` stayed empty, turning an honest `%n (%y)` placeholder into a half-filled
+  `" (2026)"`.
+
+**Fix — `QuickControls/index.jsx`:** the Routes pill label, the picker's route rows, and a new
+`title` tooltip on each row all go through `routeDisplayLabel`. The pill/picker now render off
+`allRoutesResolved` (the `resolveRouteDates(routeCatalog)` array the reliability path already
+computed in this component) rather than the raw catalog — `%y` reads a route's own
+`startDate`/`endDate`, and a derived slot's are blank until that pass fills them.
+
+**Tests:** `ReportRouteList/routeDisplayLabel.test.js` (6 cases) — same-year and year-spanning `%n`/
+`%y` substitution, the unresolved-slot placeholder (asserted *against* what bare `resolvedRouteLabel`
+would have returned, so the guard can't be refactored away silently), static-route no-op, untemplated
+name on a resolved slot, missing route.
+
+**Live verification** (`report_probe.mjs --auth --eval`, reading the pill label + every popover row):
+
+- `edit/reports/one_week_study?routes=2207838&asOf=2025-07-23` — pill and popover row both read
+  **`35E QUEENS MIDTOWN EXPY WESTBOUND (2025)`** (was `%N (%Y)`). The spec's seven other routes
+  (`Today`/`Yesterday`/`2 Days Ago`/…/`Average for Month`) are authored literal names with no tokens
+  and correctly pass through untouched — confirmed against `dynamic_report_specs/one_week_study.json`,
+  where `r8` is the only templated route.
+- `edit/reports/one_week_study` (no `?routes=`) — pill and popover row still read `%n (%y)`, i.e.
+  the honest placeholder, not a half-substituted `" (2026)"`. This is the guard doing its job.
+- **Golden corpus: 8/8 PASS**, no baseline diffs (`probe_corpus.mjs`) — `RouteRow.jsx` is RRL code,
+  so the suite is mandatory here.
+
+**Not changed, flagged:** `ReportPageHeader.jsx` calls bare `resolvedRouteLabel` in two places (its
+routes disclosure, and `swapInitialRoutes` for the preview-swap modal's chips). On an *unresolved*
+Dynamic Report those would show the same half-substituted `" (2026)"` this guard exists to prevent.
+Out of scope for this fix (Ryan's report was specifically the Quick Controls picker) and not
+observed live — the header's routes disclosure may not even render in that state. Worth a look next
+time that file is open.
+
+**Verify URL:** `http://www.localhost:5173/npmrds/edit/reports/one_week_study?routes=2207838&asOf=2025-07-23`
+— open any graph card's Quick Controls **Routes** pill; the last route in the list should read
+`35E QUEENS MIDTOWN EXPY WESTBOUND (2025)`, not `%n (%y)`.

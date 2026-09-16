@@ -54,10 +54,21 @@ export const RoutecreationPlugin = {
           // gets back an empty `properties`. This layer has no real filter/color
           // binding to a column - piggyback on that machinery purely to get `tmc`
           // included in tile properties.
+          //
+          // `road`/`direction` ride along so the hover popup can name the segment
+          // instead of showing a bare TMC code (gap #3, report-route-ui-parity-gaps.md).
+          // They must be IN THE TILE rather than left to HoverComp's base-attribute
+          // fetch: that path resolves attributes from the source by MVT feature id and
+          // is the one observed sticking on "Fetching Attributes" for this layer, so a
+          // tile property is both instant and not dependent on it. getLayerTileUrl
+          // builds `cols=` from `[layerProps['data-column']]` verbatim (its regex
+          // identifier check applies only to dynamic-filters), so a comma-joined list
+          // is passed through as-is. The layer's `hover-columns` decides which of these
+          // the popup actually lists.
           set(
             draft,
             `${symbologyLayerPath}['${shapefileLayerId}']['data-column']`,
-            'tmc'
+            'tmc,road,direction'
           );
           // Every click here already has a meaning (select/deselect a TMC, or drop a
           // marker) via useMapTmcHandler/useMapMarkerHandler, so the shared map

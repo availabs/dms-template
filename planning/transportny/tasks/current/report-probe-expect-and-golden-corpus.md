@@ -2,7 +2,15 @@
 
 **Project:** TransportNY · **Topic:** themes · **Status:** IN PROGRESS · **Started:** 2026-08-06
 
-## 2026-09-14: A/A measurement — the corpus is NON-DETERMINISTIC. Do not re-baseline yet.
+## 2026-09-14: A/A measurement — the corpus WAS non-deterministic. RESOLVED the same day.
+
+> **Heading corrected 2026-09-16.** This previously read "the corpus is NON-DETERMINISTIC. Do not
+> re-baseline yet." — and stayed that way after the fix landed in this very section, so a later
+> reader (and a 2026-09-16 triage pass) took the suite to still be untrustworthy. It is not: see
+> "FIXED 2026-09-14 — implementation" and "Verified — the suite is deterministic AND has teeth"
+> below. Three consecutive runs gave `entries=8 blockers=0 majors=0 info=0`, `FLAKY — 0`, and a
+> deliberate three-way baseline tamper was caught every time. Commit `2bbaec7` re-baselined all 8
+> baselines and added `probe_corpus_keys.mjs`. The original diagnosis is kept verbatim below.
 
 Ryan: "tbh i think its been messed up for a while. and at this point, im not even sure what it is
 supposed to be doing?" So it was measured rather than argued: **two consecutive full runs, same
