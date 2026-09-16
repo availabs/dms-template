@@ -253,6 +253,25 @@ export function resolvedRouteLabel(route) {
   return applyNameTemplate(route) ?? route?.name;
 }
 
+// What a route should be CALLED in a piece of chrome an author reads (RRL's collapsed row title,
+// a Quick Controls Routes pill/picker row) — `resolvedRouteLabel` once the slot has actually
+// resolved against a real catalog route, the raw authored text otherwise.
+//
+// `catalogRouteName` is set ONLY by `useDynamicReportRoutes.js`'s resolve-merge — never present on
+// a raw, unfilled slot (a Dynamic Report opened with no `?routes=` yet) and never on a static
+// report's own routes — so it's a reliable per-route "was a real route supplied" signal, distinct
+// from the report-level `isDynamicReport` flag. Unresolved slots deliberately keep their literal
+// template text (2026-09-08) rather than going through substitution, which would fill `%y` from the
+// dates alone while `%n` stayed empty — a half-filled name reads as a bug, an untouched `%n %y`
+// reads as the placeholder it is.
+//
+// Extracted from RouteRow.jsx 2026-09-16 so the graph-header Quick Controls Routes pill/picker
+// resolves names the same way RRL's own rows already did — it was showing every route as the raw
+// `%n %y` template even while previewing with real `?routes=` in the URL.
+export function routeDisplayLabel(route) {
+  return route?.catalogRouteName != null ? resolvedRouteLabel(route) : route?.name;
+}
+
 // Resolves every formula-bearing route entry against its base (found by
 // `derivedFromRoute` === some sibling's `route_comp_id`, in the SAME array)
 // and returns a new array with fresh startDate/endDate. Entries without a
