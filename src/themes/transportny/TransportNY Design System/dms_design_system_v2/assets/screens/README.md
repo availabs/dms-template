@@ -77,6 +77,8 @@ run, for provenance; don't copy them verbatim for a new capture.
 | `docs/npmrds/recipes-before-after-01-hourly-difference.png` | 87 NB report in edit mode — average hours of delay by hour, 2018 against 2021 | 2026-09-08 |
 | `docs/npmrds/route_comparison-01-draft.png` | Route Comparison in its draft state — Build comparison rail with two route chips and the year-grouped matrix | 2026-09-08 |
 | `docs/admin/map_editor-01-graduated-style.png` | Map Editor with the saved map FDI - NPRMDS Performance Measures 2022 open, its layer selected, layer panel on Style | 2026-09-08 |
+| `docs/tsmo/corridor_view-01-i495-wb-2026-06-07.png` | Corridor View, I-495 westbound, Queens County, Sunday 7 June 2026 — the month strip and the time-space speed grid | 2026-09-15 |
+| `docs/tsmo/incident_view-01-i87-crash-2026-06-05.png` | Incident View, event ORI1238298991 — crash on I-87 Major Deegan Expressway NB, Bronx, 5 June 2026; event facts and the response timeline with three timestamps "not recorded" | 2026-09-15 |
 
 ## Porting to the live DMS build
 
@@ -104,3 +106,26 @@ State was reached by clicking the named controls — year lists, gallery tiles, 
 symbology selector, the map's own zoom buttons — not by typing URL parameters, except where a documented
 address is the only way in (`route_creation?route_id=`). Nothing was saved: no route, report, map or
 dataset was written, and the three report-edit figures are existing reports opened in edit mode and left alone.
+
+## How the 2026-09-15 TSMO figures were captured
+
+Two figures for the PPDAF final report (`reports/nysdot-ppdaf-final-report-v1.html`, §3.3 and §4.5) were
+shot from the **live production site**, `https://www.transportny.org/tsmo`, not from a dev server.
+
+**The Playwright recipe above does not work for these.** TSMO's documentation says the product reads
+without an account; the production deployment disagrees, and an unauthenticated Playwright context is
+redirected to `Transport NY Auth` on every TSMO route. Both shots were therefore taken through an
+already-signed-in Chrome session with the Claude in Chrome `computer` tool, and converted JPEG → PNG:
+
+```
+https://www.transportny.org/tsmo/incident_view?event_id=ORI1238298991
+https://www.transportny.org/tsmo/corridor_view?county=QUEENS&road=I-495&direction=WESTBOUND&date=2026-06-07&month=202606
+```
+
+**Consequence for the convention:** these two are **1568×744**, not the 1920×1150 of the 2026-08-27 and
+2026-09-08 sets, because the extension captures the browser's CSS viewport and resizing the window past
+that did not enlarge it (display scaling). They are legible at the ~900 px the report displays them at.
+Re-shoot with Playwright and a minted token if a matching-resolution set is needed.
+
+The auth behaviour is worth re-checking before citing "TSMO needs no account" anywhere: either the
+production deployment is gated and the docs are aspirational, or the gate is a misconfiguration.
