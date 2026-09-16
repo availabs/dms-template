@@ -4,6 +4,7 @@
  *
  *   node scripts/wcdb-admin/tag-playlist-with-shows.mjs [--dry-run]
  *        [--schedule-view 10] [--source 7] [--tz America/New_York]
+ *        [--since 2026-08-31] [--until 2026-08-31]
  *
  * Three steps, and the third is the one that is easy to forget:
  *
@@ -15,10 +16,28 @@
  *  3. `metadata.schedule` on the source — which schedule VERSION the webhook tags
  *     against. Without it, ingest records detections untagged and says nothing.
  *
- * WHICH VERSION TO BACKFILL WITH. View 10 was the live schedule for the whole period
- * the existing 37k detections cover, so that is the honest default — not the newest
- * version, which would attribute a year of history to a schedule that has never aired.
- * Pass --schedule-view to override.
+ * WHICH VERSION TO BACKFILL WITH. A schedule version is only true for the period it
+ * actually aired, so a whole-table backfill is only correct while ONE version has ever
+ * been live. That stopped being true when Fall 2026 (view 22) replaced view 10 — so the
+ * window is now explicit:
+ *
+ *   --since DATE   only rows at or after station-local midnight on DATE
+ *   --until DATE   only rows strictly before station-local midnight on DATE
+ *
+ * Both are compared in --tz, not UTC, because a semester boundary is a local date.
+ * The two-pass form that tags the real history:
+ *
+ *   … --schedule-view 22 --since 2026-08-31     # Fall 2026 onward
+ *   … --schedule-view 10 --until 2026-08-31     # everything before it
+ *
+ * Passing NEITHER still means the whole table, which is what the original single-version
+ * backfill did. It is kept for that case and is wrong for any other.
+ *
+ * THE POINTER IS NOT TOUCHED BY A WINDOWED RUN. Step 3 writes `metadata.schedule`, which
+ * is what LIVE ingest tags against — and a historical pass over old rows must not
+ * retarget the future. Backfilling view 10 into last spring would otherwise silently
+ * point today's webhook back at last year's schedule. With --since/--until, step 3 is
+ * skipped; run with no window (or --set-pointer) to move it deliberately.
  *
  * Idempotent; re-running only rewrites rows whose tag actually changes.
  */
@@ -37,6 +56,34 @@ const DRY = args.includes('--dry-run');
 const SOURCE_ID = Number(flag('source', 7));
 const SCHEDULE_VIEW = Number(flag('schedule-view', 10));
 const TZ = flag('tz', DEFAULT_TZ);
+const SINCE = flag('since', null);
+const UNTIL = flag('until', null);
+const WINDOWED = Boolean(SINCE || UNTIL);
+// Explicit override so a windowed run CAN still move the pointer if that is the intent.
+const SET_POINTER = args.includes('--set-pointer') || !WINDOWED;
+
+for (const [name, v] of [['since', SINCE], ['until', UNTIL]]) {
+  if (v != null && !/^\d{4}-\d{2}-\d{2}$/.test(v)) {
+    console.error(`--${name} must be YYYY-MM-DD, got ${JSON.stringify(v)}`);
+    process.exit(1);
+  }
+}
+
+/* The backfill's row filter, in STATION-LOCAL time.
+ *
+ * `p.timestamp_utc AT TIME ZONE '<tz>'` converts the stored timestamptz to the local
+ * wall clock, so '2026-08-31' means local midnight — the same boundary a person reading
+ * the schedule means — not 00:00 UTC, which is 8pm the previous evening here and would
+ * hand four hours of August to the Fall schedule.
+ *
+ * `since` is inclusive and `until` exclusive, so --until X and --since X are exact
+ * complements: every row lands in exactly one of the two passes, none in both.
+ */
+const localTs = `(p.timestamp_utc AT TIME ZONE '${TZ}')`;
+const WHERE = [
+  SINCE ? `${localTs} >= TIMESTAMP '${SINCE} 00:00'` : null,
+  UNTIL ? `${localTs} <  TIMESTAMP '${UNTIL} 00:00'` : null,
+].filter(Boolean).join(' AND ') || 'TRUE';
 
 const c = new Client(cfg);
 await c.connect();
@@ -54,7 +101,8 @@ const TRACKS = `${view.table_schema}.${view.table_name}`;
 const SCHED = `${sched.table_schema}.${sched.table_name}`;
 console.log(`playlist : ${TRACKS} (source ${SOURCE_ID} "${src.name}", view ${view.view_id})`);
 console.log(`schedule : ${SCHED} (view ${sched.view_id} "${sched.version}")`);
-console.log(`timezone : ${TZ}${DRY ? '   (dry run)' : ''}\n`);
+console.log(`timezone : ${TZ}${DRY ? '   (dry run)' : ''}`);
+console.log(`window   : ${WINDOWED ? `${SINCE || '-∞'} ≤ local < ${UNTIL || '+∞'}` : 'whole table'}\n`);
 
 /* 1 — the column. */
 const hasCol = async () => (await q(
@@ -91,7 +139,9 @@ const wanted = { source_id: sched.source_id, view_id: sched.view_id, tz: TZ };
 // report "set" on every run.
 const sameSchedule = (a, b) => !!a && Number(a.source_id) === Number(b.source_id)
   && Number(a.view_id) === Number(b.view_id) && (a.tz || '') === (b.tz || '');
-if (sameSchedule(meta.schedule, wanted)) {
+if (!SET_POINTER) {
+  console.log(`3. metadata.schedule left at ${JSON.stringify(meta.schedule)} — windowed run, pointer untouched`);
+} else if (sameSchedule(meta.schedule, wanted)) {
   console.log('3. metadata.schedule already set');
 } else if (DRY) {
   console.log(`3. would set metadata.schedule = ${JSON.stringify(wanted)}`);
@@ -104,10 +154,13 @@ if (sameSchedule(meta.schedule, wanted)) {
 /* 4 — backfill. */
 // In a dry run the column may not exist yet, so count it only when it does.
 const colNow = await hasCol();
+// Every count below is scoped to the window, so the percentages describe the pass that
+// actually ran rather than the whole table it ran inside.
+const scope = `FROM ${TRACKS} p WHERE ${WHERE}`;
 const before = (await q(colNow
-  ? `SELECT count(*)::int n, count(show_id)::int tagged FROM ${TRACKS}`
-  : `SELECT count(*)::int n, 0::int tagged FROM ${TRACKS}`))[0];
-console.log(`\n4. backfill — ${before.n} rows, ${before.tagged} already tagged`);
+  ? `SELECT count(*)::int n, count(p.show_id)::int tagged ${scope}`
+  : `SELECT count(*)::int n, 0::int tagged ${scope}`))[0];
+console.log(`\n4. backfill — ${before.n} rows in window, ${before.tagged} already tagged`);
 if (DRY) {
   const preview = (await q(`
     SELECT count(*)::int would_tag FROM ${TRACKS} p
@@ -118,15 +171,15 @@ if (DRY) {
         AND TO_CHAR(p.timestamp_utc AT TIME ZONE '${TZ}', 'HH24:MI') >= a.start
         AND TO_CHAR(p.timestamp_utc AT TIME ZONE '${TZ}', 'HH24:MI') < CASE WHEN a."end"='00:00' THEN '24:00' ELSE a."end" END
       LIMIT 1) a
-    WHERE p.timestamp_utc IS NOT NULL`))[0];
+    WHERE p.timestamp_utc IS NOT NULL AND (${WHERE})`))[0];
   console.log(`   would tag ${preview.would_tag} of ${before.n} rows`);
 } else {
-  const res = await c.query(buildBackfillSQL(TRACKS, SCHED, TZ));
-  const after = (await q(`SELECT count(show_id)::int tagged FROM ${TRACKS}`))[0];
+  const res = await c.query(buildBackfillSQL(TRACKS, SCHED, TZ, WHERE));
+  const after = (await q(`SELECT count(p.show_id)::int tagged ${scope}`))[0];
   console.log(`   updated ${res.rowCount} rows → ${after.tagged}/${before.n} tagged (${Math.round(after.tagged / before.n * 100)}%)`);
   const top = await q(`SELECT p.show_id, sh.name, count(*)::int n FROM ${TRACKS} p
     LEFT JOIN gis_datasets.s9_v9_wcdb_shows sh ON sh.show_id = p.show_id
-    WHERE p.show_id IS NOT NULL GROUP BY 1,2 ORDER BY 3 DESC LIMIT 5`);
+    WHERE p.show_id IS NOT NULL AND (${WHERE}) GROUP BY 1,2 ORDER BY 3 DESC LIMIT 5`);
   console.log('   most-tagged shows:');
   for (const r of top) console.log(`     ${String(r.n).padStart(5)}  ${r.show_id}  ${r.name}`);
 }
