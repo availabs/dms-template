@@ -1,0 +1,176 @@
+{
+ "currentVersion": 10.91,
+ "serviceDescription": "a linear shapefile of New york State's active railroad system",
+ "mapName": "Layers",
+ "description": "",
+ "copyrightText": "New York State Department Of Transportation.",
+ "supportsDynamicLayers": true,
+ "layers": [
+  {
+   "id": 0,
+   "name": "Intersections",
+   "parentLayerId": -1,
+   "defaultVisibility": false,
+   "subLayerIds": null,
+   "minScale": 6000,
+   "maxScale": 0,
+   "type": "Feature Layer",
+   "geometryType": "esriGeometryPolygon"
+  },
+  {
+   "id": 1,
+   "name": "Exits",
+   "parentLayerId": -1,
+   "defaultVisibility": false,
+   "subLayerIds": null,
+   "minScale": 12000,
+   "maxScale": 0,
+   "type": "Feature Layer",
+   "geometryType": "esriGeometryPoint"
+  },
+  {
+   "id": 2,
+   "name": "ReferenceMarkers",
+   "parentLayerId": -1,
+   "defaultVisibility": false,
+   "subLayerIds": null,
+   "minScale": 12000,
+   "maxScale": 0,
+   "type": "Feature Layer",
+   "geometryType": "esriGeometryPoint"
+  },
+  {
+   "id": 3,
+   "name": "Interstates",
+   "parentLayerId": -1,
+   "defaultVisibility": true,
+   "subLayerIds": null,
+   "minScale": 2500000,
+   "maxScale": 0,
+   "type": "Feature Layer",
+   "geometryType": "esriGeometryPolyline"
+  },
+  {
+   "id": 4,
+   "name": "US Highways",
+   "parentLayerId": -1,
+   "defaultVisibility": true,
+   "subLayerIds": null,
+   "minScale": 2500000,
+   "maxScale": 0,
+   "type": "Feature Layer",
+   "geometryType": "esriGeometryPolyline"
+  },
+  {
+   "id": 5,
+   "name": "State Routes",
+   "parentLayerId": -1,
+   "defaultVisibility": true,
+   "subLayerIds": null,
+   "minScale": 80000,
+   "maxScale": 0,
+   "type": "Feature Layer",
+   "geometryType": "esriGeometryPolyline"
+  },
+  {
+   "id": 6,
+   "name": "Streets",
+   "parentLayerId": -1,
+   "defaultVisibility": true,
+   "subLayerIds": null,
+   "minScale": 6000,
+   "maxScale": 0,
+   "type": "Feature Layer",
+   "geometryType": "esriGeometryPolyline"
+  },
+  {
+   "id": 7,
+   "name": "CityTown",
+   "parentLayerId": -1,
+   "defaultVisibility": true,
+   "subLayerIds": null,
+   "minScale": 300000,
+   "maxScale": 18055,
+   "type": "Feature Layer",
+   "geometryType": "esriGeometryPolygon"
+  },
+  {
+   "id": 8,
+   "name": "County",
+   "parentLayerId": -1,
+   "defaultVisibility": true,
+   "subLayerIds": null,
+   "minScale": 3000000,
+   "maxScale": 144447,
+   "type": "Feature Layer",
+   "geometryType": "esriGeometryPolygon"
+  },
+  {
+   "id": 9,
+   "name": "State Boundaries",
+   "parentLayerId": -1,
+   "defaultVisibility": true,
+   "subLayerIds": null,
+   "minScale": 8822017,
+   "maxScale": 1155581,
+   "type": "Feature Layer",
+   "geometryType": "esriGeometryPolygon"
+  }
+ ],
+ "tables": [
+  {
+   "id": 10,
+   "name": "MasterIntersection",
+   "type": "Table"
+  }
+ ],
+ "spatialReference": {
+  "wkid": 26918,
+  "latestWkid": 26918
+ },
+ "singleFusedMapCache": false,
+ "initialExtent": {
+  "xmin": 599911.50117323,
+  "ymin": 4720833.379017159,
+  "xmax": 605499.5123492525,
+  "ymax": 4723758.353617109,
+  "spatialReference": {
+   "wkid": 26918,
+   "latestWkid": 26918
+  }
+ },
+ "fullExtent": {
+  "xmin": 26826.7285000002,
+  "ymin": 4218224.5,
+  "xmax": 922228.625,
+  "ymax": 4990548.5,
+  "spatialReference": {
+   "wkid": 26918,
+   "latestWkid": 26918
+  }
+ },
+ "minScale": 8822017,
+ "maxScale": 0,
+ "units": "esriMeters",
+ "supportedImageFormatTypes": "PNG32,PNG24,PNG,JPG,DIB,TIFF,EMF,PS,PDF,GIF,SVG,SVGZ,BMP",
+ "documentInfo": {
+  "Title": "",
+  "Author": "",
+  "Comments": "a linear shapefile of New york State's active railroad system",
+  "Subject": "Active railroad lines in New York State",
+  "Category": "",
+  "AntialiasingMode": "None",
+  "TextAntialiasingMode": "Force",
+  "Keywords": "rails; railroads; tracks; transporation"
+ },
+ "capabilities": "Map,Query,Data",
+ "supportedQueryFormats": "JSON, geoJSON",
+ "exportTilesAllowed": false,
+ "referenceScale": 0,
+ "supportsDatumTransformation": true,
+ "maxRecordCount": 1000,
+ "maxImageHeight": 4096,
+ "maxImageWidth": 4096,
+ "supportedExtensions": "KmlServer",
+ "serviceItemId": "a4e6a104956c4e3aa049facbe3fe7120"
+}

@@ -1,0 +1,313 @@
+{
+ "currentVersion": 10.91,
+ "id": 2,
+ "name": "Routes",
+ "type": "Feature Layer",
+ "description": "",
+ "geometryType": "esriGeometryPolyline",
+ "sourceSpatialReference": {
+  "wkid": 26918,
+  "latestWkid": 26918
+ },
+ "copyrightText": "",
+ "parentLayer": null,
+ "subLayers": [],
+ "minScale": 6000,
+ "maxScale": 0,
+ "drawingInfo": {
+  "renderer": {
+   "type": "simple",
+   "symbol": {
+    "type": "esriSLS",
+    "style": "esriSLSSolid",
+    "color": [
+     56,
+     168,
+     0,
+     255
+    ],
+    "width": 1
+   },
+   "label": "",
+   "description": ""
+  },
+  "transparency": 0,
+  "labelingInfo": [
+   {
+    "labelPlacement": "esriServerLinePlacementAboveAlong",
+    "where": null,
+    "labelExpression": "[ROUTEKEY]",
+    "useCodedValues": true,
+    "symbol": {
+     "type": "esriTS",
+     "color": [
+      0,
+      0,
+      0,
+      255
+     ],
+     "backgroundColor": null,
+     "borderLineColor": null,
+     "borderLineSize": null,
+     "verticalAlignment": "bottom",
+     "horizontalAlignment": "center",
+     "rightToLeft": false,
+     "angle": 0,
+     "xoffset": 0,
+     "yoffset": 0,
+     "kerning": true,
+     "haloColor": null,
+     "haloSize": null,
+     "font": {
+      "family": "Arial",
+      "size": 8,
+      "style": "normal",
+      "weight": "normal",
+      "decoration": "none"
+     }
+    },
+    "minScale": 0,
+    "maxScale": 0
+   }
+  ]
+ },
+ "defaultVisibility": false,
+ "extent": {
+  "xmin": 105708.09949999955,
+  "ymin": 4483306.344799999,
+  "xmax": 763927.0700000003,
+  "ymax": 4985404.0600000005,
+  "spatialReference": {
+   "wkid": 26918,
+   "latestWkid": 26918
+  }
+ },
+ "hasAttachments": false,
+ "htmlPopupType": "esriServerHTMLPopupTypeAsHTMLText",
+ "displayField": "DOT_ID",
+ "typeIdField": null,
+ "subtypeFieldName": null,
+ "subtypeField": null,
+ "defaultSubtypeCode": null,
+ "fields": [
+  {
+   "name": "OBJECTID",
+   "type": "esriFieldTypeOID",
+   "alias": "OBJECTID",
+   "domain": null
+  },
+  {
+   "name": "FROM_DATE",
+   "type": "esriFieldTypeDate",
+   "alias": "From Date",
+   "length": 8,
+   "domain": null
+  },
+  {
+   "name": "TO_DATE",
+   "type": "esriFieldTypeDate",
+   "alias": "To Date",
+   "length": 8,
+   "domain": null
+  },
+  {
+   "name": "DOT_ID",
+   "type": "esriFieldTypeString",
+   "alias": "DOT Identifier",
+   "length": 6,
+   "domain": null
+  },
+  {
+   "name": "COUNTY_ORDER",
+   "type": "esriFieldTypeString",
+   "alias": "County Order",
+   "length": 2,
+   "domain": null
+  },
+  {
+   "name": "DIRECTION",
+   "type": "esriFieldTypeString",
+   "alias": "Direction",
+   "length": 1,
+   "domain": null
+  },
+  {
+   "name": "ROUTE_ID",
+   "type": "esriFieldTypeString",
+   "alias": "ROUTE_ID",
+   "length": 9,
+   "domain": null
+  },
+  {
+   "name": "SIGNING",
+   "type": "esriFieldTypeSmallInteger",
+   "alias": "Route Signing",
+   "domain": null
+  },
+  {
+   "name": "ROUTE_NUMBER",
+   "type": "esriFieldTypeString",
+   "alias": "Route Number",
+   "length": 5,
+   "domain": null
+  },
+  {
+   "name": "ROUTE_SUFFIX",
+   "type": "esriFieldTypeString",
+   "alias": "Route Suffix",
+   "length": 3,
+   "domain": null
+  },
+  {
+   "name": "ROADWAY_TYPE",
+   "type": "esriFieldTypeSmallInteger",
+   "alias": "Roadway Type",
+   "domain": null
+  },
+  {
+   "name": "EDITED_DATE",
+   "type": "esriFieldTypeDate",
+   "alias": "Edited Date",
+   "length": 8,
+   "domain": null
+  },
+  {
+   "name": "EDITED_BY",
+   "type": "esriFieldTypeString",
+   "alias": "Edited By",
+   "length": 50,
+   "domain": null
+  },
+  {
+   "name": "CREATED_DATE",
+   "type": "esriFieldTypeDate",
+   "alias": "Created Date",
+   "length": 8,
+   "domain": null
+  },
+  {
+   "name": "CREATED_BY",
+   "type": "esriFieldTypeString",
+   "alias": "Created By",
+   "length": 50,
+   "domain": null
+  },
+  {
+   "name": "CONC_HIERARCHY",
+   "type": "esriFieldTypeDouble",
+   "alias": "CONC_HIERARCHY",
+   "domain": null
+  },
+  {
+   "name": "COUNTY",
+   "type": "esriFieldTypeSmallInteger",
+   "alias": "County",
+   "domain": null
+  },
+  {
+   "name": "ROUTE_QUALIFIER",
+   "type": "esriFieldTypeSmallInteger",
+   "alias": "Route Qualifier",
+   "domain": null
+  },
+  {
+   "name": "ROADWAY_FEATURE",
+   "type": "esriFieldTypeSmallInteger",
+   "alias": "Roadway Feature",
+   "domain": null
+  },
+  {
+   "name": "PARKWAY_FLAG",
+   "type": "esriFieldTypeString",
+   "alias": "Parkway",
+   "length": 1,
+   "domain": null
+  },
+  {
+   "name": "ROUTEKEY",
+   "type": "esriFieldTypeString",
+   "alias": "ROUTEKEY",
+   "length": 10,
+   "domain": null
+  },
+  {
+   "name": "FIPS",
+   "type": "esriFieldTypeString",
+   "alias": "FIPS",
+   "length": 5,
+   "domain": null
+  },
+  {
+   "name": "SHAPE",
+   "type": "esriFieldTypeGeometry",
+   "alias": "SHAPE",
+   "domain": null
+  },
+  {
+   "name": "SHAPE_Length",
+   "type": "esriFieldTypeDouble",
+   "alias": "SHAPE_Length",
+   "domain": null
+  }
+ ],
+ "geometryField": {
+  "name": "SHAPE",
+  "type": "esriFieldTypeGeometry",
+  "alias": "SHAPE"
+ },
+ "indexes": [
+  {
+   "name": "FDO_OBJECTID",
+   "fields": "OBJECTID",
+   "isAscending": true,
+   "isUnique": true,
+   "description": ""
+  },
+  {
+   "name": "FDO_SHAPE",
+   "fields": "SHAPE",
+   "isAscending": true,
+   "isUnique": false,
+   "description": ""
+  }
+ ],
+ "subtypes": [],
+ "relationships": [],
+ "canModifyLayer": true,
+ "canScaleSymbols": false,
+ "hasLabels": true,
+ "capabilities": "Map,Query,Data",
+ "maxRecordCount": 1000,
+ "supportsStatistics": true,
+ "supportsAdvancedQueries": true,
+ "hasZ": true,
+ "hasM": true,
+ "supportedQueryFormats": "JSON, geoJSON",
+ "isDataVersioned": false,
+ "ownershipBasedAccessControlForFeatures": {
+  "allowOthersToQuery": true
+ },
+ "useStandardizedQueries": true,
+ "advancedQueryCapabilities": {
+  "useStandardizedQueries": true,
+  "supportsStatistics": true,
+  "supportsHavingClause": true,
+  "supportsCountDistinct": true,
+  "supportsOrderBy": true,
+  "supportsDistinct": true,
+  "supportsPagination": true,
+  "supportsTrueCurve": true,
+  "supportsReturningQueryExtent": true,
+  "supportsQueryWithDistance": true,
+  "supportsSqlExpression": true
+ },
+ "supportsDatumTransformation": true,
+ "hasGeometryProperties": true,
+ "geometryProperties": {
+  "shapeLengthFieldName": "SHAPE_Length",
+  "units": "esriMeters"
+ },
+ "dateFieldsTimeReference": null,
+ "supportsCoordinatesQuantization": true,
+ "serviceItemId": "a49730864716431290bf5225fb24106f"
+}

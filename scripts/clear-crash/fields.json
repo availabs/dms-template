@@ -1,0 +1,401 @@
+{
+ "source": "5.0a09f0c3571dd5e7839f.js",
+ "groups": [
+  {
+   "key": "basic",
+   "name": "Basic Crash Details",
+   "fields": [
+    {
+     "id": 1,
+     "name": "Case Number",
+     "code": "CaseNumber",
+     "queryLevel": 0
+    },
+    {
+     "id": 112,
+     "name": "Max Injury in Crash",
+     "code": "MaxInjurySeverity",
+     "queryLevel": 0
+    },
+    {
+     "id": 5,
+     "name": "Crash Severity",
+     "code": "CrashSeverity",
+     "queryLevel": 0
+    },
+    {
+     "id": 111,
+     "name": "Reported Access Control",
+     "code": "RoadwayAccessControlCde",
+     "queryLevel": 0
+    },
+    {
+     "id": 2,
+     "name": "Case Year",
+     "code": "CaseYear",
+     "queryLevel": 0
+    },
+    {
+     "id": 3,
+     "name": "Collision Type",
+     "code": "CollisionType",
+     "queryLevel": 0
+    },
+    {
+     "id": 4,
+     "name": "Crash Date",
+     "code": "CrashDate",
+     "queryLevel": 0
+    },
+    {
+     "id": 6,
+     "name": "Crash Time",
+     "code": "CrashTimeFormatted",
+     "queryLevel": 0
+    },
+    {
+     "id": 7,
+     "name": "Crash Type",
+     "code": "CrashType",
+     "queryLevel": 0
+    },
+    {
+     "id": 8,
+     "name": "Light Conditions",
+     "code": "LightCondition",
+     "queryLevel": 0
+    },
+    {
+     "id": 9,
+     "name": "Road Characteristics",
+     "code": "RoadwayCharacteristic",
+     "queryLevel": 0
+    },
+    {
+     "id": 10,
+     "name": "Road Surface Conditions",
+     "code": "RoadSurfaceCondition",
+     "queryLevel": 0
+    },
+    {
+     "id": 11,
+     "name": "Traffic Control",
+     "code": "TrafficControl",
+     "queryLevel": 0
+    },
+    {
+     "id": 110,
+     "name": "Traffic Way",
+     "code": "TrafficWay",
+     "queryLevel": 0
+    },
+    {
+     "id": 12,
+     "name": "Weather Conditions",
+     "code": "WeatherCondition",
+     "queryLevel": 0
+    }
+   ]
+  },
+  {
+   "key": "extended",
+   "name": "Extended Crash Details",
+   "fields": [
+    {
+     "id": 13,
+     "name": "Commercial Vehicle Crash Indicator",
+     "code": "CommercialVehicleCrashInd",
+     "queryLevel": 0
+    },
+    {
+     "id": 14,
+     "name": "DMV Insert Date",
+     "code": "DMVInsertDate",
+     "queryLevel": 0
+    },
+    {
+     "id": 15,
+     "name": "Number of Fatalities",
+     "code": "NumberOfFatalities",
+     "queryLevel": 0
+    },
+    {
+     "id": 16,
+     "name": "Number of Injuries",
+     "code": "NumberOfInjuries",
+     "queryLevel": 0
+    },
+    {
+     "id": 17,
+     "name": "Number of Other Injuries",
+     "code": "NumberOfOtherInjuries",
+     "queryLevel": 0
+    },
+    {
+     "id": 18,
+     "name": "Number of Serious Injuries",
+     "code": "NumberOfSeriousInjuries",
+     "queryLevel": 0
+    },
+    {
+     "id": 19,
+     "name": "Number of Vehicles",
+     "code": "NumberOfVehicles",
+     "queryLevel": 0
+    },
+    {
+     "id": 20,
+     "name": "Police Department",
+     "code": "PoliceDept",
+     "queryLevel": 0
+    },
+    {
+     "id": 21,
+     "name": "Non Reportable",
+     "code": "NonReportable",
+     "queryLevel": 0
+    },
+    {
+     "id": 22,
+     "name": "Reporting Agency",
+     "code": "ReportingAgency",
+     "queryLevel": 0
+    },
+    {
+     "id": 59,
+     "name": "Non-Public Way",
+     "code": "NonPublicWayCode",
+     "queryLevel": 0
+    }
+   ]
+  },
+  {
+   "key": "location",
+   "name": "Crash Location Details",
+   "fields": [
+    {
+     "id": 35,
+     "name": "X Coordinate",
+     "code": "UTMEasting",
+     "queryLevel": 0
+    },
+    {
+     "id": 36,
+     "name": "Y Coordinate",
+     "code": "UTMNorthing",
+     "queryLevel": 0
+    },
+    {
+     "id": 23,
+     "name": "Intersection Indicator",
+     "code": "IntersectionIndicator",
+     "queryLevel": 0
+    },
+    {
+     "id": 24,
+     "name": "Closest Cross Street",
+     "code": "ClosestCrossStreet",
+     "queryLevel": 0
+    },
+    {
+     "id": 25,
+     "name": "County",
+     "code": "CountyName",
+     "queryLevel": 0
+    },
+    {
+     "id": 26,
+     "name": "Direction From",
+     "code": "DirectionFromIntersection",
+     "queryLevel": 0
+    },
+    {
+     "id": 27,
+     "name": "Distance From (Meters)",
+     "code": "DistanceFromIntersection",
+     "queryLevel": 0
+    },
+    {
+     "id": 29,
+     "name": "Intersection ID",
+     "code": "MasterIntersectionId",
+     "queryLevel": 0
+    },
+    {
+     "id": 31,
+     "name": "Municipality",
+     "code": "CityTownName",
+     "queryLevel": 0
+    },
+    {
+     "id": 32,
+     "name": "On Street",
+     "code": "OnStreet",
+     "queryLevel": 0
+    },
+    {
+     "id": 33,
+     "name": "Reference Marker",
+     "code": "ReferenceMarker",
+     "queryLevel": 0
+    }
+   ]
+  },
+  {
+   "key": "road",
+   "name": "Road Characteristics",
+   "fields": [
+    {
+     "id": 37,
+     "name": "Access Control",
+     "code": "ACCESS_CONTROL",
+     "queryLevel": 0
+    },
+    {
+     "id": 38,
+     "name": "Divided",
+     "code": "DIVIDED",
+     "queryLevel": 0
+    },
+    {
+     "id": 39,
+     "name": "Functional Class",
+     "code": "FUNCTIONAL_CLASS",
+     "queryLevel": 0
+    },
+    {
+     "id": 40,
+     "name": "Maintenance Jurisdiction",
+     "code": "MAINT_JURISDICTION_TYPE_ID",
+     "queryLevel": 0
+    },
+    {
+     "id": 41,
+     "name": "Owning Jurisdiction",
+     "code": "OWNING_JURISDICTION_TYPE_ID",
+     "queryLevel": 0
+    },
+    {
+     "id": 400,
+     "name": "Road Name",
+     "code": "NAME",
+     "queryLevel": 0
+    },
+    {
+     "id": 401,
+     "name": "Posted Speed",
+     "code": "POSTED_SPEED",
+     "queryLevel": 0
+    }
+   ]
+  },
+  {
+   "key": "vehicle",
+   "name": "Vehicle Details",
+   "fields": [
+    {
+     "id": 47,
+     "name": "Vehicle Sequence Number",
+     "code": "UnitSequenceNumber",
+     "queryLevel": 1
+    },
+    {
+     "id": 42,
+     "name": "Direction of Travel",
+     "code": "VehicleDirectionOfTravel",
+     "queryLevel": 1
+    },
+    {
+     "id": 43,
+     "name": "Hazmat Cargo Indicator",
+     "code": "HazardousCargoIndicator",
+     "queryLevel": 1
+    },
+    {
+     "id": 44,
+     "name": "Pre-crash Condition",
+     "code": "PreCrashAction",
+     "queryLevel": 1
+    },
+    {
+     "id": 45,
+     "name": "Second Event",
+     "code": "SecondEvent",
+     "queryLevel": 1
+    },
+    {
+     "id": 46,
+     "name": "Vehicle Body Type",
+     "code": "VehicleBodyType",
+     "queryLevel": 1
+    },
+    {
+     "id": 48,
+     "name": "Vehicle Type",
+     "code": "VehicleType",
+     "queryLevel": 1
+    }
+   ]
+  },
+  {
+   "key": "person",
+   "name": "Person Details",
+   "fields": [
+    {
+     "id": 49,
+     "name": "Person Sequence Number",
+     "code": "PersonSequenceNumber",
+     "queryLevel": 2
+    },
+    {
+     "id": 50,
+     "name": "Person Type",
+     "code": "PersonType",
+     "queryLevel": 2
+    },
+    {
+     "id": 51,
+     "name": "Injury Severity",
+     "code": "InjurySeverity",
+     "queryLevel": 2
+    },
+    {
+     "id": 52,
+     "name": "Age",
+     "code": "Age",
+     "queryLevel": 2
+    },
+    {
+     "id": 53,
+     "name": "Sex",
+     "code": "Sex",
+     "queryLevel": 2
+    },
+    {
+     "id": 54,
+     "name": "Seat Position",
+     "code": "SeatPosition",
+     "queryLevel": 2
+    },
+    {
+     "id": 55,
+     "name": "Seat Belt Status",
+     "code": "SeatBeltStatus",
+     "queryLevel": 2
+    }
+   ]
+  },
+  {
+   "key": "contributingFactor",
+   "name": "Contributing Factor Details",
+   "fields": [
+    {
+     "id": 225,
+     "name": "Apparent Contributing Factor",
+     "code": "ApparentFactors",
+     "queryLevel": 0
+    }
+   ]
+  }
+ ]
+}

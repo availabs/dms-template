@@ -1,0 +1,415 @@
+=== CLEAR_CDV_Layers  https://clear.dot.ny.gov/hosting/rest/services/CLEAR_CDV_Layers/MapServer
+    
+  [0] Bridge Projects  type=Feature Layer geom=esriGeometryPoint max=1000 pagination=True stats=True oid=None fields=26
+        OBJECTID                         OID          OBJECTID
+        SHAPE                            Geometry     SHAPE
+        PIN                              String       PIN
+        DOTREGION                        String       DOT Region
+        STATUS                           String       Project Status
+        TITLE                            String       Project Title
+        DESCRIPTION                      String       Project Description
+        WORKTYPE                         String       Work Type
+        SUBWORKTYPE                      String       Sub Work Type
+        LETDATE                          Date         Let Date
+        PSEESTIMATE                      Double       PSE Estimate
+        PROJECTESTIMATE                  Double       Project Estimate
+        CONSTRUCTIONCOST                 Double       Construction Cost
+        PROJMANAGERFIRST                 String       PM First Name
+        PROJMANAGERLAST                  String       PM Last Name
+        LASTUPDATED                      Date         Date of Last Update
+        FEDERALFUNDING                   String       Federal Funding
+        STATEFUNDING                     String       State Funding
+        LOCALFUNDING                     String       Local Funding
+        BIN                              String       BIN
+        CONST_COMP_DATE                  Date         CONST_COMP_DATE
+        PROJECTCLOSEDATE                 Date         PROJECTCLOSEDATE
+        TIPNUMBER                        String       TIPNUMBER
+        FISC_YEAR                        Integer      FISC_YEAR
+        CAL_YEAR                         Integer      CAL_YEAR
+        PROJCOMPLETIONDATE               Date         PROJCOMPLETIONDATE
+  [1] Highway Projects  type=Feature Layer geom=esriGeometryPolyline max=1000 pagination=True stats=True oid=None fields=29
+        OBJECTID                         OID          OBJECTID
+        SHAPE                            Geometry     SHAPE
+        PIN                              String       PIN
+        DOTREGION                        String       DOT Region
+        STATUS                           String       Project Status
+        TITLE                            String       Project Title
+        DESCRIPTION                      String       Project Description
+        WORKTYPE                         String       Work Type
+        SUBWORKTYPE                      String       Sub Work Type
+        LETDATE                          Date         Let Date
+        PSEESTIMATE                      Double       PSE Estimate
+        PROJECTESTIMATE                  Double       Project Estimate
+        CONSTRUCTIONCOST                 Double       Construction Cost
+        PROJMANAGERFIRST                 String       PM First Name
+        PROJMANAGERLAST                  String       PM Last Name
+        LASTUPDATED                      Date         Date of Last Update
+        FEDERALFUNDING                   String       Federal Funding
+        STATEFUNDING                     String       State Funding
+        LOCALFUNDING                     String       Local Funding
+        GISROUTE                         String       Route ID
+        BEGINMILEPT                      Single       Begin Measure
+        ENDMILEPT                        Single       End Measure
+        CONST_COMP_DATE                  Date         CONST_COMP_DATE
+        PROJECTCLOSEDATE                 Date         PROJECTCLOSEDATE
+        TIPNUMBER                        String       TIPNUMBER
+        FISC_YEAR                        Integer      FISC_YEAR
+        CAL_YEAR                         Integer      CAL_YEAR
+        PROJCOMPLETIONDATE               Date         PROJCOMPLETIONDATE
+        SHAPE_Length                     Double       SHAPE_Length
+  [2] Routes  type=Feature Layer geom=esriGeometryPolyline max=1000 pagination=True stats=True oid=None fields=24
+        OBJECTID                         OID          OBJECTID
+        FROM_DATE                        Date         From Date
+        TO_DATE                          Date         To Date
+        DOT_ID                           String       DOT Identifier
+        COUNTY_ORDER                     String       County Order
+        DIRECTION                        String       Direction
+        ROUTE_ID                         String       ROUTE_ID
+        SIGNING                          SmallInteger Route Signing
+        ROUTE_NUMBER                     String       Route Number
+        ROUTE_SUFFIX                     String       Route Suffix
+        ROADWAY_TYPE                     SmallInteger Roadway Type
+        EDITED_DATE                      Date         Edited Date
+        EDITED_BY                        String       Edited By
+        CREATED_DATE                     Date         Created Date
+        CREATED_BY                       String       Created By
+        CONC_HIERARCHY                   Double       CONC_HIERARCHY
+        COUNTY                           SmallInteger County
+        ROUTE_QUALIFIER                  SmallInteger Route Qualifier
+        ROADWAY_FEATURE                  SmallInteger Roadway Feature
+        PARKWAY_FLAG                     String       Parkway
+        ROUTEKEY                         String       ROUTEKEY
+        FIPS                             String       FIPS
+        SHAPE                            Geometry     SHAPE
+        SHAPE_Length                     Double       SHAPE_Length
+  [3] Ramps  type=Feature Layer geom=esriGeometryPolyline max=1000 pagination=True stats=True oid=None fields=18
+        OBJECTID                         OID          OBJECTID
+        RampID                           Integer      RampID
+        Region                           String       Region
+        County                           String       County
+        RouteKey                         String       RouteKey
+        FromMeasure                      Double       FromMeasure
+        ToMeasure                        Double       ToMeasure
+        SegmentLength                    Double       SegmentLength
+        AADT                             Double       AADT
+        AreaType                         String       AreaType
+        RampType                         String       RampType
+        NumberOfLanes                    Integer      NumberOfLanes
+        OneWay                           String       OneWay
+        SHAPE                            Geometry     SHAPE
+        FacilityTypeID                   SmallInteger FacilityTypeID
+        CountyFIPS                       Integer      CountyFIPS
+        OWNING_JURISDICTION_TYPE_ID      SmallInteger OWNING_JURISDICTION_TYPE_ID
+        SHAPE_Length                     Double       SHAPE_Length
+  [4] State Police Troops  type=Feature Layer geom=esriGeometryPolygon max=1000 pagination=True stats=True oid=None fields=5
+        OBJECTID                         OID          FID
+        Shape                            Geometry     Shape
+        TROOP                            String       TROOP
+        Shape_Length                     Double       Shape_Length
+        Shape_Area                       Double       Shape_Area
+  [5] Senate Districts  type=Feature Layer geom=esriGeometryPolygon max=1000 pagination=True stats=True oid=None fields=16
+        OBJECTID                         OID          FID
+        Shape                            Geometry     Shape
+        DISTRICT                         Double       DISTRICT
+        NAME                             String       NAME
+        PARTY                            String       PARTY
+        POPULATION                       Double       POPULATION
+        WHITE                            Double       WHITE
+        BLACK                            Double       BLACK
+        AMINDIAN                         Double       AMINDIAN
+        ASIAN                            Double       ASIAN
+        HAWAIIAN                         Double       HAWAIIAN
+        OTHER                            Double       OTHER
+        RACE2PLUS                        Double       RACE2PLUS
+        HISPANIC_O                       Double       HISPANIC_O
+        Shape_Length                     Double       Shape_Length
+        Shape_Area                       Double       Shape_Area
+  [6] Assembly Districts  type=Feature Layer geom=esriGeometryPolygon max=1000 pagination=True stats=True oid=None fields=16
+        OBJECTID                         OID          FID
+        Shape                            Geometry     Shape
+        DISTRICT                         Double       DISTRICT
+        NAME                             String       NAME
+        PARTY                            String       PARTY
+        POPULATION                       Double       POPULATION
+        WHITE                            Double       WHITE
+        BLACK                            Double       BLACK
+        AMINDIAN                         Double       AMINDIAN
+        ASIAN                            Double       ASIAN
+        HAWAIIAN                         Double       HAWAIIAN
+        OTHER                            Double       OTHER
+        RACE2PLUS                        Double       RACE2PLUS
+        HISPANIC_O                       Double       HISPANIC_O
+        Shape_Length                     Double       Shape_Length
+        Shape_Area                       Double       Shape_Area
+  [7] MPO Boundaries  type=Feature Layer geom=esriGeometryPolygon max=1000 pagination=True stats=True oid=None fields=10
+        OBJECTID                         OID          FID
+        Shape                            Geometry     Shape
+        MPO                              String       MPO
+        MPO_NAME                         String       MPO_NAME
+        InPoly_FID                       Integer      InPoly_FID
+        SimPgnFlag                       SmallInteger SimPgnFlag
+        MaxSimpTol                       Double       MaxSimpTol
+        MinSimpTol                       Double       MinSimpTol
+        Shape_Length                     Double       Shape_Length
+        Shape_Area                       Double       Shape_Area
+  [8] DOT Regions  type=Feature Layer geom=esriGeometryPolygon max=1000 pagination=True stats=True oid=None fields=16
+        OBJECTID                         OID          FID
+        Shape                            Geometry     Shape
+        REGION                           Integer      REGION
+        OFFICE_SIT                       String       OFFICE_SIT
+        COUNTY_1                         String       COUNTY_1
+        COUNTY_2                         String       COUNTY_2
+        COUNTY_3                         String       COUNTY_3
+        COUNTY_4                         String       COUNTY_4
+        COUNTY_5                         String       COUNTY_5
+        COUNTY_6                         String       COUNTY_6
+        COUNTY_7                         String       COUNTY_7
+        COUNTY_8                         String       COUNTY_8
+        COUNTY_ALL                       String       COUNTY_ALL
+        Shape_Leng                       Double       Shape_Leng
+        Shape_Length                     Double       Shape_Length
+        Shape_Area                       Double       Shape_Area
+  [9] Segmentation  type=Feature Layer geom=esriGeometryPolyline max=1000 pagination=True stats=True oid=None fields=44
+        OBJECTID                         OID          OBJECTID
+        route_id                         String       Route ID
+        from_date                        Date         From Date
+        to_date                          Date         To Date
+        from_measure                     Double       From Measure
+        to_measure                       Double       To Measure
+        DOT_ID                           String       DOT Identifier
+        COUNTY_ORDER                     String       County Order
+        DIRECTION                        String       Direction
+        SIGNING                          SmallInteger Route Signing
+        ROUTE_NUMBER                     String       Route Number
+        ROUTE_SUFFIX                     String       Route Suffix
+        ROADWAY_TYPE                     SmallInteger Roadway Type
+        CONC_HIERARCHY                   Double       CONC_HIERARCHY
+        COUNTY                           SmallInteger COUNTY
+        ROUTE_QUALIFIER                  SmallInteger ROUTE_QUALIFIER
+        ROADWAY_FEATURE                  SmallInteger ROADWAY_FEATURE
+        PARKWAY_FLAG                     String       PARKWAY_FLAG
+        FUNCTIONAL_CLASS                 SmallInteger Functional Class
+        MPO                              SmallInteger MPO
+        ONEWAY                           String       One Way
+        DIVIDED                          String       Divided
+        THRU_LN_NUM_PRIM                 SmallInteger Through Lane Num – Primary
+        THRU_LN_NUM_REV                  SmallInteger Through Lane Num – Reverse
+        ACCESS_CONTROL                   SmallInteger Access Control
+        OWNING_JURISDICTION_TYPE_ID      SmallInteger Owning Jurisdiction
+        AADT                             Double       Ev_TRADAS_NYSCountStats_PP.AADT
+        SEGMENT_ID                       Integer      SEGMENT_ID
+        YEAR                             Integer      YEAR
+        NUMBER_OF_LANES                  Integer      NUMBER_OF_LANES
+        AREA_TYPE                        String       AREA_TYPE
+        MPO_ABBR                         String       MPO_ABBR
+        REGION                           SmallInteger REGION
+        ROUTEKEY                         String       ROUTEKEY
+        JunctionZone                     SmallInteger JunctionZone
+        FacilityTypeID                   SmallInteger FacilityTypeID
+        CountyFIPS                       String       CountyFIPS
+        SegmentLength                    Double       SegmentLength
+        MeasureA                         Double       MeasureA
+        MeasureB                         Double       MeasureB
+        MeasureC                         Double       MeasureC
+        DeleteFlag                       SmallInteger DeleteFlag
+        Shape                            Geometry     Shape
+        Shape_Length                     Double       Shape_Length
+=== CLEAR_General_Layers  https://clear.dot.ny.gov/hosting/rest/services/CLEAR_General_Layers/MapServer
+    
+  [0] Intersections  type=Feature Layer geom=esriGeometryPolygon max=1000 pagination=True stats=True oid=None fields=47
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersectionAOI.OBJECTID OID          OBJECTID
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersectionAOI.MASTER_INTERSECTION_ID Integer      MASTER_INTERSECTION_ID
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersectionAOI.FROM_DATE Date         FROM_DATE
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersectionAOI.TO_DATE Date         TO_DATE
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersectionAOI.STATUS SmallInteger STATUS
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersectionAOI.SHAPE Geometry     SHAPE
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.OBJECTID Integer      OBJECTID
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.MASTER_INTERSECTION_ID Integer      MASTER_INTERSECTION_ID
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.GNIS_ID Integer      GNIS_ID
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.GNIS_ID1 Integer      GNIS_ID1
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.CROSS_STREET_1 String       CROSS_STREET_1
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.CROSS_STREET_2 String       CROSS_STREET_2
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.INT_GEOMETRY SmallInteger INT_GEOMETRY
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.INTERSECTION_TYPE SmallInteger INTERSECTION_TYPE
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.TRAFFIC_CONTROL_TYPE SmallInteger TRAFFIC_CONTROL_TYPE
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.SIGNALIZATION_TYPE SmallInteger SIGNALIZATION_TYPE
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.LEFT_TURN SmallInteger LEFT_TURN
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.RIGHT_TURN_CHANNEL SmallInteger RIGHT_TURN_CHANNEL
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.CROSSWALK_TYPE SmallInteger CROSSWALK_TYPE
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.PRESENCE_LIGHTING String       PRESENCE_LIGHTING
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.PED_SIGNAL_TYPE SmallInteger PED_SIGNAL_TYPE
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.COMPLEX_INT_TYPE SmallInteger COMPLEX_INT_TYPE
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.NUM_APPROACHES SmallInteger NUM_APPROACHES
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.INT_SKEW_ANGLE SmallInteger INT_SKEW_ANGLE
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.URBAN_AREA_CODE SmallInteger URBAN_AREA_CODE
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.REGION_ID SmallInteger REGION_ID
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.OPERATION String       OPERATION
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.NUM_LANES SmallInteger NUM_LANES
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.NUM_LANES_REVERSE SmallInteger NUM_LANES_REVERSE
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.RAMP_TERMINAL SmallInteger RAMP_TERMINAL
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.RAMP_CROSSING SmallInteger RAMP_CROSSING
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.OWNERSHIP SmallInteger OWNERSHIP
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.FUNCTIONAL_CLASS SmallInteger FUNCTIONAL_CLASS
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.CREATED_BY String       CREATED_BY
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.UPDATED_BY String       UPDATED_BY
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.County_FIPS String       County_FIPS
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.Muni_FIPS String       Muni_FIPS
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.STATUS SmallInteger STATUS
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.TO_DATE Date         TO_DATE
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.FROM_DATE Date         FROM_DATE
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.NUMBER_OF_LEGS Integer      NUMBER_OF_LEGS
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.FacilityTypeID SmallInteger DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.FacilityTypeID
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.MPO_ABBR String       DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.MPO_ABBR
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.MAJOR_AADT Integer      DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.MAJOR_AADT
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.MINOR_AADT Integer      DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.MINOR_AADT
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.OWNING_JURISDICTION_TYPE_ID SmallInteger DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.OWNING_JURISDICTION_TYPE_ID
+        DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.REPOPFLAG SmallInteger DOT_CLEAR_REFERENCE_D.GIS.ZII_MasterIntersection.REPOPFLAG
+  [1] Exits  type=Feature Layer geom=esriGeometryPoint max=1000 pagination=True stats=True oid=None fields=7
+        OBJECTID                         OID          FID
+        Shape                            Geometry     Shape
+        EXIT_ID                          Double       EXIT_ID
+        FROM_NAME                        String       FROM_NAME
+        EXIT_NUM                         String       EXIT_NUM
+        TO_NAME                          String       TO_NAME
+        DATEMOD                          Date         DATEMOD
+  [2] ReferenceMarkers  type=Feature Layer geom=esriGeometryPoint max=1000 pagination=True stats=True oid=None fields=10
+        OBJECTID_1                       OID          OBJECTID_1
+        OBJECTID                         Integer      OBJECTID
+        DATEMOD                          Date         DATEMOD
+        ROUTE                            String       ROUTE
+        MARKER                           Integer      MARKER
+        PANEL                            String       PANEL
+        DIR_TRAVEL                       String       DIR_TRAVEL
+        DATERETIRE                       Date         DATERETIRE
+        GEORTE                           String       GEORTE
+        Shape                            Geometry     Shape
+  [3] Interstates  type=Feature Layer geom=esriGeometryPolyline max=1000 pagination=True stats=True oid=None fields=11
+        OBJECTID                         OID          OBJECTID
+        DIRECTION                        String       Direction
+        SIGNING                          SmallInteger Route Signing
+        ROUTE_NUMBER                     String       Route Number
+        ROUTE_SUFFIX                     String       Route Suffix
+        ROUTEKEY                         String       ROUTEKEY
+        CompleteStreetName               String       CompleteStreetName
+        FIPS                             String       FIPS
+        STREETLISTID                     Integer      STREETLISTID
+        Shape                            Geometry     SHAPE
+        Shape_Length                     Double       SHAPE_Length
+  [4] US Highways  type=Feature Layer geom=esriGeometryPolyline max=1000 pagination=True stats=True oid=None fields=11
+        OBJECTID                         OID          OBJECTID
+        DIRECTION                        String       Direction
+        SIGNING                          SmallInteger Route Signing
+        ROUTE_NUMBER                     String       Route Number
+        ROUTE_SUFFIX                     String       Route Suffix
+        ROUTEKEY                         String       ROUTEKEY
+        CompleteStreetName               String       CompleteStreetName
+        FIPS                             String       FIPS
+        STREETLISTID                     Integer      STREETLISTID
+        Shape                            Geometry     SHAPE
+        Shape_Length                     Double       SHAPE_Length
+  [5] State Routes  type=Feature Layer geom=esriGeometryPolyline max=1000 pagination=True stats=True oid=None fields=11
+        OBJECTID                         OID          OBJECTID
+        DIRECTION                        String       Direction
+        SIGNING                          SmallInteger Route Signing
+        ROUTE_NUMBER                     String       Route Number
+        ROUTE_SUFFIX                     String       Route Suffix
+        ROUTEKEY                         String       ROUTEKEY
+        CompleteStreetName               String       CompleteStreetName
+        FIPS                             String       FIPS
+        STREETLISTID                     Integer      STREETLISTID
+        Shape                            Geometry     SHAPE
+        Shape_Length                     Double       SHAPE_Length
+  [6] Streets  type=Feature Layer geom=esriGeometryPolyline max=1000 pagination=True stats=True oid=None fields=11
+        OBJECTID                         OID          OBJECTID
+        DIRECTION                        String       Direction
+        SIGNING                          SmallInteger Route Signing
+        ROUTE_NUMBER                     String       Route Number
+        ROUTE_SUFFIX                     String       Route Suffix
+        ROUTEKEY                         String       ROUTEKEY
+        CompleteStreetName               String       CompleteStreetName
+        FIPS                             String       FIPS
+        STREETLISTID                     Integer      STREETLISTID
+        Shape                            Geometry     SHAPE
+        Shape_Length                     Double       SHAPE_Length
+  [7] CityTown  type=Feature Layer geom=esriGeometryPolygon max=1000 pagination=True stats=True oid=None fields=12
+        OBJECTID                         OID          OBJECTID
+        NAME                             String       NAME
+        COUNTY                           String       COUNTY
+        AIS_CT_TYPE                      String       AIS_CT_TYPE
+        Region                           Integer      Region
+        FIPS_CODE                        String       FIPS_CODE
+        MUNIT_ID                         Double       MUNIT_ID
+        CNTYT_ID                         Double       CNTYT_ID
+        Shape                            Geometry     Shape
+        CTVR                             Integer      CTVR
+        Shape_Length                     Double       Shape_Length
+        Shape_Area                       Double       Shape_Area
+  [8] County  type=Feature Layer geom=esriGeometryPolygon max=1000 pagination=True stats=True oid=None fields=14
+        OBJECTID                         OID          OBJECTID
+        NAME                             String       NAME
+        ABBREVIATI                       String       ABBREVIATI
+        NYC                              String       NYC
+        REGION                           Integer      REGION
+        RC                               String       RC
+        DMVCODE                          SmallInteger DMVCODE
+        CNTYT_ID                         Double       CNTYT_ID
+        COUNTY_FIPS                      String       COUNTY_FIPS
+        Shape                            Geometry     Shape
+        ABBREV                           String       ABBREV
+        FIPS_CODE                        String       FIPS_CODE
+        Shape_Length                     Double       Shape_Length
+        Shape_Area                       Double       Shape_Area
+  [9] State Boundaries  type=Feature Layer geom=esriGeometryPolygon max=1000 pagination=True stats=True oid=None fields=11
+        OBJECTID                         OID          OBJECTID
+        Shape                            Geometry     Shape
+        STATE_NAME                       String       STATE_NAME
+        STATE_ABBR                       String       STATE_ABBR
+        STATE_FIPS                       String       STATE_FIPS
+        SUB_REGION                       String       SUB_REGION
+        POP1990                          Double       POP1990
+        POP1997                          Double       POP1997
+        POP90_SQMI                       Integer      POP90_SQMI
+        Shape_Length                     Double       Shape_Length
+        Shape_Area                       Double       Shape_Area
+  [10] MasterIntersection  type=Table geom=None max=1000 pagination=True stats=True oid=None fields=41
+        OBJECTID                         OID          OBJECTID
+        MASTER_INTERSECTION_ID           Integer      MASTER_INTERSECTION_ID
+        GNIS_ID                          Integer      GNIS_ID
+        GNIS_ID1                         Integer      GNIS_ID1
+        CROSS_STREET_1                   String       CROSS_STREET_1
+        CROSS_STREET_2                   String       CROSS_STREET_2
+        INT_GEOMETRY                     SmallInteger INT_GEOMETRY
+        INTERSECTION_TYPE                SmallInteger INTERSECTION_TYPE
+        TRAFFIC_CONTROL_TYPE             SmallInteger TRAFFIC_CONTROL_TYPE
+        SIGNALIZATION_TYPE               SmallInteger SIGNALIZATION_TYPE
+        LEFT_TURN                        SmallInteger LEFT_TURN
+        RIGHT_TURN_CHANNEL               SmallInteger RIGHT_TURN_CHANNEL
+        CROSSWALK_TYPE                   SmallInteger CROSSWALK_TYPE
+        PRESENCE_LIGHTING                String       PRESENCE_LIGHTING
+        PED_SIGNAL_TYPE                  SmallInteger PED_SIGNAL_TYPE
+        COMPLEX_INT_TYPE                 SmallInteger COMPLEX_INT_TYPE
+        NUM_APPROACHES                   SmallInteger NUM_APPROACHES
+        INT_SKEW_ANGLE                   SmallInteger INT_SKEW_ANGLE
+        URBAN_AREA_CODE                  SmallInteger URBAN_AREA_CODE
+        REGION_ID                        SmallInteger REGION_ID
+        OPERATION                        String       OPERATION
+        NUM_LANES                        SmallInteger NUM_LANES
+        NUM_LANES_REVERSE                SmallInteger NUM_LANES_REVERSE
+        RAMP_TERMINAL                    SmallInteger RAMP_TERMINAL
+        RAMP_CROSSING                    SmallInteger RAMP_CROSSING
+        OWNERSHIP                        SmallInteger OWNERSHIP
+        FUNCTIONAL_CLASS                 SmallInteger FUNCTIONAL_CLASS
+        CREATED_BY                       String       CREATED_BY
+        UPDATED_BY                       String       UPDATED_BY
+        County_FIPS                      String       County_FIPS
+        Muni_FIPS                        String       Muni_FIPS
+        STATUS                           SmallInteger STATUS
+        TO_DATE                          Date         TO_DATE
+        FROM_DATE                        Date         FROM_DATE
+        NUMBER_OF_LEGS                   Integer      NUMBER_OF_LEGS
+        FacilityTypeID                   SmallInteger FacilityTypeID
+        MPO_ABBR                         String       MPO_ABBR
+        MAJOR_AADT                       Integer      MAJOR_AADT
+        MINOR_AADT                       Integer      MINOR_AADT
+        OWNING_JURISDICTION_TYPE_ID      SmallInteger OWNING_JURISDICTION_TYPE_ID
+        REPOPFLAG                        SmallInteger REPOPFLAG

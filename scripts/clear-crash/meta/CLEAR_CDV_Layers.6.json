@@ -1,0 +1,224 @@
+{
+ "currentVersion": 10.91,
+ "id": 6,
+ "name": "Assembly Districts",
+ "type": "Feature Layer",
+ "description": "",
+ "geometryType": "esriGeometryPolygon",
+ "sourceSpatialReference": {
+  "wkid": 26918,
+  "latestWkid": 26918
+ },
+ "copyrightText": "",
+ "parentLayer": null,
+ "subLayers": [],
+ "minScale": 3000000,
+ "maxScale": 36111,
+ "drawingInfo": {
+  "renderer": {
+   "type": "simple",
+   "symbol": {
+    "type": "esriSFS",
+    "style": "esriSFSSolid",
+    "color": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "outline": {
+     "type": "esriSLS",
+     "style": "esriSLSSolid",
+     "color": [
+      223,
+      115,
+      255,
+      255
+     ],
+     "width": 1
+    }
+   },
+   "label": "",
+   "description": ""
+  },
+  "transparency": 0,
+  "labelingInfo": null
+ },
+ "defaultVisibility": false,
+ "extent": {
+  "xmin": 105606.38179999962,
+  "ymin": 4481032.0995000005,
+  "xmax": 770761.9001000002,
+  "ymax": 4985489.903999999,
+  "spatialReference": {
+   "wkid": 26918,
+   "latestWkid": 26918
+  }
+ },
+ "hasAttachments": false,
+ "htmlPopupType": "esriServerHTMLPopupTypeAsHTMLText",
+ "displayField": "NAME",
+ "typeIdField": null,
+ "subtypeFieldName": null,
+ "subtypeField": null,
+ "defaultSubtypeCode": null,
+ "fields": [
+  {
+   "name": "OBJECTID",
+   "type": "esriFieldTypeOID",
+   "alias": "FID",
+   "domain": null
+  },
+  {
+   "name": "Shape",
+   "type": "esriFieldTypeGeometry",
+   "alias": "Shape",
+   "domain": null
+  },
+  {
+   "name": "DISTRICT",
+   "type": "esriFieldTypeDouble",
+   "alias": "DISTRICT",
+   "domain": null
+  },
+  {
+   "name": "NAME",
+   "type": "esriFieldTypeString",
+   "alias": "NAME",
+   "length": 35,
+   "domain": null
+  },
+  {
+   "name": "PARTY",
+   "type": "esriFieldTypeString",
+   "alias": "PARTY",
+   "length": 15,
+   "domain": null
+  },
+  {
+   "name": "POPULATION",
+   "type": "esriFieldTypeDouble",
+   "alias": "POPULATION",
+   "domain": null
+  },
+  {
+   "name": "WHITE",
+   "type": "esriFieldTypeDouble",
+   "alias": "WHITE",
+   "domain": null
+  },
+  {
+   "name": "BLACK",
+   "type": "esriFieldTypeDouble",
+   "alias": "BLACK",
+   "domain": null
+  },
+  {
+   "name": "AMINDIAN",
+   "type": "esriFieldTypeDouble",
+   "alias": "AMINDIAN",
+   "domain": null
+  },
+  {
+   "name": "ASIAN",
+   "type": "esriFieldTypeDouble",
+   "alias": "ASIAN",
+   "domain": null
+  },
+  {
+   "name": "HAWAIIAN",
+   "type": "esriFieldTypeDouble",
+   "alias": "HAWAIIAN",
+   "domain": null
+  },
+  {
+   "name": "OTHER",
+   "type": "esriFieldTypeDouble",
+   "alias": "OTHER",
+   "domain": null
+  },
+  {
+   "name": "RACE2PLUS",
+   "type": "esriFieldTypeDouble",
+   "alias": "RACE2PLUS",
+   "domain": null
+  },
+  {
+   "name": "HISPANIC_O",
+   "type": "esriFieldTypeDouble",
+   "alias": "HISPANIC_O",
+   "domain": null
+  },
+  {
+   "name": "Shape_Length",
+   "type": "esriFieldTypeDouble",
+   "alias": "Shape_Length",
+   "domain": null
+  },
+  {
+   "name": "Shape_Area",
+   "type": "esriFieldTypeDouble",
+   "alias": "Shape_Area",
+   "domain": null
+  }
+ ],
+ "geometryField": {
+  "name": "Shape",
+  "type": "esriFieldTypeGeometry",
+  "alias": "Shape"
+ },
+ "indexes": [
+  {
+   "name": "FDO_OBJECTID",
+   "fields": "OBJECTID",
+   "isAscending": true,
+   "isUnique": true,
+   "description": ""
+  },
+  {
+   "name": "FDO_Shape",
+   "fields": "Shape",
+   "isAscending": true,
+   "isUnique": false,
+   "description": ""
+  }
+ ],
+ "subtypes": [],
+ "relationships": [],
+ "canModifyLayer": true,
+ "canScaleSymbols": false,
+ "hasLabels": false,
+ "capabilities": "Map,Query,Data",
+ "maxRecordCount": 1000,
+ "supportsStatistics": true,
+ "supportsAdvancedQueries": true,
+ "supportedQueryFormats": "JSON, geoJSON",
+ "isDataVersioned": false,
+ "ownershipBasedAccessControlForFeatures": {
+  "allowOthersToQuery": true
+ },
+ "useStandardizedQueries": true,
+ "advancedQueryCapabilities": {
+  "useStandardizedQueries": true,
+  "supportsStatistics": true,
+  "supportsHavingClause": true,
+  "supportsCountDistinct": true,
+  "supportsOrderBy": true,
+  "supportsDistinct": true,
+  "supportsPagination": true,
+  "supportsTrueCurve": true,
+  "supportsReturningQueryExtent": true,
+  "supportsQueryWithDistance": true,
+  "supportsSqlExpression": true
+ },
+ "supportsDatumTransformation": true,
+ "hasGeometryProperties": true,
+ "geometryProperties": {
+  "shapeAreaFieldName": "Shape_Area",
+  "shapeLengthFieldName": "Shape_Length",
+  "units": "esriMeters"
+ },
+ "dateFieldsTimeReference": null,
+ "supportsCoordinatesQuantization": true,
+ "serviceItemId": "a49730864716431290bf5225fb24106f"
+}

@@ -1,0 +1,226 @@
+{
+ "currentVersion": 10.91,
+ "id": 2,
+ "name": "ReferenceMarkers",
+ "type": "Feature Layer",
+ "description": "Statewide coverage of New York State's Highway System. This includes signed and unsigned state highways, federal highways, and interstates. The file includes generated point locations of NYSDOT's Reference Marker linear referencing system.",
+ "geometryType": "esriGeometryPoint",
+ "sourceSpatialReference": {
+  "wkid": 26918,
+  "latestWkid": 26918
+ },
+ "copyrightText": "New York State Department of Transportation",
+ "parentLayer": null,
+ "subLayers": [],
+ "minScale": 12000,
+ "maxScale": 0,
+ "drawingInfo": {
+  "renderer": {
+   "type": "simple",
+   "symbol": {
+    "type": "esriSMS",
+    "style": "esriSMSCircle",
+    "color": [
+     0,
+     27,
+     133,
+     255
+    ],
+    "size": 4,
+    "angle": 0,
+    "xoffset": 0,
+    "yoffset": 0,
+    "outline": {
+     "color": [
+      0,
+      0,
+      0,
+      255
+     ],
+     "width": 1
+    }
+   },
+   "label": "",
+   "description": ""
+  },
+  "transparency": 0,
+  "labelingInfo": [
+   {
+    "labelPlacement": "esriServerPointLabelPlacementAboveRight",
+    "where": null,
+    "labelExpression": "[PANEL]",
+    "useCodedValues": true,
+    "symbol": {
+     "type": "esriTS",
+     "color": [
+      0,
+      0,
+      0,
+      255
+     ],
+     "backgroundColor": null,
+     "borderLineColor": null,
+     "borderLineSize": null,
+     "verticalAlignment": "bottom",
+     "horizontalAlignment": "center",
+     "rightToLeft": false,
+     "angle": 0,
+     "xoffset": 0,
+     "yoffset": 0,
+     "kerning": true,
+     "haloColor": null,
+     "haloSize": null,
+     "font": {
+      "family": "Arial",
+      "size": 8,
+      "style": "normal",
+      "weight": "normal",
+      "decoration": "none"
+     }
+    },
+    "minScale": 0,
+    "maxScale": 0
+   }
+  ]
+ },
+ "defaultVisibility": false,
+ "extent": {
+  "xmin": 105724.06730000023,
+  "ymin": 4486267.592700001,
+  "xmax": 763909.3609999996,
+  "ymax": 4985388.2848000005,
+  "spatialReference": {
+   "wkid": 26918,
+   "latestWkid": 26918
+  }
+ },
+ "hasAttachments": false,
+ "htmlPopupType": "esriServerHTMLPopupTypeAsHTMLText",
+ "displayField": "ROUTE",
+ "typeIdField": null,
+ "subtypeFieldName": null,
+ "subtypeField": null,
+ "defaultSubtypeCode": null,
+ "fields": [
+  {
+   "name": "OBJECTID_1",
+   "type": "esriFieldTypeOID",
+   "alias": "OBJECTID_1",
+   "domain": null
+  },
+  {
+   "name": "OBJECTID",
+   "type": "esriFieldTypeInteger",
+   "alias": "OBJECTID",
+   "domain": null
+  },
+  {
+   "name": "DATEMOD",
+   "type": "esriFieldTypeDate",
+   "alias": "DATEMOD",
+   "length": 8,
+   "domain": null
+  },
+  {
+   "name": "ROUTE",
+   "type": "esriFieldTypeString",
+   "alias": "ROUTE",
+   "length": 10,
+   "domain": null
+  },
+  {
+   "name": "MARKER",
+   "type": "esriFieldTypeInteger",
+   "alias": "MARKER",
+   "domain": null
+  },
+  {
+   "name": "PANEL",
+   "type": "esriFieldTypeString",
+   "alias": "PANEL",
+   "length": 12,
+   "domain": null
+  },
+  {
+   "name": "DIR_TRAVEL",
+   "type": "esriFieldTypeString",
+   "alias": "DIR_TRAVEL",
+   "length": 6,
+   "domain": null
+  },
+  {
+   "name": "DATERETIRE",
+   "type": "esriFieldTypeDate",
+   "alias": "DATERETIRE",
+   "length": 8,
+   "domain": null
+  },
+  {
+   "name": "GEORTE",
+   "type": "esriFieldTypeString",
+   "alias": "GEORTE",
+   "length": 10,
+   "domain": null
+  },
+  {
+   "name": "Shape",
+   "type": "esriFieldTypeGeometry",
+   "alias": "Shape",
+   "domain": null
+  }
+ ],
+ "geometryField": {
+  "name": "Shape",
+  "type": "esriFieldTypeGeometry",
+  "alias": "Shape"
+ },
+ "indexes": [
+  {
+   "name": "FDO_OBJECTID_1",
+   "fields": "OBJECTID_1",
+   "isAscending": true,
+   "isUnique": true,
+   "description": ""
+  },
+  {
+   "name": "FDO_Shape",
+   "fields": "Shape",
+   "isAscending": true,
+   "isUnique": false,
+   "description": ""
+  }
+ ],
+ "subtypes": [],
+ "relationships": [],
+ "canModifyLayer": true,
+ "canScaleSymbols": false,
+ "hasLabels": true,
+ "capabilities": "Map,Query,Data",
+ "maxRecordCount": 1000,
+ "supportsStatistics": true,
+ "supportsAdvancedQueries": true,
+ "hasM": true,
+ "supportedQueryFormats": "JSON, geoJSON",
+ "isDataVersioned": false,
+ "ownershipBasedAccessControlForFeatures": {
+  "allowOthersToQuery": true
+ },
+ "useStandardizedQueries": true,
+ "advancedQueryCapabilities": {
+  "useStandardizedQueries": true,
+  "supportsStatistics": true,
+  "supportsHavingClause": true,
+  "supportsCountDistinct": true,
+  "supportsOrderBy": true,
+  "supportsDistinct": true,
+  "supportsPagination": true,
+  "supportsTrueCurve": true,
+  "supportsReturningQueryExtent": true,
+  "supportsQueryWithDistance": true,
+  "supportsSqlExpression": true
+ },
+ "supportsDatumTransformation": true,
+ "dateFieldsTimeReference": null,
+ "supportsCoordinatesQuantization": true,
+ "serviceItemId": "a4e6a104956c4e3aa049facbe3fe7120"
+}

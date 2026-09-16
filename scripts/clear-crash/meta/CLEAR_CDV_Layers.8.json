@@ -1,0 +1,232 @@
+{
+ "currentVersion": 10.91,
+ "id": 8,
+ "name": "DOT Regions",
+ "type": "Feature Layer",
+ "description": "",
+ "geometryType": "esriGeometryPolygon",
+ "sourceSpatialReference": {
+  "wkid": 26918,
+  "latestWkid": 26918
+ },
+ "copyrightText": "",
+ "parentLayer": null,
+ "subLayers": [],
+ "minScale": 3000000,
+ "maxScale": 577790,
+ "drawingInfo": {
+  "renderer": {
+   "type": "simple",
+   "symbol": {
+    "type": "esriSFS",
+    "style": "esriSFSSolid",
+    "color": [
+     0,
+     0,
+     0,
+     0
+    ],
+    "outline": {
+     "type": "esriSLS",
+     "style": "esriSLSSolid",
+     "color": [
+      255,
+      170,
+      0,
+      255
+     ],
+     "width": 1
+    }
+   },
+   "label": "",
+   "description": ""
+  },
+  "transparency": 0,
+  "labelingInfo": null
+ },
+ "defaultVisibility": true,
+ "extent": {
+  "xmin": 105571.4216,
+  "ymin": 4483089.5,
+  "xmax": 764142.8229,
+  "ymax": 4985443.8894,
+  "spatialReference": {
+   "wkid": 26918,
+   "latestWkid": 26918
+  }
+ },
+ "hasAttachments": false,
+ "htmlPopupType": "esriServerHTMLPopupTypeAsHTMLText",
+ "displayField": "OFFICE_SIT",
+ "typeIdField": null,
+ "subtypeFieldName": null,
+ "subtypeField": null,
+ "defaultSubtypeCode": null,
+ "fields": [
+  {
+   "name": "OBJECTID",
+   "type": "esriFieldTypeOID",
+   "alias": "FID",
+   "domain": null
+  },
+  {
+   "name": "Shape",
+   "type": "esriFieldTypeGeometry",
+   "alias": "Shape",
+   "domain": null
+  },
+  {
+   "name": "REGION",
+   "type": "esriFieldTypeInteger",
+   "alias": "REGION",
+   "domain": null
+  },
+  {
+   "name": "OFFICE_SIT",
+   "type": "esriFieldTypeString",
+   "alias": "OFFICE_SIT",
+   "length": 12,
+   "domain": null
+  },
+  {
+   "name": "COUNTY_1",
+   "type": "esriFieldTypeString",
+   "alias": "COUNTY_1",
+   "length": 12,
+   "domain": null
+  },
+  {
+   "name": "COUNTY_2",
+   "type": "esriFieldTypeString",
+   "alias": "COUNTY_2",
+   "length": 12,
+   "domain": null
+  },
+  {
+   "name": "COUNTY_3",
+   "type": "esriFieldTypeString",
+   "alias": "COUNTY_3",
+   "length": 12,
+   "domain": null
+  },
+  {
+   "name": "COUNTY_4",
+   "type": "esriFieldTypeString",
+   "alias": "COUNTY_4",
+   "length": 12,
+   "domain": null
+  },
+  {
+   "name": "COUNTY_5",
+   "type": "esriFieldTypeString",
+   "alias": "COUNTY_5",
+   "length": 12,
+   "domain": null
+  },
+  {
+   "name": "COUNTY_6",
+   "type": "esriFieldTypeString",
+   "alias": "COUNTY_6",
+   "length": 12,
+   "domain": null
+  },
+  {
+   "name": "COUNTY_7",
+   "type": "esriFieldTypeString",
+   "alias": "COUNTY_7",
+   "length": 12,
+   "domain": null
+  },
+  {
+   "name": "COUNTY_8",
+   "type": "esriFieldTypeString",
+   "alias": "COUNTY_8",
+   "length": 12,
+   "domain": null
+  },
+  {
+   "name": "COUNTY_ALL",
+   "type": "esriFieldTypeString",
+   "alias": "COUNTY_ALL",
+   "length": 110,
+   "domain": null
+  },
+  {
+   "name": "Shape_Leng",
+   "type": "esriFieldTypeDouble",
+   "alias": "Shape_Leng",
+   "domain": null
+  },
+  {
+   "name": "Shape_Length",
+   "type": "esriFieldTypeDouble",
+   "alias": "Shape_Length",
+   "domain": null
+  },
+  {
+   "name": "Shape_Area",
+   "type": "esriFieldTypeDouble",
+   "alias": "Shape_Area",
+   "domain": null
+  }
+ ],
+ "geometryField": {
+  "name": "Shape",
+  "type": "esriFieldTypeGeometry",
+  "alias": "Shape"
+ },
+ "indexes": [
+  {
+   "name": "FDO_OBJECTID",
+   "fields": "OBJECTID",
+   "isAscending": true,
+   "isUnique": true,
+   "description": ""
+  },
+  {
+   "name": "FDO_Shape",
+   "fields": "Shape",
+   "isAscending": true,
+   "isUnique": false,
+   "description": ""
+  }
+ ],
+ "subtypes": [],
+ "relationships": [],
+ "canModifyLayer": true,
+ "canScaleSymbols": false,
+ "hasLabels": false,
+ "capabilities": "Map,Query,Data",
+ "maxRecordCount": 1000,
+ "supportsStatistics": true,
+ "supportsAdvancedQueries": true,
+ "supportedQueryFormats": "JSON, geoJSON",
+ "isDataVersioned": false,
+ "ownershipBasedAccessControlForFeatures": {
+  "allowOthersToQuery": true
+ },
+ "useStandardizedQueries": true,
+ "advancedQueryCapabilities": {
+  "useStandardizedQueries": true,
+  "supportsStatistics": true,
+  "supportsHavingClause": true,
+  "supportsCountDistinct": true,
+  "supportsOrderBy": true,
+  "supportsDistinct": true,
+  "supportsPagination": true,
+  "supportsTrueCurve": true,
+  "supportsReturningQueryExtent": true,
+  "supportsQueryWithDistance": true,
+  "supportsSqlExpression": true
+ },
+ "supportsDatumTransformation": true,
+ "hasGeometryProperties": true,
+ "geometryProperties": {
+  "shapeAreaFieldName": "Shape_Area",
+  "shapeLengthFieldName": "Shape_Length",
+  "units": "esriMeters"
+ },
+ "dateFieldsTimeReference": null,
+ "supportsCoordinatesQuantization": true,
+ "serviceItemId": "a49730864716431290bf5225fb24106f"
+}
