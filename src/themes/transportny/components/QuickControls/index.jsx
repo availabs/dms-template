@@ -18,7 +18,7 @@ import {
 } from '../MeasurePicker/composeMeasureConfig';
 import { MAP_MEASURE_OPTIONS } from '../MeasurePicker/composeMapConfig';
 import { ROUTE_CATALOG_PARAM_KEY } from '../ReportRouteList/useGraphPublish';
-import { resolveRouteDates } from '../ReportRouteList/relativeDateResolution';
+import { resolveRouteDates, routeDisplayLabel } from '../ReportRouteList/relativeDateResolution';
 import { SELF_PARAM_KEY_SENTINEL } from '../../../../dms/packages/dms/src/patterns/page/components/sections/components/dataWrapper/buildUdaConfig';
 import { DOW_DEFS, WEEKDAY_KEYS, WEEKEND_KEYS, isDayOn, summarizeWeekdays, PEAK_PRESETS, timeOfDayToken, formatDateShort } from '../ReportRouteList/utils';
 
@@ -181,12 +181,20 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
     return Array.isArray(values) ? values : [];
   }, [pageState?.filters]);
   const routeIds = pick.routeIds || [];
-  const routesById = useMemo(() => new Map(routeCatalog.map((r) => [r.route_comp_id, r])), [routeCatalog]);
   // Gap #16 (2026-08-21): reliability's year resolution needs every route's REAL resolved date
   // range — `routeCatalog` carries a derived route's raw (blank) startDate/endDate plus its
   // `derivedFromRoute` pointer, so running it through `resolveRouteDates` once here (not per
   // measure-pick) gives `resolveReliabilityYear` a routes array it can actually read dates from.
+  //
+  // 2026-09-16: this resolved array — not the raw `routeCatalog` — is also what the Routes
+  // pill/picker below renders, because `routeDisplayLabel`'s `%y` token reads a route's own
+  // startDate/endDate. On the raw catalog a derived slot's dates are blank, so `%y` would drop out
+  // of an otherwise-resolved name.
   const allRoutesResolved = useMemo(() => resolveRouteDates(routeCatalog), [routeCatalog]);
+  const routesById = useMemo(
+    () => new Map(allRoutesResolved.map((r) => [r.route_comp_id, r])),
+    [allRoutesResolved]
+  );
 
   // `pick.weekdays`/`pick.start`/`pick.end` (the bare scalar) is dead — report_build.mjs stopped
   // writing it and useGraphPublish.js stopped reading it the moment `routeWindows` shipped
@@ -302,10 +310,15 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
     : isMapCard
       ? qcMeasureLabel(MAP_MEASURE_OPTIONS.find((o) => o.value === pick.measure)?.label || 'None')
       : qcMeasureLabel(MEASURE_OPTIONS.find((o) => o.value === pick.measure)?.label);
+  // `routeDisplayLabel` (relativeDateResolution.js), not the route's raw `name` — on a Dynamic
+  // Report every slot's stored name is a `%n %y`-style template, and this pill was showing that
+  // template verbatim even while the page was being previewed with real routes supplied in
+  // `?routes=` (found live 2026-09-16). Same rule RRL's own collapsed rows use, so an unresolved
+  // slot still shows its honest placeholder text rather than a half-substituted name.
   const routeLabel = routeIds.length === 0
     ? 'no routes'
     : routeIds.length === 1
-      ? (routesById.get(routeIds[0])?.name || '1 route')
+      ? (routeDisplayLabel(routesById.get(routeIds[0])) || '1 route')
       : `${routeIds.length} routes`;
   const whenToken = `${timeOfDayToken(currentWindow.start, currentWindow.end)} · ${qcDaysToken(currentWindow.weekdays)}`;
   const whenTitle = `When · ${(currentWindow.start && currentWindow.end) ? `${currentWindow.start}–${currentWindow.end}` : 'all day'} · ${(summarizeWeekdays(currentWindow.weekdays) || 'all days').toLowerCase()}`;
@@ -392,17 +405,17 @@ function QuickControlsRow({ state, dwAPI, currentComponent, pageState, actions, 
   const renderRoutesSection = () => (
     <div className={t.popSection}>
       <div className={t.popSectionLabel}>routes · pick any</div>
-      {routeCatalog.length === 0 ? (
+      {allRoutesResolved.length === 0 ? (
         <div className={t.popEmpty}>No routes on this report yet.</div>
       ) : (
         <div className={t.popRouteList}>
-          {routeCatalog.map((r) => {
+          {allRoutesResolved.map((r) => {
             const on = routeIds.includes(r.route_comp_id);
             return (
-              <button key={r.route_comp_id} type="button" className={on ? t.popRouteRowOn : t.popRouteRow} onClick={() => toggleRoute(r.route_comp_id)}>
+              <button key={r.route_comp_id} type="button" className={on ? t.popRouteRowOn : t.popRouteRow} onClick={() => toggleRoute(r.route_comp_id)} title={routeDisplayLabel(r)}>
                 <span className={on ? t.popRouteCheckOn : t.popRouteCheck}>{on ? <Icon icon="Check" /> : null}</span>
                 <span className={t.popRouteDot} style={{ backgroundColor: r.color }} />
-                <span className={t.popRouteName}>{r.name}</span>
+                <span className={t.popRouteName}>{routeDisplayLabel(r)}</span>
                 <span className={t.popRouteMeta}>{formatDateShort(r.startDate) ? `${formatDateShort(r.startDate)}–${formatDateShort(r.endDate)}` : ''}</span>
               </button>
             );

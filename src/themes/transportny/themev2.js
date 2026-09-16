@@ -1988,7 +1988,65 @@ const graph = {
     subtitle:     "font-mono text-[10.5px] uppercase tracking-wider text-slate-500 text-right",
     axis:         "stroke-zinc-950/15",
     grid:         "stroke-zinc-950/5",
-    tooltip:      "rounded-[6px] bg-[#0F1722] text-white text-[12px] px-2.5 py-1.5 shadow-lg font-proxima",
+    // Tooltip chrome. The authored value here used to be `bg-[#0F1722] text-white … px-2.5
+    // py-1.5` — dead scaffolding that went live 2026-09-14 when the token was wired, and looked
+    // wrong the moment it was seen against a real report: it was the ONLY dark surface in this
+    // design system (every popover, modal, drawer and card is white + `border-zinc-950/10` + a
+    // shadow), and `#0F1722` is otherwise an ink colour, not a fill. A dark fill also inverts
+    // the contrast the series palettes were built for — they are chosen to sit on a white plot,
+    // so pale greens glowed and dark reds sank.
+    //
+    // It now matches `navigableMenu`'s popover, the closest analogue: a small floating panel.
+    // NOTE the absence of padding — the tooltip BODY carries its own `px-2 pt-1 pb-2`, so a
+    // padded token double-pads the panel.
+    tooltip:      "rounded-[8px] bg-white border border-zinc-950/10 text-slate-700 text-[12px] shadow-lg font-proxima",
+    // ── The title: the hovered KEY, not a heading ───────────────────────────────────────────
+    // The historical value was `font-bold text-lg leading-6 border-b-2` — an 18px bold heading
+    // over 12px rows, which is what made the tooltip read as unfinished next to the themed
+    // legend. Pass 1 (2026-09-14) made it a 12px semibold proxima line; this is pass 2.
+    //
+    // MONO, because of what this slot actually holds. It is `indexFormat(data.index)` /
+    // `keyFormat(data.key)` — the hovered x value: `13:40`, `2024-03`, `Mon`. That is the SAME
+    // value the axis tick directly beneath the cursor is showing, and this brand already renders
+    // those ticks in the mono ladder (`chartDefaults.xAxis.tickFontFamily` = ui-monospace, 11px).
+    // A proxima title meant the tooltip and the axis disagreed about the typeface of one
+    // identical string. Mono also makes a column of times/dates line up, which proxima does not.
+    //
+    // Weight/colour stay assertive (medium, `#0F1722` ink) rather than dropping to the
+    // `popSectionLabel` treatment: this is the reading's key, not a caption for the panel.
+    // `pb-1` gives the text room above its own rule — `mb` is deliberately NOT set here, because
+    // SeriesRowsHoverComp already appends its own `mb-1` outside the token and GridGraph relies
+    // on its wrapper's `gap-1`, so a margin in the token would double on one of them.
+    tooltipTitle: "font-mono text-[11px] font-medium tracking-wide text-[#0F1722] border-b border-zinc-950/10 pb-1",
+    // Numerals in the mono ladder, same reasoning as the title: these are the values whose axis
+    // ticks are already mono. `tabular-nums` keeps a column of them aligned on the decimal, which
+    // is the whole point of a multi-row tooltip (13 TMC rows on a GridGraph column). 11.5px sits
+    // a half-step under the 12px proxima labels so the number reads as data, not as more prose.
+    tooltipValue: "text-right font-mono text-[11.5px] tabular-nums text-[#0F1722]",
+    // Row padding. The row's 2px highlight border sits directly on the text with no vertical
+    // padding of its own, so the active row reads as cramped rather than selected.
+    tooltipRow:   "py-0.5",
+    // The row highlight is `border-current`, so it would otherwise inherit whatever text colour
+    // the container sets. Stated explicitly rather than inherited.
+    //
+    // Grey is a STANDING DECISION (2026-09-14: padding was tested in isolation from colour and
+    // the owner accepted grey once the row had room to breathe), so this is not being swapped for
+    // the design system's navy `popRouteRowOn` treatment. The addition is `bg-slate-50` only: on
+    // a GridGraph column of 13 near-identical rows a 1px grey outline alone is genuinely hard to
+    // locate, and a fill answers "which row is my cursor on" at a glance without changing the
+    // colour that was agreed.
+    tooltipRowActive: "border-slate-300 bg-slate-50",
+    // Unset before this pass, which left the swatch on its historical `rounded-sm`. The size
+    // (`w-5 h-5`) is emitted OUTSIDE the token by every hover comp and is therefore not
+    // themeable — see the note in the task file about what that would take.
+    //
+    // The inset hairline is the real fix, and it is a contrast problem rather than decoration:
+    // a GridGraph swatch is painted with the hovered cell's own colour off `seqSpeedPalette`,
+    // whose light end is `#F2E18A`/`#A8D26B`, and it is drawn at 0.75 opacity on the panel's
+    // white. A pale cell therefore had no edge at all and read as an empty gap in the swatch
+    // column. `ring` rather than `border` because a ring is a box-shadow and cannot disturb the
+    // absolutely-positioned 20px box the two stacked swatches share.
+    tooltipSwatch: "rounded-[3px] ring-1 ring-inset ring-zinc-950/15",
     // These two were authored as DEAD scaffolding and went live 2026-09-10 when the legend
     // gained its class-token layer. Layout is component-owned now (the legend picks grid vs
     // flex from its own orientation), so `legend` must carry NO display/alignment class: the
@@ -2309,7 +2367,20 @@ const pages = {
       // section's own "title_bar" style (see avl-graph-quick-controls.md's
       // "Open visual question" note), not this row, so there's nothing to
       // visually match here.
-      headerExtensionsRow: "px-3 pb-2",
+      // `pt-2` is not symmetry for its own sake: a titleless graph section (the common
+      // report-card shape — the title Card stacks above, so `showHeader` is false) renders
+      // this row as the FIRST thing inside the card, so with no top padding the pills sat
+      // flush on the card's own top border.
+      //
+      // `empty:hidden` is what keeps that padding out of VIEW mode. section.jsx gates this
+      // wrapper on `headerExtensions.length`, which is not a render signal — an extension
+      // builder returns a node whose component may render null, and Quick Controls do exactly
+      // that outside page-edit mode (`QuickControlsRow`'s `editPageMode` check). So in view
+      // mode the div is emitted with zero children, and its padding became visible dead space
+      // at the top of every graph card the moment `pt-2` was added. React renders nothing for
+      // a null child, so the div genuinely matches `:empty` and CSS can collapse it — no
+      // library change, and no way for a row that DOES render to be hidden by accident.
+      headerExtensionsRow: "empty:hidden px-3 pt-2 pb-2",
     },
     {
       // ── Report graph card (2026-09-11) ────────────────────────────────────
@@ -2332,7 +2403,18 @@ const pages = {
       // One 40px row. `pr-10` is not decoration: the section's Settings kebab is
       // absolutely positioned at the wrapper's top-right (`menuPosition`, top-2/right-2)
       // and would otherwise sit on top of whatever ends the row.
-      headerRow:       "flex w-full items-center gap-3 h-10 pl-4 pr-10 border-b border-zinc-950/10",
+      // `group/sechdr` is a CSS hook with no visual effect (NAMED, so it cannot be picked up
+      // by a bare `group-*` variant anywhere inside): it lets `headerKicker` below see whether
+      // the Quick Controls actually rendered.
+      //
+      // `pr-4`, not the `pr-10` this carried before. That 40px was reserving room for the
+      // section's Settings kebab (`menuPosition`, absolutely positioned top-right) — but
+      // measured live, that button occupies x=1532..1560 against a card whose right edge is
+      // 1555, i.e. 23px of the card, and it renders at all only on hover in page-edit mode.
+      // So the band was paying 40px permanently, in BOTH modes, for an overlay that is absent
+      // in view mode entirely. The clearance moved to `headerExtensionsInlineRow` below, which
+      // is the only thing ever under the kebab, leaving this row symmetric (16px/16px).
+      headerRow:       "group/sechdr flex w-full items-center gap-3 h-10 pl-4 pr-4 border-b border-zinc-950/10",
       // Drops styles[0]'s `uppercase` and its `pb-2`: the contract renders this title
       // sentence-case, and vertical rhythm is the row's fixed height now.
       headerInner:     "flex-1 min-w-0 flex flex-row items-center gap-3",
@@ -2351,18 +2433,32 @@ const pages = {
       // heads (a `kicker` paragraph naming a GROUP of graphs) — a `// NN` on every card
       // would stop meaning anything.
       //
-      // `hidden xl:block` is how this row resolves its one real width conflict. In page-edit
-      // mode the Quick Controls pills share this slot, and a half-width card cannot hold the
-      // title, the meta line and four pills. Rather than have the band guess which to drop,
-      // the caption simply yields below xl — so a wide card shows both, and a narrow one in
-      // edit mode shows the controls, which are the thing you came to use.
-      headerKicker:    "shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 hidden xl:block",
-      headerActions:   "flex items-center shrink-0",
+      // This slot is shared with the Quick Controls, which render only in page-edit mode, and a
+      // card cannot hold the title, the meta line and four pills at once. It used to yield by
+      // BREAKPOINT (`hidden xl:block`) — a proxy for "edit mode is probably crowding me", which
+      // got it wrong in both directions: on a wide screen the caption and the pills both showed
+      // (the crowding this was meant to prevent), and in view mode, where nothing competes at
+      // all, the caption vanished below 1280px for no reason.
+      //
+      // It now yields to the actual condition. `headerExtensionsInlineRow` below is emitted in
+      // both modes but is EMPTY in view mode (an extension builder returns a node whose
+      // component renders null — Quick Controls do exactly that outside page-edit mode), so
+      // `:has(.dms-qc-row > *)` is true precisely when the pills really drew something.
+      headerKicker:    "shrink-0 font-mono text-[10px] uppercase tracking-[0.18em] text-slate-400 group-has-[.dms-qc-row>*]/sechdr:hidden",
+      // `empty:hidden`: this div renders whether or not the section has tags or help text, and
+      // an empty flex item still consumes `headerInner`'s `gap-3` — 12px of phantom inset that
+      // pushed the kicker away from the card's right edge on every card that has neither.
+      headerActions:   "flex items-center shrink-0 empty:hidden",
       // Quick Controls move INTO the row (they render only in page-edit mode, see
       // QuickControls/index.jsx's `editPageMode` gate, so in view mode this slot is the
       // kicker's alone and nothing competes).
       headerExtensionsInline: true,
-      headerExtensionsInlineRow: "shrink-0 flex items-center justify-end gap-1.5",
+      // `dms-qc-row` is the marker `headerKicker` keys off; `empty:hidden` stops this row from
+      // eating a `gap-3` in view mode, where it renders with no children. `pr-3` is the Settings
+      // kebab clearance that used to live on `headerRow` — it belongs here because these pills
+      // are the only thing ever positioned under that button (measured: the button starts 23px
+      // inside the card, the last pill now ends 28px inside, so they no longer overlap).
+      headerExtensionsInlineRow: "dms-qc-row shrink-0 flex items-center justify-end gap-1.5 pr-3 empty:hidden",
     }],
   },
 

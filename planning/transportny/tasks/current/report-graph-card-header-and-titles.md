@@ -17,6 +17,61 @@ chart. Route Map / Route Compare / Info Box get the band but no meta line. 0 con
 50px black-Oswald band plus an in-card "Speed (mph)". Both states live at once is correct, and
 that pair is the standing control for any future change to the band.
 
+### Round 3, 2026-09-15 — header-band padding + the kicker's edit-mode yield
+
+Three fixes to the band, all in `themev2.js`'s `pages.section` `reportCard` style, all measured
+live on `edit/reports/snapshot` + `reports/snapshot` rather than eyeballed.
+
+1. **Quick Controls sat flush on the card's top border** (page-edit mode, on the *titleless*
+   graph cards where the controls render on their own row rather than inside the band).
+   `pages.section` styles[0] `headerExtensionsRow` was `px-3 pb-2` — no top padding at all.
+   Now `empty:hidden px-3 pt-2 pb-2`, in **both** `theme.js` and `themev2.js`.
+
+   **`empty:hidden` is the load-bearing half.** `section.jsx:620` gates that wrapper on
+   `headerExtensions.length`, which is *not a render signal* — the same trap this file's "Two bugs"
+   §2 records. An extension builder returns a node whose component may render null, and Quick
+   Controls do exactly that outside page-edit mode, so in **view** mode the div is emitted with
+   zero children and its padding became visible dead space at the top of every card the moment
+   `pt-2` was added. React renders nothing for a null child, so the div genuinely matches `:empty`
+   and CSS collapses it — no library change, and a row that *does* render can never be hidden by
+   accident. (Verified `.empty\:hidden{&:empty{display:none}}` is in the served CSS, not assumed.)
+
+2. **The band reserved 40px on the right, permanently, in both modes.** `headerRow` carried
+   `pr-10` to clear the Settings kebab. Measured: that button is `absolute top-2 right-2`,
+   **28px wide at x=1532..1560** against a card whose right edge is **1555** — so it needs 23px,
+   it *overhangs* the card by 5px, and it renders **only on hover, only in page-edit mode**.
+   `headerRow` is now `pl-4 pr-4` (symmetric) and the clearance moved to
+   `headerExtensionsInlineRow` (`pr-3`), which is the only thing ever positioned under that
+   button. Measured after: last pill ends **1527**, button starts **1532** — 5px clear.
+
+3. **Two empty flex items were each eating a `gap-3`.** `headerActions` renders whether or not
+   the section has tags/help text, and `headerExtensionsInlineRow` renders in view mode with no
+   children; both are `shrink-0` flex children, so each contributed 12px of phantom inset that
+   pushed the kicker away from the right edge. Both now carry `empty:hidden`.
+
+   **Net for the kicker in view mode: 52px → 16px from the card's right edge**, exactly matching
+   the title's 16px on the left.
+
+4. **The kicker now yields to the Quick Controls by MODE, not by breakpoint.** It was
+   `hidden xl:block` — a proxy for "edit mode is probably crowding me" that got it wrong in both
+   directions: above 1280px the caption and the pills both showed (the crowding it existed to
+   prevent), and in view mode, where nothing competes at all, the caption vanished below 1280px
+   for no reason. It is now
+   `group-has-[.dms-qc-row>*]/sechdr:hidden` — `headerRow` carries a *named* `group/sechdr` (named
+   so no bare `group-*` variant inside can bind to it), `headerExtensionsInlineRow` carries a
+   `dms-qc-row` marker, and `>*` is what distinguishes "the pills actually drew something" from
+   "the wrapper exists but is empty". Same `:has()` idiom already used in this repo for
+   `.dms-rail-content:empty`.
+
+   ⚠ **This supersedes the `hidden xl:block` decision recorded in Round 1.** A deliberate side
+   effect: in **view** mode the kicker now shows at *every* width, including below xl, where it
+   previously did not. The title is `truncate` and the kicker `shrink-0`, so a narrow card
+   truncates the title rather than dropping the caption.
+
+**Verified live, both modes, 5 bands each:** EDIT — kicker `display:none` on every band, QC row
+`flex` with 1 child. VIEW — kicker `display:block` at 16px from the card's right edge, QC row
+`display:none`. Title's left gap 16px in both.
+
 ### Ryan's decisions, 2026-09-11
 
 1. **Placement** — header band inside the card, TSMO-style. ✅ built

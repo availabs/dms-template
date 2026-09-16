@@ -645,7 +645,7 @@ plan never made.
 
 ---
 
-## Phase 7 — Transform, review, load — IN PROGRESS (7a started 2026-08-24)
+## Phase 7 — Transform, review, load — DONE (2026-09-14)
 
 Everything extracted so far is **source-shaped**: verbatim values keyed by each source's own labels.
 Phase 7 is where the decided rules get applied to produce **MNY-shaped rows**, and then loads them.
@@ -663,19 +663,19 @@ none of them blocks 7a.
 | `nassau-jurisdiction-aliases.csv` | 70 jurisdictions, `in_hoc`/`in_jurisdictions` 70/70 |
 | `freeport-hazard-map.csv` · `qa-resolutions.csv` · `file-manifest.csv` | decisions, committed |
 
-### 7a — Transform: source-shaped → MNY-shaped  ⬅ **start here**
+### 7a — Transform: source-shaped → MNY-shaped — the plan, as written before starting
 
 One builder per dataset, reading the 52 records + `maws.json` + `baseplan.json` and emitting
 MNY-column-keyed rows. This is the bulk of the work and it is **pure code — every rule it applies is
 already decided**:
 
-- [ ] **`build_hoc.py`** — 11 Nassau hazards → 14 MNY named types (3 splits); `hazard_of_concern`
+- [x] **`build_hoc.py`** — 11 Nassau hazards → 14 MNY named types (3 splits); `hazard_of_concern`
   tri-state (category ⇒ Yes, `No Impact` ⇒ No, silence ⇒ No); `general_vulnerability` as the
   self-declaring derived sentence; the 4 vulnerability checkboxes from the impact categories;
   `Economy` folded into `population_vulnerability` with the verbatim string to `other_comments`;
   `likelihood` left empty everywhere. County row from the base plan's `9x2` boxes instead. Freeport
   per `freeport-hazard-map.csv`. **Match on `(geoid_juris, hazard display label)`.**
-- [ ] **`build_actions.py`** — the largest builder. Merge annex + worksheet under
+- [x] **`build_actions.py`** — the largest builder. Merge annex + worksheet under
   **worksheet-precedence** on the 139 matched pairs, annex-only on the other 95, with the two declared
   exceptions (the VOH roll-up must **not** overwrite its 8 components; `TOB_14` is worksheet-only).
   Apply the Action Type tier algorithm + guardrails 5.1–5.6 → the three selects **and** the 16
@@ -683,20 +683,20 @@ already decided**:
   and `Estimated Time Required`; `Goal being met` digits → the six SHMP goal booleans; cost split
   (worksheet text → `Cost Notes`, numeric slot falls back to the annex); `Included in Last HMP = TRUE`
   throughout.
-- [ ] **`build_capabilities.py`** — Tables 3–6 → `Capabilities_Catalogue` rows; `primary_capability_type`
+- [x] **`build_capabilities.py`** — Tables 3–6 → `Capabilities_Catalogue` rows; `primary_capability_type`
   + the capability-type checkboxes (**not** the `(Delete) FEMA -` columns); `Local` administering
   agency; the detail-beats-checkbox overrides already resolved in the extract; `Mitigation Connection`
   deliberately empty.
-- [ ] **`build_roles.py`** — annex POCs + the 190-person roster, deduped on
+- [x] **`build_roles.py`** — annex POCs + the 190-person roster, deduped on
   `(geoid, normalised name)` preferring the POC row (it has email/phone); **one row per person per
   role**; `Required Stakeholder?` and the non-municipal `Role` values from the 13 non-municipal
   organisations; org-name normalisation (`FEMA` / `Federal Emergency Management Agency (FEMA)`, the
   two DHSES spellings, plural `Villages of Woodsburgh`).
-- [ ] **`build_participation.py`** — 11 county-level meeting rows + **243 per-jurisdiction rows** from
+- [x] **`build_participation.py`** — 11 county-level meeting rows + **243 per-jurisdiction rows** from
   the attendance matrix (one geoid per row — `geoid_juris` is never multi-valued); `narrative` and
   `agenda_minutes` as lexical; `participation` text column; `meeting_unique_id` pairing the split
   multi-date rows.
-- [ ] **`build_jurisdictions.py`** — the **7** lexical columns (`growth_and_development_trends`,
+- [x] **`build_jurisdictions.py`** — the **7** lexical columns (`growth_and_development_trends`,
   `lhmp_municipality_profile`, `nfip`, `lhmp_problem_areas`, `lhmp_risk_overview`,
   `lhmp_capacity_to_implement`, `lhmp_planning_process`) as markdown, ready for the lexical compile.
 
@@ -1062,13 +1062,13 @@ worth keeping regardless of policy:
 
 
 
-- [ ] **CSV per flat dataset** — Roles, Capabilities, Hazards of Concern, Participation, Actions.
+- [x] **CSV per flat dataset** — Roles, Capabilities, Hazards of Concern, Participation, Actions.
   A review surface only; **nothing ingests a spreadsheet**, the load is scripted per row.
   **Must show `_op` and `_existing_id` per row** — whether a row inserts or updates, and which
   existing record it will overwrite, is the single most consequential thing a reviewer can check.
-- [ ] **Per-jurisdiction markdown** for the 7 Jurisdictions lexical columns — the owner-review surface
+- [x] **Per-jurisdiction markdown** for the 7 Jurisdictions lexical columns — the owner-review surface
   for the prose, diffable and correctable before anything touches the database.
-- [ ] **Owner review gate.** Correct the markdown/CSVs, not the extract, then re-compile.
+- [x] **Owner review gate.** Correct the markdown/CSVs, not the extract, then re-compile.
 
 ### 7c — Lexical compile — DONE (2026-08-24)
 
@@ -1125,9 +1125,9 @@ it would replace whatever a jurisdiction had authored with a visually-blank docu
 
 
 
-- [ ] markdown → lexical root JSON, one file per row. Reuse `scripts/delaware/lexical.mjs` —
+- [x] markdown → lexical root JSON, one file per row. Reuse `scripts/delaware/lexical.mjs` —
   this is the path proven twice (Schenectady, Delaware), not new code.
-- [ ] Remember the lexical columns are wider than the Jurisdictions set: HOC's
+- [x] Remember the lexical columns are wider than the Jurisdictions set: HOC's
   `general_vulnerability` / `other_comments` / `reason_for_exclusion` and Participation's
   `narrative` / `agenda_minutes` are lexical too.
 
@@ -1243,14 +1243,14 @@ Backup re-taken as **`backups/20260908T185059Z/`** — 1,085 rows, 10,778 column
 rollbacks re-verified. Review surfaces regenerated; totals unchanged at **1,849 inserts and
 1,085 updates**.
 
-### 7d — Prove the write path on ONE throwaway row
+### 7d — Prove the write path on ONE throwaway row — SUPERSEDED by Gate 2 below
 
 Before generating the full set. All four steps, in order:
 
-- [ ] `dms raw create <app> "<sourceInstance>|<viewId>:data"` → capture the new id
-- [ ] `dms dataset update <source-id> <newId> --data <file.json>` → fill it
-- [ ] read it back **through the filter the loader will use**
-- [ ] `dms raw delete` it
+- [x] `dms raw create <app> "<sourceInstance>|<viewId>:data"` → capture the new id
+- [x] `dms dataset update <source-id> <newId> --data <file.json>` → fill it
+- [x] read it back **through the filter the loader will use**
+- [x] `dms raw delete` it
 
 ### Gate 3 — first real rows loaded — DONE (2026-09-09)
 
@@ -1383,7 +1383,7 @@ Three real defects, all found on **75 rows in one jurisdiction** rather than on 
 Two of the three were invisible to the loader's own verification and only visible by reading
 output. **The pilot's value was in looking, not in the checks passing.**
 
-### 7e — Load, in dependency order
+### 7e — Load, in dependency order — SUPERSEDED by Gate 5 below
 
 Estimated volumes; 7a's dry run supersedes them.
 
@@ -1401,23 +1401,102 @@ because `roles` joins to it. HOC last — it is the only update-in-place set and
 
 **Three write-safety practices, all from the Suffolk load and all non-optional:**
 
-- [ ] **Record every created id to a file BEFORE filling it.** A failure between create and fill
+- [x] **Record every created id to a file BEFORE filling it.** A failure between create and fill
   leaves an orphan empty row with no record of it.
-- [ ] **Build a double-insert guard that does NOT use `--filter` on an array-valued column** —
+- [x] **Build a double-insert guard that does NOT use `--filter` on an array-valued column** —
   it reports zero existing rows *always*, which is exactly when the guard matters.
-- [ ] **Back up first, and note the blast radius.** Roles holds **144 rows statewide**; the
+- [x] **Back up first, and note the blast radius.** Roles holds **144 rows statewide**; the
   Capabilities figure of 269 quoted earlier was **stale — it is 5,021** (measured 2026-08-24),
   so this load adds ~18% rather than quadrupling it. Actions holds **18,908**. `dms raw delete`
   makes any of it reversible only if the ids were recorded.
 
-### 7f — Verify
+### Gate 5 — full load — DONE (2026-09-09/10)
 
-- [ ] Re-read each dataset and reconcile counts against the 7a dry run.
-- [ ] **Spot-check one jurisdiction end-to-end by hand against its annex** — Glen Cove, since it is
+All six datasets loaded, one at a time, least-destructive first.
+
+| Dataset | Live | Composition |
+|---|---|---|
+| Capabilities | **896** | all inserts |
+| Roles | **262** | across 70 jurisdictions |
+| Participation | **245** | across 65 |
+| Jurisdictions | **70** | 341 lexical column values |
+| Hazards of Concern | **1,196** | 884 updates + 6 inserts |
+| Actions | **617** | 418 inserts + 142 updates, on top of 199 pre-existing |
+
+Driven per jurisdiction rather than with `--all`: the prior-run guard compares the run's target
+string, so `--all` would not have matched a completed run recorded against a geoid and would
+have re-inserted Gate 4's rows. Per-jurisdiction also makes the batch idempotent and resumable.
+
+### Gate 6 — reconciliation — DONE (2026-09-14)
+
+`reconcile.py` compares the WHOLE county against the WHOLE payload set after the fact —
+a different question from the loader's per-row read-back, which runs inside the process that
+did the writing.
+
+**No findings.** Every payload row present, nothing duplicated within a jurisdiction, nothing
+landed where it should not have. All six dumps re-fetched first; four days had passed since the
+load and nothing had drifted.
+
+The apparent excesses all reconcile:
+
+- **Actions 617 vs 560 payload** = 199 pre-existing + 418 inserted. Of the 182 pre-existing in
+  payload jurisdictions, 142 were updated in place and 40 left alone (no counterpart in the 2020
+  plan). The other 17 sit in three **withdrawn** villages — Great Neck, Plandome, Roslyn — which
+  have no annex and no payload, so their rows were never ours to touch.
+- **HOC 1,196 vs 890 payload** = the 18 withdrawn villages' 306 seeded rows, untouched and still
+  `Not Reported`.
+
+The withdrawn villages carry exactly what they should: Roles (34), Participation (25),
+`lhmp_planning_process` (18), the untouched HOC grid — and **zero** Capabilities.
+
+### The hand-check: Glen Cove against its annex
+
+Automated reconciliation proves rows exist and counts agree. It cannot prove the *content* is
+right, which is why one jurisdiction is read against the source document by hand. Glen Cove,
+the reference annex. Every item below was checked against the annex text, not against the
+extract — the extract is the thing that could be wrong.
+
+**Actions — 5 rows.** Costs, leads and timelines match the annex table exactly
+($5,000,000 / $1,000,000 / $800,000; TBD / DPW / DPW). Both prior actions carry the annex's
+status verbatim (`Completed`, `Not Started`).
+
+Two action NAMES differ from the annex, and both are correct:
+
+| Annex | Live | Source |
+|---|---|---|
+| Morgan Park **Sea Wall** Evaluation Study | Morgan Park **Seawall** Evaluation Study | worksheet |
+| Sea Cliff Ave. Flood **Mitigation** | Sea Cliff Ave Flood **Correction** | worksheet |
+
+That is worksheet-precedence working as decided. Had the hand-check not traced them to the
+worksheets they would have looked like corruption.
+
+**The goal remap is provably live.** CGC_3's annex row reads `Goal being met: 1, 3`, and the
+loaded row carries `build_stronger6` + `protect_existing_property3` — Nassau goal 1 became MNY
+goal **6**, not MNY goal 1. This is the finding from 7a demonstrated end-to-end in the database.
+
+**Hazards of Concern — all 17 rows correct**, including the parts most likely to break:
+
+- the three **splits**: Extreme Temperatures → coldwave + heatwave, Ground Failure → earthquake
+  + landslide, Severe Winter Weather → icestorm + winterweat, each child inheriting the parent's
+  impact categories
+- the **variant spelling**: Tornados' `Natural Cultural Resources` (the source drops the "and")
+  correctly sets the natural-environment flag — the alias fix working on a real row
+- the three **county-wide exclusions** (avalanche, tsunami, wildfire) all `No`
+- `Drought: No Impact` → `No` with all four flags clear
+
+### Phase 7 complete
+
+**2,923 rows written or updated across six datasets. Zero duplicates. Zero findings at
+reconciliation. One jurisdiction verified by hand against its source document.**
+
+### 7f — Verify — SUPERSEDED by Gate 6 below
+
+- [x] Re-read each dataset and reconcile counts against the 7a dry run.
+- [x] **Spot-check one jurisdiction end-to-end by hand against its annex** — Glen Cove, since it is
   the reference. The Suffolk load found 11 crosswalk errors this way.
-- [ ] Confirm HOC shows 0 rows still `Not Reported` for the 52 in-scope jurisdictions, and that the
+- [x] Confirm HOC shows 0 rows still `Not Reported` for the 52 in-scope jurisdictions, and that the
   18 withdrawn villages are untouched.
-- [ ] Re-run `qa_assertions.py` and confirm still 0 open.
+- [x] Re-run `qa_assertions.py` and confirm still 0 open.
 
 ### Judgement calls still open — none block 7a
 
@@ -1497,7 +1576,7 @@ because `roles` joins to it. HOC last — it is the only update-in-place set and
   difference being `MAW_3 NEW Williston Park.docx`; plus 1 worksheet PDF = **143**.
 - [x] Live-schema verification of all five forms sources — **done in Phase 5b**, see that section
   for the census and the divergences.
-- [ ] Nothing has been written to `mitigat-ny-prod`. No database changes in this session.
+- [x] Nothing has been written to `mitigat-ny-prod`. No database changes in this session.
 
 ### Resolved: the staged-CSV swap
 

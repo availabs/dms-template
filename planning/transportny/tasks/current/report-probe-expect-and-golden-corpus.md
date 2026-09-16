@@ -2,6 +2,278 @@
 
 **Project:** TransportNY · **Topic:** themes · **Status:** IN PROGRESS · **Started:** 2026-08-06
 
+## 2026-09-14: A/A measurement — the corpus WAS non-deterministic. RESOLVED the same day.
+
+> **Heading corrected 2026-09-16.** This previously read "the corpus is NON-DETERMINISTIC. Do not
+> re-baseline yet." — and stayed that way after the fix landed in this very section, so a later
+> reader (and a 2026-09-16 triage pass) took the suite to still be untrustworthy. It is not: see
+> "FIXED 2026-09-14 — implementation" and "Verified — the suite is deterministic AND has teeth"
+> below. Three consecutive runs gave `entries=8 blockers=0 majors=0 info=0`, `FLAKY — 0`, and a
+> deliberate three-way baseline tamper was caught every time. Commit `2bbaec7` re-baselined all 8
+> baselines and added `probe_corpus_keys.mjs`. The original diagnosis is kept verbatim below.
+
+Ryan: "tbh i think its been messed up for a while. and at this point, im not even sure what it is
+supposed to be doing?" So it was measured rather than argued: **two consecutive full runs, same
+code, same baselines, nothing changed in between.**
+
+| | run A | run B | reproduces? |
+|---|---|---|---|
+| seasonality §13/14/15 `was blank → has content` | yes | yes | **REAL** |
+| seasonality majors (series labels) | 29 | 29 | **REAL** |
+| monthly_congestion majors | 3 | 3 | **REAL** |
+| one_week_study `had content → blank` ×4 | yes | — | noise |
+| annual_average `was blank → has content` ×5 | — | yes | noise |
+| routemap `requests pending 0 → 12` | — | yes | noise |
+| MapTiler console error | yes | — | noise |
+| gridgraph major | 1 | 0 | noise |
+| **TOTAL** | **8 blockers / 56 majors** | **9 blockers / 51 majors** | |
+
+**Only 3 of 17 blocker-instances reproduce.** The note elsewhere that "majors (53) are stable" is
+**wrong** — the count moves 51↔56 and, more importantly, its composition changes.
+
+### Root cause 1 — the settle condition (this is the killer)
+
+`report_probe.mjs` settles on network-idle plus a fixed `--wait`. Under a loaded dev server or cold
+caches that is not enough: sections have not rendered and queries have not fired yet. That produces
+**both** observed symptoms at once — a section reads blank AND its queries read as "no longer
+fires". Every unstable row above is that one cause.
+
+This retracts an earlier finding from the same session: `annual_average_study`'s query set
+"shrinking 14 → 5" was a partial load, not content drift.
+
+### Root cause 2 — `looksLikeFailedLoad()` does not cover the actual failure mode
+
+It guards on `net::ERR_*` in the console OR a body under 50 chars. A **partially** loaded page has
+neither. So `--capture` on an unlucky run writes blank sections into the baseline as legitimate,
+and the guard written to prevent exactly that does not fire. **Re-baselining before the settle fix
+is actively harmful** — it freezes whichever run you happened to get.
+
+### Root cause 3 — the /graph match key is far too strict (real, but secondary)
+
+The key is the FULL decoded query URL, which embeds the column select list, every series label,
+enumerated date arrays (**1,148** distinct `YYYY-MM-DD` literals in one entry) and view IDs. Any
+benign authoring or schema change invalidates whole swaths at once. Reproducible examples:
+
+- **one added column** — `data->>'counts_label' as counts_label` on the routes-list query. Exactly
+  1 major in every entry, both runs.
+- **a series relabel** — baseline `"Summer (Avg Day)"` vs current `"Summer"`; the `" (Avg Day)"`
+  suffix was dropped. **29 majors** in seasonality alone, both runs.
+
+Neither is a regression. The tool cannot distinguish "someone edited the report" from "the code
+broke", so each run buries a reader in majors to hand-triage — which trains everyone to ignore it.
+
+The one anti-drift measure that DOES work: pinning `&asOf=2026-07-23` on the dynamic reports. Date
+spans still match between baseline and current.
+
+### FIXED 2026-09-14 — implementation
+
+**1. `report_probe.mjs`: quiescence settle replaces `networkidle` + fixed dwell.**
+
+`goto` now uses `domcontentloaded` (asking it to also guess at idleness just added a second,
+differently-wrong timer), and readiness is decided by `settleForQuiescence()`, which requires all
+three of these to hold together for `--settle-quiet` (default 1500ms):
+
+1. zero api-origin requests in flight (the existing `pending` Map)
+2. no api request/response activity (new `lastApiActivityAt`, bumped in the request, response and
+   requestfailed handlers)
+3. the render signature unchanged — cell count / big-svg count / total path+rect+circle ink,
+   built from the SAME selectors the section census uses
+
+Condition 3 earns its place independently: charts paint a frame or two AFTER their data lands, so
+network quiet alone still catches a chart mid-draw. There is a hard `--settle-cap` (default 90s)
+and a guard against declaring settled before the app has made any API call at all — at t=0 all
+three conditions are trivially true, so without it the probe would capture a blank page as
+finished. `--wait` survives as a minimum FLOOR only, defaulting to 0.
+
+The dump now carries `settle: { ok, reason, ms, pending, polls }`, and an unsettled run prints a
+loud warning that the dump must not be baselined or diffed.
+
+**Measured**: the page that used to produce 4 flaky blockers (`one_week_study`) run 4× —
+identical section pattern (`BB.......`), identical 43 graph queries, 0 pending at close every
+time, with settle times ranging 12.1–14.1s. The WAIT adapts to load; the RESULT does not. The
+hand-tuned `wait: 20000` override for that entry was deleted from the manifest as obsolete.
+
+**2. `probe_corpus.mjs`: the partial-load guard actually covers partial loads.**
+
+`looksLikeFailedLoad()` now also rejects a dump that did not settle, one with requests still in
+flight at close, and a report page that produced zero sections (measured: one run produced
+`sections=0` and the old guard passed it). Added `failedLoadReason()` so a refusal says why.
+A bad load is now **retried up to 3×** instead of being reported as a Blocker — a page that fails
+to load is a fact about this machine at this moment, not about the code under test.
+
+**3. `probe_corpus_keys.mjs` (new): structural query identity.**
+
+The match key is no longer the full decoded query URL. `structuralKey()` collapses literal dates
+to one token each (list LENGTH still matters, values do not), lifts the column select run out, and
+replaces series labels with a placeholder. Columns are compared separately by
+`matchBaselineQuery()` under a **subset rule**: a baseline asking for 10 columns matches a current
+asking for those 10 plus a new one, but not a disjoint set.
+
+The subset rule is not decoration — collapsing the column list wholesale merged two genuinely
+distinct corpus queries that hit the same view with identical options and differ ONLY in their
+columns (`report_id/name/description` vs `route_comps/graph_comps/status`). That collision would
+have turned "series count changed" into a false-positive generator. Matching is 1:1 via a `used`
+set so two baseline queries cannot claim the same current one.
+
+`node scripts/npmrds-reports/probe_corpus_keys.mjs --check` scores the matcher against the real
+baselines and dumps, and reports ambiguity. Current score:
+
+```
+baseline queries: 111
+  matched by EXACT key      57 -> 54 Majors
+  matched by STRUCTURAL key 107 -> 4 Majors
+  current queries >1 baseline could claim: 0  (good)
+```
+
+Text drift that still matches structurally is reported as **Info**, not Major, so it stays visible
+without drowning the output; queries that fired but no baseline claimed are Info too.
+
+**4. A `--repeat <n>` flag existed during this work, and was REMOVED.**
+
+It ran the suite n times and intersected the findings, to separate reproducible ones from flaky
+ones. It earned its keep as a diagnostic — it is what exposed bugs A and B below — but it was cut
+at the owner's call once the harness was fixed: *"I dont really want this repeat flag, which
+pretty much only exists because our tests are flaky."* That is the right instinct. A flag telling
+you to run the suite three times before trusting it institutionalises the distrust rather than
+fixing it. If results ever start varying between runs again, that variance is the bug.
+
+### Result
+
+First full run with all of the above, against the UNCHANGED (still stale) baselines:
+
+| | before | after |
+|---|---|---|
+| Blockers | 8, of which only 3 reproduced | **3** — exactly the 3 that reproduced |
+| Majors | 56 | **3** |
+| Info | — | 44 (the drift, now visible but not alarming) |
+
+### Two further bugs found while verifying — both mine, both in the new code
+
+**A. The flakiness checker was lying.** `--repeat` normalised findings by stripping ALL digits, so
+`0 → 12` and `0 → 9` would compare equal. But query URLs are full of view ids and app names, so it
+collapsed 11 distinct findings and 17 distinct findings into the same 6 strings and printed
+`FLAKY: 0`. Re-scored with a targeted normaliser (only `N → M` count pairs) the same two runs were
+**6 reproducible, 6 flaky**. A verification tool that cannot fail is worse than none — it converts
+"unknown" into "verified".
+
+**B. Matching on FIRE COUNT rather than identity.** A page routinely fires the same query more than
+once (re-render, refetch) and the count is not stable: `one_week_study` captured **29 queries that
+are only 18 distinct**, 11 of them fired twice. The 1:1 matcher then demanded the same number of
+fires, so a run firing one of them once produced 11 `query no longer fires` Majors **against its
+own freshly captured baseline**. `graphSummary` is now deduplicated by structural identity;
+`fires` is retained for information and is never a finding. This also explains the earlier
+`annual_average_study` 0↔6 swing.
+
+### Verified — the suite is deterministic AND has teeth
+
+A point-in-time record; the end state is the "Owner verification" section below. The
+REPRODUCIBLE/FLAKY output quoted here came from the `--repeat` flag, since removed — three plain
+runs give the same answer without it.
+
+After the dedup fix and a re-capture, three consecutive full runs:
+
+```
+run 1: entries=8 blockers=0 majors=0 info=0
+run 2: entries=8 blockers=0 majors=0 info=0
+run 3: entries=8 blockers=0 majors=0 info=0
+
+REPRODUCIBLE (in every run) — 0
+FLAKY (in some runs only) — 0  (good: the suite is deterministic)
+```
+
+**A clean suite could equally be a suite doing nothing, so that was tested too.** A baseline was
+tampered with three ways and every one was caught:
+
+| injected | detected as |
+|---|---|
+| flipped `sections[0].hasContent` | `[Blocker] rendering state changed: had content → blank` |
+| `seriesCount` +7 | `[Major] series count changed: 7 → 0` |
+| a ghost query that cannot match | `[Major] a previously-captured /graph query no longer fires` |
+
+Baseline restored afterwards; the entry re-runs clean.
+
+### Owner verification + two more fixes, 2026-09-14 (end state)
+
+Ryan hand-checked all four dynamic-report URLs in a browser. Three things came out of it, and two
+were defects in the corpus itself that no amount of harness work would have found:
+
+**1. The `asOf=2026-07-23` anchor sat PAST the real data cliff.** We are only in Sept 2026, so
+`monthly_congestion`'s September/October/November/December panels had no 2026 data and were
+legitimately empty — and the corpus was recording "empty" as their expected state, meaning a blank
+section could never be a finding for them again. **All four entries moved to `asOf=2025-07-23`**,
+fully inside real coverage.
+
+**2. Route 2207838 was dead on two of the reports.** It rendered NOTHING on `monthly_congestion`
+(the route was regenerated after the original baseline). Those two moved to **2207390**, the route
+Ryan verified. This is exactly the failure mode that makes a golden corpus actively harmful: the
+baseline had frozen a bugged route's output as normal.
+
+**3. Info Boxes were invisible to the census.** InfoBox and RouteCompare render their data as
+numbers in plain divs — no SVG, no canvas, not even a `<table>` — so an svg/canvas-only census read
+a fully populated Info Box as permanently blank. 3 corpus sections were effectively unmonitored.
+Now counted as `valueCells` (leaf elements whose entire text is a number-like token) and treated as
+content when **> 0**.
+
+**`> 0`, not a tuned floor.** A threshold of 3 was tried and rejected: the count scales with
+measures/routes/columns, so any floor above zero misjudges a SMALL section — a one-measure,
+one-route Info Box legitimately renders one or two cells. Measured: populated Info Box 10, Route
+Compare 8, report title header 0, genuinely empty graph 0. Deriving the EXPECTED count from each
+section's spec is logged as a follow-on:
+[`probe-expected-value-cells.md`](./probe-expected-value-cells.md).
+
+**Blank sections across the corpus: 16/56 → 11/56 (2025 + route fix) → 8/56 (value cells).**
+All 8 remaining are report title headers — exactly one per report, correctly blank.
+
+**A third settle bug, found while inspecting those sections.** `one_week_study`'s Falcor waterfall
+has a lull longer than the 1500ms quiet window, so roughly one run in three declared the page
+finished at ~8.3s having fired 37 of its 43 queries, with 6 still in flight. The corpus looked
+clean only because the in-flight guard rejected and retried those dumps — masking it. The quiet
+window is now derived from the largest lull that page has actually shown (`max(settleQuiet,
+2 × maxApiGapMs)`, capped at 15s), and `settle.ok` downgrades itself if requests appear after
+settling. Five consecutive runs afterwards: 43 graphs, 0 pending, identical every time.
+
+### Final verification
+
+Captured from the owner-verified URLs, then two plain runs:
+
+```
+capture: 8/8 entries, no retries, no rejected dumps
+run A:   8 entries, 0 blockers, 0 majors, 0 info
+run B:   8 entries, 0 blockers, 0 majors, 0 info
+A vs B:  IDENTICAL
+```
+
+Regression detection re-proved after every change above, tampering with the InfoBox section
+specifically (monitored only since today):
+
+| injected | detected as |
+|---|---|
+| InfoBox section flipped to blank | `[Blocker] rendering state changed` |
+| `seriesCount` +5 | `[Major] series count changed: 5 → 0` |
+| ghost query | `[Major] a previously-captured /graph query no longer fires` |
+
+Restored afterwards; the entry re-runs clean.
+
+### How to use this suite now
+
+```bash
+node scripts/npmrds-reports/probe_corpus.mjs              # normal run
+node scripts/npmrds-reports/probe_corpus_keys.mjs --check # score the query matcher
+node scripts/npmrds-reports/probe_corpus.mjs --capture    # deliberate re-baseline
+```
+
+- **One run is the answer.** A `--repeat n` flag existed briefly during this work and was removed
+  at the owner's call: a flag that tells you to run the suite three times before trusting it
+  institutionalises the distrust instead of fixing it. If findings ever start varying between
+  runs again, that variance IS the bug — fix the harness, do not add a flag to average over it.
+- **Info findings are drift, not regressions** — a relabel, an added column, a shifted date window.
+  They are shown so re-baselining stays an informed choice.
+- **`--capture` is safe now but still deliberate**: a dump that did not settle, left requests in
+  flight, produced no sections, or hit an expired auth token is refused (after 3 retries) rather
+  than written.
+- An expired dev token is named explicitly in the failure message, with the `mint_token.sh` fix —
+  it renders as a sectionless page and used to look like a mass regression.
+
 ## 2026-08-10: batch-corpus mode built, real, and running — priority-ordered per Ryan's steer
 
 Ryan's ask this session: make the test plan/framework easily updatable when the underlying page

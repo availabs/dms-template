@@ -152,7 +152,7 @@ const theme = {
           "menuPosition": "absolute top-[6px] right-[6px] items-center",
           "editIcon": "hover:text-blue-500 size-6",
           "contentWrapper": "h-full",
-          "headerExtensionsRow": "px-3 pb-2"
+          "headerExtensionsRow": "empty:hidden px-3 pt-2 pb-2"
         }
       ]
     },

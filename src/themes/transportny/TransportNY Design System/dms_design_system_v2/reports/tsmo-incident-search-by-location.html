@@ -1,0 +1,816 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Searching Incidents by Location · TSMO · TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <style>
+    /* TransportNY design-system v2 surface utilities.
+     * Inlined rather than linked to ../design-system/_shared.css so the report opens
+     * standalone from the file system. Values copied verbatim from that file —
+     * do not diverge; re-copy if the design system changes. */
+    .font-display, .font-oswald { font-family: "Oswald", "Bebas Neue", sans-serif; }
+    .font-proxima { font-family: "Source Sans 3", system-ui, sans-serif; }
+    body { font-family: "Source Sans 3", system-ui, sans-serif; background: #ECEEF2; }
+    .tny-pane      { background: #ECEEF2; }
+    .tny-pane-tint { background: #E4E8EE; }
+    .tny-card {
+      background: #fff;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 8px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 0 rgba(15, 23, 42, 0.02);
+    }
+    .tny-card-tint { background: #FAFBFC; }
+    .tny-card-bone { background: #F5F1E8; }
+    .tny-card-ink  { background: #0F2D4D; color: #fff; }
+    .tny-link      { color: #1F3F8F; text-decoration: underline; text-underline-offset: 2px; }
+    .tny-link:hover{ color: #16307A; }
+    .tny-mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.92em; padding: 1px 5px;
+      background: rgba(15, 23, 42, 0.05);
+      border: 1px solid rgba(15, 23, 42, 0.06);
+      border-radius: 3px; color: #37576B; white-space: nowrap;
+    }
+    .tny-hero-topo {
+      background:
+        radial-gradient(circle at 25% 30%, rgba(15, 23, 42, 0.04), transparent 40%),
+        radial-gradient(circle at 75% 70%, rgba(15, 23, 42, 0.05), transparent 50%),
+        repeating-linear-gradient(28deg, transparent 0 30px, rgba(15, 23, 42, 0.035) 30px 31px, transparent 31px 60px),
+        repeating-linear-gradient(-30deg, transparent 0 36px, rgba(15, 23, 42, 0.028) 36px 37px, transparent 37px 70px),
+        #EEF1F3;
+    }
+    .bar { height: 8px; border-radius: 2px; background: #37576B; }
+    .bar-warn { background: #CA8A04; }
+    .bar-bad  { background: #B45309; }
+    .bar-ok   { background: #10B981; }
+    table.tny { border-collapse: collapse; width: 100%; }
+    table.tny th {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em;
+      color: #64748b; text-align: right; padding: 6px 8px;
+      border-bottom: 1px solid rgba(15,23,42,0.12); white-space: nowrap;
+    }
+    table.tny th:first-child, table.tny td:first-child { text-align: left; }
+    table.tny td {
+      font-size: 13px; padding: 7px 8px; text-align: right;
+      border-bottom: 1px solid rgba(15,23,42,0.05);
+      font-variant-numeric: tabular-nums;
+    }
+    table.tny tr:last-child td { border-bottom: none; }
+    table.tny tr.total td { font-weight: 600; background: rgba(15,23,42,0.02); }
+    .scroll-x { overflow-x: auto; }
+    pre.tny-code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 11.5px; line-height: 1.55; color: #E2E8F0;
+      background: #12181F; border-radius: 6px; padding: 14px 16px; overflow-x: auto;
+    }
+    pre.tny-code .c { color: #7D8A99; }
+    pre.tny-code .k { color: #CA8A04; }
+    pre.tny-code .s { color: #7FD1A6; }
+  </style>
+</head>
+<body class="tny-pane">
+
+<!--
+  SEARCHING INCIDENTS BY LOCATION — a scoping recommendation for the TSMO Incident Search page.
+
+  Question asked: can the Incident Search explorer (slug incident_search, tsmo2 pattern 1431209)
+  gain a multiselect TMC filter, and is lat/long search worth building?
+
+  Every number labelled "measured" was run 2026-09-14 against the live prod Falcor endpoint
+  https://dmsserver.availabs.org/graph via the `uda` route, against npmrds2:
+    Transcom Events     source  956 / view 1947   (3,836,903 rows)
+    Transcom Event TMC  source 1635 / view 2799   (8,886,841 rows)
+  The four-TMC worked case is exported in full to
+    references/tsmo-incidents-by-tmc.csv   (75 rows, one per TMC × incident)
+
+  Design: TransportNY design system v2 tokens/utilities (inlined _shared.css subset above).
+  Document-style page rather than the app shell — a report, not a site surface.
+-->
+
+<div class="max-w-[1180px] mx-auto px-6 lg:px-10">
+
+  <!-- ── header ──────────────────────────────────────────────────────── -->
+  <header class="tny-hero-topo -mx-6 lg:-mx-10 px-6 lg:px-10 pt-10 pb-9 border-b border-zinc-950/10">
+    <div class="flex items-center gap-2 mb-3">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// scoping recommendation</span>
+      <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+    </div>
+    <h1 class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">
+      Searching incidents by location<span class="text-[#CA8A04]">.</span>
+    </h1>
+    <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-3 max-w-[820px]">
+      The Incident Search explorer already finds any TRANSCOM event by region, county, year, month,
+      category and keyword. Adding <span class="text-[#0f1722] font-medium">&ldquo;on this piece of road&rdquo;</span>
+      to that list is a smaller job than a new page — but it is not a one-line job, because the page is
+      bound to a source that does not carry a usable TMC column. This report says what the change
+      actually is, what it will and will not be able to answer, and whether lat/long search is worth
+      building after it.
+    </p>
+    <div class="flex flex-wrap items-center gap-2 mt-5 font-mono text-[10.5px] uppercase tracking-[0.14em]">
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] bg-[#37576B] text-white">incident_search</span>
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white text-slate-600">tsmo2 &middot; pattern 1431209</span>
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white text-slate-600">npmrds2 &middot; 956/1947 + 1635/2799</span>
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white text-slate-600">measured 2026-09-14</span>
+    </div>
+  </header>
+
+  <!-- ── §01 the answer ──────────────────────────────────────────────── -->
+  <section class="py-11 border-b border-zinc-950/05">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 01</span>
+      <span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">
+      Scope the filter, not the page. But the filter needs a join.
+    </h2>
+    <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mt-2 max-w-[820px]">
+      Your instinct was right on both counts — and the second one is the one that costs something.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+      <div class="tny-card p-4 flex flex-col">
+        <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">the page is right</div>
+        <div class="font-display font-semibold text-[30px] leading-none tabular-nums text-[#0f1722] mt-2">6 &rarr; 7</div>
+        <div class="font-display font-medium text-[14px] text-[#0f1722] mt-2 leading-tight">facets, not a new surface</div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-2">
+          Region, county, year, month, category, keyword — TMC is the seventh. Same layout, same
+          KPI strip, same results table, same <span class="tny-mono">incident_view</span> deep link.
+          Everything you described the page should do, it already does.
+        </p>
+      </div>
+      <div class="tny-card p-4 flex flex-col">
+        <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">but the source is wrong</div>
+        <div class="font-display font-semibold text-[30px] leading-none tabular-nums text-[#B45309] mt-2">0</div>
+        <div class="font-display font-medium text-[14px] text-[#0f1722] mt-2 leading-tight">reliable TMC columns on the bound source</div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-2">
+          The page reads <span class="font-medium text-[#0f1722]">Transcom Events</span> (956/1947).
+          The incidents-snapped-to-TMC table you were thinking of is a
+          <span class="font-medium text-[#0f1722]">different source</span> — 1635/2799 — and the page
+          does not touch it.
+        </p>
+      </div>
+      <div class="tny-card p-4 flex flex-col">
+        <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">and the goal is blocked</div>
+        <div class="font-display font-semibold text-[30px] leading-none tabular-nums text-[#B45309] mt-2">0.018%</div>
+        <div class="font-display font-medium text-[14px] text-[#0f1722] mt-2 leading-tight">of events record whether anyone was hurt</div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-2">
+          <span class="tny-mono">injury_involved</span> is non-null on 697 of 3,836,903 events;
+          <span class="tny-mono">fatality_involved</span> on 186. Crash counts are answerable.
+          Injury and fatality counts are <span class="font-medium text-[#B45309]">not</span>, from
+          this data, at any location.
+        </p>
+      </div>
+    </div>
+
+    <div class="tny-card tny-card-bone p-5 mt-5">
+      <div class="font-display font-medium text-[16px] text-[#0f1722]">The recommendation in one paragraph.</div>
+      <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+        Add a TMC facet to the existing Incident Search page rather than building a second explorer.
+        Implement it as a <span class="font-medium text-[#0f1722]">live cross-view join</span> —
+        Transcom Event&nbsp;TMC (1635/2799) &#8904; Transcom Events (956/1947) on
+        <span class="tny-mono">event_id</span> — which is a configuration change to the existing
+        sections, not new component code, and is already a documented pattern
+        (<span class="tny-mono">skills/live-cross-view-joined-section.md</span>). Both views live in
+        <span class="tny-mono">npmrds2</span>, so the same-engine constraint is satisfied. Then set
+        expectations honestly on the page: it will answer <em>how many crashes, how long they lasted,
+        how much delay they caused</em> on a segment. It will not answer <em>how many people were hurt</em>,
+        because nobody populated that field.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── §02 the two sources ─────────────────────────────────────────── -->
+  <section class="py-11 border-b border-zinc-950/05">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 02</span>
+      <span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">
+      Two tables, and neither one is enough on its own.
+    </h2>
+    <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mt-2 max-w-[820px]">
+      This is the whole reason a TMC filter is not a one-line change. The location lives in one table
+      and every fact you want to report lives in the other.
+    </p>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
+      <div class="tny-card p-5">
+        <div class="flex items-baseline justify-between gap-3">
+          <div class="font-display font-medium text-[17px] text-[#0f1722]">Transcom Events</div>
+          <span class="tny-mono">956 / 1947</span>
+        </div>
+        <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500 mt-1">what the page reads today</div>
+        <table class="tny mt-4">
+          <tr><td>rows</td><td>3,836,903</td></tr>
+          <tr><td>grain</td><td>one row per event</td></tr>
+          <tr><td>columns</td><td>139</td></tr>
+          <tr><td>years</td><td>2015 &ndash; 2026</td></tr>
+        </table>
+        <p class="font-proxima text-[12px] leading-[1.6] text-slate-700 mt-3">
+          <span class="font-medium text-[#0f1722]">Has everything you want to report:</span>
+          <span class="tny-mono">nysdot_sub_category</span>, <span class="tny-mono">event_type</span>,
+          <span class="tny-mono">estimated_duration_mins</span>, <span class="tny-mono">roadway_clearance</span>,
+          <span class="tny-mono">incident_clearance</span>, <span class="tny-mono">lanes_affected_count</span>,
+          <span class="tny-mono">vehicle_delay</span>, <span class="tny-mono">cost</span>,
+          <span class="tny-mono">point_lat</span> / <span class="tny-mono">point_long</span>,
+          <span class="tny-mono">injury_involved</span>, <span class="tny-mono">fatality_involved</span>.
+        </p>
+        <p class="font-proxima text-[12px] leading-[1.6] text-slate-700 mt-2">
+          <span class="font-medium text-[#B45309]">But its only TMC handle is</span>
+          <span class="tny-mono">tmclist</span> — a free-text column, null on
+          <span class="font-medium text-[#0f1722]">50.4%</span> of events (1,901,273 of 3,836,903 non-null),
+          up to 259 characters long, matched only by substring. §04 shows how far it disagrees with the
+          snapped table.
+        </p>
+      </div>
+
+      <div class="tny-card p-5">
+        <div class="flex items-baseline justify-between gap-3">
+          <div class="font-display font-medium text-[17px] text-[#0f1722]">Transcom Event TMC</div>
+          <span class="tny-mono">1635 / 2799</span>
+        </div>
+        <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500 mt-1">the incidents-snapped-to-TMC table</div>
+        <table class="tny mt-4">
+          <tr><td>rows</td><td>8,886,841</td></tr>
+          <tr><td>grain</td><td>one row per event &times; TMC</td></tr>
+          <tr><td>columns</td><td>22</td></tr>
+          <tr><td>distinct events</td><td>752,694</td></tr>
+          <tr><td>distinct TMCs</td><td>36,621</td></tr>
+          <tr><td>years</td><td>2018 sliver, then 2021 &ndash; Jun 2026</td></tr>
+        </table>
+        <p class="font-proxima text-[12px] leading-[1.6] text-slate-700 mt-3">
+          <span class="font-medium text-[#0f1722]">Has the location and the delay:</span>
+          <span class="tny-mono">tmc</span>, <span class="tny-mono">tmclinear</span>,
+          <span class="tny-mono">delay</span>, <span class="tny-mono">raw_delay</span>,
+          <span class="tny-mono">bound_start_date</span>/<span class="tny-mono">_time</span>,
+          <span class="tny-mono">direction</span>, <span class="tny-mono">county</span>,
+          <span class="tny-mono">region_name</span>, <span class="tny-mono">nysdot_sub_category</span>,
+          <span class="tny-mono">f_system</span>.
+        </p>
+        <p class="font-proxima text-[12px] leading-[1.6] text-slate-700 mt-2">
+          <span class="font-medium text-[#B45309]">But it has none of the incident detail:</span>
+          no <span class="tny-mono">event_type</span>, no <span class="tny-mono">start_date_time</span>,
+          no <span class="tny-mono">estimated_duration_mins</span>, no clearance times, no lane counts,
+          no injury/fatality flags, no lat/long, no facility name.
+          <span class="font-medium text-[#0f1722]">A TMC search built on 2799 alone would return
+          event IDs and delay and nothing a reader could use.</span>
+        </p>
+      </div>
+    </div>
+
+    <div class="tny-card tny-card-tint p-5 mt-4">
+      <div class="font-display font-medium text-[15px] text-[#0f1722]">Coverage warning: 2799 is missing 2019 and 2020 entirely.</div>
+      <div class="scroll-x mt-3">
+        <table class="tny" style="min-width:640px">
+          <thead><tr><th>year</th><th>2015</th><th>2016</th><th>2017</th><th>2018</th><th>2019</th><th>2020</th><th>2021</th><th>2022</th><th>2023</th><th>2024</th><th>2025</th><th>2026</th></tr></thead>
+          <tbody>
+            <tr><td>Transcom Events &middot; events</td><td>252,098</td><td>291,379</td><td>318,414</td><td>357,551</td><td>388,339</td><td>296,754</td><td>327,304</td><td>330,336</td><td>337,693</td><td>343,278</td><td>342,423</td><td>251,332</td></tr>
+            <tr><td>Event TMC &middot; events snapped</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>9,070</td><td>&mdash;</td><td>&mdash;</td><td>143,020</td><td>139,846</td><td>134,120</td><td>134,337</td><td>127,328</td><td>64,973</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-700 mt-3">
+        Any TMC-scoped total is therefore a <span class="font-medium text-[#0f1722]">2021&ndash;present</span>
+        total, not an all-time one. That belongs on the page as a coverage note next to the KPI strip —
+        the same honest-gaps treatment the existing page already gives attributed delay. It is also a
+        concrete ETL ticket: re-run the snapping for 2015&ndash;2020.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── §03 three routes ────────────────────────────────────────────── -->
+  <section class="py-11 border-b border-zinc-950/05">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 03</span>
+      <span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Three ways to get a TMC filter, in ascending order of cost.</h2>
+
+    <div class="mt-6 space-y-4">
+
+      <div class="tny-card p-5 border-l-[3px] border-l-slate-300">
+        <div class="flex items-baseline gap-3 flex-wrap">
+          <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">option A</span>
+          <div class="font-display font-medium text-[17px] text-[#0f1722]">Filter <span class="tny-mono">tmclist</span> in place</div>
+          <span class="h-6 px-2 inline-flex items-center rounded-[4px] bg-slate-100 text-slate-600 font-mono text-[10px] uppercase tracking-[0.12em]">~1 hour</span>
+          <span class="h-6 px-2 inline-flex items-center rounded-[4px] bg-[#FDF3D7] text-[#8A6100] font-mono text-[10px] uppercase tracking-[0.12em]">not recommended</span>
+        </div>
+        <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+          Literally one more facet on the page as it stands: an <span class="tny-mono">OR</span> group of
+          <span class="tny-mono">like</span> leaves on <span class="tny-mono">tmclist</span>, one per
+          selected TMC — the exact shape the keyword box already uses
+          (<span class="tny-mono">skills/full-text-search-filter.md</span>). No join, no new source.
+        </p>
+        <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+          <span class="font-medium text-[#B45309]">Why not:</span> <span class="tny-mono">tmclist</span>
+          is null on half the table, and where it is populated it disagrees badly with the snapped
+          table (§04). It is also substring matching on a delimited list, so a longer TMC code that
+          contains a shorter one as a prefix will produce silent false positives. It would ship a
+          filter that looks authoritative and is not. Worth keeping in mind only as a stopgap if the
+          join turns out to be blocked.
+        </p>
+      </div>
+
+      <div class="tny-card p-5 border-l-[3px] border-l-[#10B981]">
+        <div class="flex items-baseline gap-3 flex-wrap">
+          <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">option B</span>
+          <div class="font-display font-medium text-[17px] text-[#0f1722]">Join 2799 &#8904; 1947 on <span class="tny-mono">event_id</span></div>
+          <span class="h-6 px-2 inline-flex items-center rounded-[4px] bg-slate-100 text-slate-600 font-mono text-[10px] uppercase tracking-[0.12em]">~1&ndash;2 days</span>
+          <span class="h-6 px-2 inline-flex items-center rounded-[4px] bg-[#DCF5E9] text-[#0B6B47] font-mono text-[10px] uppercase tracking-[0.12em]">recommended</span>
+        </div>
+        <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+          The TMC facet filters the snapped table; every column the results table and KPI strip already
+          display comes across the join from the events table. This is a <em>configuration</em> change
+          to the existing sections — the top-level <span class="tny-mono">join</span> key in each
+          section's element-data, alias-prefixed columns
+          (<span class="tny-mono">ds.tmc</span>, <span class="tny-mono">meta.estimated_duration_mins</span>)
+          — not new component code, and it stays a live <span class="tny-mono">fetchMode:'smart'</span>
+          binding with no seeding. The worked precedent is the TSMO Corridor View's time-space speed
+          grid, which joins npmrds 982 &#8904; meta 983 the same way.
+        </p>
+        <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+          Four things to get right, all of them already written down in
+          <span class="tny-mono">skills/live-cross-view-joined-section.md</span>: both views must be the
+          same query engine (<span class="font-medium text-[#0f1722]">both are Postgres/npmrds2 &mdash; satisfied</span>);
+          <span class="tny-mono">sourceInfo.columns</span> is required or <span class="tny-mono">/edit</span>
+          crashes the page; pin the metadata version column or the join fans out; and write
+          engine-correct SQL. One extra note specific to this join: the grain changes. 2799 is one row
+          per event&times;TMC, so a results table built on it needs
+          <span class="tny-mono">count(distinct event_id)</span>, not
+          <span class="tny-mono">count(1)</span> — §05 shows a case where that is a
+          <span class="font-medium text-[#0f1722]">75 vs 57</span> difference.
+        </p>
+      </div>
+
+      <div class="tny-card p-5 border-l-[3px] border-l-slate-300">
+        <div class="flex items-baseline gap-3 flex-wrap">
+          <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">option C</span>
+          <div class="font-display font-medium text-[17px] text-[#0f1722]">Materialise a wide incident&times;TMC view in the ETL</div>
+          <span class="h-6 px-2 inline-flex items-center rounded-[4px] bg-slate-100 text-slate-600 font-mono text-[10px] uppercase tracking-[0.12em]">ETL work</span>
+        </div>
+        <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+          Push the join upstream: a new DaMa view, one row per event&times;TMC, carrying the incident
+          detail columns alongside <span class="tny-mono">tmc</span>. The page then binds to one source
+          and every section gets simpler and faster. This is the right long-term answer if TMC-scoped
+          incident analysis becomes a routine ask rather than a one-off. It is not the right
+          <em>first</em> move — build option B, see whether the page gets used, then decide.
+        </p>
+      </div>
+
+    </div>
+
+    <div class="tny-card tny-card-tint p-5 mt-4">
+      <div class="font-display font-medium text-[15px] text-[#0f1722]">What the facet itself looks like — no new primitive needed.</div>
+      <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-700 mt-2">
+        A TMC facet is the same <span class="tny-mono">Filter</span> control as Region and County:
+        <span class="tny-mono">operation:'filter'</span> with <span class="tny-mono">isMulti:true</span>,
+        writing a <span class="tny-mono">tmc</span> page variable. One caveat the existing facets
+        do not have: there are <span class="font-medium text-[#0f1722]">36,621 distinct TMCs</span>, so
+        an unscoped <span class="tny-mono">DISTINCT</span> option list is not a dropdown anyone can use.
+        Scope it the way the page already scopes County — cascade the option query off the current
+        region/county selection (<span class="tny-mono">columns[].filters</span> style, which is what the
+        existing builder uses precisely because it narrows the DISTINCT scan) — and let the control's
+        type-ahead do the rest. A user who arrives with a TMC code in hand types it; a user who does
+        not picks a county first and gets a list they can read.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── §04 the linkages disagree ───────────────────────────────────── -->
+  <section class="py-11 border-b border-zinc-950/05">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 04</span>
+      <span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">
+      The two TMC linkages agree on about a third of rows.
+    </h2>
+    <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mt-2 max-w-[820px]">
+      Measured on the four TMCs in §05. &ldquo;Snapped&rdquo; = the event appears on that TMC in
+      1635/2799. &ldquo;<span class="tny-mono">tmclist</span>&rdquo; = the event's own
+      <span class="tny-mono">tmclist</span> string on 956/1947 contains that TMC.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+      <div class="tny-card p-4">
+        <div class="font-display font-semibold text-[32px] leading-none tabular-nums text-[#10B981]">27</div>
+        <div class="font-display font-medium text-[13.5px] text-[#0f1722] mt-1.5">rows both agree on</div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-1.5">36% of the union.</p>
+      </div>
+      <div class="tny-card p-4">
+        <div class="font-display font-semibold text-[32px] leading-none tabular-nums text-[#CA8A04]">21</div>
+        <div class="font-display font-medium text-[13.5px] text-[#0f1722] mt-1.5">rows only the snapped table has</div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-1.5">
+          The event's own <span class="tny-mono">tmclist</span> is null or omits the TMC.
+        </p>
+      </div>
+      <div class="tny-card p-4">
+        <div class="font-display font-semibold text-[32px] leading-none tabular-nums text-[#B45309]">27</div>
+        <div class="font-display font-medium text-[13.5px] text-[#0f1722] mt-1.5">rows only <span class="tny-mono">tmclist</span> has</div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-1.5">
+          Mostly pre-2021 — the years the snapping never ran.
+        </p>
+      </div>
+    </div>
+
+    <div class="scroll-x mt-5">
+      <table class="tny tny-card" style="min-width:680px">
+        <thead>
+          <tr><th>TMC</th><th>events via 2799.tmc</th><th>events via 1947.tmclist</th><th>union</th><th>agreement</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="tny-mono">120-12145</span></td><td>5</td><td>7</td><td>10</td><td>20%</td></tr>
+          <tr><td><span class="tny-mono">120-12146</span></td><td>15</td><td>11</td><td>21</td><td>24%</td></tr>
+          <tr><td><span class="tny-mono">120+12146</span></td><td>14</td><td>12</td><td>18</td><td>44%</td></tr>
+          <tr><td><span class="tny-mono">120+12147</span></td><td>14</td><td>24</td><td>26</td><td>46%</td></tr>
+          <tr class="total"><td>all four</td><td>48</td><td>54</td><td>75</td><td>36%</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tny-card tny-card-bone p-5 mt-5">
+      <div class="font-display font-medium text-[16px] text-[#0f1722]">Why this matters more than it looks.</div>
+      <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+        Whichever linkage the page uses becomes the definition of &ldquo;an incident on this segment&rdquo;,
+        and the two definitions differ by a factor approaching two on individual segments. Some of the
+        gap is explained — the snapped table has no 2019 or 2020 — but not all of it, and the
+        <span class="tny-mono">120-12145</span> row (5 snapped vs 7 self-reported, 2 in common) is not
+        explained by coverage at all.
+      </p>
+      <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+        <span class="font-medium text-[#0f1722]">Recommendation:</span> build on the snapped table
+        (it is the one with a documented method and the one that carries delay), state on the page
+        which linkage is in use and over what years, and file the reconciliation as a separate data
+        ticket rather than letting it block the feature. Do not silently union the two — the union is
+        the right thing for a one-off export like the CSV in §05, where a human reads the
+        <span class="tny-mono">linkage</span> column, and the wrong thing for a page that publishes a count.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── §05 the worked case ─────────────────────────────────────────── -->
+  <section class="py-11 border-b border-zinc-950/05">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 05</span>
+      <span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">
+      The worked case: four TMCs on NY&nbsp;146 / NY&nbsp;156.
+    </h2>
+    <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mt-2 max-w-[820px]">
+      <span class="tny-mono">120-12145</span> <span class="tny-mono">120-12146</span>
+      <span class="tny-mono">120+12146</span> <span class="tny-mono">120+12147</span> — Albany and
+      Schoharie counties, Region 1 / Region 9. Full export:
+      <span class="tny-mono">references/tsmo-incidents-by-tmc.csv</span>, 75 rows, one per TMC &times; incident,
+      53 columns, each row carrying a <span class="tny-mono">linkage</span> tag and an
+      <span class="tny-mono">incident_view_path</span> deep link.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mt-6">
+      <div class="tny-card p-4">
+        <div class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#0f1722]">57</div>
+        <div class="font-display font-medium text-[13.5px] text-[#0f1722] mt-1.5">distinct incidents</div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-1.5">
+          across 75 TMC&times;incident rows — two incidents touch two of the four segments each.
+        </p>
+      </div>
+      <div class="tny-card p-4">
+        <div class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#B45309]">4</div>
+        <div class="font-display font-medium text-[13.5px] text-[#0f1722] mt-1.5">crashes</div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-1.5">
+          6 crash rows, 4 distinct events. Durations 60, 60, 60, 120, 120, 420 minutes.
+        </p>
+      </div>
+      <div class="tny-card p-4">
+        <div class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#B45309]">0</div>
+        <div class="font-display font-medium text-[13.5px] text-[#0f1722] mt-1.5">injuries recorded</div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-1.5">
+          And 0 fatalities. Both flags are <span class="font-medium text-[#0f1722]">blank on all 75 rows</span>
+          — not false, blank.
+        </p>
+      </div>
+      <div class="tny-card p-4">
+        <div class="font-display font-semibold text-[34px] leading-none tabular-nums text-[#0f1722]">0</div>
+        <div class="font-display font-medium text-[13.5px] text-[#0f1722] mt-1.5">vehicle-hours of delay</div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-1.5">
+          <span class="tny-mono">delay</span> is 0 on every one of the 48 snapped pairs. Rural
+          two-lane segments: no measurable congestion footprint.
+        </p>
+      </div>
+    </div>
+
+    <div class="scroll-x mt-5">
+      <table class="tny tny-card" style="min-width:820px">
+        <thead>
+          <tr><th>TMC</th><th>rows</th><th>crashes</th><th>construction</th><th>special event</th><th>other</th><th>injuries</th><th>fatalities</th><th>mean duration &middot; min</th><th>years present</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><span class="tny-mono">120-12145</span></td><td>10</td><td>2</td><td>8</td><td>0</td><td>0</td><td>&mdash;</td><td>&mdash;</td><td>3,295</td><td>2019&ndash;20, 2022&ndash;23, 2025</td></tr>
+          <tr><td><span class="tny-mono">120-12146</span></td><td>21</td><td>2</td><td>12</td><td>6</td><td>1</td><td>&mdash;</td><td>&mdash;</td><td>426</td><td>2015, 2019&ndash;25</td></tr>
+          <tr><td><span class="tny-mono">120+12146</span></td><td>18</td><td>0</td><td>17</td><td>1</td><td>0</td><td>&mdash;</td><td>&mdash;</td><td>2,038</td><td>2019, 2022&ndash;25</td></tr>
+          <tr><td><span class="tny-mono">120+12147</span></td><td>26</td><td>2</td><td>16</td><td>7</td><td>1</td><td>&mdash;</td><td>&mdash;</td><td>517</td><td>2017, 2019&ndash;25</td></tr>
+          <tr class="total"><td>all four</td><td>75</td><td>6</td><td>53</td><td>14</td><td>2</td><td>&mdash;</td><td>&mdash;</td><td>&mdash;</td><td>2015&ndash;2025</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="font-proxima text-[11.5px] leading-[1.55] text-slate-500 mt-2">
+      Row counts are TMC&times;incident pairs (the union of both linkages), so the &ldquo;all four&rdquo;
+      line double-counts the two incidents that span two segments. Distinct incidents = 57, distinct
+      crashes = 4. &ldquo;Mean duration&rdquo; is heavily skewed by multi-day construction closures —
+      the longest single event runs 28,800 minutes (20 days).
+    </p>
+
+    <div class="tny-card tny-card-bone p-5 mt-5">
+      <div class="font-display font-medium text-[16px] text-[#0f1722]">The honest answer to the question behind the request.</div>
+      <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+        You wanted total crashes, injuries and fatalities on these segments. Crashes:
+        <span class="font-medium text-[#0f1722]">4 distinct incidents</span> over 2015&ndash;2025, and
+        even that is a floor, because it is the union of two disagreeing linkages and the snapped table
+        skips 2019&ndash;20. Injuries and fatalities: <span class="font-medium text-[#B45309]">the data
+        cannot answer this</span>. Not &ldquo;zero&rdquo; — unrecorded. TRANSCOM's feed populates
+        <span class="tny-mono">injury_involved</span> on 0.018% of all events statewide and
+        <span class="tny-mono">fatality_involved</span> on 0.005%, and every non-null value in both
+        columns is <span class="tny-mono">true</span>, which is the signature of a flag that is set when
+        someone happens to note it and left null otherwise. There is no denominator.
+      </p>
+      <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+        <span class="font-medium text-[#0f1722]">If injury and fatality counts are the actual goal,
+        this is the wrong dataset</span> and the recommendation changes shape: the NYSDOT crash file
+        (ALIS / CLEAR) is the system of record for injury severity, and the work becomes joining that to
+        the TMC network rather than adding a facet to this page. Worth deciding before the TMC filter is
+        built, because it changes what the page is for.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── §06 lat/long ────────────────────────────────────────────────── -->
+  <section class="py-11 border-b border-zinc-950/05">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 06</span>
+      <span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">
+      Lat/long search: the input is bad UI, the capability is not.
+    </h2>
+    <p class="font-proxima text-[13px] leading-[1.6] text-slate-600 mt-2 max-w-[820px]">
+      You asked whether a person would ever search by lat/long, and whether that is just bad UI. Short
+      answer: <span class="text-[#0f1722] font-medium">typing coordinates into a box is bad UI</span> —
+      nobody knows their coordinates, a typo is undetectable, and a single point is not a query. But
+      &ldquo;find incidents near here&rdquo; is a good question, and the data supports it today.
+    </p>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+      <div class="tny-card p-4">
+        <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">the good news</div>
+        <div class="font-display font-semibold text-[32px] leading-none tabular-nums text-[#10B981] mt-2">99.996%</div>
+        <div class="font-display font-medium text-[13.5px] text-[#0f1722] mt-1.5">of events are geocoded</div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-1.5">
+          <span class="tny-mono">point_lat</span> / <span class="tny-mono">point_long</span> are non-null
+          on 3,836,753 of 3,836,903 events, on the source the page already reads.
+          <span class="tny-mono">wkb_geometry</span> matches. (Ignore
+          <span class="tny-mono">event_location_latitude</span> — 82 rows.)
+        </p>
+      </div>
+      <div class="tny-card p-4">
+        <div class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">the better news</div>
+        <div class="font-display font-semibold text-[32px] leading-none tabular-nums text-[#10B981] mt-2">0</div>
+        <div class="font-display font-medium text-[13.5px] text-[#0f1722] mt-1.5">lines of new code required</div>
+        <p class="font-proxima text-[11.5px] leading-[1.5] text-slate-600 mt-1.5">
+          The filter engine already supports <span class="tny-mono">gte</span> /
+          <span class="tny-mono">lte</span> leaves on arbitrary column expressions. Both a bounding box
+          and a true radius were run live against prod while writing this report.
+        </p>
+      </div>
+    </div>
+
+    <div class="tny-card p-5 mt-4">
+      <div class="font-display font-medium text-[15px] text-[#0f1722]">Measured, 2026-09-14, against the live prod <span class="tny-mono">uda</span> route.</div>
+      <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-700 mt-2">
+        A bounding box is four numeric leaves. The <span class="tny-mono">::numeric</span> cast is
+        load-bearing — <span class="tny-mono">point_lat</span> is stored as text, so an
+        uncast comparison sorts lexicographically and returns nonsense.
+      </p>
+      <pre class="tny-code mt-3"><span class="c">// bbox around the four NY 146 TMCs — 161 events, 8 of them crashes</span>
+{ op: <span class="s">"AND"</span>, groups: [
+  { col: <span class="s">"point_lat::numeric"</span>,  op: <span class="k">"gte"</span>, value:  42.68 },
+  { col: <span class="s">"point_lat::numeric"</span>,  op: <span class="k">"lte"</span>, value:  42.72 },
+  { col: <span class="s">"point_long::numeric"</span>, op: <span class="k">"gte"</span>, value: -74.18 },
+  { col: <span class="s">"point_long::numeric"</span>, op: <span class="k">"lte"</span>, value: -74.02 },
+]}</pre>
+      <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-700 mt-3">
+        A radius is one more leaf — a haversine expression, bounded by a bbox first so the index does
+        the work. Results scale as they should: <span class="font-medium text-[#0f1722]">117 / 340 / 885</span>
+        events at 1 / 3 / 5 miles around (42.70, &minus;74.03).
+      </p>
+      <pre class="tny-code mt-3"><span class="c">// …plus the four bbox leaves above, which bound the scan</span>
+{ col: <span class="s">"(6371000*2*asin(sqrt(power(sin(radians(point_lat::numeric-42.70)/2),2)</span>
+        <span class="s">+cos(radians(42.70))*cos(radians(point_lat::numeric))</span>
+        <span class="s">*power(sin(radians(point_long::numeric-(-74.03))/2),2))))"</span>,
+  op: <span class="k">"lte"</span>, value: 1609 }   <span class="c">// metres — 1 mile</span></pre>
+      <p class="font-proxima text-[12px] leading-[1.55] text-slate-500 mt-3">
+        One dead end worth recording so nobody retries it:
+        <span class="tny-mono">st_distancesphere(wkb_geometry, …)</span> and
+        <span class="tny-mono">wkb_geometry::geography</span> both fail with
+        <em>&ldquo;Only lon/lat coordinate systems are supported in geography&rdquo;</em> — the geometry
+        column does not carry an SRID the cast accepts. Wrapping it in
+        <span class="tny-mono">st_transform(st_setsrid(…,3857),4326)</span> works but is slower and
+        buys nothing over haversine on the two numeric columns.
+      </p>
+    </div>
+
+    <div class="mt-5 space-y-4">
+      <div class="tny-card p-5 border-l-[3px] border-l-[#10B981]">
+        <div class="flex items-baseline gap-3 flex-wrap">
+          <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">pattern 1</span>
+          <div class="font-display font-medium text-[17px] text-[#0f1722]">Map-extent search &mdash; &ldquo;search this area&rdquo;</div>
+          <span class="h-6 px-2 inline-flex items-center rounded-[4px] bg-[#DCF5E9] text-[#0B6B47] font-mono text-[10px] uppercase tracking-[0.12em]">best practice</span>
+        </div>
+        <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+          The user pans and zooms; the map's viewport <em>is</em> the bounding box; a
+          &ldquo;search this area&rdquo; button writes four page variables and the table reacts. This is
+          the interaction every mapping product converged on (Zillow, Airbnb, Redfin) for a reason:
+          the user never types a coordinate, the query is always well-formed, and the extent is visible
+          rather than remembered. The coordinates should still appear in the URL, because that is what
+          makes a result shareable — but as <em>output</em>, not input.
+        </p>
+        <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+          Cost: the page already has a map placeholder in its results band. Making it real is a
+          <span class="tny-mono">Map</span> section plus the four page variables above, and the
+          <span class="tny-mono">zoomToFilterBounds</span> machinery already exists. The genuinely new
+          part is map&rarr;filter <em>write-back</em> — today's sections read page variables, they do not
+          write extents into them — which is the one real platform enrichment in this whole report, and
+          it would benefit every map on every TransportNY page.
+        </p>
+      </div>
+
+      <div class="tny-card p-5 border-l-[3px] border-l-[#10B981]">
+        <div class="flex items-baseline gap-3 flex-wrap">
+          <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">pattern 2</span>
+          <div class="font-display font-medium text-[17px] text-[#0f1722]">Click-a-point + radius</div>
+          <span class="h-6 px-2 inline-flex items-center rounded-[4px] bg-[#DCF5E9] text-[#0B6B47] font-mono text-[10px] uppercase tracking-[0.12em]">good</span>
+        </div>
+        <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+          Click the map (or geocode an address, or drop on an intersection), then a radius chip —
+          &frac14;&nbsp;mi / &frac12;&nbsp;mi / 1&nbsp;mi / 5&nbsp;mi. This is the right shape for
+          &ldquo;what happens around this interchange&rdquo;, which is a question people actually ask.
+          The radius must be a small set of presets, not a free number: a slider invites a user to
+          discover that 0.3 miles returns nothing and 0.4 returns everything, which reads as a broken
+          tool rather than a sparse road.
+        </p>
+      </div>
+
+      <div class="tny-card p-5 border-l-[3px] border-l-slate-300">
+        <div class="flex items-baseline gap-3 flex-wrap">
+          <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">pattern 3</span>
+          <div class="font-display font-medium text-[17px] text-[#0f1722]">A lat/long text box</div>
+          <span class="h-6 px-2 inline-flex items-center rounded-[4px] bg-[#FDF3D7] text-[#8A6100] font-mono text-[10px] uppercase tracking-[0.12em]">only as a paste target</span>
+        </div>
+        <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+          Your instinct is right — as a primary input this is bad UI. It fails on discoverability
+          (nobody carries coordinates), on error tolerance (a transposed digit lands in Ohio and looks
+          like &ldquo;no results&rdquo; rather than a typo), and on the fact that a bare point answers
+          nothing without a radius the box does not collect.
+        </p>
+        <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+          It <em>is</em> worth roughly twenty lines as a secondary affordance, because one real workflow
+          exists: someone has a coordinate pair from a crash report, a GPS trace, or a colleague's
+          email, and wants to paste it. Accept a single permissive field —
+          <span class="tny-mono">42.7059, -74.0354</span> and the DMS/DDM variants — drop a pin, recentre
+          the map, and hand off to pattern&nbsp;2. It is a <em>navigation</em> control that moves the map,
+          not a filter that queries the table. That distinction is the whole design.
+        </p>
+      </div>
+    </div>
+
+    <div class="tny-card tny-card-bone p-5 mt-5">
+      <div class="font-display font-medium text-[16px] text-[#0f1722]">The sequencing point.</div>
+      <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+        Lat/long search and TMC search answer different questions and should not be built in the same
+        pass. <span class="font-medium text-[#0f1722]">Spatial search finds the incident where it was
+        reported</span> — a point, ungeocoded to the network, which is what you want for
+        &ldquo;what happened near this intersection&rdquo;.
+        <span class="font-medium text-[#0f1722]">TMC search finds the incident where it caused delay</span>
+        — a network segment, which is what you want for corridor analysis and what ties back to NPMRDS.
+        A crash at a ramp terminal is spatially at the ramp and operationally on the mainline. Build TMC
+        first (it is the one with a stated purpose), then map extent, and keep them as two facets a user
+        can combine rather than one merged &ldquo;location&rdquo; control.
+      </p>
+    </div>
+  </section>
+
+  <!-- ── §07 build order ─────────────────────────────────────────────── -->
+  <section class="py-11">
+    <div class="flex items-center gap-2 mb-2">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// 07</span>
+      <span class="h-px w-8 bg-[#CA8A04]/40"></span>
+    </div>
+    <h2 class="font-display font-medium text-[22px] leading-[1.2] text-[#0F1722]">Recommended order.</h2>
+
+    <div class="scroll-x mt-5">
+      <table class="tny tny-card" style="min-width:800px">
+        <thead><tr><th>#</th><th>step</th><th>what it is</th><th>size</th><th>blocks</th></tr></thead>
+        <tbody>
+          <tr>
+            <td>0</td>
+            <td style="text-align:left">Decide whether injury/fatality is the real goal</td>
+            <td style="text-align:left">If yes, this is an ALIS/CLEAR integration, not a TSMO filter. §05.</td>
+            <td>a conversation</td>
+            <td style="text-align:left">everything below</td>
+          </tr>
+          <tr>
+            <td>1</td>
+            <td style="text-align:left">TMC facet via the 2799 &#8904; 1947 join</td>
+            <td style="text-align:left">Option B. Config change to the existing sections; the seventh facet on the existing page.</td>
+            <td>1&ndash;2 days</td>
+            <td style="text-align:left">&mdash;</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td style="text-align:left">Coverage note + <span class="tny-mono">count(distinct event_id)</span> audit</td>
+            <td style="text-align:left">Ships with step 1, not after it. 2021+ caveat on the KPI strip; grain fix on every aggregate.</td>
+            <td>hours</td>
+            <td style="text-align:left">&mdash;</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td style="text-align:left">Scoped TMC option list</td>
+            <td style="text-align:left">Cascade off region/county so the 36,621-value DISTINCT never runs unscoped.</td>
+            <td>hours</td>
+            <td style="text-align:left">step 1</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td style="text-align:left">Map extent &rarr; page variable write-back</td>
+            <td style="text-align:left">The one genuine platform enrichment here. Benefits every map on the site.</td>
+            <td>days</td>
+            <td style="text-align:left">&mdash;</td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td style="text-align:left">&ldquo;Search this area&rdquo; + radius presets</td>
+            <td style="text-align:left">Patterns 1 and 2. Pure configuration once step 4 lands.</td>
+            <td>1 day</td>
+            <td style="text-align:left">step 4</td>
+          </tr>
+          <tr>
+            <td>6</td>
+            <td style="text-align:left">ETL: reconcile the linkages, backfill 2015&ndash;2020</td>
+            <td style="text-align:left">Data ticket. Lifts the coverage caveat from step 2.</td>
+            <td>separate</td>
+            <td style="text-align:left">&mdash;</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="tny-card tny-card-ink p-5 mt-6">
+      <div class="font-display font-medium text-[16px]">What this deliberately does not recommend.</div>
+      <p class="font-proxima text-[13px] leading-[1.65] text-white/80 mt-2">
+        A second Incident Search page pre-filtered to a fixed TMC set. The filters are page variables in
+        the URL, so a saved link like
+        <span class="tny-mono" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.15);color:#E2E8F0">?tmc=120-12145,120-12146,120%2B12146,120%2B12147</span>
+        is that page, for free, for any TMC set anyone ever wants — no build, no maintenance, and it
+        stays correct when the underlying page improves. A duplicated page would be a fork that goes
+        stale the first time the original changes. If the corridor deserves a permanent home, the right
+        artifact is a bookmark or a link from the Corridor View, not a page.
+      </p>
+      <p class="font-proxima text-[13px] leading-[1.65] text-white/80 mt-2">
+        A custom React component for any of this. Every recommendation above is a filter leaf, a join
+        key, a theme token or a page variable — author-reachable surface. The single exception is
+        map&rarr;filter write-back (step 4), which is a platform capability rather than a one-off, and
+        which every future map page inherits.
+      </p>
+    </div>
+
+    <p class="font-proxima text-[11.5px] leading-[1.6] text-slate-500 mt-6">
+      Sources: <span class="tny-mono">npmrds2</span> via the prod Falcor <span class="tny-mono">uda</span>
+      route, 2026-09-14 &middot; Transcom Events 956/1947 &middot; Transcom Event TMC 1635/2799 &middot;
+      page build <span class="tny-mono">src/themes/transportny/qa_skills/tools/builds/build_tsmo_incident_search.mjs</span>
+      &middot; mockup <span class="tny-mono">pages/tsmo-incident-search.html</span> &middot; export
+      <span class="tny-mono">references/tsmo-incidents-by-tmc.csv</span>.
+      Skills referenced: <span class="tny-mono">live-cross-view-joined-section.md</span>,
+      <span class="tny-mono">full-text-search-filter.md</span>,
+      <span class="tny-mono">creating-interactive-pages.md</span>,
+      <span class="tny-mono">creating-a-map-section.md</span>.
+    </p>
+
+    <div class="mt-6 pt-5 border-t border-zinc-950/10 flex flex-wrap gap-4 font-proxima text-[12.5px]">
+      <a class="tny-link" href="../pages/tsmo-incident-search.html">incident search mockup</a>
+      <a class="tny-link" href="../pages/tsmo-incident-view.html">incident view</a>
+      <a class="tny-link" href="../pages/tsmo-incidents.html">incidents dashboard</a>
+      <a class="tny-link" href="../pages/tsmo-corridor.html">corridor view</a>
+      <a class="tny-link" href="../pages/tsmo-methodology.html">data &amp; methodology</a>
+      <a class="tny-link" href="./npmrds-data-quality-report.html">npmrds data quality report</a>
+      <span class="text-slate-500">&copy; NYSDOT &middot; TransportNY DMS v0.2</span>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>
