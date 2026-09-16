@@ -19,12 +19,40 @@ the Routes/Reports arc as of 2026-09-16. · **Started:** 2026-09-16
 
 ## Open for 1.0
 
-| # | Item | Where | State |
-|---|------|-------|-------|
-| 1 | Difference-graph re-wiring bug (old gap #12) | — | **Owned by a separate session** as of 2026-09-16. Found while validating gap #12; a `golden_corpus_difference_linegraph` corpus entry + spec are in the working tree from that work. Not to be picked up here without checking with Ryan first. |
+Derived 2026-09-16 from a **systematic sweep of every live (non-archive) arc doc**, not a
+hand-picked subset — an earlier pass the same day only triaged the UI parity-gap ledger and missed
+the old-reports workstream entirely. Regenerate the candidate set with the extractor pattern in
+`arc_inventory.py`.
 
-That is the whole 1.0 list. Everything else below is either closed, deferred by an explicit
-decision, or out of scope.
+The finding: nearly every remaining "open" line across the arc is an **explicit Ryan deferral**, a
+scoping-only task, or part of the routing-plugin sub-arc. What is genuinely open and 1.0-relevant:
+
+| # | Item | Where | Size | State |
+|---|------|-------|------|-------|
+| 1 | **Info Box multi-measure support** — `convert_report.py`/`convert_template.py` build only ONE measure per Info Box graph. 869 dropped-measure instances across **524 reports**. `build_route_info_box_section_state_multi` already exists but isn't used on this path. | `old-reports-conversion.md` | Large | **Needs Ryan's call.** The single biggest lever on conversion coverage. Scoped as a follow-on at round 85, never built. |
+| 2 | **Literal `LOTTR`/`TTTR` measures** — 10 reports, currently invisible inside the generic `extra_measures_dropped` bucket. | `old-reports-conversion.md` | Small | Ryan at round 85: keep them for real, "somewhat soon… idk if mandatory." Entangled with #1. |
+| 3 | **Publish the All Reports list page** — built and verified live, but draft-only; only the `/edit` route has ever been exercised. | `npmrds-all-reports-list-page.md` | Small | Shippable now. `/npmrds/reports/list`. |
+| 4 | **GridGraph Part 1 live-verification** — built and unit-verified against `composeMeasureConfig`, never run against a real dev-DB query. | `gridgraph-row-height-scaling.md` | Small | Row-height-by-TMC-length is visibly working elsewhere; this is the NPMRDS default path specifically. |
+| 5 | **Deploy the updated dms-server** for the delete-cascade fix. | `delete-cascade-source-view-orphans.md` | — | User-owned action, not a code task. |
+| 6 | Old-report known gaps: Route Compare anchor row ordering inconsistent; Travel Time Route Map colour scale is static. | `old-reports-conversion.md` | Small | Both user-reported, both still listed open in that file's gap register. |
+
+**Conversion coverage as of round 85 (2026-08-31):** clean (page-producible **and** full)
+conversions **290 / 870**, up from 184 in one change; `full` 309→483; `no_equivalent` instances
+534→49. Item #1 above is what stands between that and a substantially higher number.
+
+**The open scope question for 1.0:** is 290/870 clean conversions the 1.0 bar, or does the
+multi-measure Info Box work (item #1, affecting 524 reports) need to land first? That is a product
+decision, not a technical one, and nothing in the docs records an answer.
+
+### Not in 1.0 — explicitly deferred by prior decision
+
+Listed so they stop reading as backlog: Item 9 Publish/Discard for RRL changes; the 11-template
+audit in `dynamic-reports-and-route-tags.md`; `avlgraph` pass 3 (collapsing legend) + Stage 2;
+`graph-card-padding-and-legend-theming` step 3; tooltip-swatch muting; `duration-value-format-mm-ss`;
+comparison-series fan-out phases 4–5; ClickHouse probe-hazard Option A; converter vocabulary unit
+tests; probe expected-value cells; `route-build-duplicate-falcor-instances`;
+`theme-legend-token-consolidation` (marked "do not implement"); and the entire routing-plugin
+sub-arc (point-to-point, detour/avoid-segment, ALT, bridge-candidates, route-creation-tool phases).
 
 ## Deferred past 1.0 (explicit decisions, not neglect)
 
@@ -56,6 +84,8 @@ the docs themselves were the unreliable part.
 | Gap #13 — Add Page no-redirect | Dead | Report pages are created through a purpose-built button, not generic Add Page. |
 | Gap #14 — Settings-gear discoverability | Dead | An author is never expected to use the settings gear for NPMRDS routes/reports. |
 | Gap #15 — Measure Picker never composes title/description | Closed | `composeSectionTitlePatch()` fills both, each behind its own pristine check (`isTitleDirty`/`isKickerDirty`) — exactly the auto-vs-edited design the gap called for. Wired at `useAddGraphSection.js:102` and `MeasurePicker/index.js:319`, plus a Map equivalent. Title half landed 2026-08-20 (Tier 5B), kicker half 2026-09-11. |
+| Gap #12 — difference-graph re-wiring needs re-open + re-save | Moot + fixed | The RRL has no "update an existing graph" affordance any more (only `addGraphSection`), so the flow the gap describes no longer exists; the underlying difference-graph bug was fixed by a separate session 2026-09-16. |
+| Converter not updated for the graph-card header/title change | Done | `report-graph-card-header-and-titles.md` Round 3 (2026-09-15) updated `convert_old_reports_lib/convert_report.py` via `compose_bridge.mjs`, verified by re-converting old report 1041 → page 2224449. That file's own status header and its "converter NOT done" line are both stale. |
 | Gap #16 — no UI to author Info Box / Route Compare | Wrong premise | They were reframed as **Table + modifiers**, not separate shapes: Info Box ≈ Table at `resolution: 'summary'`; Route Compare = Table + the `routeCompare` checkbox, gated to summary (`composeMeasureConfig.js:1017`). Confirmed in the live Add Graph modal. |
 | Probe corpus non-determinism | Fixed 2026-09-14 | Three consecutive runs `entries=8 blockers=0 majors=0 info=0`, `FLAKY — 0`, plus a tamper test proving the suite has teeth. Commit `2bbaec7` re-baselined all 8 baselines. The section heading in [`report-probe-expect-and-golden-corpus.md`](./report-probe-expect-and-golden-corpus.md) still said NON-DETERMINISTIC above its own fix. |
 | GridGraph row-height Part 1 | Built | `composeMeasureConfig.js:390-393`, `MeasurePicker/index.js:60`, and Height/Width target options in the submodule's `graph_new/config.jsx:240,243`. |
@@ -131,6 +161,11 @@ Research (evidence, not tracking): `research/npmrds-reports/`, `research/route-c
 
 ## Progress log
 
-- **2026-09-16** — File created. Full-arc triage against live code: 11 items documented as open were
-  already closed (table above); gap #3 fixed and live-confirmed; `arc_inventory.py` added so the doc
-  inventory regenerates instead of drifting.
+- **2026-09-16** — File created. Full-arc triage against live code: **13** items documented as open
+  were already closed, moot, or dead (table above); gap #3 fixed and live-confirmed;
+  `arc_inventory.py` added so the doc inventory regenerates instead of drifting.
+- **2026-09-16 (later, same day)** — First triage pass was **incomplete**: it worked from the UI
+  parity-gap ledger and a few cross-cutting docs, and missed the old-reports conversion workstream
+  entirely. Redone as a systematic sweep of every live arc doc; the 1.0 table above is the result.
+  Headline correction: the real 1.0 question is a conversion-coverage scope call (item #1), not a
+  UI gap.
