@@ -38,6 +38,24 @@
       "expectedValue": null
     },
     {
+      "key": "golden_corpus_difference_linegraph",
+      "url": "reports/golden_corpus_difference_line_graph",
+      "source": "spec:scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-difference-linegraph.json",
+      "rebuild": "node scripts/npmrds-reports/report_build.mjs scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-difference-linegraph.json --replace --publish",
+      "authRequired": true,
+      "covers": [
+        "avlGraph.LineGraph",
+        "comparisonSeries.combine.difference",
+        "avlGraph.utils.buildValueDomain",
+        "axisLeft.signedDomain",
+        "display._measurePick.routeIds"
+      ],
+      "notes": "Added 2026-09-16 alongside the fix for the difference-mode line-graph clipping bug. The plain `golden_corpus_linegraph` entry could not catch it: its travelTime series is all-positive, so the y-domain floor being hard-pinned at `DefaultAxis.min = 0` was invisible there. This entry deliberately reproduces the reported repro shape -- ONE route in two date windows, subtracted -- because a same-route year-over-year speed difference at 5-minute grain reliably straddles zero. That is the whole point of the entry: if the value axis ever stops spanning the signed range again, this page's SVG changes and the baseline diff fires. Live at capture: left-axis ticks -25..30, line path bbox top 0 / bottom 230 inside a 250px plot area (no overflow). NOTE for anyone reading the axis back off the DOM: the tick labels use a Unicode minus (U+2212), not an ASCII hyphen -- see traversing-report-pages.md.",
+      "baselineCapturedAt": "2026-09-16",
+      "lastVerifiedAt": "2026-09-16",
+      "expectedValue": null
+    },
+    {
       "key": "golden_corpus_bargraph",
       "url": "reports/golden_corpus_bar_graph",
       "source": "spec:scripts/npmrds-reports/report_probe_fixtures/specs/golden-corpus-bargraph.json",
