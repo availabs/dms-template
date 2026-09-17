@@ -1316,12 +1316,13 @@ const theme = {
         imgBreakout: "w-full h-[240px] object-contain object-center",
 
         // County-profile card art. `img5XL` is bare `w-full`, so the SAME 1024x1024 render
-        // is 391px in a 1/3 column and 284px in the 1/4 columns below it — the two rows of
-        // cards on /home disagreed by 107px. This caps the art at the narrower row's size
-        // while staying fluid below that width, so the two rows read as one system.
+        // is 391px in a 1/3 column and 284px in the 1/4 columns below it. Capping it at the
+        // narrower row's 288px matched the two rows exactly but read as too small in the
+        // wider card, so this sits at the midpoint the client asked for: big enough to hold
+        // the 1/3 column, still visibly reined in from the uncapped 391. Fluid below 340px.
         // `block mx-auto` because a capped img would otherwise sit left in a wider card
         // (the cell wrapper is text-start/justify-items-start).
-        imgCardArt: "block w-full max-w-72 max-h-72 object-contain mx-auto",
+        imgCardArt: "block w-full max-w-[340px] max-h-[340px] object-contain mx-auto",
         imgDefault: 'max-w-[50px] max-h-[50px]',
 
         // `leading-[1.35]`: the content layoutGroup sets `leading-7` (28px) on the
@@ -1394,6 +1395,27 @@ const theme = {
         name: "illustrated",
         cardBorder: 'border border-[#E0EBF0] shadow-[0px_0px_6px_0px_rgba(0,0,0,0.02),0px_2px_4px_0px_rgba(0,0,0,0.08)]',
         subWrapperCompactView: "flex flex-col flex-wrap rounded-[12px] overflow-visible",
+        // Title divider. The mockup draws `<hr class="my-2 mx-[12px] border-mny-200">`
+        // between a card's title and its content (design/pages/lhmp/home.html) — INSET
+        // to the text, not run to the card edge.
+        //
+        // Two things the shared `cellBorderSides` can't give us here:
+        //   · ink — its bottom is `subtle` (#F3F8F9), which is exactly these cards'
+        //     background, so the rule was drawn but invisible. mny-200 = `strong`.
+        //   · inset — a real `border-b` spans the cell's whole border box, and these
+        //     cells carry their 12px gutter as PADDING (the card itself is
+        //     `cardsPadding: 0` so the illustration can bleed edge to edge), so the
+        //     border ran 12px past the text on each side. The other cards in the design
+        //     get their inset from card padding — Participating Jurisdictions is
+        //     `cardsPadding: 16` — but that route is closed for an art-bleed card.
+        // So the bottom rule is painted as an inset pseudo-element instead: same 1px,
+        // same ink, `left-3`/`right-3` to land on the cells' 12px text gutter, and no
+        // effect on layout. Scoped to this style; `cellBorderSides` is read by 1,271
+        // sections app-wide.
+        cellBorderSides: {
+          ...ruleSides(MNY_RULE.base, MNY_RULE.strong),
+          bottom: "relative rounded-none! after:content-[''] after:absolute after:left-3 after:right-3 after:bottom-0 after:h-px after:bg-[#C5D7E0]",
+        },
       }
     ]
   },

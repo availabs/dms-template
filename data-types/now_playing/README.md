@@ -26,6 +26,58 @@ curl -X POST -H 'Authorization: <jwt>' -H 'Content-Type: application/json' \
 
 For the webhook URL to be reachable by ACR, set `DMS_PUBLIC_URL=https://<your-public-host>` in the server's environment. If unset, the response uses `http://localhost:${PORT}` and prints a warning — fine for local testing, useless for ACR.
 
+## Show tagging
+
+Every detection carries `show_id` — the show that was on air when it played.
+
+Resolved at **ingest**, not joined at read time. The schedule has versions, so a track
+played last semester belongs to the show that actually aired then; a read-time join would
+silently rewrite history every time a new schedule is published.
+
+Which schedule a stream tags against lives on the SOURCE:
+
+```jsonc
+// data_manager.sources.metadata
+"schedule": { "source_id": 10, "view_id": 10, "tz": "America/New_York" }
+```
+
+A **view id**, not a table name — publishing a schedule changes which view is live, and
+the tag should follow. The table is resolved from `data_manager.views` per webhook, so
+repointing takes effect immediately with no restart.
+
+Set it up (and backfill existing rows) with:
+
+```bash
+node scripts/wcdb-admin/tag-playlist-with-shows.mjs [--dry-run] [--schedule-view 10]
+```
+
+### Three conversions, each of which has bitten this codebase
+`showResolver.js` owns them:
+
+- **Timezone.** The schedule is station-local. Done with `AT TIME ZONE` in Postgres, not
+  arithmetic on a JS `Date`, so DST is handled at both boundaries.
+- **Day numbering.** The schedule numbers days **0 = Monday**. Postgres `DOW` is
+  0 = Sunday, so the right source is `ISODOW - 1`. Using `DOW` shows Sunday's schedule on
+  Monday — a bug this project has already shipped and fixed once.
+- **Midnight.** An airing running to the end of day stores `end = '00:00'`, which compares
+  as the START of the day; read as `'24:00'` or every late-night airing matches nothing.
+
+Comparing `'HH:MM'` as TEXT is deliberate: the values are zero-padded, so lexicographic
+and chronological order coincide. No cast, no schema change.
+
+### Overlapping airings
+Nothing stops two airings covering the same hour — the station's original schedule has
+four such pairs, including one nested inside a longer block ("Revolution 909" 17:00–18:00
+inside "DJ Shmit's …" 16:00–18:00). A plain join returns two rows and duplicates the
+track. The **narrower airing wins** (a one-hour slot inside a two-hour block is the more
+specific statement about that hour); ties break on the lower `airing_id`.
+
+### NULL is normal
+Only 65 of the week's 168 hours are scheduled, so most detections have no show. Tagging is
+best-effort throughout: no schedule configured, an unscheduled hour, or a failed lookup all
+yield `null` and the detection is still recorded. Losing a tag is recoverable — re-run the
+backfill — losing a detection is not.
+
 ## Display the latest track on a page
 
 The detection table is a normal DAMA dataset, so the existing **Card** page section works without any custom code. In the DMS admin:

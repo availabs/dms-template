@@ -41,6 +41,7 @@ scratchpad
 
 # code references f
 references
+scripts
 
 # Heap snapshots
 *.heapsnapshot
