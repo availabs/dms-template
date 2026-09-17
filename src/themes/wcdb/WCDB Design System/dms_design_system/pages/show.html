@@ -299,8 +299,10 @@
                 <div class="rounded-[18px] bg-[var(--card-bg)] p-8">
                   <div class="grid grid-cols-1 md:grid-cols-[1.4fr_1fr] gap-8 items-stretch">
 
-                    <!-- Left · 16:10 hero artwork -->
-                    <div class="wcdb-art wcdb-art--ember rounded-[14px] aspect-[16/10] relative flex items-end pl-6 pb-4 overflow-hidden">
+                    <!-- Left · hero artwork. Stretches to the sidebar's height
+                         (no aspect-ratio: on a stretched grid cell the row height
+                         becomes the width and blows the card open). -->
+                    <div class="wcdb-art wcdb-art--ember rounded-[14px] min-h-[360px] relative min-w-0 flex items-end pl-6 pb-4 overflow-hidden">
                       <div class="wcdb-initials" aria-hidden="true">L.M.</div>
                     </div>
 
@@ -625,13 +627,13 @@
                       <div>
                         <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[#4a4a4a] mb-3">Listen</div>
                         <ul class="space-y-2 text-[13px] text-[color:var(--inv-ink)]">
-                          <li>Live stream</li><li>Schedule</li><li>Recent spins</li><li>Shows</li>
+                          <li>Schedule</li><li>Recent spins</li>
                         </ul>
                       </div>
                       <div>
                         <div class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[#4a4a4a] mb-3">Station</div>
                         <ul class="space-y-2 text-[13px] text-[color:var(--inv-ink)]">
-                          <li>About</li><li>Pledge</li><li>Volunteer</li><li>Contact</li>
+                          <li>Station info</li><li><a href="./admin/playlist.html">DJ login</a></li>
                         </ul>
                       </div>
                     </div>

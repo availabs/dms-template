@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Two Curses</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { vellum:'#FCF7E4', 'vellum-deep':'#E3D5B0', leaf:'#F6EFDD', ink:'#3A3129', 'ink-soft':'#5A4E42', sepia:'#7A6A52', rubric:'#8A2B1E', gilt:'#9C7A2E', rule:'#C6B58D' },
+      fontFamily: { display:['"IM Fell English"','serif'], prose:['"EB Garamond"','serif'], meta:['"IM Fell English SC"','serif'], blackletter:['"UnifrakturMaguntia"','serif'] }
+    } } }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=UnifrakturMaguntia&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+</head>
+<body class="min-h-screen">
+
+<!--
+  TWO CURSES · HOME (v0.11 — the band's page, minimal: no TopNav, no footer, no copy)
+  Layout `default` with topNav and footer set to none →
+    LayoutGroup `content` : two columns — the name (a link home) above the Book I thorn-and-dragon frame holding its boat picture, sticky (5) · Songs, Shows, Contact (7)
+  Shows is a Card in row mode, table-like: date + weekday (featured) · with · venue, town · tickets; the fleuron that opens Contact closes it. Songs is the three-plate Card grid.
+  Contact is one framed line: the Book III frame around "for booking · Alex@b3nson.net".
+-->
+
+<div data-dms="layout" data-name="default" class="tc-paper min-h-screen text-ink flex flex-col">
+
+  <main class="flex-1">
+
+    <div data-dms="layoutGroup" data-name="content" class="w-full">
+      <div class="w-full px-6 md:px-12 xl:px-20 pt-8 md:pt-12 pb-16">
+        <div class="grid grid-cols-12 gap-0">
+
+          <!-- Card · framed name with the frame's own picture; sticks while the page scrolls -->
+          <div data-dms="section" data-name="frame" class="col-span-12 md:col-span-5 p-3 md:pr-10">
+            <div class="md:sticky md:top-8">
+              <h1><a href="home.html" class="block font-blackletter text-[44px] leading-none text-ink hover:text-rubric transition-colors text-center mb-5">Two Curses</a></h1>
+              <div class="tc-framed tc-framed--0026 max-w-[560px] mx-auto">
+                <!-- decorative: frame of Quarles' Emblems, Book I plate 1 — thorn, dragons -->
+                <img src="../assets/frames/quarlesemblems00quaruoft_0026.png" alt="">
+                <div class="tc-window">
+                  <div class="tc-plate w-full h-full flex items-center justify-center">
+                    <img src="../assets/pictures/quarlesemblems00quaruoft_0026.png" alt="Three figures in a small boat tossed among sea-beasts" class="max-h-full max-w-full w-auto h-auto">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- the page -->
+          <div data-dms="section" data-name="page" class="col-span-12 md:col-span-7 p-3 md:pl-6">
+            <div class="grid grid-cols-12 gap-0">
+
+              <!-- SONGS · tailpiece as the divider, heading in the Book III cartouche, three whole plates -->
+              <div class="col-span-12 p-3 pt-2 text-center">
+                <div class="tc-framed tc-framed--c0213 max-w-[420px] mx-auto">
+                  <!-- decorative: Book IV title scroll (leaf 213), lettering cleared -->
+                  <img src="../assets/cartouches/quarlesemblems00quaruoft_0213.png" alt="">
+                  <div class="tc-window"><h2 class="font-display text-[28px] leading-[1.15] text-ink">Songs</h2></div>
+                </div>
+              </div>
+              <a href="#" class="group col-span-12 sm:col-span-4 p-3 block text-center">
+                <div class="tc-plate h-[300px] flex items-end justify-center"><img src="../assets/alpha/quarlesemblems00quaruoft_0334.png" alt="An infant reaches from a bare tree growing out of a skull" class="max-h-full w-auto max-w-full"></div>
+                <p class="font-meta text-[12px] tracking-[0.14em] text-rubric mt-4">song iv</p>
+                <h3 class="font-display text-[22px] leading-[1.25] text-ink mt-1 group-hover:text-rubric transition-colors">Theif in the House</h3>
+              </a>
+              <a href="#" class="group col-span-12 sm:col-span-4 p-3 block text-center">
+                <div class="tc-plate h-[300px] flex items-end justify-center"><img src="../assets/alpha/quarlesemblems00quaruoft_0022.png" alt="A serpent coiled about a heart" class="max-h-full w-auto max-w-full"></div>
+                <p class="font-meta text-[12px] tracking-[0.14em] text-rubric mt-4">song xix</p>
+                <h3 class="font-display text-[22px] leading-[1.25] text-ink mt-1 group-hover:text-rubric transition-colors">I Will Never Take Your Hand</h3>
+              </a>
+              <a href="#" class="group col-span-12 sm:col-span-4 p-3 block text-center">
+                <div class="tc-plate h-[300px] flex items-end justify-center"><img src="../assets/alpha/quarlesemblems00quaruoft_0038.png" alt="A child chases a soap bubble through a wood" class="max-h-full w-auto max-w-full"></div>
+                <p class="font-meta text-[12px] tracking-[0.14em] text-rubric mt-4">song xvi</p>
+                <h3 class="font-display text-[22px] leading-[1.25] text-ink mt-1 group-hover:text-rubric transition-colors">The Book Was the Same</h3>
+              </a>
+              <div class="col-span-12 p-3 pt-6 text-center">
+                <a href="poems.html" class="tc-fleuron font-meta text-[15px] tracking-[0.08em] text-ink hover:text-rubric transition-colors">all the songs</a>
+              </div>
+
+              <!-- SHOWS · heading in a cleared Book II cartouche, then a Card in row mode -->
+              <div class="col-span-12 p-3 pt-12 text-center">
+                <div class="tc-ornament flex justify-center"><img src="../assets/ornaments/tail-vine.png" alt="" class="w-[220px]"></div>
+                <div class="tc-framed tc-framed--c0217 max-w-[420px] mx-auto mt-8">
+                  <!-- decorative: Book IV title scroll (leaf 217), lettering cleared -->
+                  <img src="../assets/cartouches/quarlesemblems00quaruoft_0217.png" alt="">
+                  <div class="tc-window"><h2 class="font-meta text-[15px] tracking-[0.08em] text-ink">Shows</h2></div>
+                </div>
+              </div>
+
+              <!-- Card · row mode, table-like: date + weekday (featured) · with · venue, town · tickets; one tailpiece closes the list -->
+              <div class="col-span-12 p-3 pt-4">
+                <div class="grid grid-cols-12 gap-0 items-baseline py-3">
+                  <span class="col-span-12 sm:col-span-3">
+                    <span class="block"><span class="font-display text-[28px] leading-[1.15] text-ink tabular-nums">25</span> <span class="font-meta text-[15px] tracking-[0.08em] text-ink-soft">Sep</span></span>
+                    <span class="block font-meta text-[12px] tracking-[0.14em] text-rubric">Friday</span>
+                  </span>
+                  <span class="col-span-12 sm:col-span-4 sm:pl-4 font-prose italic text-[19px] leading-[1.6] text-ink">with Improvement Movement and The Point</span>
+                  <span class="col-span-12 sm:col-span-3 sm:pl-4">
+                    <span class="block font-prose text-[16px] leading-[1.5] text-ink-soft">Hangar on the Hudson</span>
+                    <span class="block font-meta text-[12px] tracking-[0.14em] text-sepia">Troy, ny</span>
+                  </span>
+                  <span class="col-span-12 sm:col-span-2 sm:text-right"><a href="https://www.eventbrite.com/e/dive-presents-improvement-movement-tickets-1993709288150?aff=oddtdtcreator" class="tc-fleuron font-meta text-[15px] tracking-[0.08em] text-ink hover:text-rubric transition-colors">Tickets</a></span>
+                </div>
+                <div class="grid grid-cols-12 gap-0 items-baseline py-3">
+                  <span class="col-span-12 sm:col-span-3">
+                    <span class="block"><span class="font-display text-[28px] leading-[1.15] text-ink tabular-nums">27</span> <span class="font-meta text-[15px] tracking-[0.08em] text-ink-soft">Sep</span></span>
+                    <span class="block font-meta text-[12px] tracking-[0.14em] text-rubric">Sunday</span>
+                  </span>
+                  <span class="col-span-12 sm:col-span-4 sm:pl-4 font-prose italic text-[19px] leading-[1.6] text-ink">with Dan Carr &amp; the Cure for Asthma</span>
+                  <span class="col-span-12 sm:col-span-3 sm:pl-4">
+                    <span class="block font-prose text-[16px] leading-[1.5] text-ink-soft">Birthday Land</span>
+                    <span class="block font-meta text-[12px] tracking-[0.14em] text-sepia">Voorheesville, ny</span>
+                  </span>
+                  <span class="col-span-12 sm:col-span-2"></span>
+                </div>
+              </div>
+
+              <!-- CONTACT · the Book III mask-and-serpent frame holding the one line that matters -->
+              <div class="col-span-12 p-3 pt-14 text-center">
+                <div class="tc-ornament flex justify-center"><img src="../assets/ornaments/tail-fleuron.png" alt="" class="w-[220px]"></div>
+                <div class="tc-framed tc-framed--0146 max-w-[440px] mx-auto mt-8">
+                  <!-- Card · the Book III frame with its own picture back in the window, and the one line that matters beneath -->
+                  <img src="../assets/frames/quarlesemblems00quaruoft_0146.png" alt="">
+                  <div class="tc-window">
+                    <div class="tc-plate flex-1 min-h-0 w-full flex items-end justify-center mb-2">
+                      <img src="../assets/pictures/quarlesemblems00quaruoft_0146.png" alt="A child holds up a mask while serpents twist about a cross" class="max-h-full max-w-full w-auto h-auto">
+                    </div>
+                    <p class="font-meta text-[12px] tracking-[0.14em] text-rubric">for booking</p>
+                    <a href="mailto:Alex@b3nson.net" class="font-display text-[16px] md:text-[22px] leading-[1.25] text-ink hover:text-rubric transition-colors mt-1 md:mt-2 break-all">Alex@b3nson.net</a>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+</div>
+
+<script src="../ds-nav.js"></script>
+</body>
+</html>
