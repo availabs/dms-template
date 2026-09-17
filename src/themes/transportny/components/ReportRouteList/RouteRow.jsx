@@ -5,7 +5,7 @@ import {
   formatDateShort,
 } from './utils';
 import { ROUTE_COLOR_PALETTE } from './useReportRow';
-import { resolveRelativeDateFormula, inferExactSpan, resolvedRouteLabel } from './relativeDateResolution';
+import { resolveRelativeDateFormula, inferExactSpan, routeDisplayLabel } from './relativeDateResolution';
 import {
   SPAN_OPTIONS,
   MONTH_OPTIONS,
@@ -222,22 +222,17 @@ export default function RouteRow({
     onToggleExpand?.();
   };
 
-  // Collapsed title: resolved real name vs. raw template (2026-09-08, Ryan's live feedback).
-  // `catalogRouteName` is set ONLY by `useDynamicReportRoutes.js`'s resolve-merge — never present
-  // on a raw, unfilled slot (no `?routes=` yet) and never on a static report's own routes — so it's
-  // a reliable per-row "did a real route actually get supplied via the URL" signal, distinct from
-  // the report-level `isDynamicReport` flag (a Dynamic Report with no `?routes=` yet still has
-  // every row unresolved). Unresolved: show the literal authored/template text as-is (Ryan: "it
-  // would just show the placeholder there") — deliberately NOT run through `resolvedRouteLabel`,
-  // since that would partially substitute `%y` alone (it only needs dates, not a real route) while
-  // `%n` stays empty, which read as a half-filled name rather than an honest placeholder. Resolved:
-  // show the real name as the primary text, with the original template kept visible underneath in
-  // light text — Ryan's own suggestion, "asterisk or their template-name in light text below it" —
-  // so an author can still see/edit the underlying template's shape without losing the resolved
-  // name as the primary, readable text. Clicking into edit mode still shows the raw template in the
-  // input (`localName`, unchanged, initialized from `r.name`) — that's the thing actually stored.
+  // Collapsed title: resolved real name vs. raw template (2026-09-08, Ryan's live feedback) —
+  // `routeDisplayLabel` (relativeDateResolution.js) is that rule, shared with the graph-header
+  // Quick Controls Routes pill/picker so the two can't disagree about what a route is called.
+  // Resolved rows show the real name as the primary text, with the original template kept visible
+  // underneath in light text — Ryan's own suggestion, "asterisk or their template-name in light
+  // text below it" — so an author can still see/edit the underlying template's shape without
+  // losing the resolved name as the primary, readable text. Clicking into edit mode still shows
+  // the raw template in the input (`localName`, unchanged, initialized from `r.name`) — that's the
+  // thing actually stored.
   const isResolved = r.catalogRouteName != null;
-  const displayName = isResolved ? resolvedRouteLabel(r) : r.name;
+  const displayName = routeDisplayLabel(r);
   const showTemplateHint = isResolved && r.name !== displayName;
 
   const tmcCount = parseTmcArray(r.tmc_array).length;

@@ -90,6 +90,13 @@ const QUERY_COLUMNS = [
   //
   // Every ingest path sets this ('auto'), so a NULL here means a row that
   // predates the column, which reads as 'auto' everywhere it matters.
+  // WHAT WAS ON AIR. Resolved from the schedule at INGEST time, not joined at read
+  // time: the schedule has versions, and a track played last semester belongs to the
+  // show that was actually on air then, not to whatever occupies that hour now. A
+  // read-time join would silently rewrite history every time the schedule is published.
+  // NULL is normal and correct — only 65 of the week's 168 hours are scheduled.
+  'show_id',
+
   'provenance',
   'edited_by',                 // the editing user's email (CMSContext user)
   'edited_at',
@@ -115,6 +122,7 @@ const JSONB_COLUMNS = new Set([
 ]);
 
 const INTEGER_COLUMNS = new Set([
+  'show_id',
   'result_type', 'status_code', 'score', 'result_from', 'original_score',
   'duration_ms', 'play_offset_ms', 'played_duration',
   'sample_begin_time_offset_ms', 'sample_end_time_offset_ms',
@@ -153,6 +161,7 @@ function colDef(name) {
  */
 function displayNameFor(name) {
   const overrides = {
+    show_id: 'Show',
     acrid: 'ACRID',
     isrc: 'ISRC',
     upc: 'UPC',
@@ -196,6 +205,11 @@ const DEFAULT_VISIBLE_COLUMNS = [
   'timestamp_utc',         // ACR's own detection timestamp
   // ─── classification ────────────────────────────────────────────
   'kind',                  // 'matched' / 'no-match'
+  // ─── what was on air ───────────────────────────────────────────
+  // Visible by default: a page section cannot select a column that is missing
+  // from metadata.columns, and "which show played this" is the reason the
+  // column exists — the playlist page groups by it and the show page filters on it.
+  'show_id',
   // ─── primary track display ─────────────────────────────────────
   'title',
   'artist_name',

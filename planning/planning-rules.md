@@ -37,6 +37,7 @@ The two main projects are **mitigateNY** and **transportNY**. The full list:
 | **TransportNY** | `transportny/` | NPMRDS reports & route creation, Freight Atlas / TSMO surfaces and their QA process (`transportny` theme) |
 | **Tessera** | `tessera/` | tessera.so product site — landing/features/docs pages, `tessera*` design systems and themes |
 | **Landbank** | `landbank/` | Albany County Land Bank site + admin panel (`landbank` theme, `landbank` app) |
+| **WCDB** | `wcdb/` | WCDB 90.9 FM station site — schedule, playlist (now_playing ingest), DJs (`wcdb` theme, `wcdb` app) |
 | **Shared** | `shared/` | Cross-project dms-template work: shared theme infrastructure, `data-types/`, deployment/build config, CLI/tooling used by every site |
 
 ### Adding a project

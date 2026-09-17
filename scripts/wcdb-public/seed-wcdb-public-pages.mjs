@@ -26,11 +26,15 @@ import {
   dms, dmsJson, SOURCES, band, section, lexicalSection, lexical, styled, text, head,
   lcontainer, litem, button, hr, dataSection, fusedTop, fusedMid, fusedEnd, staticRowSection,
 } from '../wcdb-admin/lib.mjs';
+import { footer } from './footer.mjs';
 
 const PATTERN = 'wcdb_main';
 const COMPONENT_TYPE = `${PATTERN}|component`;
 const APP = process.env.DMS_APP || 'wcdb';
 const WIPE = process.env.WIPE === '1';
+// The blog has not launched: the home page's featured-dispatch block is seeded
+// only when `BLOG_LIVE=1` is in the environment. Set it at launch.
+const BLOG_LIVE = process.env.BLOG_LIVE === '1';
 const ONLY = (process.argv.find((a) => a.startsWith('--only='))?.split('=')[1]
   || (process.argv.includes('--only') ? process.argv[process.argv.indexOf('--only') + 1] : ''))
   .split(',').filter(Boolean);
@@ -340,67 +344,8 @@ const liveRail = () => [
   },
 ];
 
-/** The shared footer — the design's INVERTED card.
- *
- *  It flips the mode (a light block on the dark site) so the foot of the page
- *  reads as a separate object rather than more page — that is the section's
- *  whole visual job, and it was the biggest thing missing.
- *
- *  Three tiers, as the design lays them out: a left column carrying the
- *  station's own voice (eyebrow → headline → paragraph), two link columns to
- *  its right, then a hairline and a colophon split to the two edges.
- *
- *  NB the columns are a single 3-track grid rather than the design's
- *  `[1.4fr_1fr]` with a nested 2-up inside it: a lexical layout container
- *  inside a layout item is a nesting the editor does not handle predictably,
- *  and `1.4fr 0.5fr 0.5fr` lands in the same place visually.
- */
-const footer = () => ({
-  kind: 'lexical', size: '12', bg: 'inverted',
-  radius: { tl: true, tr: true, bl: true, br: true },
-  // NO left/right padding. Section padding sits outside the card surface, so
-  // `left/right: '8'` made the footer 32px narrower per side than every card
-  // above it — visibly misaligned. The inset the contents need is INSIDE the
-  // card, and comes from `.wcdb-inv`'s own padding in tokens.css (the marker
-  // class the `inverted` background carries).
-  padding: { top: '4', bottom: '4' },
-  data: lexical(
-    lcontainer(
-      'w-full !mt-0 grid-cols-1 md:grid-cols-[1.4fr_0.5fr_0.5fr] gap-10',
-      litem(
-        // NOT a mailing-list pitch. The newsletter is not launching, and this
-        // column previously read "Drop us your email." with no form under it —
-        // an invitation the page could not accept. It now carries what a station
-        // footer should: who is broadcasting, from where, and the number to
-        // call. Every value is the same one `station_info` prints.
-        styled('footEyebrow', text('On air since 1977')),
-        styled('footHeadline', text('WCDB Albany 90.9FM')),
-        styled('footBody', text('Student-run radio from SUNY Albany, broadcasting from Campus Center 316, 1400 Washington Avenue, Albany NY 12222.')),
-        styled('footMeta', text('Request line (518) 442-4242')),
-      ),
-      litem(
-        styled('footListHead', text('Listen')),
-        styled('footLink', text('Live stream')),
-        styled('footLink', text('Schedule')),
-        styled('footLink', text('Recent spins')),
-        styled('footLink', text('Shows')),
-      ),
-      litem(
-        styled('footListHead', text('Station')),
-        styled('footLink', text('About')),
-        styled('footLink', text('Pledge')),
-        styled('footLink', text('Volunteer')),
-        styled('footLink', text('Contact')),
-      ),
-    ),
-    hr(),
-    lcontainer(
-      'w-full !mt-0 grid-cols-2 gap-3',
-      litem(styled('footColophon', text('WCDB · 90.9 FM · SUNY Albany'))),
-      litem(styled('footColophonEnd', text('© 1977–2026 · A student broadcast'))),
-    ),
-  ),
-});
+// The shared footer lives in footer.mjs so `update-footer.mjs` can rewrite it
+// on pages that already exist without re-seeding them.
 
 /** A public page header: eyebrow + big display title + lede. */
 const pageHead = (eyebrow, title, lede) =>
@@ -572,7 +517,11 @@ const pages = [
       // From the blog — ONE featured post given the room the design gives it:
       // a kicker, a 44px headline, the excerpt, and an artwork block down the
       // right. Not the three-row table this was.
-      {
+      //
+      // HELD BACK until the blog launches (decision 2026-09-12): the home page
+      // ships without a dispatches block, and the section stays here, one flag
+      // away, rather than being rebuilt from the design when it is time.
+      ...(BLOG_LIVE ? [{
         kind: 'Card',
         bg: 'white', border: { top: true, right: true, bottom: true, left: true },
         radius: { tl: true, tr: true, bl: true, br: true }, padding: { top: '8', bottom: '8' },
@@ -604,7 +553,7 @@ const pages = [
             cellsGridGap: 32, cellsRowGap: 14, cellsPadding: 0, cardBorder: false,
           },
         }),
-      },
+      }] : []),
 
       // What's on — a 3-up grid of event tiles led by a big day number, which
       // is how the design sets them. Was a 3-column table.

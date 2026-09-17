@@ -1,9 +1,118 @@
 # Graph-card padding + legend quality pass (Phase 5)
 
-**Project:** TransportNY · **Topic:** themes · **Status:** **LEGEND VALUES SET + live-verified and
-owner-reviewed 2026-09-11.** The submodule half's pass 1 and pass 2 items 1-2 are DONE. This site's
-**legend** token values are authored and rendering; the **tooltip** and **padding** values are still
-unset, pending submodule items 3 and 4. · **Started:** 2026-09-09
+**Project:** TransportNY · **Topic:** themes · **Status:** **LEGEND + TOOLTIP VALUES SET,
+live-verified and owner-reviewed (legend 2026-09-11, tooltip 2026-09-14).** The submodule half's
+pass 1, pass 2 items 1-2, and item 3 (tooltip) are DONE. The **card padding** value is still unset,
+pending submodule item 4. · **Started:** 2026-09-09
+
+### Tooltip design pass 2 — 2026-09-15
+
+Pass 1 (below) made the tooltip *not wrong*: it stopped being the only dark surface in the system.
+This pass makes it *designed*. Prompted by a live GridGraph screenshot — 13 TMC rows of bare
+numbers with no unit, proxima-titled, pale swatches with no edge against the panel's white.
+
+**Values authored (`themev2.js`, `avlGraph` block):**
+
+```js
+tooltipTitle:     "font-mono text-[11px] font-medium tracking-wide text-[#0F1722] border-b border-zinc-950/10 pb-1"
+tooltipValue:     "text-right font-mono text-[11.5px] tabular-nums text-[#0F1722]"
+tooltipRowActive: "border-slate-300 bg-slate-50"          // + bg only; grey is a standing decision
+tooltipSwatch:    "rounded-[3px] ring-1 ring-inset ring-zinc-950/15"   // was UNSET
+```
+
+**Mono is not a style preference, it's a correction.** The title slot holds `indexFormat(data.index)`
+/ `keyFormat(data.key)` — the hovered x value (`13:40`, `2024-03`, `Mon`). That is the *same string*
+the axis tick under the cursor renders, and `chartDefaults.xAxis.tickFontFamily` is already
+ui-monospace 11px. A proxima title meant the tooltip and the axis disagreed about the typeface of
+one identical value. Same for the numerals, plus `tabular-nums` so a 13-row column aligns.
+
+**The swatch hairline is a contrast fix.** A GridGraph swatch is the hovered cell's own
+`seqSpeedPalette` colour at 0.75 opacity; the light end (`#F2E18A`, `#A8D26B`) had no edge at all
+on white and read as a gap in the swatch column. `ring` not `border`, because a ring is a
+box-shadow and cannot disturb the absolutely-positioned 20px box Grid's two stacked swatches share.
+
+**`tooltipRowActive` was NOT switched to the design system's navy `popRouteRowOn`** — grey is the
+2026-09-14 owner decision recorded below. Only `bg-slate-50` was added, because on a column of 13
+near-identical rows a 1px grey outline alone is hard to locate.
+
+#### Two library changes, both small and both general
+
+1. **The unit now fills itself in** (`graph_new/index.jsx`). `valueLabel` is a hover-comp prop
+   Bar/Pie/Grid have always rendered as a `<b>` after the value, defaulting to `""` — so every
+   NPMRDS tooltip showed "30.4" while the legend two inches away said "mph". `displayForGraph` now
+   fills it from the **same `avlGraph.resolveLegendUnit` hook** that already captions the legend,
+   right beside that injection. No new hook, no site vocabulary in the library, and — because
+   existing sections already store `_measurePick.measure` — **no report needs regenerating**,
+   exactly as the legend caption didn't. Author-set `tooltip.valueLabel` still wins; a site with no
+   resolver (MitigateNY's ~7,415 graphs) is untouched; `UNIT_BY_VALUE_FORMAT` already returns
+   nothing for the self-describing formats, so a clock-time tooltip gets no spurious unit.
+
+2. **LineGraph never applied `cn.value` at all** (`LineGraph.jsx`). Its own 3-column row hardcoded
+   `text-right pr-4`, so pass 1's themed numerals reached every chart type *except* line graphs —
+   the most common chart on a report page. It now uses the same `${ cn.value || "text-right" }`
+   shape as the others, and gained the `valueLabel` slot it had no equivalent of. Both are
+   byte-identical when unset. The existing token test even carried a comment describing the gap
+   (*"Line has a swatch but routes its value through yFormat"*); that comment is now wrong and was
+   replaced.
+
+#### Evidence
+
+- **139 tests green** across 11 graph/legend/tooltip/section-header files, including the 30
+  `hoverCompLegacyMarkup` goldens (byte-identical markup for all six hover comps on every site) and
+  the 15 `viewSectionHeaderLegacy` goldens (MitigateNY's 154,632 sections).
+- **4 new wiring tests** in `graphComponentThemeWiring.test.js` — the unit takes a third path
+  (resolver → `index.jsx` → `graphFormat.tooltip` → `hoverComp.valueLabel`) that the
+  GraphComponent-only harness cannot see, which is precisely the class of silent gap that file was
+  written for. They pin: resolver fills it; no resolver leaves it undefined; an author-set value
+  wins; a declining resolver writes nothing.
+- **Live**, `reports/snapshot`: title `ui-monospace 11px`, value `ui-monospace 11.5px`, unit
+  rendered (`mph` on speed graphs, `hours` on delay graphs), GridGraph tooltip captured at 199×366.
+
+**Known limit — the 20px swatch is not themeable.** Every hover comp emits `w-5 h-5` *outside* the
+token, and GridGraph's label offset (`ml-7`) is measured against it, so shrinking it is a structural
+library change, not a theme value. Left alone deliberately: on a GridGraph the swatch IS the datum
+(the cell's ramp colour), and it is `absolute`, so it does not drive row height anyway.
+
+**Design system updated** — `design-system/components.html` gained a *Graph tooltip* entry (three
+worked examples: single series, comparison series, GridGraph column) with the reasoning above. Its
+only previous tooltip entry was the dark `#0F1722` `Popup` chip, i.e. the exact value rejected in
+pass 1; that chip is now labelled "hint only" and the new entry states why a data readout is not
+the same object.
+
+### Tooltip tokens — authored 2026-09-14
+
+```js
+tooltip:          "rounded-[8px] bg-white border border-zinc-950/10 text-slate-700 text-[12px] shadow-lg font-proxima"
+tooltipTitle:     "font-proxima text-[12px] font-semibold leading-5 text-slate-900 border-b border-zinc-950/10"
+tooltipValue:     "text-right tabular-nums text-slate-900"
+tooltipRow:       "py-0.5"
+tooltipRowActive: "border-slate-300"
+```
+
+**Why not the value that was already sitting there.** `tooltip` had carried
+`rounded-[6px] bg-[#0F1722] text-white text-[12px] px-2.5 py-1.5 shadow-lg font-proxima` as dead
+scaffolding for years; it went live the moment the submodule wired the token, and looked wrong
+immediately. Three concrete reasons, not taste:
+
+1. It was the **only dark surface in this design system.** Every popover, modal, drawer and card
+   is `bg-white` + `border-zinc-950/10` + a shadow. `navigableMenu`'s popover is the closest
+   analogue to a tooltip and is exactly that.
+2. `#0F1722` is used **as an ink colour** everywhere else (`hover:text-[#0F1722]`), never a fill.
+3. A dark fill **inverts the contrast the series palettes were built for** — `seqSpeedPalette` and
+   `catPalette` are chosen to sit on a white plot, so pale greens glowed and dark reds sank.
+
+**No padding in the `tooltip` token, deliberately.** The tooltip BODY keeps its own `px-2 pt-1
+pb-2`, so a padded container double-pads the panel. Measured live: container `6px 10px` + body
+`4px 8px 8px` before; container `0px` after.
+
+**`tooltipRow: "py-0.5"` is the fix for the active-row marker**, not a colour change. The row's
+2px highlight border had no vertical padding and sat directly on the text, which read as cramped
+rather than selected. Padding was tested in isolation from colour, and the owner accepted grey
+(`border-slate-300`) once it had room to breathe.
+
+**Verify:** `http://www.localhost:5173/npmrds/reports/snapshot?routes=2207390&asOf=2026-08-20` —
+hover any graph. Expect a white panel with a hairline border, a 12px semibold title over a light
+rule, right-aligned tabular numbers, and the hovered row outlined in light grey.
 
 ### What is authored on this site now (`themev2.js`, the `avlGraph` block)
 

@@ -140,7 +140,10 @@ export const CountyProse = ({
   proseParagraphs,
   className = "",
   paragraphClassName = "",
-  truncationMark = " …",
+  // No trailing ellipsis by default. The excerpt already reads as an excerpt — each
+  // card carries a "learn more" CTA to the full text — and the mark was landing as a
+  // detached " …" after the final period. Still a prop, so a caller can opt back in.
+  truncationMark = "",
 }) => {
   const { paragraphs, truncated } = countyProseParagraphs(value, {
     maxChars: Number(proseMaxChars) || undefined,

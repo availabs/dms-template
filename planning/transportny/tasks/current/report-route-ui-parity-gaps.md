@@ -2,7 +2,24 @@
 
 **Project:** TransportNY
 
-**Status:** IN PROGRESS — 11 of 22 gaps fixed so far (#19-#24 added AND fixed 2026-09-03 —
+> **2026-09-16 — THIS LEDGER IS NO LONGER A BACKLOG.** A triage against live code found that
+> most of the gaps still listed as open below had already been fixed, made moot, or were
+> written against a framing the code has since moved past. Per-gap verdicts and their evidence
+> are in **[`npmrds-routes-reports-1.0.md`](./npmrds-routes-reports-1.0.md)** — read that first.
+> The entries below are kept as written (project convention: don't rewrite history), so treat
+> any "open" gap here as unverified until it has been checked against current code.
+>
+> Closed 2026-09-16: **#1** (scroll-zoom — `zoomPan` defaults true), **#3** (hover popover now
+> shows Road/Direction/TMC — fixed this session), **#6** (pill removed from the UI), **#9**
+> (no floppy in the flow; QuickControls auto-persist), **#13**/**#14** (both dead — custom
+> report-page create button; the settings gear is never part of this path), **#15** (title AND
+> kicker are auto-composed by `composeSectionTitlePatch`), **#16** (Info Box / Route Compare
+> are authorable as Table + `resolution: 'summary'` / the `routeCompare` checkbox).
+> Still open: **#12** (owned by a separate session). Deferred: **#18**.
+
+**Status:** SUPERSEDED as a tracker 2026-09-16 (see the note above) — historical gap record.
+Prior status line, now known to be wrong, kept for the record: "IN PROGRESS — 11 of 22 gaps
+fixed so far" (#19-#24 added AND fixed 2026-09-03 —
 hard-to-click network lines, invisible Marker-mode pins, click-selecting a TMC leaving a
 permanent popup behind (a multi-round fix, see #21's entry for the full arc including two
 dead-end intermediate attempts), a too-subtle selected-TMC color (fixed via width, which

@@ -20,7 +20,7 @@
  * read as generic sections rather than as the designed admin.
  */
 import {
-  dms, dmsJson, PATTERN, COMPONENT_TYPE, SOURCES, REVIEW_THRESHOLD,
+  dms, dmsJson, PATTERN, COMPONENT_TYPE, SOURCES, REVIEW_THRESHOLD, HOST, APP, TYPE,
   band, section, lexicalSection, lexical, styled, text, head,
   lcontainer, litem, dataSection, fusedTop, fusedMid, fusedEnd, staticRowSection,
 } from './lib.mjs';
@@ -60,6 +60,40 @@ const showHostJoin = {
   },
 };
 
+/* The Show picker for the airing modals.
+ *
+ * The airing stores `show_id` and nothing else about the show — which is right, but
+ * it meant both modals asked an author to type a show's integer id. The seed's own
+ * warning ("typing one in again is how Full Court Press ended up in the data six
+ * times") is what a free-text foreign key buys you.
+ *
+ * `mapped_options` is the existing lookup primitive: a `select` column whose option
+ * list is fetched from another source, labelled by one set of columns and valued by
+ * another. Two WCDB-specific decisions:
+ *
+ *  - `labelColumns` (plural), and it ends with `show_id`. Names are badly non-unique:
+ *    the legacy import left **102 shows literally named "Show Name"** and 10 named
+ *    "Alternative Rock Music", so name alone leaves 166 of 651 shows in an ambiguous
+ *    option. Adding department only gets that to 157 — the collisions are junk data,
+ *    not genuine same-name shows. Appending `show_id` makes every label unique
+ *    (measured: 0 duplicate labels), which is the whole point of a picker whose
+ *    output is a foreign key.
+ *  - `notempty` on `name`, and NOTHING more. 54 of the 705 shows have no name at all
+ *    and would render as 54 indistinguishable "N/A" rows, so they drop out. The
+ *    placeholder-named ones are deliberately NOT filtered: 2 airings in the live
+ *    schedule reference them, and a picker that hides the value its own row holds is
+ *    worse than an ugly label. Cleaning those 102 shows is a data job, not a UI one.
+ */
+const SHOW_PICKER = JSON.stringify({
+  sourceId: SOURCES.shows.source_id,
+  viewId: SOURCES.shows.view_id,
+  isDms: false,
+  labelColumns: ['name', 'department', 'show_id'],
+  labelSeparator: ' \u00b7 ',
+  valueColumn: 'show_id',
+  filter: { op: 'AND', groups: [{ col: 'name', op: 'notempty' }] },
+});
+
 /* ── page-level building blocks ──────────────────────────────────────────── */
 
 /** The admin page header: breadcrumbs on top, then ONE baseline row of title +
@@ -77,7 +111,7 @@ const pageHeader = (crumbs, title, meta) =>
   );
 
 /** The header row's action pill — a static Card cell whose click opens a modal. */
-const headerAction = ({ source, label, paramKey }) =>
+const headerAction = ({ source, label, paramKey, padding }) =>
   dataSection({
     source,
     columns: [{
@@ -92,7 +126,15 @@ const headerAction = ({ source, label, paramKey }) =>
     data: [{}],
     display: {
       pageSize: 1, usePagination: false, fetchMode: 'cache',
-      cellsGridSize: 1, cellsPadding: 0, cardsPadding: 0, cardBorder: false,
+      cellsGridSize: 1, cellsPadding: 0, cardBorder: false,
+      // `plain`: the default card style paints its own rounded `--card-bg`
+      // panel, which read as a stray tile behind the button. The SECTION paints
+      // the surface (or none, in a page header).
+      cardStyle: 'plain',
+      // Inner inset, as a CSS padding string — a section's `padding` is the
+      // page gutter OUTSIDE its box, so the button's distance from the card
+      // border has to come from here. Default 0 for a bare header button.
+      cardsPadding: padding ?? 0,
       _functions: { providers: [{ functionId: 'click_publish', enabled: true, paramKey, args: { column: 'header_action' } }] },
     },
   });
@@ -116,21 +158,47 @@ const pill = ({ expr, alias, label, paramKey, paramValue, activeWhenUnset }) => 
  * A list card — title row → column headers → hairline rows → footer, fused into
  * one surface. Returns the section descriptors for a band.
  */
-const listCard = ({ title, titleMeta, link, tracks, headers, source, columns, filters, display = {}, join, footer }) => [
-  {
+const listCard = ({ title, titleMeta, link, tracks, headers, source, columns, filters, display = {}, join, footer, nav, rowGutter, action }) => [
+  // The title row. With `action` the row is two sections — the title (8) and a
+  // Card holding the page's primary button (4) — fused into the card's top
+  // edge: the lexical keeps the top-left corner, the Card takes the top-right.
+  // With `title: null` there is no title row at all: the NAVIGATOR is the top
+  // row (left half) and the action Card the right half (the playlist, where a
+  // "Tonight" title read as redundant beside the show the navigator names).
+  ...(title === null ? [] : [{
     kind: 'lexical', ...fusedTop, padding: { top: '6', bottom: '0' },
+    ...(action ? { size: '8', border: { top: true, left: true }, radius: { tl: true } } : {}),
     data: lexical(
       lcontainer(
-        'w-full !mt-0 items-baseline grid-cols-[max-content_1fr_max-content] gap-x-4',
+        `w-full !mt-0 items-baseline ${action || !link ? 'grid-cols-[max-content_1fr]' : 'grid-cols-[max-content_1fr_max-content]'} gap-x-4`,
         litem(head('h4', title)),
         litem(styled('label', text(titleMeta || ''))),
-        litem(styled('metaLink', text(link || ''))),
+        ...(action || !link ? [] : [litem(styled('metaLink', text(link)))]),
       ),
     ),
-  },
+  }]),
+  // An optional navigator strip — the playlist's ShowBlockNav (see
+  // `showBlockNav` below). Under a title it is a full-width mid section; as
+  // the top row it takes the top-left corner and its own inner gutter (`inset`).
+  ...(nav ? [title === null
+    ? {
+        kind: nav.kind, size: action ? '6' : '12', height: 'fill',
+        bg: 'white', border: { top: true, left: true, ...(action ? {} : { right: true }) },
+        radius: { tl: true, ...(action ? {} : { tr: true }) }, padding: { top: '6', bottom: '0' },
+        data: { ...nav.data, display: { ...nav.data.display, inset: '24px 24px 12px 24px' } },
+      }
+    : { kind: nav.kind, ...fusedMid, data: nav.data }] : []),
+  ...(action ? [{
+    kind: 'Card', size: title === null ? '6' : '4', height: 'fill',
+    bg: 'white', border: { top: true, right: true }, radius: { tr: true }, padding: { top: '6', bottom: '0' },
+    // Under a title: 24px top puts the button on the title's line. Beside the
+    // navigator: 41px puts it on the navigator's show-name line. 24px right
+    // mirrors the left inset.
+    data: headerAction({ ...action, padding: title === null ? '41px 24px 0 0' : '24px 24px 0 0' }),
+  }] : []),
   // Column headers on the SAME track template, so each label sits over the
   // column it names.
-  { kind: 'Card', ...fusedMid, data: staticRowSection({ source, tracks, cells: headers, valueFontStyle: 'colHead', keyColumn: source.columns[0].name }) },
+  { kind: 'Card', ...fusedMid, data: staticRowSection({ source, tracks, cells: headers, valueFontStyle: 'colHead', keyColumn: source.columns[0].name, rowGutter }) },
   {
     kind: 'Card', ...fusedMid,
     data: dataSection({
@@ -139,7 +207,13 @@ const listCard = ({ title, titleMeta, link, tracks, headers, source, columns, fi
         cellsTracksTemplate: tracks,
         cellsGridSize: headers.length,
         cellsGridGap: 12, cellsRowGap: 0, cellsPadding: 0, cellsVAlign: 'center',
-        cardsGridGap: 0, cardsPadding: 0, cardBorder: false,
+        cardsGridGap: 0, cardBorder: false,
+        // `cardsPadding: 0` is emitted as INLINE `padding: 0` on the very element
+        // the theme's `adminRow` puts its `px-6 py-2` gutter on — so with it the
+        // rows are flush against the card and only `min-h` gives them height.
+        // `rowGutter: true` leaves the key out and lets the theme's gutter render
+        // (the header strip drops it too, so the tracks stay aligned).
+        ...(rowGutter ? {} : { cardsPadding: 0 }),
         // The style that turns record-cards into hairline rows.
         cardStyle: 'adminRow',
         ...display,
@@ -152,14 +226,91 @@ const listCard = ({ title, titleMeta, link, tracks, headers, source, columns, fi
   },
 ];
 
+/* ── The playlist's block navigator ──────────────────────────────────────
+ * `ShowBlockNav` (src/themes/wcdb/ShowBlockNav.*) is bound to the schedule
+ * joined to shows and DJs, works out the block the page is on — the show
+ * airing at the page's `from` instant, or a 2-hour automation slice when
+ * nothing is scheduled — and publishes its edges as the `from`/`to` page
+ * variables. The log card filters `received_at` on them (see `BLOCK_LEAVES`).
+ *
+ * VIEW. The public site is served from schedule VIEW 22 ("Fall 2026"), not the
+ * seed's `SOURCES.schedule` view 10 — the ScheduleGrid's publish repoints every
+ * schedule-bound section of the `wcdb_main` pattern to the version it
+ * publishes, but not sections in THIS pattern. Until that publish learns to
+ * cover `station_admin`, a schedule publish means bumping this by hand. */
+const PUBLIC_SCHEDULE_VIEW = { view_id: 22, view_name: 'Fall 2026' };
+
+const SCHEDULE_NAV_JOIN = {
+  operator: '=',
+  sources: {
+    shows: {
+      source: SOURCES.shows.source_id, view: SOURCES.shows.view_id,
+      env: 'wcdb-dama', srcEnv: 'wcdb-dama', type: 'left', mergeStrategy: 'join',
+      joinColumns: [{ dsColumn: 'show_id', joinSourceColumn: 'show_id' }],
+      sourceInfo: SOURCES.shows,
+    },
+    // Two hops: the DJ hangs off the show, so the key is written as an
+    // expression on the joined table (same form as the public on-air card).
+    djs: {
+      source: SOURCES.djs.source_id, view: SOURCES.djs.view_id,
+      env: 'wcdb-dama', srcEnv: 'wcdb-dama', type: 'left', mergeStrategy: 'join',
+      joinColumns: [{ dsColumn: 'shows.dj_id as host_dj_id', joinSourceColumn: 'dj_id' }],
+      sourceInfo: SOURCES.djs,
+    },
+  },
+};
+
+const showBlockNav = () => ({
+  kind: 'ShowBlockNav',
+  data: dataSection({
+    source: { ...SOURCES.schedule, ...PUBLIC_SCHEDULE_VIEW },
+    join: SCHEDULE_NAV_JOIN,
+    columns: [
+      { name: 'airing_id', show: true },
+      { name: 'show_id', show: true },
+      { name: 'day', show: true },
+      { name: 'start', show: true },
+      { name: 'end', show: true },
+      { name: 'shows.name', normalName: 'name', show: true },
+      { name: 'shows.department', normalName: 'department', show: true },
+      { name: 'djs.on_air_name', normalName: 'on_air_name', show: true },
+    ],
+    display: {
+      // The whole week in one fetch.
+      pageSize: 500, usePagination: false, fetchMode: 'smart',
+      tz: STATION_TZ, blockMinutes: 120,
+      fromParamKey: 'from', toParamKey: 'to',
+      idField: 'airing_id', showIdField: 'show_id', dayField: 'day', startField: 'start', endField: 'end',
+      titleField: 'name', djField: 'on_air_name', departmentField: 'department',
+      showEyebrow: 'Show', automationEyebrow: 'Automation', automationTitle: 'Automation',
+      automationMeta: 'Music on rotation', liveLabel: 'On air', nowLabel: 'Now',
+    },
+  }),
+});
+
+/** The two leaves that confine a `received_at` list to the navigator's block.
+ *  Defaults are a no-op range so the list is whole until the navigator writes. */
+const BLOCK_LEAVES = [
+  { col: 'received_at', op: 'gte', value: ['1970-01-01T00:00:00Z'], usePageFilters: true, searchParamKey: 'from' },
+  { col: 'received_at', op: 'lt', value: ['2100-01-01T00:00:00Z'], usePageFilters: true, searchParamKey: 'to' },
+];
+const BLOCK_PAGE_FILTERS = [
+  { id: 'wcdb-admin-block-from', searchKey: 'from', values: '', useSearchParams: true },
+  { id: 'wcdb-admin-block-to', searchKey: 'to', values: '', useSearchParams: true },
+];
+
 /* ── SQL fragments ───────────────────────────────────────────────────────── */
 
 // "Needs review" is a rule over two fields, so it lives in one calculated
 // column that the queue control filters on.
 const REVIEW_STATE = `case when kind = 'no-match' or (score is not null and score < ${T}) then 'needs' else 'ok' end`;
 // 24-hour, from the timestamp — `formatFn: 'time'` renders 12-hour, which the
-// design does not use.
-const PLAYED_AT = `to_char(received_at, 'HH24:MI') as played_at`;
+// design does not use. STATION time: `to_char` on a timestamptz renders in the
+// server session zone (UTC on the hosted server), which put the log 4 hours
+// ahead of the studio clock until 2026-09-12. Same zone the ingest's show
+// resolver uses (data-types/now_playing/showResolver.js).
+const STATION_TZ = 'America/New_York';
+const PLAYED_AT = `to_char(received_at AT TIME ZONE '${STATION_TZ}', 'HH24:MI') as played_at`;
 // The row's second line in one cell: ARTIST · ALBUM · YEAR.
 const TRACK_META = `nullif(concat_ws(' · ', artist_name, album, left(release_date, 4)), '') as track_meta`;
 const REAL_NAME = `nullif(trim(concat_ws(' ', first_name, last_name)), '') as real_name`;
@@ -177,17 +328,73 @@ const pages = [
     title: 'Playlist',
     icon: 'Note',
     index: 0,
-    filters: [{ id: 'wcdb-admin-queue', searchKey: 'queue', values: '', useSearchParams: true }],
+    filters: [{ id: 'wcdb-admin-queue', searchKey: 'queue', values: '', useSearchParams: true }, ...BLOCK_PAGE_FILTERS],
     bands: [
       {
+        // The page header is the title alone: the primary action moved into the
+        // log card's title row (2026-09-12), where the design's `Public spin
+        // log →` link used to be.
         displayName: 'Header',
         sections: [
-          { kind: 'lexical', size: '9', data: pageHeader(['Admin', 'Playlist'], 'Playlist.', 'Logging live · matched every 30s') },
-          { kind: 'Card', size: '3', data: headerAction({ source: SOURCES.playlist, label: '+  Add a song', paramKey: 'add_song' }) },
+          { kind: 'lexical', size: '12', data: pageHeader(['Admin', 'Playlist'], 'Playlist.', 'Logging live · matched every 30s') },
         ],
       },
       {
-        // The review bar: the premise at the left, the segmented control right.
+        displayName: 'Log',
+        sections: listCard({
+          // No title row: the navigator names the show, so "Tonight" was redundant.
+          title: null,
+          // `+ Add a song` is the top-right half of the card, beside the navigator.
+          action: { source: SOURCES.playlist, label: '+  Add a song', paramKey: 'add_song' },
+          // The show / automation-block navigator sits between the title and the
+          // column headers and publishes `from`/`to`; the rows below filter on them.
+          nav: showBlockNav(),
+          rowGutter: true,
+          tracks: LOG_TRACKS,
+          headers: ['Time', '', 'Track', 'Source', ''],
+          source: SOURCES.playlist,
+          columns: [
+            // Time, art, source and the action all span the row's two lines so
+            // they centre against the title + meta stack (`cellsVAlign: 'center'`).
+            { name: PLAYED_AT, normalName: 'played_at', origin: 'calculated-column', show: true, hideHeader: true, valueFontStyle: 'rowMono', cellRowSpan: 2 },
+            { name: 'album_cover', show: true, hideHeader: true, type: 'image', imageSize: 'imgFill', cellRowSpan: 2 },
+            { name: 'title', show: true, hideHeader: true, valueFontStyle: 'rowTitle' },
+            { name: 'provenance', show: true, hideHeader: true, type: 'provenance_badge', threshold: T, cellRowSpan: 2 },
+            // Bound to the row id so a click publishes an id the edit modal can
+            // filter on, while rendering the design's word, not the number.
+            { name: 'id', show: true, hideHeader: true, type: 'row_action', actionLabel: 'Edit', actionIcon: 'EditPage', cellRowSpan: 2 },
+            // Row 2: the only free track is the title's, so the meta lands under
+            // the title with no spacer needed.
+            { name: TRACK_META, normalName: 'track_meta', origin: 'calculated-column', show: true, hideHeader: true, valueFontStyle: 'rowMeta' },
+            { name: 'kind', show: true, selectOnly: true },
+            { name: 'score', show: true, selectOnly: true },
+            { name: 'received_at', show: true, selectOnly: true, sort: 'desc' },
+            // The calc column belongs in `columns`; the filter references it by
+            // ALIAS. A leaf whose `col` carries `as <alias>` goes into the WHERE
+            // clause verbatim and errors with `syntax error at or near "as"`.
+            { name: `${REVIEW_STATE} as review_state`, normalName: 'review_state', origin: 'calculated-column', show: true, selectOnly: true },
+          ],
+          filters: [
+            // An empty page value drops the leaf → no constraint, which is what
+            // the `All` segment wants (it writes '').
+            { col: 'review_state', op: 'filter', value: [], usePageFilters: true, searchParamKey: 'queue' },
+            // The navigator's block. ANDed with the queue, so "needs review"
+            // inside this show's hour is one URL.
+            ...BLOCK_LEAVES,
+          ],
+          display: {
+            pageSize: 40, usePagination: true, fetchMode: 'force',
+            _functions: {
+              providers: [{ functionId: 'click_publish', enabled: true, paramKey: 'edit_song', args: { column: 'id' } }],
+              subscribers: [{ functionId: 'data_refresh', enabled: true, paramKey: 'song_added' }],
+            },
+          },
+          footer: 'A gap and a low-confidence match are drawn in place, not filtered away',
+        }),
+      },
+      {
+        // The review bar, BELOW the log since 2026-09-12: the premise at the
+        // left, the segmented control right.
         displayName: 'Review queue',
         sections: [
           {
@@ -206,6 +413,10 @@ const pages = [
             data: dataSection({
               source: SOURCES.playlist,
               columns: [
+                // A static spacer takes the `1fr` track so BOTH pills sit together
+                // at the right — without it the first pill lands in the wide
+                // track and the two drift apart.
+                { name: 'pill_spacer', origin: 'static', staticValue: '', show: true, hideHeader: true },
                 pill({
                   expr: `count(*) FILTER (WHERE kind = 'no-match' OR (score IS NOT NULL AND score < ${T}))`,
                   alias: 'needs_review', label: 'Needs review', paramKey: 'queue', paramValue: 'needs',
@@ -217,55 +428,14 @@ const pages = [
               display: {
                 pageSize: 1, fetchMode: 'force',
                 cellsGridSize: 3, cellsTracksTemplate: '1fr max-content max-content',
-                cellsGridGap: 8, cellsPadding: 0, cardsPadding: 0, cardBorder: false, cellsVAlign: 'center',
+                cellsGridGap: 8, cellsPadding: 0, cardBorder: false, cellsVAlign: 'center',
+                // The pills' distance from the card border (a section's own
+                // `padding` is the OUTER page gutter). `plain`: no stray panel.
+                cardsPadding: '0 24px', cardStyle: 'plain',
               },
             }),
           },
         ],
-      },
-      {
-        displayName: 'Log',
-        sections: listCard({
-          title: 'Tonight',
-          titleMeta: 'Newest first',
-          link: 'Public spin log →',
-          tracks: LOG_TRACKS,
-          headers: ['Time', '', 'Track', 'Source', ''],
-          source: SOURCES.playlist,
-          columns: [
-            { name: PLAYED_AT, normalName: 'played_at', origin: 'calculated-column', show: true, hideHeader: true, valueFontStyle: 'rowMono' },
-            { name: 'album_cover', show: true, hideHeader: true, type: 'image', imageSize: 'imgFill', cellRowSpan: 2 },
-            { name: 'title', show: true, hideHeader: true, valueFontStyle: 'rowTitle' },
-            { name: 'provenance', show: true, hideHeader: true, type: 'provenance_badge', threshold: T },
-            // Bound to the row id so a click publishes an id the edit modal can
-            // filter on, while rendering the design's word, not the number.
-            { name: 'id', show: true, hideHeader: true, type: 'row_action', actionLabel: 'Edit', actionIcon: 'EditPage' },
-            // A spacer so the meta line lands under the TITLE: the art's
-            // row-span already occupies track 2 on row 2.
-            { name: 'row2_spacer', origin: 'static', staticValue: '', show: true, hideHeader: true },
-            { name: TRACK_META, normalName: 'track_meta', origin: 'calculated-column', show: true, hideHeader: true, valueFontStyle: 'rowMeta' },
-            { name: 'kind', show: true, selectOnly: true },
-            { name: 'score', show: true, selectOnly: true },
-            { name: 'received_at', show: true, selectOnly: true, sort: 'desc' },
-            // The calc column belongs in `columns`; the filter references it by
-            // ALIAS. A leaf whose `col` carries `as <alias>` goes into the WHERE
-            // clause verbatim and errors with `syntax error at or near "as"`.
-            { name: `${REVIEW_STATE} as review_state`, normalName: 'review_state', origin: 'calculated-column', show: true, selectOnly: true },
-          ],
-          filters: [
-            // An empty page value drops the leaf → no constraint, which is what
-            // the `All` segment wants (it writes '').
-            { col: 'review_state', op: 'filter', value: [], usePageFilters: true, searchParamKey: 'queue' },
-          ],
-          display: {
-            pageSize: 40, usePagination: true, fetchMode: 'force',
-            _functions: {
-              providers: [{ functionId: 'click_publish', enabled: true, paramKey: 'edit_song', args: { column: 'id' } }],
-              subscribers: [{ functionId: 'data_refresh', enabled: true, paramKey: 'song_added' }],
-            },
-          },
-          footer: 'A gap and a low-confidence match are drawn in place, not filtered away',
-        }),
       },
       {
         displayName: 'Add a song',
@@ -314,11 +484,19 @@ const pages = [
                 { name: 'release_date', show: true, type: 'text', customName: 'Year', headerFontStyle: 'label', allowEditInView: true },
                 { name: 'score', show: true, customName: 'Matched at', formatFn: 'percent', editable: false, headerFontStyle: 'label' },
                 { name: 'original_title', show: true, customName: 'Detected as', editable: false, headerFontStyle: 'label' },
+                // The primary key, fetched but not drawn: a row only carries the columns it
+                // selects, and both the live-edit save and the Delete button key on `item.id`.
+                { name: 'id', show: true, selectOnly: true },
               ],
               filters: [{ col: 'id', op: 'filter', value: [], usePageFilters: true, searchParamKey: 'edit_song' }],
               display: {
                 pageSize: 1, usePagination: false, cardBorder: false, allowEditInView: true, liveEdit: true, fetchMode: 'force',
                 cellsGridSize: 2, cellsGridGap: 16, headerValueLayout: 'col',
+                // A DJ can remove a track outright (a wrong match, a test row). Two-step
+                // button; a confirmed delete closes this modal and refreshes the log
+                // through the same `song_added` param the Add form publishes on.
+                allowDelete: true, deleteItemLabel: 'Delete track', closeModalOnDelete: 'edit_song',
+                _functions: { providers: [{ functionId: 'delete_publish', enabled: true, paramKey: 'song_added' }] },
               },
             }),
           },
@@ -375,9 +553,18 @@ const pages = [
                 // so section 1964968 (the week, on wcdb_main) is the section a
                 // publish would repoint — and it IS the pointer, rather than a
                 // settings row that can drift from it.
-                liveVersion: 'Version 1 · v10',
-                liveRowCount: 69,
-                liveTargetSectionId: '1964968',
+                // A publish rewrites every section bound to source 10 on EVERY page of
+                // this pattern — the schedule page, the home rail, the show page,
+                // station info, events, the playlist: 26 sections across 8 pages — in
+                // both the published and draft section lists. The pages are discovered,
+                // so nothing here needs updating when a ninth appears.
+                liveTargetPattern: 'wcdb_main',
+                // The playlist stream (source 7) tags each detection with the show that
+                // was on air, resolved from a schedule version recorded in its own
+                // metadata — so publishing has to move that pointer too, or new tracks
+                // keep being attributed to the previous semester's shows.
+                taggingSourceIds: String(SOURCES.playlist.source_id),
+                openOnPublishedVersion: true,
               },
               // A version is a VIEW on the airings; the shows stay shared, which
               // is why they are joined rather than copied.
@@ -406,7 +593,7 @@ const pages = [
             data: dataSection({
               source: SOURCES.schedule,
               columns: [
-                { name: 'show_id', show: true, type: 'text', customName: 'Show', headerFontStyle: 'label' },
+                { name: 'show_id', show: true, type: 'select', customName: 'Show', headerFontStyle: 'label', mapped_options: SHOW_PICKER },
                 { name: 'day', show: true, type: 'text', customName: 'Day', headerFontStyle: 'label', usePageParams: true, pageParamKey: 'add_airing' },
                 { name: '"start" as start_at', normalName: 'start_at', origin: 'calculated-column', show: true, type: 'text', customName: 'Starts', headerFontStyle: 'label' },
                 { name: '"end" as end_at', normalName: 'end_at', origin: 'calculated-column', show: true, type: 'text', customName: 'Ends', headerFontStyle: 'label' },
@@ -434,7 +621,7 @@ const pages = [
                 { name: 'day', show: true, type: 'text', customName: 'Day', headerFontStyle: 'label', allowEditInView: true },
                 { name: '"start" as start_at', normalName: 'start_at', origin: 'calculated-column', show: true, customName: 'Starts', headerFontStyle: 'label' },
                 { name: '"end" as end_at', normalName: 'end_at', origin: 'calculated-column', show: true, customName: 'Ends', headerFontStyle: 'label' },
-                { name: 'show_id', show: true, customName: 'Show', editable: false, headerFontStyle: 'label' },
+                { name: 'show_id', show: true, type: 'select', customName: 'Show', headerFontStyle: 'label', allowEditInView: true, mapped_options: SHOW_PICKER },
               ],
               filters: [{ col: 'airing_id', op: 'filter', value: [], usePageFilters: true, searchParamKey: 'edit_airing' }],
               display: {
@@ -1292,6 +1479,39 @@ const pages = [
 ];
 
 /* ── apply ───────────────────────────────────────────────────────────────── */
+
+/* GUARD: is the pattern even READABLE?
+ *
+ * The reuse check below is "did `page list` return a page with this slug?", and an
+ * empty answer means "first run, create it". But there is a second way to get an
+ * empty answer: `station_admin` is a PERMISSIONED pattern (its authPermissions grant
+ * `*` to user 175 and the group `wcdb Admin`), and an unauthorized caller — which the
+ * CLI is unless DMS_AUTH_TOKEN carries an authorized account — gets the pattern back
+ * as `id: 'no-access'` with ZERO pages. The seed then cheerfully creates a SECOND
+ * copy of every page, which is how this run produced 8 duplicate admin pages and 85
+ * orphan sections that had to be deleted by hand.
+ *
+ * Creating is only safe when we can prove we are seeing the whole pattern. Abort
+ * otherwise: a loud failure costs a re-run, a silent one costs a cleanup.
+ */
+const patternRow = (dmsJson(['pattern', 'list', '--format', 'json']).items || [])
+  .find((p) => (p.data?.name ?? p.name) === PATTERN);
+if (!patternRow) {
+  console.error(`\nABORT: pattern '${PATTERN}' not found on ${HOST} (app ${APP}, type ${TYPE}).`);
+  process.exit(1);
+}
+if (String(patternRow.id) === 'no-access') {
+  console.error(
+    `\nABORT: pattern '${PATTERN}' is readable only to authorized accounts, and this run is not one.\n` +
+    `Its pages are invisible from here, so every page would be CREATED as a duplicate.\n` +
+    `Re-run with DMS_AUTH_TOKEN set to a token for an account the pattern grants` +
+    ` (user 175 / group 'wcdb Admin'), e.g.\n\n` +
+    `    DMS_AUTH_TOKEN=$(curl -s -X POST ${HOST}/login -H 'Content-Type: application/json' \\\n` +
+    `      -d '{"email":"…","password":"…","project":"${APP}"}' | jq -r .user.token) \\\n` +
+    `      node scripts/wcdb-admin/seed-wcdb-admin-pages.mjs\n`
+  );
+  process.exit(1);
+}
 
 // `page list` returns SUMMARY rows — id/type at the top level, everything else
 // nested under `data`. Keying the reuse check off a top-level `url_slug` finds

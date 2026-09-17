@@ -758,8 +758,116 @@
                     <div class="relative bg-white rounded-md border border-zinc-950/05 p-6 h-32 flex items-center justify-center">
                       <button class="px-3 h-9 bg-white border border-zinc-950/15 rounded-[6px] text-[13px] text-slate-700">Hover me</button>
                       <div class="absolute top-2 left-1/2 -translate-x-1/2 rounded-[6px] bg-[#0F1722] text-white text-[12px] px-2.5 py-1.5 shadow-lg max-w-xs">Popup tooltip</div>
-                      <span class="absolute bottom-1 left-2 font-mono text-[10px] uppercase tracking-wider text-slate-500">Popup</span>
+                      <span class="absolute bottom-1 left-2 font-mono text-[10px] uppercase tracking-wider text-slate-500">Popup · hint only</span>
                     </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ════════════════════════════════════════════════════════════════
+                   GRAPH TOOLTIP (theme.avlGraph.tooltip* · the hover readout)
+                   ════════════════════════════════════════════════════════════════ -->
+              <div class="col-span-12 mt-4" data-dms-section="graph-tooltip">
+                <div class="rounded-[8px] border border-zinc-950/10 bg-white shadow-sm overflow-hidden">
+                  <div class="px-6 pt-5 pb-3 border-b border-zinc-950/05">
+                    <div class="font-display font-medium text-[16px] text-[#0F1722]">Graph tooltip · the hover readout</div>
+                    <div class="font-mono text-[10.5px] uppercase tracking-[0.18em] text-slate-500 mt-1">theme.avlGraph.tooltip / tooltipTitle / tooltipValue / tooltipRow / tooltipRowActive / tooltipSwatch</div>
+                    <p class="font-proxima text-[12.5px] text-slate-600 mt-2 max-w-[820px]">
+                      <strong>Not the same object as <span class="tny-mono">Popup</span> above.</strong> That dark chip is a
+                      <em>hint</em> — one line of prose explaining a control. This is a <em>data readout</em>: it carries numbers the
+                      reader will compare, so it follows the rules the rest of this system applies to numbers, and it is the one
+                      floating surface that is emphatically <strong>not</strong> dark. A dark fill inverts the contrast
+                      <span class="tny-mono">seqSpeedPalette</span> and <span class="tny-mono">catPalette</span> were built for —
+                      they are chosen to sit on a white plot, so pale greens glow and dark reds sink — and
+                      <span class="tny-mono">#0F1722</span> is an ink colour everywhere else in this system, never a fill.
+                    </p>
+                    <p class="font-proxima text-[12.5px] text-slate-600 mt-2 max-w-[820px]">
+                      <strong>Everything numeric is mono.</strong> The title slot holds the hovered <em>x value</em> —
+                      <span class="tny-mono">13:40</span>, <span class="tny-mono">2024-03</span>, <span class="tny-mono">Mon</span> —
+                      which is the same string the axis tick under the cursor is showing, and axis ticks already render in the mono
+                      ladder. A proxima title made the tooltip and the axis disagree about the typeface of one identical value.
+                      Values are mono + <span class="tny-mono">tabular-nums</span> so a column of them aligns, which is the whole
+                      point of a multi-row tooltip. Labels stay proxima: they are names, not magnitudes.
+                    </p>
+                    <p class="font-proxima text-[12.5px] text-slate-600 mt-2 max-w-[820px]">
+                      <strong>The unit is automatic.</strong> It is the <span class="tny-mono">valueLabel</span> slot, filled from the
+                      same <span class="tny-mono">avlGraph.resolveLegendUnit</span> hook that captions a gradient legend, so a report
+                      never has to be regenerated to gain it. <strong>The swatch carries an inset hairline</strong> — a contrast fix,
+                      not decoration: a grid swatch is the hovered cell's own ramp colour at 0.75 opacity, and the light end of
+                      <span class="tny-mono">seqSpeedPalette</span> (<span class="tny-mono">#F2E18A</span>,
+                      <span class="tny-mono">#A8D26B</span>) had no edge at all against the panel's white.
+                    </p>
+                  </div>
+                  <div class="bg-slate-50/40 p-6 grid grid-cols-3 gap-6">
+
+                    <!-- single-series -->
+                    <div>
+                      <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] mb-2">// single series · one row</div>
+                      <div class="rounded-[8px] bg-white border border-zinc-950/10 text-slate-700 text-[12px] shadow-lg font-proxima inline-block">
+                        <div class="flex flex-col px-2 pt-1 pb-2">
+                          <div class="font-mono text-[11px] font-medium tracking-wide text-[#0F1722] border-b border-zinc-950/10 pb-1 mb-1 pl-2">12:00</div>
+                          <div class="flex items-center px-2 border-2 rounded py-0.5 border-slate-300 bg-slate-50">
+                            <div class="mr-2 rounded-[3px] ring-1 ring-inset ring-zinc-950/15 w-5 h-5" style="background:#C2554D"></div>
+                            <div class="mr-4">Ocean Pkwy (Frontage) S:</div>
+                            <div class="text-right font-mono text-[11.5px] tabular-nums text-[#0F1722] flex-1">9.9<b class="ml-1">mph</b></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- multi-series -->
+                    <div>
+                      <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] mb-2">// comparison series · hovered row highlighted</div>
+                      <div class="rounded-[8px] bg-white border border-zinc-950/10 text-slate-700 text-[12px] shadow-lg font-proxima inline-block">
+                        <div class="flex flex-col px-2 pt-1 pb-1">
+                          <div class="font-mono text-[11px] font-medium tracking-wide text-[#0F1722] border-b border-zinc-950/10 pb-1 mb-1 pl-2">2024-03</div>
+                          <div class="flex items-center px-2 border-2 rounded py-0.5 border-transparent">
+                            <div class="mr-2 rounded-[3px] ring-1 ring-inset ring-zinc-950/15 w-5 h-5" style="background:#10B981"></div>
+                            <div class="mr-4">Current year:</div>
+                            <div class="text-right font-mono text-[11.5px] tabular-nums text-[#0F1722] flex-1">42.7<b class="ml-1">mph</b></div>
+                          </div>
+                          <div class="flex items-center px-2 border-2 rounded py-0.5 border-slate-300 bg-slate-50">
+                            <div class="mr-2 rounded-[3px] ring-1 ring-inset ring-zinc-950/15 w-5 h-5" style="background:#1F3F8F"></div>
+                            <div class="mr-4">Trailing 3 years:</div>
+                            <div class="text-right font-mono text-[11.5px] tabular-nums text-[#0F1722] flex-1">39.4<b class="ml-1">mph</b></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- grid column -->
+                    <div>
+                      <div class="font-mono text-[10px] uppercase tracking-[0.18em] text-[#CA8A04] mb-2">// GridGraph · a whole column of TMCs</div>
+                      <div class="rounded-[8px] bg-white border border-zinc-950/10 text-slate-700 text-[12px] shadow-lg font-proxima inline-block">
+                        <div class="grid grid-cols-1 gap-1 px-2 pt-1 pb-2">
+                          <div class="font-mono text-[11px] font-medium tracking-wide text-[#0F1722] border-b border-zinc-950/10 pb-1 pl-2">0:00</div>
+                          <div class="flex items-center px-2 border-2 rounded py-0.5 border-transparent">
+                            <div class="mr-2 rounded-[3px] ring-1 ring-inset ring-zinc-950/15 w-5 h-5" style="background:#C8DFA0"></div>
+                            <div class="mr-4">120N54877:</div>
+                            <div class="text-right font-mono text-[11.5px] tabular-nums text-[#0F1722] flex-1">26.6<b class="ml-1">mph</b></div>
+                          </div>
+                          <div class="flex items-center px-2 border-2 rounded py-0.5 border-transparent">
+                            <div class="mr-2 rounded-[3px] ring-1 ring-inset ring-zinc-950/15 w-5 h-5" style="background:#D98B80"></div>
+                            <div class="mr-4">120N54869:</div>
+                            <div class="text-right font-mono text-[11.5px] tabular-nums text-[#0F1722] flex-1">10.1<b class="ml-1">mph</b></div>
+                          </div>
+                          <div class="flex items-center px-2 border-2 rounded py-0.5 border-slate-300 bg-slate-50">
+                            <div class="mr-2 rounded-[3px] ring-1 ring-inset ring-zinc-950/15 w-5 h-5" style="background:#C2554D"></div>
+                            <div class="mr-4">120-54872:</div>
+                            <div class="text-right font-mono text-[11.5px] tabular-nums text-[#0F1722] flex-1">9.99<b class="ml-1">mph</b></div>
+                          </div>
+                        </div>
+                      </div>
+                      <p class="font-proxima text-[11.5px] text-slate-500 mt-2 leading-[1.5]">The active-row marker stays
+                      <strong>grey</strong> (a 2026-09-14 review decision), with a <span class="tny-mono">bg-slate-50</span> fill
+                      added because on a column of 13 near-identical rows a 1px outline alone is hard to locate.</p>
+                    </div>
+                  </div>
+                  <div class="px-6 py-3 border-t border-zinc-950/05 font-proxima text-[12px] text-slate-600">
+                    <strong>Known limit:</strong> the 20&nbsp;px swatch is <em>not</em> themeable — every hover comp emits
+                    <span class="tny-mono">w-5 h-5</span> outside the token, and GridGraph's label offset
+                    (<span class="tny-mono">ml-7</span>) is measured against it, so changing the size is a structural change to the
+                    library rather than a theme value.
                   </div>
                 </div>
               </div>
