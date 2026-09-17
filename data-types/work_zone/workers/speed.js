@@ -23,15 +23,10 @@
  * ctx: { task, pgEnv, db, dispatchEvent, updateProgress }
  */
 const { baselineWindow, baselineSQL, measureSQL, fhwaThresholdSpeed, postedDropThresholdSpeed,
-        DEFAULT_BASELINE_MONTHS, EPOCHS_PER_DAY } = require('../lib/baseline.js');
-
-/**
- * Longest span a single 2799 (event, tmc) row may claim as active, in days.
- * Matches phase 2's duration cap: the same never-closed records that made the
- * reported duration unusable there would otherwise claim a month of active
- * time here. Truncations are counted into the run metadata.
- */
-const MAX_SPAN_DAYS = 30;
+        DEFAULT_BASELINE_MONTHS } = require('../lib/baseline.js');
+// The active-window expansion and its span cap are shared with the queue stage
+// (phase 5) and documented in lib/windows.js.
+const { activeWindowsSQL, MAX_SPAN_DAYS } = require('../lib/windows.js');
 const { m1ForZone, groupCellsByZone, rollupM1, DEFAULT_MIN_EPOCHS } = require('../lib/measures.js');
 const { zoneHourM1SQL, rollupZoneM1, rollupZoneM1ByTier,
         DEFAULT_MIN_EPOCHS_PER_HOUR } = require('../lib/m1.js');
@@ -184,107 +179,12 @@ function makeSpeed(depOverrides = {}) {
 
     // ── active epoch windows: the zones' member events × their anchor TMCs ──
     // 2799 gives the epoch bounds; the anchor filter keeps the measure on the
-    // work extent rather than the congestion corridor.
-    //
-    // A 2799 row is one (event, tmc) SPAN — `bound_start_date/time` to
-    // `bound_end_date/time` — not one row per active day, and it must be
-    // expanded to the day grid before it can be joined to NPMRDS. Three things
-    // about that expansion are load-bearing, each measured on CY2024:
-    //
-    //  1. **Multi-day spans (12.8% of rows, up to 27 days).** Reading the row
-    //     as-is measures only its FIRST day, and on that day applies an epoch
-    //     range whose end belongs to a later day — usually an empty range. The
-    //     first version of this query did exactly that and silently lost most of
-    //     the active time of every zone lasting more than a day.
-    //  2. **Same-day rows whose end epoch precedes its start (0.8%).** That is a
-    //     night shift that crossed midnight, so the end is rolled onto the next
-    //     day. Read literally it is an empty range and the shift disappears —
-    //     and night work is precisely when a work zone's speed impact is
-    //     cheapest, so dropping it would bias M1 upward.
-    //  3. **Epoch bounds are half-open.** `bound_end_time` reaches 288, one past
-    //     the last epoch of the day, so the end is exclusive; a whole day is
-    //     [0, 288). The measure joins with `< epoch_to` to match.
-    //
-    // Spans are capped at MAX_SPAN_DAYS and clamped to the measurement window:
-    // the cap matches phase 2's duration cap so one never-closed record cannot
-    // claim a month of active time, and the clamp keeps the staged table from
-    // carrying days the measure would discard anyway.
-    //
-    // ── Why there is a second, fallback source of windows ──────────────────
-    // View 2799 is the event->TMC conflation, and it has holes: NO rows at all
-    // for 2019 and 2020, only 9,070 events in 2018 against 134,337 in 2024, and
-    // even in a good year ~10% of zones have no conflated row. Measured against
-    // 2799 alone, M1 is simply blank for two of the nine vintages.
-    //
-    // The anchor TMC does not come from 2799 — the spine reads it from the
-    // event's own `tmclist` — so for those zones the segment is known and only
-    // the window is missing. It is recovered from the anchor row's own
-    // `first_start`/`last_end`, which is the same quantity 2799 reports
-    // per-TMC, just without the per-TMC refinement. Converting that clock time
-    // to the epoch grid reproduces 2799's bounds exactly on the cases where
-    // both exist (an event 04:25-09:45 gives epochs 53-117 either way), so this
-    // is the same measure on a coarser input, not a different measure.
-    //
-    // Every row records which source it came from in `window_source`, and the
-    // counts are stamped on the view, because the fallback's weakness is real:
-    // the anchor row's span is the CHAIN's span, so a recurring chain can claim
-    // days it was not working. MAX_SPAN_DAYS bounds the damage and the flag
-    // makes those rows filterable.
+    // work extent rather than the congestion corridor. The expansion to the
+    // day grid, the midnight roll-over, the half-open bounds and the
+    // event-derived fallback windows are all in lib/windows.js, shared with
+    // the queue stage — see that module for the three bugs it pins.
     const { rows: activeRows } = await pgDb.query(
-      `WITH zone_members AS (
-         SELECT wz_event_id, unnest(string_to_array(member_event_ids, ' ')) AS event_id
-           FROM ${spine.table}
-          WHERE first_start >= $1::date AND first_start < ($2::date + INTERVAL '1 day')),
-       anchors AS (
-         SELECT DISTINCT wz_event_id, tmc FROM ${tmcView.table} WHERE tmc_role = 'anchor'),
-       spans AS (
-         SELECT DISTINCT zm.wz_event_id, a.tmc,
-                et.bound_start_date AS d0, et.bound_start_time AS t0,
-                CASE WHEN et.bound_end_date = et.bound_start_date
-                          AND et.bound_end_time <= et.bound_start_time
-                     THEN et.bound_start_date + 1
-                     ELSE et.bound_end_date END AS d1,
-                et.bound_end_time AS t1
-           FROM zone_members zm
-           JOIN anchors a ON a.wz_event_id = zm.wz_event_id
-           JOIN ${d.event_tmc_table} et ON et.event_id = zm.event_id AND et.tmc = a.tmc
-          WHERE et.bound_start_time IS NOT NULL AND et.bound_end_time IS NOT NULL),
-       -- Anchor rows with no 2799 span: recover the window from the anchor's own
-       -- clock times. floor() for the start and ceil() for the end reproduce
-       -- 2799's half-open epoch bounds.
-       derived AS (
-         SELECT t.wz_event_id, t.tmc,
-                t.first_start::date AS d0,
-                FLOOR((EXTRACT(HOUR FROM t.first_start) * 60
-                     + EXTRACT(MINUTE FROM t.first_start)) / 5.0)::int AS t0,
-                t.last_end::date AS d1,
-                LEAST(${EPOCHS_PER_DAY}, CEIL((EXTRACT(HOUR FROM t.last_end) * 60
-                     + EXTRACT(MINUTE FROM t.last_end)
-                     + EXTRACT(SECOND FROM t.last_end) / 60.0) / 5.0))::int AS t1
-           FROM ${tmcView.table} t
-           JOIN ${spine.table} e ON e.wz_event_id = t.wz_event_id
-          WHERE t.tmc_role = 'anchor'
-            AND e.first_start >= $1::date AND e.first_start < ($2::date + INTERVAL '1 day')
-            AND t.first_start IS NOT NULL AND t.last_end IS NOT NULL
-            AND NOT EXISTS (SELECT 1 FROM spans s
-                             WHERE s.wz_event_id = t.wz_event_id AND s.tmc = t.tmc)),
-       capped AS (
-         SELECT wz_event_id, tmc, d0, t0, t1, LEAST(d1, d0 + ${MAX_SPAN_DAYS}) AS d1,
-                '2799' AS window_source
-           FROM spans WHERE d1 >= d0
-          UNION ALL
-         SELECT wz_event_id, tmc, d0, t0, t1, LEAST(d1, d0 + ${MAX_SPAN_DAYS}) AS d1,
-                'event' AS window_source
-           FROM derived WHERE d1 >= d0)
-       SELECT wz_event_id, tmc, to_char(g.day::date, 'YYYY-MM-DD') AS date, window_source,
-              CASE WHEN g.day::date = d0 THEN t0 ELSE 0 END AS epoch_from,
-              CASE WHEN g.day::date = d1 THEN t1 ELSE ${EPOCHS_PER_DAY} END AS epoch_to
-         FROM capped
-         CROSS JOIN generate_series(GREATEST(d0, $1::date)::timestamp,
-                                    LEAST(d1, $2::date)::timestamp,
-                                    INTERVAL '1 day') AS g(day)
-        WHERE (CASE WHEN g.day::date = d0 THEN t0 ELSE 0 END)
-            < (CASE WHEN g.day::date = d1 THEN t1 ELSE ${EPOCHS_PER_DAY} END)`,
+      activeWindowsSQL({ spineTable: spine.table, tmcTable: tmcView.table, eventTmcTable: d.event_tmc_table }),
       [d.start_date, d.end_date]);
     await updateProgress(0.25);
 

@@ -33,11 +33,11 @@ The measures:
    Phase 2  exposure       ─────► E1–E3 per event + Region×month ◄─ AADT × hourly profile (map21 static)
    Phase 3  speed          ─────► event×tmc×hour: speed, baseline, %epochs<thr ◄┘  → M1
    Phase 4  delay          ─────► M2 veh-hrs / per-veh / share of total (2799 + 2633)
-   Phase 5  queue          ─────► event × 5-min epoch queue length/presence → M3
-   Phase 6  differential   ─────► M4 approach vs zone; during vs baseline
-   Phase 7  crashes_open   ─────► WZ-flag series; ref-marker geocode
-            crashes_clear  ─────► CLEAR adapter (same schema)
-            crash_join     ─────► crash ∩ spine → M5 counts + rates
+   Phase 5  queue          ─────► wz_queue (1 row / zone) + wz_queue_hour (zone × date × hour) → M3
+   Phase 6  differential   ─────► M4 approach − in-zone, baseline − during, INTO wz_speed (no new source)
+   Phase 7  crashes_clear  ─────► CLEAR extract typed: KABCO, WZ code, epoch, point (primary)
+            crash_join     ─────► crash ∩ zone extent ∩ active window → wz_crash (M5) + wz_crash_match
+            crashes_open   ─────► the open-data statewide check (deferred)
    Phase 8  intrusions / qa_ratings (file_upload-driven) → M6, F1
    Phase 1a stip           ─────► nysdot_stip (PIN × phase × FFY) ─┐ project identity
    Phase 9  sample         ─────► the 2030 programmatic-review sample frame ◄┘
@@ -58,9 +58,26 @@ data-types/work_zone/
 │   ├── classify.js     what counts as a work zone, by event_type            [phase 1]
 │   ├── dedupe.js       recurring-chain collapse, gap splitting              [phase 1]
 │   ├── extents.js      anchor vs congestion-impact TMCs                     [phase 1]
-│   └── tma.js          Interstate test, TMA membership, significance        [phase 1]
+│   ├── tma.js          Interstate test, TMA membership, significance        [phase 1]
+│   ├── exposure.js     E1–E3 arithmetic                                     [phase 2]
+│   ├── baseline.js     thresholds, baseline + measure SQL (ClickHouse)      [phase 3]
+│   ├── m1.js           M1 as the rule defines it (zone-hours)               [phase 3]
+│   ├── measures.js     epoch-level evidence rollups                          [phase 3]
+│   ├── windows.js      the active-window expansion (shared by speed+queue)  [phase 3/5]
+│   ├── delay.js        M2 arithmetic                                        [phase 4]
+│   ├── queue.js        corridor walk, M3 SQL + rollups                      [phase 5]
+│   ├── crashes.js      CLEAR typing, the crash ∩ zone match SQL, M5 rollups [phase 7]
+│   └── differential.js M4 arithmetic, approach SQL, rollups                  [phase 6]
+├── load-clear-csv.js   COPY a CLEAR extract CSV in as a clear_crash_raw view   [phase 7]
 ├── workers/
-│   └── spine.js        wz_event + wz_event_tmc                              [phase 1]
+│   ├── spine.js        wz_event + wz_event_tmc                              [phase 1]
+│   ├── exposure.js     wz_exposure                                          [phase 2]
+│   ├── speed.js        wz_speed                                             [phase 3]
+│   ├── delay.js        wz_delay                                             [phase 4]
+│   ├── queue.js        wz_queue + wz_queue_hour                             [phase 5]
+│   ├── crashes_clear.js nys_crashes_clear                                   [phase 7]
+│   ├── crash_join.js   wz_crash + wz_crash_match                            [phase 7]
+│   └── differential.js fills wz_speed's M4 columns in place                [phase 6]
 ├── pages/
 │   ├── index.jsx       defaultPages ['table','runs'] + the Create page
 │   └── create.jsx      stage-selector publish form, generated from GET /stages
@@ -146,10 +163,14 @@ that never applied).
 | `wz_event` | one deduped work-zone event | `spine` (source **2193**, live) |
 | `wz_event_tmc` | event × tmc × active window | `spine` (source **2194**, live) |
 | `wz_exposure` | event (+ Region×month rollup) | `exposure` (source **2197**, live) |
-| `wz_speed` | event × tmc × hour-of-day | `speed` (source **2206**, live), `differential` |
-| `wz_queue` | event × 5-min epoch | `queue` |
-| `nys_crashes_open` / `nys_crashes_clear` | crash case | `crashes_open` / `crashes_clear` |
-| `wz_crash` | crash ∩ wz_event | `crash_join` |
+| `wz_speed` | event × tmc × hour-of-day | `speed` (source **2206**, live); `differential` fills its M4 columns in place (live) |
+| `wz_queue` | one work zone (M3: max/95th queue, share of time, longest run, extent geometry) | `queue` (source **2226**, live) |
+| `wz_queue_hour` | zone × date × clock hour (the evidence) | `queue` (source **2227**, live) |
+| `clear_crash_raw` | the CLEAR CSV as delivered, one view per year | `load-clear-csv.js` (source **2228**, live) |
+| `nys_crashes_clear` | one crash, typed (KABCO, WZ code, epoch, point) | `crashes_clear` (source **2229**, live) |
+| `nys_crashes_open` | the open-data statewide check | `crashes_open` (deferred) |
+| `wz_crash` | one work zone (M5: crashes by role and severity, rate per 100 M VMT) | `crash_join` (source **2230**, live) |
+| `wz_crash_match` | crash × zone (the evidence) | `crash_join` (source **2231**, live) |
 | `wz_intrusions`, `wz_qa_ratings` | as delivered | `intrusions`, `qa_ratings` |
 | `nysdot_stip` | PIN × phase × fund year | `stip` (phase 1a) |
 | `wz_significant_sample` | candidate project | `sample` |
@@ -171,7 +192,7 @@ files (no DB, CH, or network); `tests/*.integration.js` are node scripts against
 dms-server sqlite harness. No test contacts TRANSCOM, RITIS, Socrata, ArcGIS **or ClickHouse** —
 recorded extracts live in `tests/fixtures/`.
 
-Green through phase 4: **256 unit + 80 integration**.
+Green through phase 7: **349 unit + 112 integration**.
 
 ---
 
@@ -1334,68 +1355,476 @@ of 36,376). Asking TRANSCOM for the 2019–2020 conflation would repair M1 and M
   **not** filter to anchors, that it joins on `(event_id, tmc)` and never on `region_name`, that the rate
   comes from phase 2 and is null without it, the window replace, and the stamped role rule.
 
-## Phase 5 — Speeds + TMC ordering → M3 queue — NOT STARTED
+## Phase 5 — NPMRDS speeds + TMC ordering → M3 queues — ✅ COMPLETE 2026-09-16
 
-**Purpose.** Queues are the impact the public and the rule both care about, and they are
-not visible in a zone-only speed measure.
+**Purpose.** Queues are the impact the public and the rule both care about, and a zone-only speed
+measure cannot see them: M1 says the work zone was slow, M3 says how far back the slow traffic
+reached, for how long, and how often.
 
-**Inputs.** `wz_event_source_id`, `npmrds_source_id`, `npmrds_meta_source_id`
-(`tmclinear`, `road_order`).
+**Definition (as built).** For every five-minute epoch a zone was active: the **anchor TMC must be
+observed and below the threshold** (a queue is measured from the bottleneck backwards); the walk then
+goes **upstream one TMC at a time along the same corridor** while each segment is observed and below
+the threshold; **queue length is the sum of those upstream segments** — the anchor's own length rides
+on the row as `anchor_miles` but is not counted, so the number answers "how far beyond the work did
+it reach". A queue counts as **present only inside a run of two or more consecutive slow epochs**
+(ten minutes) — the Boston MPO / Maryland connected-queue rule. Two thresholds are walked on every
+epoch: **35 mph absolute (primary, `queue_speed_mph`)** and the road-scaled **PHED comparator,
+max(20, 0.6 × posted)** per segment. **M3 = share of zones whose maximum upstream queue exceeded
+`queue_threshold_mi` (0.75 mi)**, with 95th-percentile length, share of time queued and longest
+continuous queue alongside — the shape the recommendation report asked for.
 
-**Algorithm (planned).** `lib/queue.js` (pure): per epoch, walk upstream from the zone's
-first TMC along `tmclinear`/`road_order` while speed < `queue_speed_mph`, summing lengths →
-`queue_len_mi`; require ≥ 2 consecutive epochs (the Boston MPO / Maryland connected-queue
-rule) before counting a queue as present. M3 = share of significant candidates whose max
-(and 95th-percentile) queue exceeds `queue_threshold_mi`, plus duration and % time present.
+**Inputs.** `wz_event` (2193) + `wz_event_tmc` (2194) · NPMRDS CH view 982 (source 583) · the
+`npmrds_geometry` meta view 984 (source 582 — `tmclinear`, `road_order`, `direction`, `miles`,
+`avg_speedlimit`, segment end points) · TRANSCOM view **2799** for the active windows, through the
+same expansion the speed stage uses (now `lib/windows.js`).
 
-> `tmclinear` is unique only *within* an NPMRDS region — filter by `tmclinear` **and**
-> `left(tmc,3)` when walking a corridor, or two regions' linears collide.
+**Output.** Two sources per vintage, the spine's two-output pattern:
+- **`wz_queue` — source 2226**, one row per work zone (the `wz_delay` shape): the M3 statistics at
+  both thresholds, the corridor that was walked (`n_upstream_tmcs`, `corridor_reach_mi`,
+  `corridor_end_reason`), how much of the queue length is a lower bound, the max-queue TMC list
+  (space-separated, for phase 7's crash join), and **geometry = the maximum queue extent** (anchor +
+  the queued upstream TMCs), so the layer draws how far back the queue reached.
+- **`wz_queue_hour` — source 2227**, one row per (zone × date × clock hour): the evidence, keeping
+  the date (so a queue's day-by-day shape and its duration survive) without the ~5 M rows a year the
+  plan's epoch grain would have cost.
+Nine vintages CY2018–CY2026, 45–110 s each.
 
-**Output.** `wz_queue` (event × 5-min epoch), plus M3 rows.
+### Upstream is LOWER road_order — measured, not assumed
 
-**Validation (planned).** The same three events as phase 3; max/95th queue plausible against
-corridor length; one compared to the incident-view congestion-window bands.
+The plan said "walk upstream along `tmclinear`/`road_order`" without saying which way. On the 2024
+inventory, for 42,779 consecutive `road_order` pairs within one (region × tmclinear × direction), the
+END of a segment meets the START of the next-higher order within 30 m in **69 %** of pairs and the
+reverse in 13 % (the reversals cluster on interchange-internal P/N segments). `road_order` ascends in
+the direction of travel; a queue backs into **lower** orders. The I-495 validation zone shows it
+directly: on its active Sunday the anchor (order 104) held 17–32 mph while orders 90–103 fell to
+12–25 mph and orders 105–110 recovered into the 40s.
 
-**Results log.** —
+Three more facts about the inventory that the walk has to respect (`lib/queue.js buildCorridor`):
+- **`tmclinear` carries BOTH directions** of a road and is unique only within a region, so the
+  corridor key is `(left(tmc,3), tmclinear, direction)` — the direction *string*, as stored.
+- **`road_order` repeats** for 2,099 of 47,215 (corridor, order) groups — parallel interchange
+  internals and ramps, typically 0.01–0.05 mi. The walk keeps the **longest** segment at each order,
+  and ignores anything sharing the anchor's own order. 17 % of orders are fractional (94.5, 9.0005);
+  they sort numerically.
+- **Linears jump.** 18 % of consecutive pairs touch at neither end. The walk stops at a gap over
+  **0.5 mi** between a segment's end and the next one's start (`corridor_end_reason = 'gap'`), after
+  **10 mi** of upstream length (`'reach'`) or **20 segments** (`'tmcs'`); otherwise `'end_of_linear'`.
+  All three are descriptor options (`queue_max_gap_mi`, `queue_max_reach_mi`,
+  `queue_max_upstream_tmcs`) and are stamped on the view.
 
-## Phase 6 — M4 speed differential (no new dataset) — NOT STARTED
+### Four plan corrections found by probing first
 
-**Purpose.** A zone can meet an absolute speed threshold and still be dangerous if traffic
-drops 30 mph at its taper.
+1. **Grain.** The plan's `wz_queue` was "event × 5-min epoch". CY2024 has ~5 M active anchor-epochs;
+   nine vintages would be ~30 M rows for a Table page to choke on. The measure table is **one row per
+   zone** and the evidence is **zone × date × hour** (`wz_queue_hour`); the per-epoch table exists
+   only as run-scoped ClickHouse staging.
+2. **Which way is upstream** (above) — and that `road_order` is a `double precision` with ties.
+3. **The anchor is single.** `n_tmcs_anchor` is 0 or 1 on every zone, so the corridor is per zone and
+   the active windows are per (zone, day), not per (zone, tmc, day).
+4. **The active-window SQL was duplicated.** The speed stage's expansion (three bugs pinned) moved to
+   `lib/windows.js` so both stages read one definition; the speed integration test still passes on
+   the extracted text verbatim.
 
-**Inputs.** `wz_event_source_id`, `wz_speed_source_id`.
+### ClickHouse: the walk runs where the data is
 
-**Algorithm (planned).** Fill the differential columns on `wz_speed`: approach speed (1–2
-TMCs upstream over the same epochs), `approach − in-zone`, `during − baseline`, and flags
-above `differential_mph`. Adds no columns — see the phase-3 warning.
+Staging corridor × active-day rows keyed **(tmc, date)** is what keeps the join from exploding across
+every zone whose corridor shares a segment (an Interstate TMC sits in hundreds of corridors). One
+row per (zone, corridor TMC, active day) with the day's epoch window — 63,689 rows for July 2024,
+~600 k for a full year. The speed table stays on the LEFT of the join, the date bound prunes
+partitions, `tmc IN (staged tmcs)` uses the table's primary key `(tmc, epoch, date)`, and the epoch
+range lives in WHERE. Each (zone, date, epoch) is grouped into rank-sorted arrays; `arrayFirstIndex`
+finds the first break (missing rank OR not slow), `arraySlice` from position 2 sums upstream length,
+a `WINDOW ... ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING` applies the two-epoch rule. The walk runs
+**one calendar month at a time** into a per-epoch Memory table, then three aggregates (hour, zone,
+longest run via `arraySplit` on `arrayDifference`) read it. Both staging tables drop in `finally`.
 
-**Tests / validation (planned).** Unit on the phase-3 fixture; the same three events.
+**ClickHouse will not unify `UInt64` with `Int64`.** `if(brk = 0, length(arr), brk - 1)` failed at
+run time ("no supertype for types Int64, UInt64") because `length()` is unsigned and a subtraction is
+signed; every array position in the walk is now `toInt64(...)` explicitly. The unit test pins the
+text.
 
-**Results log.** —
+### Files
 
-## Phase 7 — NYS open crash data (+ CLEAR adapter) → M5 — NOT STARTED
+| file | what |
+|---|---|
+| `lib/windows.js` | pure. The active-window expansion shared with phase 3 (`activeWindowsSQL`, `MAX_SPAN_DAYS`). |
+| `lib/queue.js` | pure. `buildCorridor` (ties, gap, reach, segment cap), `queueForEpoch` (the JavaScript reference walk), `applyConsecutiveRule`, `longestRun`, `monthChunks`, the CH DDL + `queueEpochInsertSQL` / `queueHourSQL` / `queueZoneSQL` / `queueRunsSQL`, `rollupM3`, `rollupM3ByTier`. |
+| `workers/queue.js` | resolves spine / tmc / meta / CH speeds, reads zones + active windows + corridors, stages corridor × day rows in batches, walks month by month, aggregates, shapes two row sets, provisions two views (creating the `wz_queue_hour` source once), writes both tables and stamps both views and both sources. |
+| `sql.js` | `wzQueueTableDDL` / `wzQueueInsertSQL` (geometry = union of anchor + max-queue TMCs from the meta geometry temp table, `ST_SetSRID`), `wzQueueHourTableDDL` / `wzQueueHourInsertSQL`, both column lists and descriptor lists. |
+| `run-stage.js` | `WZ_HOUR_VIEW_ID`, `WZ_QUEUE_HOUR_SOURCE_ID`, `QUEUE_MAX_REACH_MI` / `QUEUE_MAX_UPSTREAM_TMCS` / `QUEUE_MAX_GAP_MI`. |
 
-**Purpose.** The safety half of the rule.
+### Tests — 50 unit + 16 integration added, none touching ClickHouse
 
-**Inputs.** Socrata `e8ky-4vqe` (case) and `ir4y-sesj` (individual, KABCO), saved as
-`file_upload` views first; optionally a NYSDOT CLEAR extract; `ref_marker_source_id` (the
-cached NYSDOT reference-marker table); `wz_event_source_id` and `crash_source_id` for the
-join.
+- `tests/queue.unit.test.mjs` (50) — on a synthetic six-segment westbound corridor whose right answers
+  are known by construction: upstream is lower order (a higher-order segment is never walked); ties
+  keep the longest; the anchor's own order is ignored; a 2-mile jump ends the corridor with `'gap'`;
+  reach and segment caps; unknown coordinates cannot break the chain; `no_meta`. The reference walk on
+  a moving queue: anchor free → no queue whatever happens upstream; one slow segment = 0.5 mi; growth;
+  the anchor's length is not counted; a missing rank stops the walk as a **lower bound**; a queue to the
+  corridor end is a lower bound; unobserved anchor; speed equal to threshold is not slow; per-segment
+  (PHED) threshold; threshold 0 means unknown. The consecutive rule at 1, 2 and 3. SQL shape: speed
+  table LEFT, `tmc IN` prefilter, half-open epochs, the chain-break lambda with the Int64 casts, upstream
+  slice from position 2, the window frame, `groupUniqArray`, threshold validation. `rollupM3` and the
+  tiers.
+- `tests/queue.integration.js` (16) — the worker against a faked Postgres and a faked ClickHouse: the
+  corridor staging is built from the real I-495 corridor rows with the ramp dropped and ranks
+  contiguous; the walk runs once per calendar month with its own date bound; both staging tables drop
+  even when the walk throws; two DDLs, two half-open window deletes; the unobserved zone is published
+  with `queue_measured = FALSE` and NULL measures (never 0); the measured zone's M3 columns derive from
+  the aggregates (120/300 = 0.4, 36 epochs = 180 min, epoch 170 = 14:10, geometry union with SRID);
+  the `wz_queue_hour` source is created once and reused; both views carry the vintage and the walk
+  limits; both sources carry `metadata.columns`; a threshold override drives the walk text and lands
+  on every row.
+- `tests/sql.unit.test.mjs` — the descriptor/insert parity cases now cover `wz_queue` and
+  `wz_queue_hour`, and the no-backtick check covers `lib/windows.js`, `lib/queue.js` and `lib/m1.js`.
 
-**Algorithm (planned).** Work-zone flag = `traffic_control_device IN (Construction /
-Maintenance / Utility Work Area)`. Geocode `DOT Reference Marker Location` via the NYSDOT
-`Ref_Marker` service (cache the marker table as a source) → point + Region; the open data
-carries **no lat/long**, and ~56% of work-zone crashes carry a usable marker.
-`crash_join` does the spatial-temporal join to `wz_event_tmc` (buffer + active window,
-including the upstream queue TMCs, per MMUCC), then rates per 100M VMT-through-zone.
+### Gotchas earned in this phase
 
-**Output.** `nys_crashes_open`, `nys_crashes_clear`, `wz_crash`, M5 rows.
+- **`UInt64` vs `Int64`** (above). Cast array positions explicitly; ClickHouse will not.
+- **`road_order` is not an integer and not unique.** Sort numerically, dedupe by length.
+- **Do not join corridors to speeds on `tmc` alone.** Key the staged rows on (tmc, date) or the
+  intermediate result is hundreds of billions of rows.
+- **A 13.9-mile "queue" can be three segments.** Rural NY 22 has 4–5-mile TMCs; when they read below
+  35 mph the walk has no finer unit to report. This is Virginia's HOP-19-051 finding ("TMC too coarse
+  for project queues, up to 18 mi rural") reproduced in our data. Report the 95th percentile beside
+  the max, and the TMC count under the max (`max_queue_tmcs`).
+- **The fixed 35 mph line calls arterials queued.** On roads posted 30–40 mph nearly every segment
+  reads below 35 in traffic, so the walk runs to the end of the corridor: 74 % of non-Interstate
+  queued epochs are lower bounds against 24 % on Interstates (July 2024). The PHED comparator on
+  every row is what lets the report say how much of the arterial figure is the threshold.
 
-**Validation (planned).** Statewide work-zone-coded counts reproduce
-**1,289 / 1,220 / 1,331 / 1,384** (2021–24) and severities **3,895 / 1,020 / 299 / 10**;
-reference-marker geocode success ≈ 56%; the county top-6 matches the research probe.
+### Results log — live on `npmrds2`, 2026-09-16
 
-**Results log.** —
+`wz_queue` source **2226** + `wz_queue_hour` source **2227**, nine vintages CY2018–CY2026, 57–124 s each
+(the corridor × day staging is 480–830 k rows; CY2019–CY2020 are the slowest because every window is
+event-derived and longer). Both views per vintage carry `metadata.m3` / `metadata.m3_by_tier`.
+
+**The headline is a FIVE-year series** (CY2021–CY2025, conflated windows): 165,612 zone-vintages on
+12,933 anchor segments, **1.72 M observed zone-hours**.
+
+| measure (five-year, conflated) | fixed 35 mph — PRIMARY | PHED comparator |
+|---|---|---|
+| zones whose maximum upstream queue exceeded 0.75 mi | **28.8 %** (47,769) | 21.8 % |
+| share of active time with a queue present | 26.8 % | 15.2 % |
+| queue hours / queue-mile-hours | 462,581 / 573,090 | — |
+| median maximum queue, zones that queued | 1.21 mi (90th pct 6.07) | — |
+| median longest continuous queue | 60 min | — |
+| queued periods whose length is a lower bound | 60.4 % | — |
+
+**Per vintage** (conflated windows; CY2019–CY2020 have none, so their series runs on event-derived
+windows only and is shown separately in the report):
+
+| vintage | zones measured | conflated zones | zone-hrs | time queued | PHED | zones > 0.75 mi | PHED | median max |
+|---|---|---|---|---|---|---|---|---|
+| CY2018 | 28,432 | 974 | 12,256 | 40.7 % | 22.5 % | 35.2 % | 22.9 % | 0.76 |
+| CY2019 | 31,087 | 0 | — | (event-only: 23.3 %) | | (30.8 %) | | |
+| CY2020 | 32,124 | 0 | — | (event-only: 19.2 %) | | (22.4 %) | | |
+| CY2021 | 33,026 | 30,653 | 371,161 | 28.2 % | 16.3 % | **27.5 %** | 21.1 % | 1.03 |
+| CY2022 | 33,288 | 30,169 | 330,159 | 26.6 % | 14.2 % | **28.3 %** | 21.7 % | 1.25 |
+| CY2023 | 33,572 | 30,651 | 279,704 | 26.6 % | 15.7 % | **29.0 %** | 22.6 % | 1.44 |
+| CY2024 | 41,036 | 38,393 | 412,435 | 28.2 % | 15.2 % | **28.9 %** | 21.1 % | 1.13 |
+| CY2025 | 39,714 | 35,746 | 330,651 | 23.9 % | 14.5 % | **30.3 %** | 22.6 % | 1.24 |
+| CY2026 (to 08-31) | 26,258 | 18,583 | 142,649 | 24.4 % | 12.7 % | 23.7 % | 16.5 % | 0.75 |
+
+**Central finding: the fixed 35 mph line measures arterials.** Five-year cuts, conflated windows:
+
+| cut | zones | time queued 35 / PHED | zones > 0.75 mi 35 / PHED | median max | median run | lower-bound share |
+|---|---|---|---|---|---|---|
+| Interstate | 74,620 | 9.6 % / 8.4 % | 21.8 % / 18.9 % | 1.82 mi | 80 min | 27 % |
+| not Interstate | 90,992 | **38.8 % / 20.0 %** | 34.6 % / 24.1 % | 0.95 mi | 55 min | **66 %** |
+| in a TMA | 133,511 | 31.9 % / 18.4 % | 32.9 % / 25.6 % | 1.29 mi | 70 min | 60 % |
+| outside a TMA | 32,101 | 11.2 % / 5.3 % | 12.0 % / 5.9 % | 0.38 mi | 20 min | 66 % |
+| active a week or more | 11,963 | 28.7 % / 14.9 % | **45.7 % / 36.6 %** | 1.35 mi | 70 min | 65 % |
+| significant candidates | 1,148 | 6.6 % / 6.1 % | 26.7 % / 25.4 % | 1.02 mi | 40 min | 18 % |
+
+Off-Interstate zones read 4.0× the Interstate share of time queued on the fixed line and 2.4× on the
+road-scaled one; the Interstate figures barely move (9.6 → 8.4 %) while the arterial figures halve
+(38.8 → 20.0 %), and two thirds of arterial queued periods run to the end of the corridor with every
+segment still below 35 mph — on a 30–40 mph street every segment is below 35 in traffic. **Interstate
+queues are rarer, longer and last longer** (median max 1.82 vs 0.95 mi; median run 80 vs 55 min).
+Where the two lines agree (Interstates, significant candidates) the queue is a queue under either
+definition; the statewide 28.8 % is mostly a statement about posted limits.
+
+**Significant candidates, per year** (conflated; the tier the 2030 review covers): 35 of 208 (16.8 %)
+in CY2021 · 59 of 288 (20.5 %) · 61 of 239 (25.5 %) · **69 of 220 (31.4 %)** in CY2024 · 83 of 193
+(43.0 %) in CY2025. The share rises every year, but the tier's composition changes with it — report
+it as a count of named projects per year, not as a trend line. Week-plus zones sit at 43–49 % every
+year.
+
+**When** (CY2024): worst hour 08:00 at 37.3 % of active time queued, quietest 02:00 at 10.3 % (3.6×);
+active hours peak at 15:00 (44,857 zone-hours). Weekdays 28–30 %, Saturday 23.7 %, Sunday 18.6 %.
+**Where**: Region 11 has 47.8 % of active time queued and 39.5 % of zones over the line (33.1 % PHED);
+Region 10 has 40.2 % over the line and a 3.10-mi median maximum; Region 8 has the most zone-hours
+(101 k) at 26.2 % over the line.
+
+**Validation — the three named CY2024 events.**
+
+| zone | zone-hrs | mean anchor speed | corridor walked | time queued | max queue | 95th | longest run | > 0.75 mi |
+|---|---|---|---|---|---|---|---|---|
+| I-495 Queens `ORI1237584671` | 55.7 | 41.9 | 20 seg / 5.73 mi | **35.3 %** (31 clock hours) | **5.73 mi** (= the whole corridor, lower bound) | 5.73 | 155 min | yes |
+| I-87 Northway `ORI1237674447` (significant) | 124.3 | 60.9 | 12 seg / 10.8 mi | 2.35 % (11 hours) | **4.35 mi** (7 seg) 07:45 2024-10-17 | 3.92 | 60 min | yes |
+| I-81 Oswego (rural) `ORI1237605713` | 314.5 | 71.7 | 6 seg / 15.6 mi | 0 % | 0 | 0 | 0 | no |
+
+The I-495 zone reproduces the raw speed matrix hour by hour (queued 10:00–14:00 and 16:00–22:00 on
+the active Sunday; orders 90–103 at 12–25 mph while 105–110 recovered into the 40s). **Against
+TRANSCOM's 2799 impact extent** (the incident-view congestion bands): only 20.9 % of TRANSCOM's
+impact TMCs are on the zone's own linear and 11.0 % are upstream of the work; **on that comparable
+subset our walk found 69.2 % of them**. The two agree where they measure the same thing; the rest is
+ramp and side-street spill this walk does not count.
+
+**Coverage, CY2024**: 42,688 zones → 41,036 with an anchor observation (96.1 %) → 38,539 on conflated
+windows → 35,622 with at least one upstream segment. 1,652 are published `queue_measured = FALSE`
+(unknown, not zero); **5,414 have nothing upstream** in the inventory, so their length can only be 0;
+41,208 carry a queue-extent geometry, all SRID 4326. Corridor end: linear ended 13,775 (avg 5.9
+segments / 2.4 mi; **52 % of their queued periods reached the end**), reach 12,163, 20-segment cap
+7,016, gap 5,439. **Older vintages are far less observed**: 7.6–9.4 k unmeasured zones a year in
+CY2018–CY2023 (23–29 %) against 1,652 (3.9 %) in CY2024.
+
+**Granularity**: the maximum queues of CY2024 are built from segments averaging 0.59 mi (0.34
+Interstate, 0.70 off); 803 zones show > 3 mi from three segments or fewer and 726 of the 11,088 zones
+over the line got there on a single segment. Rural NY 22 reports 13.9 mi from three segments.
+
+**Report.** `reports/workzone_safety/10_work_zone_queue.html`, indexed in `00_README.md`.
+**Generated, not hand-assembled** — `scratchpad/gen_report10.py` reads `queue_report_data.json`
+(from `queue_report_data.js`) and formats every figure through `fmt.py`, so it regenerates after any
+rebuild. **Next: phase 6 — M4 speed differential** (fills the columns `wz_speed` already carries).
+
+## Phase 6 — M4 speed differential (no new dataset) — ✅ COMPLETE 2026-09-17
+
+**Purpose.** The safety surrogate. A zone can meet a speed threshold and still be dangerous if
+traffic drops 30 mph at its taper; the 2024 rule names speed differentials as a data source for the
+safety side, and the literature review found they satisfy the surrogate clause without buying
+connected-vehicle hard-braking data.
+
+**Definition (as built).** Per active zone-hour (the M1 grain: at least 6 of 12 five-minute slots
+observed on the anchor): **`differential_approach` = approach speed − in-zone speed**, where the
+approach is the 1–2 segments immediately upstream of the anchor on the same corridor (the M3 walk:
+`lib/queue.js buildCorridor` with `maxUpstreamTmcs = approach_tmcs`) and both speeds are space-means over
+the SAME active epochs; **`differential_baseline` = baseline − during**, the segment's phase-3
+contamination-cleaned 12-month median at that hour and day-type minus the in-zone speed. Positive means
+the work zone slowed traffic. **`exceeds_differential` is the APPROACH differential over
+`differential_mph` (15)** — the rear-end surrogate; the baseline drop is reported beside it. M4 = the
+share of measured zone-hours over the line, hour-weighted and zone-mean, per tier.
+
+**The one stage that writes INTO an existing source.** Phase 3 created `wz_speed` with five nullable
+columns for this measure because all views of a source share one column list. `workers/differential.js`
+resolves the vintage's existing `wz_speed` view (creating none), clears and refills those columns for the
+window, and stamps `metadata.m4` / `m4_by_tier` on that view beside `m1`. The source's descriptors lose
+their "Phase 6 (M4)" placeholders in the same run.
+
+**Inputs.** `wz_speed` 2206 (target) · `wz_event` 2193 + `wz_event_tmc` 2194 · NPMRDS CH 982 · meta 984
+(corridor) · TRANSCOM 2799 (active windows, `lib/windows.js`) · the phase-3 baseline machinery
+(`lib/baseline.js baselineSQL`, exclusions restricted to the anchors).
+
+**Two grains.** The hour grain (zone × date × hour: in-zone space-mean, approach space-mean, anchor
+baseline) is the measure and lives only as rollups; the cell grain (zone × hour of day, pooled over active
+days) is the evidence and lands on the `wz_speed` rows: `approach_tmc` (the segment list), `approach_speed`
+(averaged over approach observations the way `speed_mean` is), `differential_approach` and
+`exceeds_differential` derived in SQL from the row's own `speed_mean`, `differential_baseline` from the
+row's own `baseline_speed`. The two sides of a cell differential are therefore like for like, and neither
+can drift from the evidence beside it.
+
+**What the approach differential cannot see.** When the queue reaches past the approach segments — the
+I-495 validation zone had its whole 5.7-mile corridor below 25 mph — the approach is as slow as the zone
+and the differential reads near zero or negative. The rear-end risk then sits at the back of the queue,
+whose length M3 measures. `hours_approach_slower_than_zone` counts those hours; the differential at the
+queue tail is a refinement recorded, not built.
+
+### Files
+
+| file | what |
+|---|---|
+| `lib/differential.js` | pure. `differential` (the arithmetic and sign convention), the three staging DDLs, `approachHourSQL` (hour grain, baseline CTE joined on the anchor at the same hour and day-type), `approachCellSQL` (cell grain, ranks > 0), `rollupM4`, `rollupM4ByTier`. |
+| `workers/differential.js` | resolves the existing wz_speed view for the year; zones, active windows, corridors (`approach_tmcs` deep); stages corridor × day, anchor lengths and baseline exclusions in ClickHouse; two queries; rolls up; `wzSpeedBaselineDropUpdateSQL` then `wzSpeedApproachUpdateSQL`; stamps the view and re-stamps the source descriptors. |
+| `sql.js` | `wzSpeedBaselineDropUpdateSQL` (fills the baseline drop from the row's own columns and clears the approach side for the window), `wzSpeedApproachUpdateSQL` (VALUES join on (zone, hour), differential and flag derived from the row, window-bounded), the M4 descriptors. |
+| `run-stage.js` | `WZ_SPEED_SOURCE_ID`, `APPROACH_TMCS`; `WZ_SOURCE_ID` names the wz_speed source. |
+
+### Tests — 25 unit + 9 integration added
+
+- `tests/differential.unit.test.mjs` (25) — the sign convention; the flag on the approach side only;
+  negative when the queue passed the approach; null not zero; equal-to-threshold not exceeding; the hour
+  query's join order, prefilter, date bound, half-open epochs, space-means on both sides, the half-hour
+  floor, the baseline join on day-type; the cell query on ranks > 0 pooled like `speed_mean`; `rollupM4`'s
+  separate denominators, both weightings, the slower-than-zone count and null handling; the tiers; the
+  update statements (VALUES join on hour, derived differential, NULL flag when a side is unknown, the
+  window bound, the clear-first baseline update) and the replaced descriptors.
+- `tests/differential.integration.js` (9) — the worker against a faked Postgres and ClickHouse: writes
+  into the existing CY2024 wz_speed view and creates none; refuses a year without a view; takes
+  `wz_speed_source_id` over `source_id`; stages rank 0 + two approach segments by default and one when
+  asked, an anchor with nothing upstream alone; anchors and exclusions staged and the baseline CTE built
+  with the anti-join and the half-hour floor; three drops even when the hour query throws; the baseline
+  update precedes the approach update and clears the approach side; the threshold override; M4 stamped
+  per tier beside the untouched M1 with the significant tier's approach share null, not 0; the
+  descriptors re-stamped.
+
+### Results log — live on `npmrds2`, 2026-09-17
+
+RESULTS6_PLACEHOLDER
+
+## Phase 7 — NYSDOT CLEAR crashes → M5 crashes and crash rate — ✅ COMPLETE 2026-09-16
+
+**Purpose.** The rule's safety measure. Two attributions of a crash to a work zone, kept apart so
+they can check each other: the police report's own **code** (MV-104A traffic control 12/13/14 —
+HIGHWAY / MAINTENANCE / UTILITY WORK AREA), and the crash's **location** inside a work zone's extent
+during one of its active windows.
+
+**Plan flipped, CLEAR-first (owner decision 2026-09-16).** The plan had the NYS open crash data as
+primary and a CLEAR adapter "when it arrives". CLEAR arrived first — `dms-template/references/
+workzone_saftey/clear/` pulls the NYSDOT Crash Data Viewer statewide in one run; CY2024 = 377,778
+crashes, 100 % with lon/lat and a time — so CLEAR is the primary and the open data's known counts
+(1,289 / 1,220 / 1,331 / 1,384 work-zone-coded, 2021–24) are the check: CLEAR CY2024 carries **1,335**,
+within 4 %. **CLEAR is ~7 months stale** (no `DMVInsertDate` past 2026-02); CY2025 is roughly half-
+missing after June and is loaded as a provisional vintage only. M5 is built on **CY2024**.
+
+**Owner addition — the attribution data.** "Also check CLEAR for a work-zone-related cause." Searched
+the whole field catalogue (59 fields across crash / vehicle / person levels) and every lookup table:
+CLEAR has **one contributing-factor field**, `ApparentFactors` (per-vehicle driver / vehicle /
+environment factors, 61 values), and **its vocabulary has no work-zone entry** — 0 of 377,778 CY2024
+factor strings mention work or construction. The traffic-control code is the only work-zone
+attribution CLEAR has; `OFFICER/FLAGMAN/GUARD` (code 6) is carried beside it as a weaker indicator
+(a flagger is usually a work zone, not always). Recorded on every `nys_crashes_clear` view as
+`metadata.wz_attribution`.
+
+**Inputs.** `clear_crash_raw` (source **2228**, the CSV as delivered, one view per year, loaded by
+`load-clear-csv.js` with `COPY`) · `wz_event` 2193 + `wz_event_tmc` 2194 · `wz_exposure` 2197 (VMT
+through the zone, the rate's denominator) · `wz_queue` 2226 (the queue extent, so crashes on the
+approach can be located) · TRANSCOM view 2799 for the active windows (`lib/windows.js`, the same
+minutes phases 3 and 5 measured on).
+
+**Output.** Three sources:
+- **`nys_crashes_clear`** — one row per crash, typed: KABCO from `MaxInjurySeverity` (O for property
+  damage), severity class, the five-minute **epoch** (midnight flagged `time_uncertain`), `wz_coded`
+  / `wz_code`, `flagger_coded`, the **FHWA functional class mapped from CLEAR's own codes**, a 4326
+  point and a generated geography column. The statewide coded series is on the view as
+  `metadata.m5_statewide`.
+- **`wz_crash`** — one row per work zone (the `wz_delay` shape): crashes located inside the zone while
+  active, by **role** (`work_extent` = within the buffer of the anchor; `queue` = within the buffer of
+  the phase-5 queue extent only) and by severity, the coded / flagger counts among them, crashes
+  found on an active day but **outside the hours** (kept, not counted), the exposure denominator and
+  **the rate per 100 M VMT** — `rate_measured = FALSE` where exposure is incomplete (unknown, not 0).
+- **`wz_crash_match`** — one row per (crash × zone): distance, role, in-window or how many periods
+  outside, the crash point. The evidence, and the input to any later baseline.
+
+### The join
+
+Every zone's **probe geometry** is the queue extent where phase 5 measured a queue (it already contains
+the anchor), else the anchor alone, as **geography**; `ST_DWithin(crash.geog, probe, 50 m)` probes the
+crash table's geography index from each zone; candidates are bounded by the zone's own span of dates
+and tested against the active windows (half-open epochs). `crash_buffer_m` is a descriptor option
+(default **50 m**) stamped on the view. Written the other way round — windows joined to crashes on
+date first — it is ~95 k windows × ~1,000 crashes a day of geography distance checks; this way it is
+~41 k index probes.
+
+### Four things learned from the data before the code was written
+
+1. **CLEAR's `FUNCTIONAL_CLASS` is not FHWA's.** Its own 1–14 codes map through the app's lookup
+   table: 7 = Urban Interstate, 1 = Rural Interstate, 10 = Urban Minor Arterial. Read raw, the
+   commonest class of work-zone-coded crashes looked like a rural collector; mapped, it is the urban
+   Interstate. Both codes are on the row.
+2. **Midnight is partly a default.** '12:00 AM' is 1.03 % of CY2024 times against 0.55 % for noon; the
+   surplus is unknown-time crashes. Kept at epoch 0, flagged, and the join reports how many matches
+   rest on them.
+3. **Every raw column is TEXT and unknowns are blank**, so the typed row uses null, never 0 — a crash
+   with a blank injury count did not have zero injuries.
+4. **`pg-copy-streams` is already in `node_modules`**, so the 160 MB CSV loads in 14 s by `COPY`
+   rather than through the DMS upload path, which caps well below a full year.
+
+### Files
+
+| file | what |
+|---|---|
+| `lib/crashes.js` | pure. `parseCrashTime`, `kabco`, `severityClass`, `workZoneCode`, `CLEAR_FUNCTIONAL_CLASS`, `shapeCrashRow`, `ratePer100mVmt`, `crashMatchSQL`, `rollupM5`, `rollupM5ByTier`. |
+| `load-clear-csv.js` | the raw load: `clear_crash_raw` source/view per year, every column TEXT, `COPY`, point + indexes, view metadata (rows, dates, `dmv_insert_max`, `wz_coded`), `metadata.columns`. |
+| `workers/crashes_clear.js` | streams the raw table by `ogc_fid`, shapes, writes `nys_crashes_clear`, rolls the statewide coded series onto the view. Window from the descriptor or the raw span. |
+| `workers/crash_join.js` | two run-scoped TEMP tables (active windows, probe geographies), one PostGIS match, per-zone rollup with exposure, two outputs, the coded-versus-located cross-check on the view. |
+| `sql.js` | `clearCrashRawTableDDL` / `clearCrashRawGeometrySQL`, `nysCrashesClearTableDDL` / insert, `wzCrashTableDDL` / insert (geometry from the spine), `wzCrashMatchTableDDL` / insert (point from the crash table), all column and descriptor lists. |
+| `run-stage.js` | `FILE_UPLOAD_VIEW_ID` / `CLEAR_RAW_VIEW_ID`, `CRASH_SOURCE_ID`, `WZ_QUEUE_SOURCE_ID`, `WZ_CRASH_MATCH_SOURCE_ID`, `CRASH_BUFFER_M`, `WZ_MATCH_VIEW_ID`. |
+
+### Tests — 28 unit + 16 integration added (+ 7 parity/backtick cases), none touching Postgres/PostGIS
+
+- `tests/crashes.unit.test.mjs` (28) — on two real CY2024 rows: the time grid and the midnight flag;
+  KABCO with O for property damage; the three codes and the flagger kept apart; **the factor string
+  cannot invent a work zone**; nulls not zeros; CLEAR code 7 → FHWA 11 Interstate; the match SQL
+  probes the crash index from the zone geometry in metres, bounds by the zone's span, decides the role
+  by anchor distance, tests half-open windows and reports the gap outside; the rate is computed only
+  over exposure-complete zones on both sides and is null when nothing is measurable; the tiers.
+- `tests/crash_join.integration.js` (16) — both workers against a faked Postgres: the raw table is
+  paged by key and the window replaced on `crash_date`; KABCO / code / epoch / FHWA class / SRID on
+  the insert; the statewide series, the DMV clock and `metadata.columns` stamped; the window taken from
+  the raw span when none is given; the two TEMP tables created and dropped even when PostGIS throws;
+  the buffer honoured and zero refused; in-window matches counted by role and severity while a
+  same-day off-hours match is kept uncounted; a zone without exposure gets a NULL rate; the match rows
+  take their point from the crash table; the `wz_crash_match` source is created once; both views carry
+  M5, the tiers and the coded-versus-located cross-check.
+
+### Results log — live on `npmrds2`, 2026-09-16
+
+Raw: `clear_crash_raw` **2228** — CY2024 view 3937 (377,778 rows, 14 s by COPY) · CY2025 view 3939 (253,218,
+provisional). Typed: `nys_crashes_clear` **2229** — CY2024 view 3938 (65 s) · CY2025 view 3942 (43 s). Join:
+`wz_crash` **2230** + `wz_crash_match` **2231** — CY2024 views 3940 / 3941 (110–120 s) · CY2025 views 3943 / 3944
+(62 s). Buffer 50 m.
+
+**The coded series, CY2024 (CLEAR's own attribution).** 1,335 work-area-coded crashes of 377,778 — highway
+1,099 · maintenance 165 · utility 71; **3 fatal · 330 injury · 1,002 PDO**; KABCO 3 K / 37 A / 51 B / 242 C /
+1,002 O; 3 killed, 396 injured. Flagger-coded 199 (kept beside, not counted). By class (mapped): Urban
+Interstate 395 (29.6 %), Urban Minor Arterial 176, Urban PA Other 168, blank 130, Rural Interstate 87. Peaks
+August at 164 a month, bottoms January at 37. The open data's 1,384 for 2024 is within 4 %. CY2025 so far:
+1,168 coded (4 / 207 / 957) on a file that is roughly half-missing after June.
+
+**The located measure, CY2024.** 41,453 crash × zone matches within 50 m on a date in the zone's span;
+**11,489 in an active window = 9,112 distinct crashes** (1,638 sit in two adjacent active zones at once) in
+**4,833 of 42,688 zones**: **20 fatal · 3,423 injury · 8,046 PDO** (KABCO 21 K / 251 A / 377 B / 2,790 C /
+8,046 O), 22 killed, 3,912 injured. **3,676 on the work extent, 7,813 (68 %) on the queue approach.** Median
+distance to the segment 3.1 m, 90th percentile 31.5 m; 7,289 of 11,489 within 10 m.
+
+**The two attributions barely overlap — and that is the finding.** Of 1,335 coded crashes, **186 (13.9 %)**
+fall inside a work zone the inventory knows was active; 412 (30.9 %) inside one at any time in its span; 923
+are near no zone at all (599 off-Interstate by class, 220 Interstate, 104 unknown) — the inventory's coverage
+measured from the other side. Of 9,112 located crashes, **186 (2.0 %)** carry the code — the under-coding
+NYSDOT's own research describes. Neither is the truth about the other; together they bound it. The coded
+count is the comparable statewide series (biased low); the located rates are the project-level measure
+(biased high by crashes that happen on busy freeways regardless).
+
+**Rates.** Work-extent rate (numerator and denominator on the same segments, exposure-complete zones only,
+22,249 zones / 401.8 M VMT): **354 per 100 M VMT** statewide; Interstate 231; not Interstate 680;
+significant candidates 337; week-plus 1,066. The all-roles rate (1,079 statewide) adds approach crashes with
+no approach VMT under them and is an **upper bound** — the descriptors say so. Time-based: **13.4 crashes per
+1,000 active zone-hours** against **14.2 per 1,000 off-hours** in the same zones' spans (Interstate 12.3 vs
+17.9; not Interstate 13.9 vs 12.8; significant 11.2 vs 18.2; week-plus 12.3 vs 9.7). **Active hours were not
+the roads' most dangerous hours — but this control knows nothing about volume**, and Interstate work is at
+night; the like-for-like baseline (same segments, same hours of day, the year before) is the next step and is
+what `wz_crash_match` exists to feed.
+
+**Off-window matches (kept, not counted):** 29,964 — 2,205 within an hour of the window, 3,808 within three,
+10,476 further, 13,475 on span days with no window. Of the coded crashes near a zone, 316 were in the window,
+68 within an hour, 291 on inactive days.
+
+**Cuts, CY2024.** Interstate 16,950 zones / 3,151 crashes (8 fatal, 1,202 injury, 230 coded); not Interstate
+25,738 / 8,338 (12 / 2,221 / 86); TMA 9,913 vs outside 1,576; **significant candidates 220 zones, 57 with a
+crash, 148 crashes (0 fatal, 63 injury), 106 on the approach, 10 coded**; zones with a queue extent 8,005 /
+10,181 crashes vs anchor-only 34,683 / 1,308 — the approach search finds seven crashes for every one on the
+work extent. Rear-end collisions: 20.5 % of all NY crashes, 30.4 % of coded, 31.3 % of located. Located
+crashes peak 15:00–17:00 (~1,500 an hour) — they follow traffic. Region 8 has the most located crashes
+(3,414), Region 3 the most coded among them (184, the I-81 Syracuse project: 96 crashes, 35 coded, in one
+zone). 37,855 zones had none; 3,174 one; 1,069 two or three; 448 four to ten; 142 more than ten — the top
+of the distribution is long arterial chains whose queue extents catch the arterial's ordinary crashes (US 11
+Onondaga: 169 crashes, 156 on the approach, 1 coded).
+
+**Validation — the three named zones.** I-495 Queens: 5 crashes in window, all on the queue approach (2
+injury, 3 PDO), none coded, 1 off-window; 88 per 1,000 active hours. Northway (significant): 4 in window,
+all on the approach (2 injury); 13 off-window nearby including **two coded work-area crashes 18 periods and
+0 periods outside the reported hours on the work extent** — the window, not the location, is what excluded
+them. Rural I-81: 0 crashes over 315 active hours and a 15.6-mile corridor. The three behave as the speed and
+queue phases said they would.
+
+**Bug found live and fixed:** on a span day with no active window, `epoch_gap` published 0 — a comparison
+against a NULL `epoch_from` is unknown, not false, so the CASE's ELSE fired. 13,475 CY2024 rows. Guarded,
+pinned in the unit test, both years re-run into the same views.
+
+**Report.** `reports/workzone_safety/13_work_zone_crashes.html`, generated by `scratchpad/gen_report13.py`
+from `crash_report_data.json` (`crash_report_data.js`, sources discovered by type). **Next:** the CY2021–2023
+CLEAR pulls for the trend (one downloader run each); the crashes_open statewide check if wanted; phase 6
+(M4); the before/after baseline for M1 and M5 in phase 10.
 
 ## Phase 8 — Intrusions / worker injuries, WZTC QA ratings → M6, F1 — NOT STARTED
 

@@ -57,6 +57,11 @@ describe('metadata.columns covers every physical column', () => {
   // describing one table will drift; this makes the drift a test failure.
   const cases = [
     ['wz_speed', sql.WZ_SPEED_COLUMNS, sql.WZ_SPEED_TABLE_COLUMNS],
+    ['wz_queue', sql.WZ_QUEUE_COLUMNS, sql.WZ_QUEUE_TABLE_COLUMNS],
+    ['wz_queue_hour', sql.WZ_QUEUE_HOUR_COLUMNS, sql.WZ_QUEUE_HOUR_TABLE_COLUMNS],
+    ['nys_crashes_clear', sql.NYS_CRASHES_CLEAR_COLUMNS, sql.NYS_CRASHES_CLEAR_TABLE_COLUMNS],
+    ['wz_crash', sql.WZ_CRASH_COLUMNS, sql.WZ_CRASH_TABLE_COLUMNS],
+    ['wz_crash_match', sql.WZ_CRASH_MATCH_COLUMNS, sql.WZ_CRASH_MATCH_TABLE_COLUMNS],
     ['wz_delay', sql.WZ_DELAY_COLUMNS, sql.WZ_DELAY_TABLE_COLUMNS],
     ['wz_exposure', sql.WZ_EXPOSURE_COLUMNS, sql.WZ_EXPOSURE_TABLE_COLUMNS],
     ['wz_event_tmc', sql.WZ_EVENT_TMC_COLUMNS, sql.WZ_EVENT_TMC_TABLE_COLUMNS],
@@ -109,7 +114,7 @@ describe('SQL template literals contain no backticks', () => {
   // stops parsing. It is invisible on review because the comment reads fine.
   // SQL comment lines only ever occur inside these template literals, so a
   // backtick on one is always this mistake.
-  const files = ['sql.js', 'ch.js', 'lib/baseline.js'];
+  const files = ['sql.js', 'ch.js', 'lib/baseline.js', 'lib/m1.js', 'lib/windows.js', 'lib/queue.js', 'lib/crashes.js', 'lib/differential.js'];
 
   for (const rel of files) {
     it(`${rel} has no backtick on a SQL comment line`, async () => {

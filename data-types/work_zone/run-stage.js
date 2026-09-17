@@ -19,6 +19,8 @@
  *                  per run — the stage is idempotent WITHIN a view, so a re-run
  *                  without this leaves the previous table behind)
  *   WZ_TMC_VIEW_ID the same, for the wz_event_tmc output
+ *   WZ_HOUR_VIEW_ID the same, for the queue stage's wz_queue_hour output
+ *   WZ_MATCH_VIEW_ID the same, for the crash_join stage's wz_crash_match output
  *
  * Upstream source ids default to the npmrds2 production ones and can be
  * overridden with TRANSCOM_SOURCE_ID / NPMRDS_META_SOURCE_ID / EVENT_TMC_SOURCE_ID.
@@ -70,6 +72,8 @@ async function main() {
     source_id: sourceId, ...UPSTREAM, start_date: start, end_date: end, user_id: 1,
     target_view_id: process.env.WZ_VIEW_ID ? Number(process.env.WZ_VIEW_ID) : null,
     target_tmc_view_id: process.env.WZ_TMC_VIEW_ID ? Number(process.env.WZ_TMC_VIEW_ID) : null,
+    target_hour_view_id: process.env.WZ_HOUR_VIEW_ID ? Number(process.env.WZ_HOUR_VIEW_ID) : null,
+    target_match_view_id: process.env.WZ_MATCH_VIEW_ID ? Number(process.env.WZ_MATCH_VIEW_ID) : null,
   };
   if (process.env.WZ_EVENT_SOURCE_ID) descriptor.wz_event_source_id = Number(process.env.WZ_EVENT_SOURCE_ID);
   if (process.env.WZ_EVENT_TMC_SOURCE_ID) descriptor.wz_event_tmc_source_id = Number(process.env.WZ_EVENT_TMC_SOURCE_ID);
@@ -81,6 +85,22 @@ async function main() {
   if (process.env.WZ_EXPOSURE_SOURCE_ID) descriptor.wz_exposure_source_id = Number(process.env.WZ_EXPOSURE_SOURCE_ID);
   if (process.env.EXCESSIVE_DELAY_SOURCE_ID) descriptor.excessive_delay_source_id = Number(process.env.EXCESSIVE_DELAY_SOURCE_ID);
   if (process.env.WZ_THRESHOLDS) descriptor.thresholds = JSON.parse(process.env.WZ_THRESHOLDS);
+  // phase 5: the walk limits and the wz_queue_hour source to reuse
+  if (process.env.WZ_QUEUE_HOUR_SOURCE_ID) descriptor.wz_queue_hour_source_id = Number(process.env.WZ_QUEUE_HOUR_SOURCE_ID);
+  if (process.env.QUEUE_MAX_REACH_MI) descriptor.queue_max_reach_mi = Number(process.env.QUEUE_MAX_REACH_MI);
+  if (process.env.QUEUE_MAX_UPSTREAM_TMCS) descriptor.queue_max_upstream_tmcs = Number(process.env.QUEUE_MAX_UPSTREAM_TMCS);
+  if (process.env.QUEUE_MAX_GAP_MI) descriptor.queue_max_gap_mi = Number(process.env.QUEUE_MAX_GAP_MI);
+  // phase 7: the raw CLEAR view for crashes_clear; the typed crash source, the
+  // queue source and the buffer for crash_join
+  if (process.env.FILE_UPLOAD_VIEW_ID) descriptor.file_upload_view_id = Number(process.env.FILE_UPLOAD_VIEW_ID);
+  if (process.env.CLEAR_RAW_VIEW_ID) descriptor.file_upload_view_id = Number(process.env.CLEAR_RAW_VIEW_ID);
+  if (process.env.CRASH_SOURCE_ID) descriptor.crash_source_id = Number(process.env.CRASH_SOURCE_ID);
+  if (process.env.WZ_QUEUE_SOURCE_ID) descriptor.wz_queue_source_id = Number(process.env.WZ_QUEUE_SOURCE_ID);
+  if (process.env.WZ_CRASH_MATCH_SOURCE_ID) descriptor.wz_crash_match_source_id = Number(process.env.WZ_CRASH_MATCH_SOURCE_ID);
+  if (process.env.CRASH_BUFFER_M) descriptor.crash_buffer_m = Number(process.env.CRASH_BUFFER_M);
+  // phase 6: the wz_speed source whose vintage view is filled in place, and the approach depth
+  if (process.env.WZ_SPEED_SOURCE_ID) descriptor.wz_speed_source_id = Number(process.env.WZ_SPEED_SOURCE_ID);
+  if (process.env.APPROACH_TMCS) descriptor.approach_tmcs = Number(process.env.APPROACH_TMCS);
 
   const t0 = Date.now();
   const result = await worker({

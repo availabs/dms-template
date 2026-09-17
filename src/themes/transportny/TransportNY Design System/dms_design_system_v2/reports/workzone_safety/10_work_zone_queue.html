@@ -1,0 +1,1393 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Work Zone Queues &middot; TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <style>
+    /* TransportNY design-system v2 surface utilities.
+     * Inlined (not linked) so this document opens standalone, exactly as
+     * ./05_recommendation_report.html does. Values copied verbatim from
+     * dms_design_system_v2/design-system/_shared.css — do not diverge. */
+    .font-display, .font-oswald { font-family: "Oswald", "Bebas Neue", sans-serif; }
+    .font-proxima { font-family: "Source Sans 3", system-ui, sans-serif; }
+    body { font-family: "Source Sans 3", system-ui, sans-serif; background: #ECEEF2; }
+    .tny-pane      { background: #ECEEF2; }
+    .tny-pane-tint { background: #E4E8EE; }
+    .tny-card {
+      background: #fff;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 8px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 0 rgba(15, 23, 42, 0.02);
+    }
+    .tny-card-tint { background: #FAFBFC; }
+    .tny-card-bone { background: #F5F1E8; }
+    .tny-card-ink  { background: #0F2D4D; color: #fff; }
+    .tny-link      { color: #1F3F8F; text-decoration: underline; text-underline-offset: 2px; }
+    .tny-link:hover{ color: #16307A; }
+    .tny-card-ink .tny-link { color: #BFD3F2; }
+    .tny-mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.92em; padding: 1px 5px;
+      background: rgba(15, 23, 42, 0.05);
+      border: 1px solid rgba(15, 23, 42, 0.06);
+      border-radius: 3px; color: #37576B; white-space: nowrap;
+    }
+    .tny-card-ink .tny-mono { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); color: #DCE6F5; }
+    .tny-hero-topo {
+      background:
+        radial-gradient(circle at 25% 30%, rgba(15, 23, 42, 0.04), transparent 40%),
+        radial-gradient(circle at 75% 70%, rgba(15, 23, 42, 0.05), transparent 50%),
+        repeating-linear-gradient(28deg, transparent 0 30px, rgba(15, 23, 42, 0.035) 30px 31px, transparent 31px 60px),
+        repeating-linear-gradient(-30deg, transparent 0 36px, rgba(15, 23, 42, 0.028) 36px 37px, transparent 37px 70px),
+        #EEF1F3;
+    }
+    .bar { height: 8px; border-radius: 2px; background: #37576B; }
+    .bar-warn { background: #CA8A04; }
+    .bar-bad  { background: #B45309; }
+    .bar-ok   { background: #10B981; }
+    .bar-track { background: rgba(15,23,42,0.06); border-radius: 2px; height: 8px; }
+    .barv { width: 100%; border-radius: 2px 2px 0 0; background: #37576B; }
+    .barv-warn { background: #CA8A04; }
+    table.tny { border-collapse: collapse; width: 100%; }
+    table.tny th {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em;
+      color: #64748b; text-align: right; padding: 6px 8px;
+      border-bottom: 1px solid rgba(15,23,42,0.12); white-space: nowrap;
+    }
+    table.tny th:first-child, table.tny td:first-child { text-align: left; }
+    table.tny td {
+      font-size: 13px; padding: 7px 8px; text-align: right;
+      border-bottom: 1px solid rgba(15,23,42,0.05);
+      font-variant-numeric: tabular-nums;
+      vertical-align: top;
+    }
+    table.tny td.txt { text-align: left; font-variant-numeric: normal; line-height: 1.5; }
+    table.tny th.txt { text-align: left; }
+    table.tny tr:last-child td { border-bottom: none; }
+    table.tny tr.total td { font-weight: 600; border-top: 1px solid rgba(15,23,42,0.18); background: rgba(15,23,42,0.02); }
+    .step-n {
+      font-family: "Oswald", sans-serif; font-weight: 600; font-size: 13px;
+      width: 26px; height: 26px; border-radius: 4px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #37576B; color: #fff; flex: none;
+    }
+    .cite { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10.5px; color:#64748b; }
+    .pill { display:inline-flex; align-items:center; height:22px; padding:0 8px; border-radius:4px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:10px; text-transform:uppercase; letter-spacing:.12em; white-space:nowrap; }
+    .pill-ok   { background:#E6F7EF; color:#0B6B44; border:1px solid #B7E3CC; }
+    .pill-warn { background:#FBF3DB; color:#8A5A00; border:1px solid #EAD59A; }
+    .pill-bad  { background:#FBE9E0; color:#8A3B0C; border:1px solid #F0C9B4; }
+    .pill-ink  { background:#0F2D4D; color:#fff; }
+    .kpi { font-family:"Oswald",sans-serif; font-weight:600; font-size:30px; line-height:1; color:#0F1722; letter-spacing:-0.01em; }
+    .kpi-sm { font-family:"Oswald",sans-serif; font-weight:600; font-size:22px; line-height:1; color:#0F1722; }
+    .lbl { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:0.16em; color:#64748b; }
+  </style>
+</head>
+<body class="tny-pane">
+
+<!--
+  WORK ZONE QUEUES — phase 5 of the work_zone data-type pipeline
+  Deliverable of planning/transportny/tasks/current/workzone-performance-data-type-pipeline.md (phase 5).
+  GENERATED by scratchpad/gen_report10.py from queue_report_data.json — do not hand-edit figures;
+  re-run the query script and the generator instead.
+  PRIMARY MEASURE: M3 — share of work zones whose MAXIMUM UPSTREAM QUEUE exceeded 0.75 mi, a
+  queue being a contiguous run of upstream segments below 35 mph while the anchor segment is below it
+  in two or more consecutive five-minute periods. DAMA sources 2226 (wz_queue, one row per zone) and 2227
+  (wz_queue_hour, zone x date x hour) on npmrds2, nine vintages CY2018–CY2026, built by
+  dms-template/data-types/work_zone stage "queue" from sources 2193/2194, npmrds ClickHouse view 982,
+  the npmrds_geometry meta view (corridor order, lengths, posted limits) and TRANSCOM view 2799 (active windows).
+  Figures are on the CONFLATED window basis (window_source = '2799') unless stated. Queried 2026-09-16.
+-->
+
+<div class="max-w-[1180px] mx-auto px-6 lg:px-10">
+
+  <nav class="flex flex-wrap items-center gap-x-4 gap-y-1 pt-4 font-mono text-[10.5px] uppercase tracking-[0.14em] text-slate-500">
+    <span class="text-[#0f1722]">work zone queues</span>
+    <a class="hover:text-[#1F3F8F]" href="./00_README.md">00 index</a>
+    <a class="hover:text-[#1F3F8F]" href="./05_recommendation_report.html">05 recommendation</a>
+    <a class="hover:text-[#1F3F8F]" href="./06_work_zone_universe.html">06 the universe</a>
+    <a class="hover:text-[#1F3F8F]" href="./08_work_zone_exposure.html">08 exposure</a>
+    <a class="hover:text-[#1F3F8F]" href="./09_work_zone_speed.html">09 speed</a>
+    <a class="hover:text-[#1F3F8F]" href="../npmrds-data-quality-report.html">npmrds data quality</a>
+    <a class="hover:text-[#1F3F8F]" href="../../design-system/theme.html">design system</a>
+  </nav>
+
+  <header class="tny-hero-topo -mx-6 lg:-mx-10 px-6 lg:px-10 pt-9 pb-9 border-b border-zinc-950/10 mt-4">
+    <div class="flex items-center gap-2 mb-3">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// work_zone pipeline &middot; phase 5</span>
+      <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+    </div>
+    <h1 class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">
+      Work Zone Queues<span class="text-[#CA8A04]">.</span>
+    </h1>
+    <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-3 max-w-[880px]">
+      A speed measure says the work zone was slow. A queue measure says how far back the slow traffic
+      reached, for how long, and how often. This phase walked every work zone's corridor upstream, five
+      minutes at a time, and published
+      <span class="text-[#0f1722] font-medium">the share of work zones whose queue ever reached more than
+      0.75 miles beyond the work</span>, with the length, the duration and the share of time
+      alongside. The finding that matters most is the same one the speed phase reached from the other
+      side: <span class="text-[#0f1722] font-medium">a fixed speed line measures the road as much as the
+      work, and the comparator that scales with the road is what makes the facility contrast honest.</span>
+    </p>
+    <div class="flex flex-wrap items-center gap-2 mt-5 font-mono text-[10.5px] uppercase tracking-[0.14em]">
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] bg-[#37576B] text-white">DAMA sources 2226 &middot; 2227</span>
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] bg-[#0F2D4D] text-white">M3: queue &gt; 0.75 mi &middot; below 35 mph</span>
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white text-slate-600">CY2018 &ndash; CY2026 &middot; 9 vintages</span>
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white text-slate-600">queried 2026-09-16</span>
+    </div>
+  </header>
+
+  <section class="pt-8">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">M3, on the five comparable years</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2021&ndash;CY2025 &middot; conflated active windows &middot; every measured zone</span>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div class="tny-card tny-card-bone p-4">
+        <div class="lbl">Zones whose queue passed 0.75 mi</div>
+        <div class="kpi mt-1.5">28.8<span class="text-[18px]">%</span></div>
+        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">47,769 of 165,612 measured zones</div>
+      </div>
+      <div class="tny-card p-4">
+        <div class="lbl">Active time with a queue present</div>
+        <div class="kpi mt-1.5">26.8<span class="text-[18px]">%</span></div>
+        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">of 1.72 M observed zone-hours</div>
+      </div>
+      <div class="tny-card p-4">
+        <div class="lbl">Queue hours</div>
+        <div class="kpi mt-1.5">0.46 M</div>
+        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">0.57 M queue-mile-hours</div>
+      </div>
+      <div class="tny-card p-4">
+        <div class="lbl">A zone's longest queue, when it had one</div>
+        <div class="kpi mt-1.5">1.21<span class="text-[18px]"> mi</span></div>
+        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">median of 82,555 zones; 90th pct 6.1 mi; median longest run 60 min</div>
+      </div>
+      <div class="tny-card p-4">
+        <div class="lbl">Road-scaled comparator (PHED)</div>
+        <div class="font-proxima text-[12.5px] leading-[1.5] text-slate-600 mt-2">
+          21.8% of zones passed 0.75 mi<br>
+          15.2% of time queued<br>
+          below max(20, 0.6 &times; posted) per segment
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-4">
+    <div class="tny-card tny-card-ink p-6">
+      <div class="font-display font-semibold text-[17px] uppercase tracking-tight">What the measure says</div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-x-8 gap-y-4 mt-3">
+        <div>
+          <div class="font-display font-medium text-[14px] text-white/95">Between a fifth and a third of zones, depending on the line</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-white/75 mt-1">
+            Against a fixed 35 mph line, <span class="text-white font-medium">28.8%</span> of measured
+            work zones had a queue reach past 0.75 miles at some point. Against a line that scales with
+            each road's posted limit it is <span class="text-white font-medium">21.8%</span>. The
+            difference is almost entirely arterials, where a 35 mph line calls ordinary traffic a queue.
+          </p>
+        </div>
+        <div>
+          <div class="font-display font-medium text-[14px] text-white/95">On Interstates the two lines agree; off them they do not</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-white/75 mt-1">
+            CY2024 Interstate zones spent <span class="text-white font-medium">9.5%</span> of active
+            time queued on the fixed line and 8.4% on the road-scaled one. Off the Interstate
+            system the fixed line says <span class="text-white font-medium">40.4%</span> and the
+            road-scaled line 19.7% &mdash; and 66.5% of those arterial
+            &ldquo;queues&rdquo; ran to the end of the corridor the walk could see.
+          </p>
+        </div>
+        <div>
+          <div class="font-display font-medium text-[14px] text-white/95">69 of 220 significant candidates queued past the line</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-white/75 mt-1">
+            The rule's own sample in CY2024: <span class="text-white font-medium">31.4%</span>
+            exceeded 0.75 mi (28.6% on the comparator), queues were present
+            12.6% of their active time, and the median longest queue among those that had one was
+            1.34 mi. Both lines agree here because they are Interstates by
+            construction.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">M3, as built</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">the connected-queue method &middot; HOP-13-043 / Maryland WZPMA</span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="tny-card p-5 lg:col-span-2">
+        <p class="font-proxima text-[13.5px] leading-[1.7] text-slate-700 max-w-[820px]">
+          For every five-minute period a work zone was active, the walk starts at the segment being worked
+          on and asks three questions.
+        </p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+          <div class="flex items-start gap-3">
+            <span class="step-n">1</span>
+            <div>
+              <div class="font-display font-medium text-[14px] text-[#0f1722]">Is the bottleneck slow?</div>
+              <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-700 mt-1">The anchor segment must be observed and below the line. A queue is measured from the bottleneck backwards; slow traffic upstream of a free-flowing work zone belongs to some other bottleneck.</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="step-n">2</span>
+            <div>
+              <div class="font-display font-medium text-[14px] text-[#0f1722]">How far back does it reach?</div>
+              <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-700 mt-1">Walk upstream one segment at a time while each is observed and below the line. Queue length is the sum of those upstream segments &mdash; the work zone's own length is not counted. An unobserved segment ends the walk and marks the length a lower bound.</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3">
+            <span class="step-n">3</span>
+            <div>
+              <div class="font-display font-medium text-[14px] text-[#0f1722]">Is it real?</div>
+              <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-700 mt-1">A queue counts only inside a run of two or more consecutive slow periods &mdash; ten minutes. One slow five-minute sample is noise, and Maryland's connected-queue rule filters it the same way.</p>
+            </div>
+          </div>
+        </div>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-5 max-w-[820px]">
+          Three forms of the result are published, because they answer different questions. <b>The share of
+          zones whose maximum queue passed the threshold</b> is the rule's own shape &mdash; percent of
+          projects over a line &mdash; and is the reported M3. <b>The share of active time with a queue
+          present</b> is the hour-weighted programme figure. <b>Length and duration</b> &mdash; the maximum, the
+          95th percentile and the longest continuous run &mdash; are what a project review reads.
+        </p>
+      </div>
+      <div class="flex flex-col gap-4">
+        <div class="tny-card tny-card-ink p-5">
+          <div class="font-display font-medium text-[15px]">The line, in one row</div>
+          <div class="font-mono text-[12.5px] mt-3 leading-[1.8] text-white/90">
+            queued&nbsp;=&nbsp;anchor&nbsp;&lt;&nbsp;35&nbsp;mph<br>
+            length&nbsp;=&nbsp;&Sigma;&nbsp;upstream&nbsp;miles&nbsp;&lt;&nbsp;35&nbsp;mph<br>
+            M3&nbsp;=&nbsp;max&nbsp;length&nbsp;&gt;&nbsp;0.75&nbsp;mi
+          </div>
+          <p class="font-proxima text-[12.5px] leading-[1.6] text-white/70 mt-3">
+            35 mph is Ohio's in-zone line; 0.75 mi is Ohio's allowable predicted queue. Illinois
+            uses 1.5 mi beyond pre-existing. Every row carries the values it was measured with, so either
+            is a re-run rather than a redesign.
+          </p>
+        </div>
+        <div class="tny-card tny-card-tint p-5">
+          <div class="font-display font-medium text-[15px] text-[#0f1722]">The comparator on every row</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+            The same walk is run against <span class="tny-mono">max(20, 0.6 &times; posted)</span> per segment
+            &mdash; the federal PHED anchor AVAIL's congestion series uses. It is 39 mph on a 65 mph Interstate
+            and 20 mph on a 30 mph street, so it asks the same question everywhere. Phase 3 found the fixed
+            line distorted the facility comparison for speeds; this is the check that it does for queues too.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">The same measure on named universes</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2021&ndash;CY2025 &middot; conflated windows</span>
+    </div>
+    <div class="tny-card p-5">
+      <table class="tny">
+        <thead>
+          <tr>
+            <th class="txt">Universe</th><th>Zones</th><th>Zone-hrs</th>
+            <th>Time queued<br>&lt; 35 mph</th><th>Time queued<br>PHED</th>
+            <th>Zones &gt; 0.75 mi<br>&lt; 35 mph</th><th>Zones &gt; 0.75 mi<br>PHED</th>
+            <th>Median max<br>(mi)</th><th>90th pct max<br>(mi)</th><th>Median longest<br>run (min)</th>
+          </tr>
+        </thead>
+        <tbody>
+            <tr>
+              <td class="txt">All measured work zones</td>
+              <td>165,612</td><td>1,724,109</td>
+              <td>26.8%</td><td>15.2%</td>
+              <td><span class="font-medium text-[#0f1722]">28.8%</span></td><td>21.8%</td>
+              <td>1.21</td><td>6.1</td><td>60</td>
+            </tr>
+            <tr>
+              <td class="txt">Interstate</td>
+              <td>74,620</td><td>706,930</td>
+              <td>9.6%</td><td>8.4%</td>
+              <td><span class="font-medium text-[#0f1722]">21.8%</span></td><td>18.9%</td>
+              <td>1.82</td><td>5.4</td><td>80</td>
+            </tr>
+            <tr>
+              <td class="txt">Not Interstate</td>
+              <td>90,992</td><td>1,017,179</td>
+              <td>38.8%</td><td>20.0%</td>
+              <td><span class="font-medium text-[#0f1722]">34.6%</span></td><td>24.1%</td>
+              <td>0.95</td><td>6.7</td><td>55</td>
+            </tr>
+            <tr>
+              <td class="txt">In a TMA</td>
+              <td>133,511</td><td>1,302,691</td>
+              <td>31.9%</td><td>18.4%</td>
+              <td><span class="font-medium text-[#0f1722]">32.9%</span></td><td>25.6%</td>
+              <td>1.29</td><td>6.1</td><td>70</td>
+            </tr>
+            <tr>
+              <td class="txt">Outside a TMA</td>
+              <td>32,101</td><td>421,419</td>
+              <td>11.2%</td><td>5.3%</td>
+              <td><span class="font-medium text-[#0f1722]">12.0%</span></td><td>5.9%</td>
+              <td>0.38</td><td>5.5</td><td>20</td>
+            </tr>
+            <tr>
+              <td class="txt">Active a week or more<br><span class="cite">the peer-state project analogue</span></td>
+              <td>11,963</td><td>810,199</td>
+              <td>28.7%</td><td>14.9%</td>
+              <td><span class="font-medium text-[#0f1722]">45.7%</span></td><td>36.6%</td>
+              <td>1.35</td><td>6.9</td><td>70</td>
+            </tr>
+            <tr>
+              <td class="txt">Significant candidates<br><span class="cite">the rule&rsquo;s programmatic-review sample</span></td>
+              <td>1,148</td><td>59,151</td>
+              <td>6.6%</td><td>6.1%</td>
+              <td><span class="font-medium text-[#0f1722]">26.7%</span></td><td>25.4%</td>
+              <td>1.02</td><td>4.1</td><td>40</td>
+            </tr>
+        </tbody>
+      </table>
+      <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-4 max-w-[860px]">
+        Read the two &ldquo;zones over the line&rdquo; columns together. Where they agree &mdash; the Interstate
+        rows, the significant candidates &mdash; the queue is a queue under either definition. Where they
+        part &mdash; the not-Interstate row &mdash; the gap is the fixed line reading normal arterial traffic as
+        queued. The <b>week-plus</b> and <b>significant</b> universes are the ones a peer state would
+        recognise (see the speed report on why a statewide share over tens of thousands of six-hour shifts
+        matches nothing anyone else publishes); their median longest queue is
+        1.35 and 1.02 miles, against 1.21 statewide.
+      </p>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">Why the fixed line over-counts arterials</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2024 &middot; conflated windows</span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="tny-card p-5 lg:col-span-2">
+        <table class="tny">
+          <thead>
+            <tr>
+              <th class="txt">CY2024 work zones</th><th>Zones</th><th>Zone-hrs</th><th>Mean anchor speed</th>
+              <th>Time queued<br>&lt; 35 mph</th><th>Time queued<br>PHED</th>
+              <th>Zones &gt; 0.75 mi<br>&lt; 35 mph</th><th>Zones &gt; 0.75 mi<br>PHED</th>
+              <th>Queued periods that ran off the corridor</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="txt">Not Interstate</td><td>22,464</td><td>250,236</td><td>37.8</td>
+              <td><span class="pill pill-bad">40.4%</span></td><td>19.7%</td>
+              <td><span class="pill pill-bad">34.1%</span></td><td>22.5%</td>
+              <td>66.5%</td>
+            </tr>
+            <tr>
+              <td class="txt">Interstate</td><td>15,929</td><td>162,199</td><td>56.8</td>
+              <td><span class="pill pill-warn">9.5%</span></td><td>8.4%</td>
+              <td><span class="pill pill-warn">21.6%</span></td><td>19.0%</td>
+              <td>27.7%</td>
+            </tr>
+            <tr class="total">
+              <td class="txt">Ratio, off-Interstate to Interstate</td><td>&mdash;</td><td>&mdash;</td><td>0.7&times;</td>
+              <td><span class="pill pill-bad">4.3&times;</span></td><td><span class="pill pill-ok">2.3&times;</span></td>
+              <td><span class="pill pill-bad">1.6&times;</span></td><td><span class="pill pill-ok">1.2&times;</span></td>
+              <td>2.4&times;</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-4 max-w-[760px]">
+          Read the bottom row. Off-Interstate zones spend 4.3&times; as much of their time
+          &ldquo;queued&rdquo; as Interstate zones on the fixed line and 2.3&times; on
+          the road-scaled one. The Interstate figures barely move between the two (9.5% against
+          8.4%); the arterial figures halve. The fixed line is not finding more queues on
+          arterials &mdash; it is finding arterials.
+        </p>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-2 max-w-[760px]">
+          The last column is the tell. When an arterial zone reads as queued, 66.5% of the time the
+          walk ran out of corridor while every segment was still below 35 mph &mdash; because on a road
+          posted 30 or 40, every segment is below 35 mph in traffic. On Interstates the walk found the
+          back of the queue 72.3% of the time.
+        </p>
+      </div>
+      <div class="flex flex-col gap-4">
+        <div class="tny-card tny-card-bone p-5">
+          <div class="font-display font-medium text-[15px] text-[#0f1722]">What this means for the declared measure</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+            The rule's programmatic review is of significant projects, which are Interstates by construction,
+            and on Interstates the two lines agree. The 35 mph line is defensible there and it is what
+            peers use. For a statewide figure that includes arterials, report the road-scaled comparator
+            beside it or restrict the universe to freeways &mdash; a statewide 28.8% is mostly a
+            statement about posted limits.
+          </p>
+        </div>
+        <div class="tny-card tny-card-tint p-5">
+          <div class="font-display font-medium text-[15px] text-[#0f1722]">Interstate queues are longer, not more frequent</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+            When an Interstate zone did queue, its longest queue had a median of 1.66 mi and its
+            longest continuous run a median of 75 minutes, against 0.92 mi and
+            50 minutes off the system. Freeway queues are rarer, longer and last longer &mdash; which is
+            what the physics says they should be.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">How far back, and for how long</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2024 &middot; each zone's maximum queue and longest continuous run</span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="tny-card p-5">
+        <div class="lbl">Maximum upstream queue &middot; below 35 mph</div>
+        <table class="tny mt-2">
+          <thead><tr><th class="txt">Reach</th><th>Zones</th><th>Share</th><th></th></tr></thead>
+          <tbody>
+            <tr><td class="txt">No queue</td><td>23,965</td><td>62.4%</td>
+              <td style="width:38%"><div class="bar-track"><div class="bar bar" style="width:100.0%"></div></div></td></tr>
+            <tr><td class="txt">Up to 0.75 mi</td><td>3,340</td><td>8.7%</td>
+              <td style="width:38%"><div class="bar-track"><div class="bar bar" style="width:13.9%"></div></div></td></tr>
+            <tr><td class="txt">0.75 to 1.5 mi</td><td>2,234</td><td>5.8%</td>
+              <td style="width:38%"><div class="bar-track"><div class="bar bar-bad" style="width:9.3%"></div></div></td></tr>
+            <tr><td class="txt">1.5 to 3 mi</td><td>3,091</td><td>8.1%</td>
+              <td style="width:38%"><div class="bar-track"><div class="bar bar-bad" style="width:12.9%"></div></div></td></tr>
+            <tr><td class="txt">3 to 6 mi</td><td>3,590</td><td>9.4%</td>
+              <td style="width:38%"><div class="bar-track"><div class="bar bar-bad" style="width:15.0%"></div></div></td></tr>
+            <tr><td class="txt">Over 6 mi</td><td>2,173</td><td>5.7%</td>
+              <td style="width:38%"><div class="bar-track"><div class="bar bar-bad" style="width:9.1%"></div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tny-card p-5">
+        <div class="lbl">Maximum upstream queue &middot; PHED comparator</div>
+        <table class="tny mt-2">
+          <thead><tr><th class="txt">Reach</th><th>Zones</th><th>Share</th><th></th></tr></thead>
+          <tbody>
+            <tr><td class="txt">No queue</td><td>26,913</td><td>70.1%</td>
+              <td style="width:38%"><div class="bar-track"><div class="bar bar" style="width:100.0%"></div></div></td></tr>
+            <tr><td class="txt">Up to 0.75 mi</td><td>3,388</td><td>8.8%</td>
+              <td style="width:38%"><div class="bar-track"><div class="bar bar" style="width:12.6%"></div></div></td></tr>
+            <tr><td class="txt">0.75 to 1.5 mi</td><td>2,275</td><td>5.9%</td>
+              <td style="width:38%"><div class="bar-track"><div class="bar bar-bad" style="width:8.5%"></div></div></td></tr>
+            <tr><td class="txt">1.5 to 3 mi</td><td>2,795</td><td>7.3%</td>
+              <td style="width:38%"><div class="bar-track"><div class="bar bar-bad" style="width:10.4%"></div></div></td></tr>
+            <tr><td class="txt">3 to 6 mi</td><td>2,308</td><td>6.0%</td>
+              <td style="width:38%"><div class="bar-track"><div class="bar bar-bad" style="width:8.6%"></div></div></td></tr>
+            <tr><td class="txt">Over 6 mi</td><td>714</td><td>1.9%</td>
+              <td style="width:38%"><div class="bar-track"><div class="bar bar-bad" style="width:2.7%"></div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tny-card p-5">
+        <div class="lbl">Longest continuous queue &middot; zones that queued</div>
+        <table class="tny mt-2">
+          <thead><tr><th class="txt">Duration</th><th>Zones</th><th>Share</th><th></th></tr></thead>
+          <tbody>
+            <tr><td class="txt">15 min or less</td><td>4,254</td><td>21.4%</td>
+              <td style="width:38%"><div class="bar-track"><div class="bar bar" style="width:100.0%"></div></div></td></tr>
+            <tr><td class="txt">15 to 30 min</td><td>2,988</td><td>15.1%</td>
+              <td style="width:38%"><div class="bar-track"><div class="bar bar" style="width:70.2%"></div></div></td></tr>
+            <tr><td class="txt">30 to 60 min</td><td>3,216</td><td>16.2%</td>
+              <td style="width:38%"><div class="bar-track"><div class="bar bar" style="width:75.6%"></div></div></td></tr>
+            <tr><td class="txt">1 to 2 hours</td><td>3,360</td><td>16.9%</td>
+              <td style="width:38%"><div class="bar-track"><div class="bar bar" style="width:79.0%"></div></div></td></tr>
+            <tr><td class="txt">2 to 4 hours</td><td>3,855</td><td>19.4%</td>
+              <td style="width:38%"><div class="bar-track"><div class="bar bar-bad" style="width:90.6%"></div></div></td></tr>
+            <tr><td class="txt">Over 4 hours</td><td>2,176</td><td>11.0%</td>
+              <td style="width:38%"><div class="bar-track"><div class="bar bar-bad" style="width:51.2%"></div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
+      <div class="tny-card tny-card-bone p-5 lg:col-span-2">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">Most zones never queue; the ones that do, queue far</div>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-2 max-w-[820px]">
+          62.4% of measured CY2024 zones never had a queue at all under the fixed line
+          (70.1% under the comparator). Among the rest the distribution is long-tailed:
+          5,763 zones (15.0%) saw a queue longer than three miles, and
+          2,173 saw one longer than six. Duration is spread the same way &mdash;
+          30.4% of queuing zones held a continuous
+          queue for more than two hours, 21.4% for fifteen minutes or less.
+          Like the speed measure, this is bimodal, so no average describes a typical zone; the count over a
+          line is the number to report.
+        </p>
+      </div>
+      <div class="tny-card tny-card-tint p-5">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">Share of time, per zone</div>
+        <table class="tny mt-2">
+          <tbody>
+            <tr><td class="txt">Never queued</td><td>48.3%</td></tr>
+            <tr><td class="txt">Up to 10 % of active time</td><td>9.3%</td></tr>
+            <tr><td class="txt">10 to 25 %</td><td>7.3%</td></tr>
+            <tr><td class="txt">25 to 50 %</td><td>8.6%</td></tr>
+            <tr><td class="txt">Over half of active time</td><td>26.4%</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">When queues form</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2024 &middot; share of active time with a queue, by clock hour</span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="tny-card p-5 lg:col-span-2">
+        <div class="lbl">Share of active time queued (&lt; 35 mph), by hour of day</div>
+        <div class="grid grid-cols-24 gap-[3px] h-[150px] mt-3" style="grid-template-columns: repeat(24, minmax(0, 1fr));">
+        <div class="flex flex-col justify-end h-full" title="00:00 &mdash; 12.4% of active time queued; PHED 5.9%; 2,758 zone-hours"><div class="barv" style="height:33.1%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="01:00 &mdash; 11.9% of active time queued; PHED 5.5%; 3,117 zone-hours"><div class="barv" style="height:31.9%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="02:00 &mdash; 10.3% of active time queued; PHED 5.3%; 4,543 zone-hours"><div class="barv" style="height:27.5%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="03:00 &mdash; 10.5% of active time queued; PHED 6.2%; 6,764 zone-hours"><div class="barv" style="height:28.2%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="04:00 &mdash; 10.8% of active time queued; PHED 6.2%; 9,584 zone-hours"><div class="barv" style="height:28.9%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="05:00 &mdash; 15.0% of active time queued; PHED 7.8%; 12,360 zone-hours"><div class="barv" style="height:40.2%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="06:00 &mdash; 25.2% of active time queued; PHED 14.2%; 14,129 zone-hours"><div class="barv" style="height:67.5%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="07:00 &mdash; 33.3% of active time queued; PHED 20.5%; 14,522 zone-hours"><div class="barv-warn" style="height:89.2%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="08:00 &mdash; 37.3% of active time queued; PHED 23.2%; 12,892 zone-hours"><div class="barv-warn" style="height:100.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="09:00 &mdash; 35.2% of active time queued; PHED 19.8%; 8,600 zone-hours"><div class="barv-warn" style="height:94.2%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="10:00 &mdash; 24.8% of active time queued; PHED 13.6%; 7,919 zone-hours"><div class="barv" style="height:66.4%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="11:00 &mdash; 22.5% of active time queued; PHED 11.0%; 15,365 zone-hours"><div class="barv" style="height:60.3%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="12:00 &mdash; 25.0% of active time queued; PHED 12.8%; 21,777 zone-hours"><div class="barv" style="height:67.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="13:00 &mdash; 29.2% of active time queued; PHED 14.9%; 32,655 zone-hours"><div class="barv" style="height:78.2%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="14:00 &mdash; 30.9% of active time queued; PHED 16.7%; 41,655 zone-hours"><div class="barv" style="height:82.7%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="15:00 &mdash; 32.5% of active time queued; PHED 18.5%; 44,857 zone-hours"><div class="barv-warn" style="height:86.9%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="16:00 &mdash; 33.3% of active time queued; PHED 19.6%; 44,650 zone-hours"><div class="barv-warn" style="height:89.3%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="17:00 &mdash; 33.4% of active time queued; PHED 19.5%; 41,924 zone-hours"><div class="barv-warn" style="height:89.4%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="18:00 &mdash; 30.4% of active time queued; PHED 14.5%; 32,509 zone-hours"><div class="barv" style="height:81.4%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="19:00 &mdash; 28.2% of active time queued; PHED 10.4%; 19,239 zone-hours"><div class="barv" style="height:75.4%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="20:00 &mdash; 20.5% of active time queued; PHED 6.7%; 10,108 zone-hours"><div class="barv" style="height:54.8%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="21:00 &mdash; 14.1% of active time queued; PHED 5.2%; 5,327 zone-hours"><div class="barv" style="height:37.9%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="22:00 &mdash; 13.1% of active time queued; PHED 5.4%; 2,790 zone-hours"><div class="barv" style="height:35.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="23:00 &mdash; 12.1% of active time queued; PHED 5.3%; 2,393 zone-hours"><div class="barv" style="height:32.4%"></div></div>
+        </div>
+        <div class="grid gap-[3px] mt-1 font-mono text-[9.5px] text-slate-500" style="grid-template-columns: repeat(24, minmax(0, 1fr));">
+        <div class="text-center">0</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">3</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">6</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">9</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">12</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">15</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">18</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">21</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        </div>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-4 max-w-[760px]">
+          The worst hour is 08:00, when 37.3% of active work-zone time had a queue; the
+          quietest is 02:00 at 10.3% &mdash; a 3.6&times; range.
+          Queues are also longest when they are most common: the mean maximum queue in a queued hour peaks at
+          2.10 mi at 15:00. Most active hours fall at 15:00
+          (44,857 zone-hours), squarely in the day.
+        </p>
+      </div>
+      <div class="flex flex-col gap-4">
+        <div class="tny-card tny-card-tint p-5">
+          <div class="font-display font-medium text-[15px] text-[#0f1722]">Weekday against weekend</div>
+          <table class="tny mt-2">
+            <tbody>
+              <tr><td class="txt">Monday to Friday</td><td>28.8%</td></tr>
+              <tr><td class="txt">Saturday and Sunday</td><td>22.2%</td></tr>
+            </tbody>
+          </table>
+          <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 mt-2">
+            Share of active time queued. Weekend work is rarer but it is not queue-free.
+          </p>
+        </div>
+        <div class="tny-card tny-card-bone p-5">
+          <div class="font-display font-medium text-[15px] text-[#0f1722]">The hour grain is what the dataset keeps</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+            <span class="tny-mono">wz_queue_hour</span> holds one row per zone, date and clock hour, so a project's
+            queue can be read day by day &mdash; the form Ohio reports in &mdash; without storing the five million
+            five-minute rows a year the walk actually produced.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">By Region</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2024 &middot; conflated windows &middot; ordered by zone-hours</span>
+    </div>
+    <div class="tny-card p-5">
+      <table class="tny">
+        <thead>
+          <tr><th class="txt">NYSDOT Region</th><th>Zones</th><th>Zone-hrs</th>
+              <th>Time queued<br>&lt; 35 mph</th><th>Time queued<br>PHED</th>
+              <th>Zones &gt; 0.75 mi<br>&lt; 35 mph</th><th>Zones &gt; 0.75 mi<br>PHED</th>
+              <th>Median max (mi)</th><th>Queue hours</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+              <td class="txt">Region 8 - Hudson Valley</td><td>6,364</td><td>101,445</td>
+              <td>37.4%</td><td>16.7%</td>
+              <td><span class="font-medium text-[#0f1722]">26.2%</span></td><td>17.4%</td>
+              <td>1.36</td><td>37,923</td>
+            </tr>
+            <tr>
+              <td class="txt">Region 3 - Central New York</td><td>2,776</td><td>82,483</td>
+              <td>12.1%</td><td>5.8%</td>
+              <td><span class="font-medium text-[#0f1722]">18.3%</span></td><td>11.0%</td>
+              <td>0.84</td><td>10,003</td>
+            </tr>
+            <tr>
+              <td class="txt">Region 11 - New York City</td><td>12,417</td><td>80,114</td>
+              <td>47.8%</td><td>35.3%</td>
+              <td><span class="font-medium text-[#0f1722]">39.5%</span></td><td>33.1%</td>
+              <td>0.83</td><td>38,316</td>
+            </tr>
+            <tr>
+              <td class="txt">Region 1 - Capital District</td><td>5,014</td><td>41,838</td>
+              <td>21.7%</td><td>8.7%</td>
+              <td><span class="font-medium text-[#0f1722]">23.5%</span></td><td>13.0%</td>
+              <td>1.08</td><td>9,074</td>
+            </tr>
+            <tr>
+              <td class="txt">Region 4 - Genesee Valley</td><td>2,290</td><td>30,274</td>
+              <td>16.8%</td><td>5.4%</td>
+              <td><span class="font-medium text-[#0f1722]">17.0%</span></td><td>8.1%</td>
+              <td>0.65</td><td>5,073</td>
+            </tr>
+            <tr>
+              <td class="txt">Region 10 - Long Island</td><td>5,370</td><td>23,540</td>
+              <td>30.3%</td><td>17.9%</td>
+              <td><span class="font-medium text-[#0f1722]">40.2%</span></td><td>29.3%</td>
+              <td>3.10</td><td>7,134</td>
+            </tr>
+            <tr>
+              <td class="txt">Region 2 - Mohawk Valley</td><td>1,033</td><td>18,813</td>
+              <td>32.3%</td><td>11.8%</td>
+              <td><span class="font-medium text-[#0f1722]">9.2%</span></td><td>5.7%</td>
+              <td>0.00</td><td>6,081</td>
+            </tr>
+            <tr>
+              <td class="txt">Region 6 - Southern Tier/Central New York</td><td>1,324</td><td>17,766</td>
+              <td>11.5%</td><td>4.4%</td>
+              <td><span class="font-medium text-[#0f1722]">10.1%</span></td><td>4.4%</td>
+              <td>0.00</td><td>2,051</td>
+            </tr>
+            <tr>
+              <td class="txt">Region 5 - Western New York</td><td>1,531</td><td>8,323</td>
+              <td>4.5%</td><td>2.4%</td>
+              <td><span class="font-medium text-[#0f1722]">1.1%</span></td><td>1.0%</td>
+              <td>0.00</td><td>377</td>
+            </tr>
+            <tr>
+              <td class="txt">Region 9 - Southern Tier</td><td>250</td><td>7,699</td>
+              <td>5.8%</td><td>2.2%</td>
+              <td><span class="font-medium text-[#0f1722]">12.8%</span></td><td>9.6%</td>
+              <td>0.00</td><td>445</td>
+            </tr>
+            <tr>
+              <td class="txt">Region 7 - North Country</td><td>24</td><td>142</td>
+              <td>2.0%</td><td>1.2%</td>
+              <td><span class="font-medium text-[#0f1722]">12.5%</span></td><td>0.0%</td>
+              <td>0.00</td><td>3</td>
+            </tr>
+            <tr>
+              <td class="txt">(no Region)</td><td>0</td><td>&mdash;</td>
+              <td>&mdash;</td><td>&mdash;</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&mdash;</td>
+              <td>&mdash;</td><td>&mdash;</td>
+            </tr>
+        </tbody>
+      </table>
+      <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-4 max-w-[860px]">
+        Region 10 - Long Island has the highest share of zones over the line (40.2% on the fixed
+        line, 29.3% on the comparator). Where the two columns diverge most, the Region's work
+        is on arterials; where they sit together, it is on freeways. Regional totals inherit every caveat of the
+        statewide one and should be read with the facility mix in mind.
+      </p>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">The projects the rule cares about</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2024 &middot; 220 significant candidates &middot; the twelve longest queues</span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="tny-card p-5 lg:col-span-2">
+        <table class="tny">
+          <thead>
+            <tr><th class="txt">Project</th><th class="txt">Window</th><th>Zone-hrs</th><th>Time queued</th><th>Max (mi)</th><th>95th pct (mi)</th><th>Longest run (min)</th><th class="txt">&gt; 0.75 mi</th><th class="txt">PHED</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="txt">I-87 MAJOR DEEGAN EXPRESSWAY<br><span class="cite">ORI1237526308 &middot; BRONX &middot; R11 - New York City</span></td>
+              <td class="txt">2024-05-14 &rarr; 2024-05-17<br><span class="cite">3.2 days</span></td>
+              <td>21</td><td>22.3%</td>
+              <td><span class="font-medium text-[#0f1722]">6.93</span></td><td>6.93</td><td>85</td>
+              <td class="txt"><span class="pill pill-bad">yes</span></td><td class="txt"><span class="pill pill-bad">yes</span></td>
+            </tr>
+            <tr>
+              <td class="txt">I-87 MAJOR DEEGAN EXPRESSWAY<br><span class="cite">ORI1237553562 &middot; BRONX &middot; R11 - New York City</span></td>
+              <td class="txt">2024-06-11 &rarr; 2024-06-13<br><span class="cite">2.3 days</span></td>
+              <td>18</td><td>22.2%</td>
+              <td><span class="font-medium text-[#0f1722]">6.93</span></td><td>6.93</td><td>40</td>
+              <td class="txt"><span class="pill pill-bad">yes</span></td><td class="txt"><span class="pill pill-bad">yes</span></td>
+            </tr>
+            <tr>
+              <td class="txt">I-87 MAJOR DEEGAN EXPRESSWAY<br><span class="cite">ORI1237437164 &middot; BRONX &middot; R11 - New York City</span></td>
+              <td class="txt">2024-01-23 &rarr; 2024-02-02<br><span class="cite">10.3 days</span></td>
+              <td>12</td><td>16.7%</td>
+              <td><span class="font-medium text-[#0f1722]">6.93</span></td><td>6.93</td><td>35</td>
+              <td class="txt"><span class="pill pill-bad">yes</span></td><td class="txt"><span class="pill pill-bad">yes</span></td>
+            </tr>
+            <tr>
+              <td class="txt">I-87 MAJOR DEEGAN EXPRESSWAY<br><span class="cite">ORI1237513814 &middot; BRONX &middot; R11 - New York City</span></td>
+              <td class="txt">2024-05-01 &rarr; 2024-05-11<br><span class="cite">10.3 days</span></td>
+              <td>30</td><td>12.4%</td>
+              <td><span class="font-medium text-[#0f1722]">6.93</span></td><td>1.15</td><td>25</td>
+              <td class="txt"><span class="pill pill-bad">yes</span></td><td class="txt"><span class="pill pill-ok">no</span></td>
+            </tr>
+            <tr>
+              <td class="txt">I-278<br><span class="cite">ORI1237499621 &middot; KINGS &middot; R11 - New York City</span></td>
+              <td class="txt">2024-04-16 &rarr; 2024-05-21<br><span class="cite">35.2 days</span></td>
+              <td>30</td><td>39.5%</td>
+              <td><span class="font-medium text-[#0f1722]">6.29</span></td><td>6.29</td><td>175</td>
+              <td class="txt"><span class="pill pill-bad">yes</span></td><td class="txt"><span class="pill pill-bad">yes</span></td>
+            </tr>
+            <tr>
+              <td class="txt">I-278<br><span class="cite">ORI1237750006 &middot; KINGS &middot; R11 - New York City</span></td>
+              <td class="txt">2024-12-12 &rarr; 2024-12-19<br><span class="cite">7.3 days</span></td>
+              <td>25</td><td>11.2%</td>
+              <td><span class="font-medium text-[#0f1722]">6.29</span></td><td>6.29</td><td>95</td>
+              <td class="txt"><span class="pill pill-bad">yes</span></td><td class="txt"><span class="pill pill-bad">yes</span></td>
+            </tr>
+            <tr>
+              <td class="txt">I-278<br><span class="cite">ORI1237635515 &middot; KINGS &middot; R11 - New York City</span></td>
+              <td class="txt">2024-09-05 &rarr; 2024-10-17<br><span class="cite">42.2 days</span></td>
+              <td>57</td><td>87.7%</td>
+              <td><span class="font-medium text-[#0f1722]">6.19</span></td><td>6.19</td><td>275</td>
+              <td class="txt"><span class="pill pill-bad">yes</span></td><td class="txt"><span class="pill pill-bad">yes</span></td>
+            </tr>
+            <tr>
+              <td class="txt">I-278<br><span class="cite">ORI1237690584 &middot; KINGS &middot; R11 - New York City</span></td>
+              <td class="txt">2024-10-09 &rarr; 2024-11-02<br><span class="cite">24.2 days</span></td>
+              <td>26</td><td>35.1%</td>
+              <td><span class="font-medium text-[#0f1722]">6.07</span></td><td>1.23</td><td>115</td>
+              <td class="txt"><span class="pill pill-bad">yes</span></td><td class="txt"><span class="pill pill-bad">yes</span></td>
+            </tr>
+            <tr>
+              <td class="txt">I-87 MAJOR DEEGAN EXPRESSWAY<br><span class="cite">ORI1237425053 &middot; BRONX &middot; R11 - New York City</span></td>
+              <td class="txt">2024-01-03 &rarr; 2024-01-06<br><span class="cite">3.2 days</span></td>
+              <td>18</td><td>8.1%</td>
+              <td><span class="font-medium text-[#0f1722]">5.93</span></td><td>5.93</td><td>35</td>
+              <td class="txt"><span class="pill pill-bad">yes</span></td><td class="txt"><span class="pill pill-ok">no</span></td>
+            </tr>
+            <tr>
+              <td class="txt">I-278<br><span class="cite">ORI1237441540 &middot; BRONX &middot; R11 - New York City</span></td>
+              <td class="txt">2024-01-30 &rarr; 2024-02-01<br><span class="cite">2.2 days</span></td>
+              <td>7</td><td>39.0%</td>
+              <td><span class="font-medium text-[#0f1722]">5.37</span></td><td>1.12</td><td>65</td>
+              <td class="txt"><span class="pill pill-bad">yes</span></td><td class="txt"><span class="pill pill-ok">no</span></td>
+            </tr>
+            <tr>
+              <td class="txt">I-95<br><span class="cite">ORI1237530069 &middot; BRONX &middot; R11 - New York City</span></td>
+              <td class="txt">2024-05-17 &rarr; 2024-05-24<br><span class="cite">7.3 days</span></td>
+              <td>30</td><td>22.3%</td>
+              <td><span class="font-medium text-[#0f1722]">4.77</span></td><td>4.77</td><td>75</td>
+              <td class="txt"><span class="pill pill-bad">yes</span></td><td class="txt"><span class="pill pill-bad">yes</span></td>
+            </tr>
+            <tr>
+              <td class="txt">I-87 NORTHWAY<br><span class="cite">ORI1237689027 &middot; SARATOGA &middot; R1 - Capital District</span></td>
+              <td class="txt">2024-10-08 &rarr; 2024-10-25<br><span class="cite">17.4 days</span></td>
+              <td>68</td><td>3.9%</td>
+              <td><span class="font-medium text-[#0f1722]">4.35</span></td><td>4.35</td><td>50</td>
+              <td class="txt"><span class="pill pill-bad">yes</span></td><td class="txt"><span class="pill pill-bad">yes</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="flex flex-col gap-4">
+        <div class="tny-card tny-card-ink p-5">
+          <div class="font-display font-medium text-[15px]">Per project, as the rule reads it</div>
+          <table class="tny mt-3" style="color:#fff">
+            <tbody>
+              <tr><td class="txt" style="color:rgba(255,255,255,.8)">Significant candidates, CY2024</td><td style="color:#fff">220</td></tr>
+              <tr><td class="txt" style="color:rgba(255,255,255,.8)">&hellip; with any queue</td><td style="color:#fff">116</td></tr>
+              <tr><td class="txt" style="color:rgba(255,255,255,.8)">&hellip; queue over 0.75 mi (fixed line)</td><td style="color:#fff"><b>69</b></td></tr>
+              <tr><td class="txt" style="color:rgba(255,255,255,.8)">&hellip; queue over 0.75 mi (PHED)</td><td style="color:#fff">63</td></tr>
+              <tr><td class="txt" style="color:rgba(255,255,255,.8)">Share of active time queued</td><td style="color:#fff">12.6%</td></tr>
+              <tr><td class="txt" style="color:rgba(255,255,255,.8)">Median max queue, when queued</td><td style="color:#fff">1.34 mi</td></tr>
+              <tr><td class="txt" style="color:rgba(255,255,255,.8)">90th pct max queue</td><td style="color:#fff">4.35 mi</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="tny-card tny-card-bone p-5">
+          <div class="font-display font-medium text-[15px] text-[#0f1722]">Report it as a count, per project</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+            &ldquo;69 of 220 significant projects had a queue reach past
+            0.75 miles&rdquo; is the sentence the rule's programmatic review asks for. The percentage
+            (31.4%) is the same fact on a base of 220, and it will move with the
+            sample's size and composition from year to year &mdash; the speed report found the significant tier
+            too small to be stable as a time series. Name the projects.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">Three zones, checked one at a time</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2024 &middot; the same three events every phase has used</span>
+    </div>
+    <div class="tny-card p-5">
+      <table class="tny">
+        <thead>
+          <tr><th class="txt">Work zone</th><th>Zone-hrs</th><th>Mean anchor speed</th><th>Corridor walked<br>(segments / miles)</th><th>Time queued</th><th>Hours with a queue</th>
+              <th>Max (mi)</th><th>95th pct (mi)</th><th>Longest run (min)</th><th class="txt">&gt; 0.75 mi</th><th class="txt">Significant?</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="txt">I-495, Queens<br><span class="cite">ORI1237584671 &middot; Queens &middot; Region 11 &middot; 2024-07-13 &rarr; 07-15</span></td>
+            <td>56</td><td>41.9</td><td>20 / 5.7 mi</td>
+            <td>35.3%</td><td>31</td>
+            <td><span class="font-medium text-[#0f1722]">5.73</span></td><td>5.73</td><td>155</td>
+            <td class="txt"><span class="pill pill-bad">yes</span></td>
+            <td class="txt"><span class="pill pill-warn">no</span></td>
+          </tr>
+          <tr>
+            <td class="txt">I-87 Northway<br><span class="cite">ORI1237674447 &middot; Saratoga &middot; Region 1 &middot; 2024-09-24 &rarr; 10-19</span></td>
+            <td>124</td><td>60.9</td><td>12 / 10.8 mi</td>
+            <td>2.4%</td><td>11</td>
+            <td><span class="font-medium text-[#0f1722]">4.35</span></td><td>3.92</td><td>60</td>
+            <td class="txt"><span class="pill pill-bad">yes</span></td>
+            <td class="txt"><span class="pill pill-ink">yes</span></td>
+          </tr>
+          <tr>
+            <td class="txt">I-81, rural<br><span class="cite">ORI1237605713 &middot; Oswego &middot; Region 3 &middot; 2024-08-05 &rarr; 09-21</span></td>
+            <td>315</td><td>71.7</td><td>6 / 15.6 mi</td>
+            <td>0.0%</td><td>0</td>
+            <td><span class="font-medium text-[#0f1722]">0.00</span></td><td>0.00</td><td>0</td>
+            <td class="txt"><span class="pill pill-ok">no</span></td>
+            <td class="txt"><span class="pill pill-warn">no</span></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-5 pt-5 border-t border-zinc-950/8">
+        <div class="lg:col-span-2">
+          <div class="lbl">I-495 westbound, Sunday 2024-07-14 &middot; maximum upstream queue in each clock hour</div>
+          <div class="grid gap-[3px] h-[120px] mt-3" style="grid-template-columns: repeat(24, minmax(0, 1fr));">
+        <div class="flex flex-col justify-end h-full" title="00:00 &mdash; max queue 0.00 mi; 0 of 12 periods queued; anchor 56.2 mph"><div class="barv" style="height:0.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="01:00 &mdash; max queue 0.00 mi; 0 of 12 periods queued; anchor 64.1 mph"><div class="barv" style="height:0.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="02:00 &mdash; max queue 0.00 mi; 0 of 11 periods queued; anchor 59.6 mph"><div class="barv" style="height:0.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="03:00 &mdash; max queue 0.00 mi; 0 of 11 periods queued; anchor 61.6 mph"><div class="barv" style="height:0.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="04:00 &mdash; max queue 0.00 mi; 0 of 8 periods queued; anchor 57.4 mph"><div class="barv" style="height:0.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="05:00 &mdash; max queue 0.00 mi; 0 of 12 periods queued; anchor 63.0 mph"><div class="barv" style="height:0.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="06:00 &mdash; max queue 0.00 mi; 0 of 12 periods queued; anchor 64.5 mph"><div class="barv" style="height:0.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="07:00 &mdash; max queue 0.00 mi; 0 of 12 periods queued; anchor 60.2 mph"><div class="barv" style="height:0.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="08:00 &mdash; max queue 0.00 mi; 0 of 12 periods queued; anchor 56.2 mph"><div class="barv" style="height:0.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="09:00 &mdash; max queue 0.00 mi; 0 of 12 periods queued; anchor 50.8 mph"><div class="barv" style="height:0.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="10:00 &mdash; max queue 4.12 mi; 2 of 12 periods queued; anchor 47.3 mph"><div class="barv" style="height:71.9%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="11:00 &mdash; max queue 4.12 mi; 5 of 12 periods queued; anchor 35.5 mph"><div class="barv" style="height:71.9%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="12:00 &mdash; max queue 5.73 mi; 6 of 12 periods queued; anchor 34.4 mph"><div class="barv-warn" style="height:100.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="13:00 &mdash; max queue 5.73 mi; 5 of 12 periods queued; anchor 37.9 mph"><div class="barv-warn" style="height:100.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="14:00 &mdash; max queue 4.74 mi; 7 of 12 periods queued; anchor 29.3 mph"><div class="barv" style="height:82.7%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="15:00 &mdash; max queue 0.00 mi; 0 of 12 periods queued; anchor 49.5 mph"><div class="barv" style="height:0.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="16:00 &mdash; max queue 4.12 mi; 4 of 12 periods queued; anchor 39.6 mph"><div class="barv" style="height:71.9%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="17:00 &mdash; max queue 4.74 mi; 7 of 12 periods queued; anchor 35.2 mph"><div class="barv" style="height:82.7%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="18:00 &mdash; max queue 5.73 mi; 12 of 12 periods queued; anchor 23.8 mph"><div class="barv-warn" style="height:100.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="19:00 &mdash; max queue 5.73 mi; 12 of 12 periods queued; anchor 17.3 mph"><div class="barv-warn" style="height:100.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="20:00 &mdash; max queue 5.73 mi; 7 of 12 periods queued; anchor 31.8 mph"><div class="barv-warn" style="height:100.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="21:00 &mdash; max queue 5.73 mi; 12 of 12 periods queued; anchor 21.0 mph"><div class="barv-warn" style="height:100.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="22:00 &mdash; max queue 4.74 mi; 12 of 12 periods queued; anchor 18.7 mph"><div class="barv" style="height:82.7%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="23:00 &mdash; max queue 0.00 mi; 0 of 12 periods queued; anchor 59.4 mph"><div class="barv" style="height:0.0%"></div></div>
+          </div>
+          <div class="grid gap-[3px] mt-1 font-mono text-[9.5px] text-slate-500" style="grid-template-columns: repeat(24, minmax(0, 1fr));">
+        <div class="text-center">0</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">3</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">6</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">9</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">12</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">15</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">18</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">21</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+          </div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-3">
+            This is the zone the speed phase called out as the one with a real impact that the significance rule
+            misses. The queue walk sees the same event: a one-lane closure on the Long Island Expressway, queued
+            35.3% of its active time across 31 clock hours, with a maximum of
+            5.73 mi &mdash; which is the entire 20-segment corridor the walk
+            was allowed to see, so the true maximum is longer. The raw speed matrix for this Sunday shows the anchor at
+            17&ndash;32 mph from late morning to 22:00 while the twelve segments upstream fell to 12&ndash;25 mph and the
+            segments downstream recovered into the 40s: a textbook queue, and it points upstream.
+          </p>
+        </div>
+        <div class="flex flex-col gap-4">
+          <div>
+            <div class="font-display font-medium text-[14px] text-[#0f1722]">The flagged Northway zone queued rarely, but far</div>
+            <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+              2.4% of 124 active hours, in 11 clock hours &mdash; and when it
+              queued, it reached 4.35 mi (7 segments) at 07:45 on
+              2024-10-17, a southbound morning peak into the Capital District. The speed measure
+              scored this zone 8.6 %; the queue measure explains what that 8.6 % was.
+            </p>
+          </div>
+          <div>
+            <div class="font-display font-medium text-[14px] text-[#0f1722]">The rural one is a floor check, again</div>
+            <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+              315 hours of rural I-81 at a mean 71.7 mph, 0.0% queued,
+              no queue ever measured across a 15.6-mile corridor. A weeks-long Interstate work zone
+              with no queue is the expected result on a rural mainline.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">Against TRANSCOM's own impact extent</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2024 &middot; 14,428 zones with a measured queue</span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="tny-card p-5 lg:col-span-2">
+        <table class="tny">
+          <tbody>
+            <tr><td class="txt">Segments in our maximum-queue extents</td><td>100,339</td><td>100%</td></tr>
+            <tr><td class="txt">&hellip; that TRANSCOM also attributed congestion to (any segment, any linear)</td><td>30,896</td><td>30.8%</td></tr>
+            <tr><td class="txt">TRANSCOM impact segments for the same zones</td><td>401,149</td><td></td></tr>
+            <tr><td class="txt">&hellip; on the zone's own linear</td><td>83,951</td><td>20.9%</td></tr>
+            <tr><td class="txt">&hellip; on the zone's own linear AND upstream of the work</td><td>43,976</td><td>11.0%</td></tr>
+            <tr class="total"><td class="txt">&hellip; of which our walk also found queued</td><td>30,435</td><td>69.2%</td></tr>
+          </tbody>
+        </table>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-4 max-w-[820px]">
+          TRANSCOM's event-to-segment conflation (view 2799) is the &ldquo;incident view&rdquo; New York already has:
+          it walks an OpenStreetMap graph away from the event in every direction, following ramps and cross
+          streets, and keeps every segment that carried delay. Only 20.9% of its
+          impact segments are on the work zone's own road, and only 11.0% are
+          upstream of it. On that comparable subset &mdash; same road, upstream &mdash; <b>our walk found
+          69.2% of the segments TRANSCOM attributed</b>. The two methods
+          agree where they measure the same thing; the rest is TRANSCOM counting spill onto ramps and side streets,
+          which this walk deliberately does not.
+        </p>
+      </div>
+      <div class="tny-card tny-card-tint p-5">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">Why not just use TRANSCOM's extent</div>
+        <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+          It is a delay attribution over the whole event, not a queue at a point in time: it has no length per
+          five minutes, no duration, no 95th percentile, and it includes segments downstream of the work. It is
+          the right input for M2 (delay), and phase 4 used it. M3 needs the shape of the queue, which only the
+          speeds can give.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">The series</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">nine vintages &middot; conflated windows &middot; the five comparable years in bold</span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="tny-card p-5 lg:col-span-2">
+        <table class="tny">
+          <thead>
+            <tr><th class="txt">Vintage</th><th>Zones measured</th><th>Zone-hrs (conflated)</th>
+                <th>Time queued<br>&lt; 35 mph</th><th>Time queued<br>PHED</th>
+                <th>Zones &gt; 0.75 mi<br>&lt; 35 mph</th><th>Zones &gt; 0.75 mi<br>PHED</th>
+                <th>Median max (mi)</th><th>Zones on conflated windows</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="txt">CY2018</td><td>28,432</td><td>12,256</td>
+              <td>40.7%</td><td>22.5%</td>
+              <td><span>35.2%</span></td><td>22.9%</td>
+              <td>0.76</td><td>3.4%</td>
+            </tr>
+            <tr>
+              <td class="txt">CY2019</td><td>31,087</td><td>&mdash;</td>
+              <td>&mdash;</td><td>&mdash;</td>
+              <td><span>&mdash;</span></td><td>&mdash;</td>
+              <td>&mdash;</td><td>0.0%</td>
+            </tr>
+            <tr>
+              <td class="txt">CY2020</td><td>32,124</td><td>&mdash;</td>
+              <td>&mdash;</td><td>&mdash;</td>
+              <td><span>&mdash;</span></td><td>&mdash;</td>
+              <td>&mdash;</td><td>0.0%</td>
+            </tr>
+            <tr>
+              <td class="txt" class="font-medium text-[#0f1722]">CY2021</td><td>33,026</td><td>371,161</td>
+              <td>28.2%</td><td>16.3%</td>
+              <td><span class="font-medium text-[#0f1722]">27.5%</span></td><td>21.1%</td>
+              <td>1.03</td><td>92.8%</td>
+            </tr>
+            <tr>
+              <td class="txt" class="font-medium text-[#0f1722]">CY2022</td><td>33,288</td><td>330,159</td>
+              <td>26.6%</td><td>14.2%</td>
+              <td><span class="font-medium text-[#0f1722]">28.3%</span></td><td>21.7%</td>
+              <td>1.25</td><td>90.6%</td>
+            </tr>
+            <tr>
+              <td class="txt" class="font-medium text-[#0f1722]">CY2023</td><td>33,572</td><td>279,704</td>
+              <td>26.6%</td><td>15.7%</td>
+              <td><span class="font-medium text-[#0f1722]">29.0%</span></td><td>22.6%</td>
+              <td>1.44</td><td>91.3%</td>
+            </tr>
+            <tr>
+              <td class="txt" class="font-medium text-[#0f1722]">CY2024</td><td>41,036</td><td>412,435</td>
+              <td>28.2%</td><td>15.2%</td>
+              <td><span class="font-medium text-[#0f1722]">28.9%</span></td><td>21.1%</td>
+              <td>1.13</td><td>93.6%</td>
+            </tr>
+            <tr>
+              <td class="txt" class="font-medium text-[#0f1722]">CY2025</td><td>39,714</td><td>330,651</td>
+              <td>23.9%</td><td>14.5%</td>
+              <td><span class="font-medium text-[#0f1722]">30.3%</span></td><td>22.6%</td>
+              <td>1.24</td><td>90.0%</td>
+            </tr>
+            <tr>
+              <td class="txt">CY2026 <span class="cite">(to 31 Aug)</span></td><td>26,258</td><td>142,649</td>
+              <td>24.4%</td><td>12.7%</td>
+              <td><span>23.7%</span></td><td>16.5%</td>
+              <td>0.75</td><td>70.8%</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-4 max-w-[820px]">
+          The same shape as every phase before it: CY2019 and CY2020 have no TRANSCOM conflation at all, so their
+          active windows come only from the events' own clock times and they are not on the same basis; CY2018 has
+          a sliver; CY2026 is eight months. The comparable series is CY2021&ndash;CY2025, and across it the share of
+          zones over the line has stayed within a few points. Read the trend on the named universes on the right,
+          not on the statewide total &mdash; the total moves with how much maintenance happened on arterials.
+        </p>
+      </div>
+      <div class="tny-card p-5">
+        <div class="lbl">Named universes, zones over 0.75 mi (&lt; 35 mph)</div>
+        <table class="tny mt-2">
+          <thead>
+            <tr><th class="txt">Vintage</th><th colspan="3">Significant candidates</th><th colspan="3">Week-plus zones</th></tr>
+            <tr><th class="txt"></th><th>n</th><th>over</th><th>share</th><th>n</th><th>over</th><th>share</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="txt">CY2018</td>
+              <td>0</td><td>0</td><td>&mdash;</td>
+              <td>155</td><td>62</td><td>40.0%</td>
+            </tr>
+            <tr>
+              <td class="txt">CY2019</td>
+              <td>0</td><td>0</td><td>&mdash;</td>
+              <td>0</td><td>0</td><td>&mdash;</td>
+            </tr>
+            <tr>
+              <td class="txt">CY2020</td>
+              <td>0</td><td>0</td><td>&mdash;</td>
+              <td>0</td><td>0</td><td>&mdash;</td>
+            </tr>
+            <tr>
+              <td class="txt">CY2021</td>
+              <td>208</td><td>35</td><td>16.8%</td>
+              <td>2,410</td><td>1,032</td><td>42.8%</td>
+            </tr>
+            <tr>
+              <td class="txt">CY2022</td>
+              <td>288</td><td>59</td><td>20.5%</td>
+              <td>2,424</td><td>1,078</td><td>44.5%</td>
+            </tr>
+            <tr>
+              <td class="txt">CY2023</td>
+              <td>239</td><td>61</td><td>25.5%</td>
+              <td>2,030</td><td>960</td><td>47.3%</td>
+            </tr>
+            <tr>
+              <td class="txt">CY2024</td>
+              <td>220</td><td>69</td><td>31.4%</td>
+              <td>2,607</td><td>1,175</td><td>45.1%</td>
+            </tr>
+            <tr>
+              <td class="txt">CY2025</td>
+              <td>193</td><td>83</td><td>43.0%</td>
+              <td>2,492</td><td>1,217</td><td>48.8%</td>
+            </tr>
+            <tr>
+              <td class="txt">CY2026 <span class="cite">(to 31 Aug)</span></td>
+              <td>106</td><td>20</td><td>18.9%</td>
+              <td>1,200</td><td>481</td><td>40.1%</td>
+            </tr>
+          </tbody>
+        </table>
+        <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 mt-3">
+          The significant tier is small and its composition changes every year; report it as a count of named
+          projects, per year, not as a percentage trend.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">What can and cannot be measured</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2024</span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="tny-card p-5 lg:col-span-2">
+        <table class="tny">
+          <thead><tr><th class="txt">From the CY2024 inventory to a measured queue</th><th>Zones</th><th>Of 42,688</th></tr></thead>
+          <tbody>
+            <tr><td class="txt">Work zones in the CY2024 inventory</td><td>42,688</td><td>100%</td></tr>
+            <tr><td class="txt">&hellip; with an active window and a speed observation at the anchor</td><td>41,036</td><td>96.1%</td></tr>
+            <tr><td class="txt">&hellip; on a conflated (TRANSCOM) window rather than the event's own clock times</td><td>38,539</td><td>90.3%</td></tr>
+            <tr class="total"><td class="txt">&hellip; and with at least one upstream segment to walk</td><td>35,622</td><td>83.4%</td></tr>
+          </tbody>
+        </table>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-4 max-w-[820px]">
+          1,652 zones (3.9%) had no anchor observation while active and are
+          published as <span class="tny-mono">queue_measured = FALSE</span> &mdash; unknown, not zero. A further
+          5,414 sit on a segment with nothing upstream of it in the inventory (the start of a linear,
+          or a corridor whose only other segments share the anchor's order), so their queue presence is measured but
+          their queue length can only ever be zero. All 41,208 zones with an anchor carry a queue-extent
+          geometry in SRID 4326.
+        </p>
+        <div class="lbl mt-5">How far the walk could see, and how often the queue outran it</div>
+        <table class="tny mt-2">
+          <thead><tr><th class="txt">Corridor ended by</th><th>Zones</th><th>Share</th><th>Upstream segments</th><th>Upstream miles</th><th>Queued periods that reached the end</th><th>Queued periods that are lower bounds</th></tr></thead>
+          <tbody>
+            <tr><td class="txt">The linear ended</td><td>13,775</td><td>35.9%</td><td>5.9</td><td>2.4</td><td>51.7%</td><td>74.6%</td></tr>
+            <tr><td class="txt">The 10-mile reach limit</td><td>12,163</td><td>31.7%</td><td>8.8</td><td>11.8</td><td>1.7%</td><td>40.3%</td></tr>
+            <tr><td class="txt">The 20-segment limit</td><td>7,016</td><td>18.3%</td><td>20.0</td><td>6.7</td><td>11.8%</td><td>34.0%</td></tr>
+            <tr><td class="txt">A gap in the linear over half a mile</td><td>5,439</td><td>14.2%</td><td>4.3</td><td>2.7</td><td>46.9%</td><td>78.0%</td></tr>
+          </tbody>
+        </table>
+        <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-4 max-w-[820px]">
+          When a zone's corridor ends because the linear ends, 51.7% of its queued periods were still queued at
+          the last segment: the queue was longer than the road the inventory could show. Those lengths are published
+          as lower bounds (<span class="tny-mono">epochs_lower_bound</span>, <span class="tny-mono">epochs_corridor_end</span>)
+          rather than as measurements. Statewide, 60.4% of queued periods are lower bounds on the fixed line.
+        </p>
+      </div>
+      <div class="flex flex-col gap-4">
+        <div class="tny-card tny-card-bone p-5">
+          <div class="font-display font-medium text-[15px] text-[#0f1722]">A segment is the smallest thing a queue can be</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-2">
+            The maximum queues of CY2024 are built from segments averaging 0.59 mi (median
+            0.36) &mdash; 0.34 mi on Interstates, 0.70 off them. When a
+            4-mile rural segment reads below 35 mph, the walk has no finer unit and reports four miles.
+            803 zones show a queue over three miles made of three segments or fewer, and
+            726 of the 11,088 zones over the 0.75-mile line got there on a single
+            segment. Virginia found the same (HOP-19-051: TMCs average 1.2 mi and reach 18 mi rural, too coarse for
+            project queues). Report the 95th percentile beside the maximum, and the segment count under it.
+          </p>
+        </div>
+        <div class="tny-card p-5">
+          <div class="lbl">The longest queues in the dataset</div>
+          <table class="tny mt-2">
+            <thead><tr><th class="txt">Zone</th><th>Max (mi)</th><th>Segs</th><th>Mi / seg</th><th>95th</th><th>Run</th><th class="txt">Ended by</th></tr></thead>
+            <tbody>
+            <tr><td class="txt">US 20<br><span class="cite">ORI1237606301 &middot; R3 - Central New York &middot; 2024-08-05</span></td>
+              <td>15.6</td><td>9</td><td>1.73</td><td>15.6</td><td>10</td><td class="txt">reach</td></tr>
+            <tr><td class="txt">NY 9D<br><span class="cite">ORI258540209 &middot; R8 - Hudson Valley &middot; 2024-07-24</span></td>
+              <td>15.1</td><td>12</td><td>1.26</td><td>7.1</td><td>375</td><td class="txt">reach</td></tr>
+            <tr><td class="txt">NY 9D<br><span class="cite">ORI259780509 &middot; R8 - Hudson Valley &middot; 2024-10-21</span></td>
+              <td>15.1</td><td>12</td><td>1.26</td><td>9.2</td><td>335</td><td class="txt">reach</td></tr>
+            <tr><td class="txt">NY 9D<br><span class="cite">ORI259639209 &middot; R8 - Hudson Valley &middot; 2024-10-11</span></td>
+              <td>15.1</td><td>12</td><td>1.26</td><td>15.1</td><td>245</td><td class="txt">reach</td></tr>
+            <tr><td class="txt">US 9<br><span class="cite">ORI259918609 &middot; R8 - Hudson Valley &middot; 2024-10-30</span></td>
+              <td>14.5</td><td>11</td><td>1.32</td><td>6.6</td><td>245</td><td class="txt">reach</td></tr>
+            <tr><td class="txt">US 9<br><span class="cite">ORI259293309 &middot; R8 - Hudson Valley &middot; 2024-09-18</span></td>
+              <td>14.5</td><td>11</td><td>1.32</td><td>6.6</td><td>310</td><td class="txt">reach</td></tr>
+            </tbody>
+          </table>
+          <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 mt-2">
+            The same rural corridor, day after day, with the same three long segments. This is what the top of the
+            distribution is made of on the fixed line.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── how it was computed ──────────────────────────────────────────── -->
+  <section class="pt-9 pb-4">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">How the measure was computed</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">work_zone pipeline &middot; stage &ldquo;queue&rdquo;</span>
+    </div>
+
+    <div class="tny-card p-6">
+      <p class="font-proxima text-[13.5px] leading-[1.7] text-slate-700 max-w-[920px]">
+        No new data was acquired for this phase. It joins the work-zone inventory from phase 1 to the 5-minute
+        probe speeds New York already licenses through the National Performance Management Research Data Set,
+        and to that data set's own roadway inventory, which orders every segment along its road.
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5 mt-6">
+        <div class="flex items-start gap-3">
+          <span class="step-n">1</span>
+          <div>
+            <div class="font-display font-medium text-[14.5px] text-[#0f1722]">Use the same active windows as the speed measure</div>
+            <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+              When each zone was working, to the five minutes, from TRANSCOM's event-to-segment record where it exists
+              and from the event's own clock times where it does not &mdash; the identical expansion the speed phase
+              uses, now shared code, so M1 and M3 are measured over the same minutes.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="step-n">2</span>
+          <div>
+            <div class="font-display font-medium text-[14.5px] text-[#0f1722]">Build each zone's upstream corridor</div>
+            <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+              The inventory numbers segments along each road in the direction of travel &mdash; measured, not assumed:
+              a segment's end meets the next-numbered segment's start in 69 % of pairs and the reverse in 13 %. So
+              upstream is the lower number, on the same road and direction. Where two segments share a number (ramps
+              beside the mainline) the longer is kept; the corridor stops at a gap over half a mile, ten miles back, or
+              twenty segments.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="step-n">3</span>
+          <div>
+            <div class="font-display font-medium text-[14.5px] text-[#0f1722]">Walk it, every five minutes, where the speeds are</div>
+            <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+              A year is some five million active five-minute periods, each with up to twenty segments; the walk runs
+              inside the speed database, one calendar month at a time. If the anchor is below the line, the contiguous
+              run of upstream segments also below it is the queue; an unobserved segment ends the run and marks the
+              length a lower bound. Both the fixed line and the road-scaled comparator are walked on every period.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="step-n">4</span>
+          <div>
+            <div class="font-display font-medium text-[14.5px] text-[#0f1722]">Require two consecutive periods</div>
+            <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+              A queue is present only inside a run of two or more consecutive slow periods at the anchor. One five-minute
+              sample below the line is not a queue; ten minutes is. The share of time, the queue hours and the longest
+              continuous run are all counted after this rule.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-start gap-3 mt-5 pt-5 border-t border-zinc-950/8">
+        <span class="step-n">5</span>
+        <div>
+          <div class="font-display font-medium text-[14.5px] text-[#0f1722]">Publish the zone, keep the hours</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1 max-w-[920px]">
+            One row per work zone carries the measure &mdash; maximum and 95th-percentile queue, share of time, longest
+            run, the over-threshold flag under both lines, the corridor that was walked and how much of the length is a
+            lower bound &mdash; together with the list of segments in the longest queue and a geometry of that extent,
+            so the layer draws how far back the queue reached. A second table keeps one row per zone, date and clock hour
+            as the evidence. The measure is rolled up per universe (all, week-plus, significant, Interstate, not
+            Interstate) onto each vintage's metadata.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pb-4">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div class="tny-card tny-card-bone p-5">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">What NYSDOT still needs to decide</div>
+        <ol class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-2 space-y-1.5 list-decimal pl-5">
+          <li><span class="font-medium text-[#0f1722]">The speed line.</span> 35 mph is Ohio's and it is right for
+              the Interstate projects the review covers. For anything statewide it over-counts arterials by a factor of
+              2.1&times;; the road-scaled comparator is on every row.</li>
+          <li><span class="font-medium text-[#0f1722]">The length line, and its basis.</span> 0.75 mi of upstream
+              queue beyond the work, not including the work zone's own length. Illinois measures &ldquo;beyond
+              pre-existing&rdquo;, which needs the baseline the speed report also asked for.</li>
+          <li><span class="font-medium text-[#0f1722]">Maximum, or 95th percentile.</span> The maximum is one five-minute
+              period and, on rural roads, often one four-mile segment. The 95th percentile is on every row and is the
+              more defensible number for a project review.</li>
+          <li><span class="font-medium text-[#0f1722]">Whether ramps count.</span> This walk stays on the mainline;
+              TRANSCOM's extent follows ramps and cross streets. A queue that spills onto a ramp is not measured here,
+              and neither method sees a queue on a road the probe network does not cover.</li>
+        </ol>
+      </div>
+      <div class="tny-card tny-card-tint p-5">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">Where it lives</div>
+        <ul class="font-proxima text-[13px] leading-[1.75] text-slate-700 mt-2 space-y-1">
+          <li><span class="tny-mono">source 2226</span> &mdash; <span class="tny-mono">wz_queue</span>, one row per work zone,
+              9 vintages CY2018&ndash;CY2026; <span class="tny-mono">max_queue_len_mi</span>, <span class="tny-mono">p95_queue_len_mi</span>,
+              <span class="tny-mono">pct_time_queued</span>, <span class="tny-mono">longest_queue_run_min</span>,
+              <span class="tny-mono">exceeds_queue_threshold</span>, with <span class="tny-mono">*_phed</span> twins</li>
+          <li><span class="tny-mono">source 2227</span> &mdash; <span class="tny-mono">wz_queue_hour</span>, one row per zone &times;
+              date &times; clock hour</li>
+          <li><b>M3 itself</b> lives on each view as <span class="tny-mono">metadata.m3</span> and
+              <span class="tny-mono">metadata.m3_by_tier</span> (all / week_plus / significant / interstate / not_interstate)</li>
+          <li><span class="tny-mono">queue_measured</span> is FALSE where the anchor was never observed while active &mdash;
+              unknown, not zero; <span class="tny-mono">epochs_lower_bound</span> counts the periods whose length is a floor</li>
+          <li><span class="tny-mono">max_queue_tmcs</span> is the space-separated segment list at the longest queue &mdash; the
+              extent phase 7 will join crashes to; <span class="tny-mono">wkb_geometry</span> is its union with the anchor</li>
+          <li><span class="tny-mono">window_source</span> distinguishes the conflated window from the fallback &mdash; filter on it
+              before aggregating across years</li>
+          <li>pgEnv <span class="tny-mono">npmrds2</span>, schema <span class="tny-mono">work_zone</span>; built by
+              <span class="tny-mono">dms-template/data-types/work_zone</span>, stage <span class="tny-mono">queue</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="font-proxima text-[11.5px] leading-[1.6] text-slate-500 mt-6 border-t border-zinc-950/10 pt-4">
+      Compiled 2026-09-16 for phase 5 of
+      <span class="tny-mono">planning/transportny/tasks/current/workzone-performance-data-type-pipeline.md</span>,
+      generated from a live query of DAMA sources 2226 and 2227 on <span class="tny-mono">npmrds2</span> rather than
+      hand-assembled, so it can be regenerated after any rebuild.
+      <b>M3 is the share of work zones whose maximum upstream queue exceeded 0.75 miles</b>, where a
+      queue is the contiguous run of segments upstream of the anchor with speeds below 35 mph while the anchor
+      is below 35 mph in two or more consecutive five-minute periods; queue length excludes the anchor's own
+      length. The PHED comparator repeats the walk against max(20, 0.6 &times; posted limit) per segment. Corridors are
+      the segments on the anchor's own NPMRDS linear and direction with a lower <span class="tny-mono">road_order</span>,
+      the longest segment kept at a tied order, limited to 10 upstream miles, 20 segments and gaps under 0.5 mi.
+      Figures are on the conflated active-window basis (<span class="tny-mono">window_source = '2799'</span>) unless
+      stated; CY2019 and CY2020 exist only on the fallback basis and CY2026 covers 1 January to 31 August 2026 only.
+      Speeds are derived from NPMRDS travel times as <span class="tny-mono">miles &times; 3600 / travel_time</span> for all
+      vehicle classes at the segment's inventory length for that year; posted limits come from the
+      <span class="tny-mono">npmrds_geometry</span> meta view in Postgres. The TRANSCOM comparison uses view 2799's
+      impact segments for the same zones, restricted to the anchor's linear and lower orders.
+    </p>
+  </section>
+
+</div>
+</body>
+</html>

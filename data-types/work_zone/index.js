@@ -40,6 +40,10 @@ const spineWorker = require('./workers/spine.js');
 const exposureWorker = require('./workers/exposure.js');
 const speedWorker = require('./workers/speed.js');
 const delayWorker = require('./workers/delay.js');
+const queueWorker = require('./workers/queue.js');
+const crashesClearWorker = require('./workers/crashes_clear.js');
+const crashJoinWorker = require('./workers/crash_join.js');
+const differentialWorker = require('./workers/differential.js');
 
 /**
  * workerPath → handler. One entry lands per phase; `stages.js` lists the rest
@@ -50,6 +54,10 @@ const workers = {
   'work_zone/exposure': exposureWorker,
   'work_zone/speed': speedWorker,
   'work_zone/delay': delayWorker,
+  'work_zone/queue': queueWorker,
+  'work_zone/crashes_clear': crashesClearWorker,
+  'work_zone/crash_join': crashJoinWorker,
+  'work_zone/differential': differentialWorker,
 };
 
 const isRunnable = (stage) => Boolean(STAGES[stage] && workers[STAGES[stage].workerPath]);
