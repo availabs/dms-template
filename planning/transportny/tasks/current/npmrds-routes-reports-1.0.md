@@ -3,10 +3,12 @@
 **Project:** TransportNY · **Topic:** themes · **Status:** OPEN — this is the single entry point for
 the Routes/Reports arc as of 2026-09-16. · **Started:** 2026-09-16
 
-> **Read this file first.** The arc accumulated ~45 task docs across two repos. A 2026-09-16 triage
-> checked each remaining "open" item against live code and found **most were already shipped but
-> still documented as open**. This file is the current truth; everything else is history. Regenerate
-> the full doc inventory any time with:
+> **Read this file first — it is the single entry point for Routes/Reports and for converting old
+> reports.** The arc accumulated ~45 task docs across two repos. A 2026-09-16 triage checked each
+> remaining "open" item against live code and found **most were already shipped but still
+> documented as open**. This file is the current truth; everything else is history. Start at
+> "Working on reports — start here" below for commands, code layout and the gotchas; use the table
+> immediately below for what is actually open. Regenerate the full doc inventory any time with:
 >
 > ```bash
 > python3 scripts/npmrds-reports/arc_inventory.py --open   # open items only
@@ -21,29 +23,31 @@ the Routes/Reports arc as of 2026-09-16. · **Started:** 2026-09-16
 
 Derived 2026-09-16 from a **systematic sweep of every live (non-archive) arc doc**, not a
 hand-picked subset — an earlier pass the same day only triaged the UI parity-gap ledger and missed
-the old-reports workstream entirely. Regenerate the candidate set with the extractor pattern in
-`arc_inventory.py`.
+the old-reports workstream entirely. Regenerate the doc inventory any time with
+`python3 scripts/npmrds-reports/arc_inventory.py --open`.
 
 The finding: nearly every remaining "open" line across the arc is an **explicit Ryan deferral**, a
-scoping-only task, or part of the routing-plugin sub-arc. What is genuinely open and 1.0-relevant:
+scoping-only task, or part of the routing-plugin sub-arc.
 
-| # | Item | Where | Size | State |
-|---|------|-------|------|-------|
-| 1 | **Info Box multi-measure support** — `convert_report.py`/`convert_template.py` build only ONE measure per Info Box graph. 869 dropped-measure instances across **524 reports**. `build_route_info_box_section_state_multi` already exists but isn't used on this path. | `old-reports-conversion.md` | Large | **Needs Ryan's call.** The single biggest lever on conversion coverage. Scoped as a follow-on at round 85, never built. |
-| 2 | **Literal `LOTTR`/`TTTR` measures** — 10 reports, currently invisible inside the generic `extra_measures_dropped` bucket. | `old-reports-conversion.md` | Small | Ryan at round 85: keep them for real, "somewhat soon… idk if mandatory." Entangled with #1. |
-| ~~3~~ | **DONE 2026-09-16 (Ryan).** ~~Publish the All Reports list page~~ — built and verified live, but draft-only; only the `/edit` route has ever been exercised. | `npmrds-all-reports-list-page.md` | Small | Shippable now. `/npmrds/reports/list`. |
-| ~~4~~ | **DONE 2026-09-16 (Ryan).** ~~GridGraph Part 1 live-verification~~ — built and unit-verified against `composeMeasureConfig`, never run against a real dev-DB query. | `gridgraph-row-height-scaling.md` | Small | Row-height-by-TMC-length is visibly working elsewhere; this is the NPMRDS default path specifically. |
-| ~~5~~ | **DONE 2026-09-16 (Ryan).** ~~Deploy the updated dms-server~~ for the delete-cascade fix. | `delete-cascade-source-view-orphans.md` | — | User-owned action, not a code task. |
-| 6 | Old-report known gaps: Route Compare anchor row ordering inconsistent; Travel Time Route Map colour scale is static. | `old-reports-conversion.md` | Small | Both user-reported, both still listed open in that file's gap register. |
+| # | Item | Where | State |
+|---|------|-------|-------|
+| ~~1~~ | ~~Info Box multi-measure~~ | `old-reports-conversion.md` | **BUILT + live-verified 2026-09-16** (step 1). 483 of 597 instances. |
+| ~~1b~~ | ~~Route Compare multi-measure~~ | `old-reports-conversion.md` | **BUILT + live-verified 2026-09-16.** 192 of 216 instances. |
+| ~~3~~ | ~~Publish the All Reports list page~~ | — | **DONE 2026-09-16 (Ryan).** |
+| ~~4~~ | ~~GridGraph Part 1 live-verification~~ | — | **DONE 2026-09-16 (Ryan).** |
+| ~~5~~ | ~~Deploy dms-server for delete-cascade~~ | — | **DONE 2026-09-16 (Ryan).** |
+| 2 | **Literal `LOTTR`/`TTTR` measures** — 10 reports, invisible inside the generic `extra_measures_dropped` bucket. | `old-reports-conversion.md` | Open. Ryan at round 85: keep them for real, "somewhat soon… idk if mandatory." Payoff today is zero (all 10 predate 1410 coverage). |
+| 6 | Old-report known gaps: Route Compare anchor row ordering inconsistent; Travel Time Route Map colour scale is static. | `old-reports-conversion.md` | Open, both user-reported. |
 
-**Conversion coverage as of round 85 (2026-08-31):** clean (page-producible **and** full)
-conversions **290 / 870**; `full` 309→483; `no_equivalent` instances 534→49.
+**Nothing on this list blocks 1.0 any more.** Items 2 and 6 are small and explicitly low-urgency.
 
-> **Correction, 2026-09-16.** An earlier version of this file said item #1 "is what stands between
-> that and a substantially higher number." That is wrong. `extra_measures_dropped` does **not**
-> affect whether a report is classified full/clean — only the PRIMARY measure's mapping does
-> (`old-reports-conversion.md`, gap register). Item #1 buys **fidelity** (a converted Info Box
-> showing all the columns the old one showed) and will not move the 290/870 figure at all.
+### Highest-value next step (not a blocker)
+
+Add **`hoursOfDelay`** and **`co2Emissions`** to the Info Box / Route Compare supported measure
+sets (`INFO_BOX_MEASURE_BY_BUCKET`, `MEASURE_EXPR`). Both already exist elsewhere in the converter's
+vocabulary. The commonest Route Compare combo is `[speed, travelTime, hoursOfDelay, co2Emissions]`
+(30 instances), so this converts a large share of the 334 + 178 *partial* boxes into full-fidelity
+ones. Full numbers in `old-reports-conversion.md`'s step-1/1b sections.
 
 ### Not in 1.0 — explicitly deferred by prior decision
 
@@ -139,6 +143,74 @@ cols=tmc,road,direction  HTTP 200   36734 bytes   keys -> tmc:True  road:True  d
 (Ryan: it "sometimes gets hung"). Present before this change and not caused by it; the tile-property
 route above means the popup's Road/Direction no longer depend on the fetch that hangs.
 
+## Working on reports — start here
+
+### Converting old reports
+
+Source of truth: **`src/dms/planning/tasks/current/old-reports-conversion.md`** (live) +
+`old-reports-conversion-archive.md` (rounds 1-84). 85 rounds in; read that file's "Current state"
+header and its "Known functionality gaps" register before touching the converter.
+
+```bash
+python3 scripts/npmrds-reports/convert_old_reports.py --report-id <id> --dry-run
+python3 scripts/npmrds-reports/convert_old_reports.py --report-id <id> [--replace]
+python3 scripts/npmrds-reports/census_old_reports.py        # corpus-wide coverage census
+```
+
+Code lives in `scripts/npmrds-reports/convert_old_reports_lib/` (a 6016-line monolith split into
+16 modules; `convert_old_reports.py` is a shim preserving imports). The pieces that matter most:
+`section_builders.py` (`analyze_graph`, `build_graph_section_data`, the multi-measure helpers),
+`vocab.py` (old-tool key spaces and buckets), `template_specs.py` (`BRIDGE_GRAPH_SPECS`,
+`MEASURE_EXPR`), `compose_bridge.py` (calls the REAL `composeMeasureConfig.js` so converter and UI
+can't drift).
+
+Coverage as of 2026-09-16: clean (page-producible **and** full) conversions **290 / 870**.
+Multi-measure sections: Info Box **483 / 597**, Route Compare **192 / 216**.
+
+### Building a report from scratch
+
+`scripts/npmrds-reports/report_build.mjs` (spec-driven) — composes through the same
+`applyMeasurePick` the UI's Measure Picker calls, so spec-built and UI-built output are identical
+by construction. Skill: [`creating-reports.md`](../../../../src/dms/skills/creating-reports.md).
+Routes first: [`creating-routes.md`](../../../../src/dms/skills/creating-routes.md) /
+`scripts/npmrds-reports/route_build.py`.
+
+### Verifying anything
+
+**Mandatory on every report/RRL/converter touch** — not optional:
+
+```bash
+node scripts/npmrds-reports/report_probe.mjs reports/<slug> --auth   # one page
+node scripts/npmrds-reports/probe_corpus.mjs                         # golden-corpus regression
+```
+
+`--auth` needs a token: `bash scratchpad/npmrds-sub/mint_token.sh`. Without it the probe silently
+degrades to anonymous and reports "Welcome back." with 0 sections. The browser URL takes a
+`/npmrds` prefix the probe's bare slug does not. See
+[`regression-testing-npmrds-reports.md`](../../../../src/dms/skills/regression-testing-npmrds-reports.md)
+and [`traversing-report-pages.md`](../../../../src/dms/skills/traversing-report-pages.md).
+
+### Gotchas that have each cost a session
+
+- **Draft vs published sections are DISJOINT arrays.** `/edit/<slug>` renders `draft_sections`;
+  the public page renders `sections`, and they point at different component rows. Patch both, and
+  when inspecting a page make sure you are reading the array the UI you are looking at renders.
+- **Two symbology homes.** A Map section carries its own embedded COPY of the symbology; the
+  mapeditor catalog item is not what the page renders. Patch the catalog row AND both section
+  copies (see the Gap #3 writeup below for a worked example).
+- **`_measurePick.measure` drives units.** Omit it and `resolveLegendUnit` returns undefined, so
+  tooltips and legend captions silently lose their units. Every writer must set it.
+- **No backfill, by design.** Section chrome (`activeStyle`, section title/kicker) is stamped at
+  creation. Sections minted before a default changed keep their old look until regenerated —
+  `reportSectionDefaults.js` states this explicitly. An old-looking card is usually a stale
+  section, not stale code.
+- **A long-running Vite dev server can serve stale modules.** `report_build.mjs` loads
+  `reportSectionDefaults.js`/`composeMeasureConfig.js` through `server.ssrLoadModule`, and the
+  browser bundle serves `useAddGraphSection.js`. A server started before a change to those files
+  can keep writing the OLD values from a CORRECT repo. Restart it after touching them. (Diagnosed
+  2026-09-16 from a section written 3 days after its default changed.)
+- **`dms raw update --set` corrupts stringified JSON.** Use a full `--data` replace.
+
 ## Where the history lives
 
 Everything below is closed or archival — do not treat any of it as a backlog without re-checking it
@@ -165,6 +237,13 @@ Research (evidence, not tracking): `research/npmrds-reports/`, `research/route-c
 - **2026-09-16** — File created. Full-arc triage against live code: **13** items documented as open
   were already closed, moot, or dead (table above); gap #3 fixed and live-confirmed;
   `arc_inventory.py` added so the doc inventory regenerates instead of drifting.
+- **2026-09-16 — SHIPPED this session** (all converter-only, all live-verified, golden corpus 9/9
+  PASS after each): **Gap #3** hover popover now names the segment (Road/Direction/TMC);
+  **Info Box multi-measure** (step 1, 483/597 instances); **Route Compare multi-measure**
+  (step 1b, 192/216); **section titles** now name every measure a box contains; **tooltip units**
+  — converted reports were missing `_measurePick.measure`, which silently disabled the existing
+  `resolveLegendUnit` → `tooltip.valueLabel` chain, so every converted graph showed bare numbers.
+  Details in `old-reports-conversion.md`; the units fix has its own section there.
 - **2026-09-16 (later, same day)** — First triage pass was **incomplete**: it worked from the UI
   parity-gap ledger and a few cross-cutting docs, and missed the old-reports conversion workstream
   entirely. Redone as a systematic sweep of every live arc doc; the 1.0 table above is the result.

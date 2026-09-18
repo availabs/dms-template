@@ -21,6 +21,71 @@ const UA_LAYER_KEY = 'ua'
 
 const BLANK_OPTION = { value: "", name: "" };
 
+// ── the segment-identity join (roadname + direction) ─────────────────────────
+// The pm3 metrics source the PM3 layer draws from carries no human-readable name for
+// a segment - its identity columns are `tmc`, `county`, `region_code`. Verified against
+// pm3.s2135_v3740_pm3_v6_2025: no road/roadname/direction column exists, and
+// `directionality` is an AADT-distribution flag ("EVEN_DIST"), not a compass heading.
+//
+// The TMC network shapefile (DAMA source 582) is where that identity lives - `road`,
+// `direction`, plus miles/aadt. It is the same network the NPMRDS report route-maps
+// already bind to (MeasurePicker/composeMapConfig.js GEOMETRY_TILE_VIEWS), so the hover
+// popup names a segment the same way on both surfaces.
+//
+// View 984 is that source's ALL-YEARS table (2018-2026, one row per tmc+year), chosen
+// over the per-year views so a single view id serves every year the Year control offers
+// and the selected year travels as a join FILTER instead of a year -> view_id map that
+// would have to be maintained in lockstep with the pm3 views.
+//
+// ⚠ The year filter is load-bearing, not cosmetic. The join matches on `tmc` alone, and this
+// view holds one row per tmc PER YEAR, so without a year constraint a single tmc matches
+// every year it existed and the lookup returns an arbitrary one. dataUpdate therefore
+// attaches the join ONLY when it has a real 4-digit year, and sends the year as a filterRow
+// (buildJoinFilterOptions turns filterRows into the filterGroups the query actually applies;
+// a plain `filters` object is spread to the top level of the options bag and ignored).
+const NETWORK_SOURCE_ID = 582;
+const NETWORK_ALL_YEARS_VIEW_ID = 984;
+const NETWORK_ENV = "npmrds2";
+
+// The columns pulled across the join. Nothing is baked into the tile (the join is
+// hoverOnly), so this list is what the interaction path requests from the join source when
+// a segment is hovered. `tmc` rides along because the query has to SELECT its own join key
+// for the row to be matched back to the feature.
+const NETWORK_JOIN_ATTRIBUTES = ["road", "direction", "tmc"];
+
+// ── ⚠ TEMPORARY (2026-09-18) · roadname/direction join kill-switch ───────────
+// true = the feature is ON: the layer carries a hoverOnly join config and the popup lists
+// Road/Direction. false = the pre-change baseline (no join config, neither row shown).
+//
+// The join is HOVER-ONLY - `hoverOnly: true` in dataUpdate.jsx - so it never touches the tile
+// query and costs nothing per tile at any zoom. An earlier build baked the columns into the
+// tile instead; that cost up to 30s on a statewide tile and was reverted. See
+// planning/transportny/tasks/current/macroview-hover-roadname-direction.md.
+const ENABLE_ROADNAME_JOIN = true;
+
+
+// ── ⚠ TEMPORARY (2026-09-18) · PM3 tile host override ────────────────────────
+// The PM3 layer's tile URL is an ABSOLUTE url baked into the stored symbology, and core's
+// getLayerTileUrl (SymbologyViewLayer.jsx) rebuilds only the query string - it never
+// touches the origin. So the map fetches its network tiles from whatever host the
+// symbology was authored against (dmsserver.availabs.org), no matter what API_HOST the
+// app itself is pointed at. When that host is unreachable the whole PM3 network silently
+// fails to draw.
+//
+// This redirects ONLY the PM3 layer's tiles (dataUpdate.jsx rewrites its `sources` anyway
+// for the view-id/year swap, so the rewrite costs nothing extra). The boundary layers
+// keep their own hosts. Both hosts serve byte-identical tiles for this layer - verified
+// 2026-09-18 on tiles 12/1208/1510 (29,530b) and 10/302/377 (91,298b), plain and joined.
+//
+// Empty string = no rewrite, use whatever the symbology stores. Set VITE_TILE_HOST to
+// point somewhere else. The dev-only default exists so a production build can never ship
+// pointing at a localhost that does not exist.
+//
+// TO REVERT: set this to "" (or delete the const and its use in dataUpdate.jsx).
+const TILE_HOST_OVERRIDE =
+  import.meta.env?.VITE_TILE_HOST ||
+  (import.meta.env?.DEV ? "http://localhost:3001" : "");
+
 // ── the worst-N segments overlay (2026-08-17) ────────────────────────────────
 // ONE limit for the list AND the map points, because they are ONE query
 // (stats.js → fetchWorstSegments): N points on the canvas is N rows in the panel
@@ -132,6 +197,12 @@ export {
   REGION_LAYER_KEY,
   UA_LAYER_KEY,
   BLANK_OPTION,
+  NETWORK_SOURCE_ID,
+  NETWORK_ALL_YEARS_VIEW_ID,
+  NETWORK_ENV,
+  NETWORK_JOIN_ATTRIBUTES,
+  TILE_HOST_OVERRIDE,
+  ENABLE_ROADNAME_JOIN,
   WORST_SEGMENT_LIMIT,
   WORST_POINTS_SOURCE_ID,
   WORST_POINTS_LAYER_ID,

@@ -4,6 +4,12 @@ import { MEASURES } from "./measures";
 import {
   PM3_LAYER_KEY,
   singleYearViewsNewestFirst,
+  NETWORK_SOURCE_ID,
+  NETWORK_ALL_YEARS_VIEW_ID,
+  NETWORK_ENV,
+  NETWORK_JOIN_ATTRIBUTES,
+  TILE_HOST_OVERRIDE,
+  ENABLE_ROADNAME_JOIN,
 } from "./constants";
 
 const DataUpdate = (map, state, setState) => {
@@ -131,6 +137,81 @@ const DataUpdate = (map, state, setState) => {
           .replace(/year=\d{4}/g, `year=${selectedYear}`)
           .replace(/year%3D\d{4}/g, `year%3D${selectedYear}`);
       }
+      // ── the segment-identity join (roadname + direction) ─────────────────
+      // The pm3 source has no road name: see NETWORK_* in constants.js for what this
+      // joins to and why the year filter below is not optional. Written as layer props
+      // rather than into the stored symbology so it tracks the Year control the same way
+      // `sources`/`view_id`/`data-column` above already do - core's getLayerTileUrl
+      // (SymbologyViewLayer.jsx) reads `join` off these props on every tile-url rebuild
+      // and serializes it into the tile request's `join=` param via buildJoinParam.
+      //
+      // Resolved ON HOVER, not baked into the tile. routecreation.plugin.jsx argues the
+      // opposite for its own layer ("must be IN THE TILE", because the on-demand path was
+      // seen sticking on "Fetching Attributes") - that reasoning does not carry here, and
+      // measuring is what showed why: this layer's popup ALREADY waits on an attribute
+      // fetch for its base columns (tmc/county/region_code) on every hover, so the tile
+      // bake bought no extra responsiveness, it only made every tile more expensive.
+      // Measured on tile 6/18/23: 1.41s with no join, 30s (server timeout, EMPTY tile) with
+      // one - and an empty `tileColumns` costs exactly the same, because the server runs
+      // the join regardless of whether any column is baked. The join source resolves a
+      // single tmc in ~55ms.
+      // ONE gate for both the join config and the popup's Road/Direction rows, so the two
+      // can never disagree - listing a column with no join to resolve it renders a
+      // permanently blank row. Either false => `join: undefined` on the layer and no
+      // Road/Direction in hover-columns, i.e. exactly the pre-change behaviour.
+      //   ENABLE_ROADNAME_JOIN - the feature kill-switch (constants.js)
+      //   the year test        - a real 4-digit year, or the lookup is ambiguous across
+      //                          the join view's years (constants.js)
+      const hasJoinYear =
+        ENABLE_ROADNAME_JOIN && /^\d{4}$/.test(String(selectedYear));
+      if (hasJoinYear) {
+        set(draft, `${layerBase}['join']`, {
+          enabled: true,
+          featureKeyColumn: "tmc",
+          joinColumn: "tmc",
+          source: {
+            sourceId: NETWORK_SOURCE_ID,
+            viewId: NETWORK_ALL_YEARS_VIEW_ID,
+            env: NETWORK_ENV,
+          },
+          query: {
+            columns: NETWORK_JOIN_ATTRIBUTES,
+            groupBy: [],
+            // The year constraint MUST travel as a filterRow. buildJoinFilterOptions
+            // turns filterRows into `options.filterGroups`, which the tile route applies
+            // INSIDE the join subquery; a plain `filters` object is spread to the top
+            // level of the options bag instead, where the join subquery ignores it and
+            // every year of each tmc matches (the 8.5x fan-out described in constants.js,
+            // reproduced live before this was written).
+            filters: {},
+            filterRows: [{ column: "year", valuesText: String(selectedYear) }],
+            filterMode: "all",
+          },
+          // HOVER-ONLY: nothing is baked into the tile, so the tile query carries no join
+          // at all (buildJoinParam returns "" for this flag). The popup's Road/Direction
+          // values are resolved on demand from the join source by tmc, through the
+          // interaction path that already fetches this layer's base attributes
+          // (tmc/county/region_code) on every hover - so this rides along with a round trip
+          // the popup was making anyway rather than adding cost to every tile.
+          hoverOnly: true,
+        });
+      } else {
+        // No trustworthy year => no join at all. Leaving an unfiltered join attached
+        // would silently multiply every feature by the number of network years.
+        set(draft, `${layerBase}['join']`, undefined);
+      }
+
+      // ⚠ TEMPORARY host redirect - see TILE_HOST_OVERRIDE in constants.js. Applied to the
+      // JSON string alongside the view-id and year rewrites above, so it lands before the
+      // sources object is handed back to core. Matches the origin only when it is followed
+      // by the dama tile path, so nothing else in the sources blob can be caught by it.
+      if (TILE_HOST_OVERRIDE) {
+        sourcesJson = sourcesJson.replace(
+          /https?:\/\/[^/"]+(?=\/dama-admin\/)/g,
+          TILE_HOST_OVERRIDE
+        );
+      }
+
       const newSources = JSON.parse(sourcesJson);
       const newDataColumn = getMeasure(measureFilters);
       set(
@@ -166,6 +247,14 @@ const DataUpdate = (map, state, setState) => {
           )?.name,
       ].filter(Boolean).join(" · ");
       set(draft, `${symbologyDataPath}['${pm3LayerId}']['hover-columns']`, [
+        // Joined in from the TMC network shapefile, so they are listed only when the
+        // join is actually attached - otherwise the popup would show two blank rows.
+        ...(hasJoinYear
+          ? [
+              { column_name: "road", display_name: "Road" },
+              { column_name: "direction", display_name: "Direction" },
+            ]
+          : []),
         { column_name: "tmc", display_name: "TMC" },
         ...(newDataColumn ? [{ column_name: newDataColumn, display_name: measureLabel }] : []),
         { column_name: "county", display_name: "County" },
