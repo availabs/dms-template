@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Night Was Left — Two Curses</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { theme: { extend: {
+      colors: { vellum:'#FCF7E4', 'vellum-deep':'#E3D5B0', leaf:'#F6EFDD', ink:'#3A3129', 'ink-soft':'#5A4E42', sepia:'#7A6A52', rubric:'#8A2B1E', gilt:'#9C7A2E', rule:'#C6B58D' },
+      fontFamily: { display:['"IM Fell English"','serif'], prose:['"EB Garamond"','serif'], meta:['"IM Fell English SC"','serif'], blackletter:['"UnifrakturMaguntia"','serif'] }
+    } } }
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&family=IM+Fell+English+SC&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=UnifrakturMaguntia&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+</head>
+<body class="min-h-screen">
+
+<!--
+  TWO CURSES · POEM — "The Night was left" (songs dataset id 1450073, emblem xvii). v0.2: full width, no rules.
+  Layout `default`, no TopNav, no footer (v0.13) →
+    LayoutGroup `content` : the emblem page — the whole plate, ink on paper, sticky (5) facing the numeral scroll, title, motto and verse (7); a Card in row mode
+    LayoutGroup `content` : tailpiece · previous / next
+-->
+
+<div data-dms="layout" data-name="default" class="tc-paper min-h-screen text-ink flex flex-col">
+
+
+  <main class="flex-1">
+
+    <!-- LAYOUTGROUP — content: the emblem page. Plate (5) facing the verse (7). -->
+    <div data-dms="layoutGroup" data-name="content" class="w-full pt-8 md:pt-12">
+      <div class="w-full px-6 md:px-12 xl:px-20">
+        <div class="grid grid-cols-12 gap-0">
+
+          <div data-dms="section" data-name="emblem" class="col-span-12 p-3">
+            <div class="grid grid-cols-12 gap-0">
+
+              <!-- image cell -->
+              <div class="col-span-12 md:col-span-5 p-3 md:pr-10">
+                <div class="md:sticky md:top-8 self-start">
+                <a href="home.html" class="block font-blackletter text-[44px] leading-none text-ink hover:text-rubric transition-colors text-center mb-5">Two Curses</a>
+                <figure class="tc-plate">
+                  <img src="../assets/alpha/quarlesemblems00quaruoft_0334.png"
+                       alt="An infant reaches skyward from a bare tree that grows out of a skull, a ring hanging from a branch; a strap-work frame bears a crowned heart below"
+                       class="w-full max-w-[620px] mx-auto">
+                  <figcaption class="mt-3 text-center">
+                    <p class="font-display italic text-[17px] leading-[1.4] text-ink-soft">Electric flowers, bloom in winter's mouth</p>
+                    <p class="font-meta text-[12px] tracking-[0.14em] text-sepia mt-2">Quarles, <span class="italic font-display text-[17px] tracking-normal">Emblems</span>, plate to Book V</p>
+                  </figcaption>
+                </figure>
+                </div>
+              </div>
+
+              <!-- verse cell -->
+              <div class="col-span-12 md:col-span-7 p-3 md:pl-6">
+                <div class="text-center md:text-left mb-10">
+                <!-- Card · image cell + text cell: the emblem's number in one of the book's own title cartouches (Book V style, lettering cleared) -->
+                <div class="tc-framed tc-framed--c0275 max-w-[420px] mx-auto md:mx-0">
+                  <img src="../assets/cartouches/quarlesemblems00quaruoft_0275.png" alt="">
+                  <div class="tc-window"><p class="font-meta text-[15px] tracking-[0.08em] text-rubric">Emblem xvii</p></div>
+                </div>
+                <h1 class="font-display text-[42px] md:text-[60px] leading-[1.05] text-ink mt-4">The Night Was Left</h1>
+                <p class="font-display italic text-[22px] leading-[1.35] text-ink-soft mt-4">“there is no home, anymore”</p>
+                <p class="font-meta text-[12px] tracking-[0.14em] text-sepia mt-4">two verses · refrain · key of g</p>
+                </div>
+                <div class="tc-verse max-w-[60ch]">
+
+                  <div class="flex flex-col md:flex-row gap-2 md:gap-6">
+                    <span class="font-meta text-[12px] tracking-[0.14em] text-rubric md:w-14 shrink-0 md:pt-3">i.</span>
+                    <p class="tc-dropcap font-prose text-[22px] leading-[1.55] text-ink">You don't see, the ways I let you hang
+I've been gone, and you think you are to blame
+I can see you, smiling derisively
+you need someone you trust to come visiting
+there is no home, anymore</p>
+                  </div>
+
+                  <div class="flex flex-col md:flex-row gap-2 md:gap-6 mt-9">
+                    <span class="font-meta text-[12px] tracking-[0.14em] text-rubric md:w-14 shrink-0 md:pt-2">refrain</span>
+                    <p class="font-prose italic text-[22px] leading-[1.55] text-ink-soft md:pl-6">the night you brought us all around,
+and we were singing
+the night you knew you lost your ground,
+the strangest demon</p>
+                  </div>
+
+                  <div class="flex flex-col md:flex-row gap-2 md:gap-6 mt-9">
+                    <span class="font-meta text-[12px] tracking-[0.14em] text-rubric md:w-14 shrink-0 md:pt-2">ii.</span>
+                    <p class="font-prose text-[22px] leading-[1.55] text-ink">Electric flowers, bloom in winter's mouth
+you wear the wound, that opens toward the south
+Copper bells ring, through forests made of bone
+And I have learned, to dance here all alone
+there is no home, anymore</p>
+                  </div>
+
+                  <div class="flex flex-col md:flex-row gap-2 md:gap-6 mt-9">
+                    <span class="font-meta text-[12px] tracking-[0.14em] text-rubric md:w-14 shrink-0 md:pt-2">refrain</span>
+                    <p class="font-prose italic text-[22px] leading-[1.55] text-ink-soft md:pl-6">the night you brought us all around,
+and we were singing
+the night you knew you lost your ground,
+the strangest demon</p>
+                  </div>
+
+                  <div class="flex flex-col md:flex-row gap-2 md:gap-6 mt-12">
+                    <span class="md:w-14 shrink-0"></span>
+                    <div>
+                      <a href="https://songs.b3nson.net" class="tc-fleuron font-meta text-[15px] tracking-[0.08em] text-ink hover:text-rubric transition-colors">With the chords</a>
+                      <p class="font-prose italic text-[16px] leading-[1.5] text-sepia mt-2">G · Em · C · Am — the verse walks down; the refrain lifts to D.</p>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- LAYOUTGROUP — content: tailpiece, previous / next -->
+    <div data-dms="layoutGroup" data-name="content" class="w-full pt-6 pb-4">
+      <div class="w-full px-6 md:px-12 xl:px-20">
+        <div class="grid grid-cols-12 gap-0">
+
+          <div data-dms="section" data-name="tailpiece" class="col-span-12 p-3">
+            <div class="tc-ornament flex justify-center">
+              <!-- decorative: tailpiece — the fleuron, Quarles' Emblems p.309 -->
+              <img src="../assets/ornaments/tail-fleuron.png" alt="" class="w-[280px]">
+            </div>
+          </div>
+
+          <!-- Card · two link cells -->
+          <div data-dms="section" data-name="prev-next" class="col-span-12 p-3">
+            <div class="grid grid-cols-12 gap-0">
+              <a href="#" class="group col-span-12 md:col-span-6 p-3 flex items-center gap-4">
+                <!-- icon: ArrowLeft -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-sepia group-hover:text-rubric transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18"/></svg>
+                <span>
+                  <span class="block font-meta text-[12px] tracking-[0.14em] text-sepia">previous · emblem xvi</span>
+                  <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors mt-1">The Book Was the Same</span>
+                </span>
+              </a>
+              <a href="#" class="group col-span-12 md:col-span-6 p-3 flex items-center justify-end gap-4 text-right">
+                <span>
+                  <span class="block font-meta text-[12px] tracking-[0.14em] text-sepia">next · emblem xviii</span>
+                  <span class="block font-display text-[22px] leading-[1.25] text-ink group-hover:text-rubric transition-colors mt-1">If You Told Me</span>
+                </span>
+                <!-- icon: ArrowRight -->
+                <svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-sepia group-hover:text-rubric transition-colors shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/></svg>
+              </a>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+
+</div>
+
+<script src="../ds-nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en" data-mode="dark" data-density="cozy">
+<head>
+  <meta charset="utf-8">
+  <title>WCDB · Reset password</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="../_shared.css">
+</head>
+<body>
+
+<!-- ============================================================
+     LAYOUT · auth — the single attentional surface.
+     wcdb_theme.js ships `auth`-named styles on `layout`, `layoutGroup`
+     and (via the pattern's topNav options) a logo-only notch. The auth
+     pattern's AuthLayout asks for them by name: `<Layout activeStyle="auth">
+     <LayoutGroup activeStyle="auth">`. There is no editorial cutaway here —
+     one centred column on the page background, and one card in it.
+
+     The card holds the kicker, headline and subtitle AS WELL AS the form,
+     because authLogin.jsx renders its whole page inside one
+     `pageWrapper` element — a header outside the card is not something
+     the theme can express. Everything in this card maps to a key on
+     `auth.authPages.sectionGroup.default` (src/themes/wcdb/auth.theme.js);
+     anything that does not is marked FUTURE below and is not shipped.
+     ============================================================ -->
+<div data-dms-layout="auth"
+     class="bg-[var(--page-bg)] text-[color:var(--ink-1)] font-[family-name:var(--font-sans)]">
+
+  <!-- ============================================================
+       TOPNAV · theme.topnav.styles[0] "wcdb" — A NOTCH, NOT A BAR.
+       layoutContainer1 is `fixed top-0 z-50` with NO width, so the whole
+       nav shrink-wraps to its content. The page background is carried by
+       each MENU container, never by the header — that is what lets the
+       hero card sit beside the bar and cut up underneath it. The right
+       menu closes the notch with `lg:rounded-br-[28px]`.
+  
+       The two 20x20 curve widgets mask the joins. They position against
+       this FIXED container (no menu container is `relative`), which is
+       why left-[7px]/top-[56px] lands just below the bar on the left and
+       -right-[20px]/top-[8px] lands just past its right end.
+       Source: wcdb_theme.js layout.options.topNav + widgets.jsx.
+       ============================================================ -->
+  <header class="fixed top-0 z-50">
+    <div class="w-full">
+      <div class="w-full h-14 flex items-center">
+        <div class="flex items-center w-full h-full">
+
+          <!-- leftMenuContainer · [NavLeftStyleWidget, Logo] -->
+          <div class="flex items-center bg-[var(--page-bg)] h-14">
+            <!-- NavLeftStyleWidget -->
+            <div class="absolute left-[7px] top-[56px]">
+              <!-- decorative -->
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M0 0L0 20C0 8.95431 8.95431 0 20 0L0 0Z" fill="var(--page-bg)"/></svg>
+            </div>
+            <a href="./home.html" class="items-center flex pt-1 pl-4">
+              <!-- theme.logo — live theme serves /themes/wcdb/logo_white.svg -->
+              <img src="../assets/logo_white.svg" alt="WCDB 90.9 FM" class="h-12 wcdb-logo-img">
+            </a>
+          </div>
+
+          <!-- centerMenuContainer · EMPTY on auth pages. The auth pattern's
+               topNav options carry no nav items — the notch is logo + mode
+               toggle, so the page reads as a single attentional surface. The
+               container keeps the page-bg so the notch still closes cleanly. -->
+          <div class="hidden lg:flex items-center flex-1 h-full px-2 bg-[var(--page-bg)]"></div>
+
+          <!-- rightMenuContainer · [ThemeModeToggle, NavRightStyleWidget]
+               The auth pattern's topNav options drop the UserMenu — you are
+               on the sign-in page already. -->
+          <div class="hidden md:flex h-full items-center pr-4 gap-2 bg-[var(--page-bg)] lg:rounded-br-[28px]">
+            <!-- ThemeModeToggle — renders Moon while data-mode="dark" (the default) -->
+            <button type="button" data-mockup-theme-toggle aria-label="Light mode" title="Light mode"
+                    class="inline-flex items-center justify-center size-8 rounded-full border border-[var(--line-2)] text-[var(--ink-1)] hover:bg-[var(--accent-soft)] transition-colors">
+              <!-- icon: Moon -->
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            </button>
+            <!-- NavRightStyleWidget -->
+            <div class="absolute -right-[20px] top-[8px]">
+              <!-- decorative -->
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M0 0L0 20C0 8.95431 8.95431 0 20 0L0 0Z" fill="var(--page-bg)"/></svg>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- LAYOUT.wrapper -->
+  <div class="relative isolate flex min-h-svh w-full max-lg:flex-col">
+
+    <!-- LAYOUT.wrapper2 -->
+    <div class="flex-1 flex items-start flex-col items-stretch max-w-full min-h-screen">
+
+      <!-- LAYOUT.wrapper3 -->
+      <div class="flex flex-1 items-start">
+
+        <!-- LAYOUT.childWrapper · layout.styles "auth" — one column, no cutaway grid -->
+        <div class="flex-1 flex flex-col">
+
+          <!-- ============================================================
+               LAYOUTGROUP · auth — theme.layoutGroup.styles "auth".
+               wrapper1 is the pane: it clears the fixed notch (pt-24) and
+               centres its child both ways. wrapper2 is the column: max-w-md.
+               No card chrome here — the card is `pageWrapper`, below.
+               ============================================================ -->
+          <div data-dms-group="auth"
+               class="w-full flex-1 flex flex-col items-center justify-center px-4 pt-24 pb-16">
+            <div class="w-full max-w-md flex flex-col">
+
+              <!-- ============================================================
+                   SECTION · card:reset-form — authResetPassword.jsx, one `pageWrapper`.
+                   No headingText on this page: the component falls back to its
+                   hardcoded title, styled by `pageTitle`. Titles and button labels
+                   below are the component's own strings, not copy to edit.
+                   ============================================================ -->
+              <section data-dms-section="card:reset-form">
+                <form class="flex flex-col gap-4 rounded-[18px] bg-[var(--card-bg)] p-8"><!-- pageWrapper -->
+                  <div class="flex flex-col items-center text-center mb-2">
+                    <!-- No kicker/subtitle here: only authLogin.jsx has those slots.
+                         The wordmark in the notch carries the brand on this page. -->
+                    <h1 class="font-[family-name:var(--font-display)] italic text-[32px] leading-[1.02] tracking-[-0.02em] text-[color:var(--ink-1)] m-0">Reset Password</h1><!-- pageTitle -->
+                  </div>
+                  <fieldset class="flex flex-col gap-4 border-0 p-0 m-0 min-w-0">
+                    <div class="flex flex-col gap-2">
+                      <label class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Email</label>
+                      <input type="email" placeholder="dj@albany.edu" class="w-full appearance-none rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)] px-[14px] py-[12px] font-[family-name:var(--font-sans)] text-[14px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </div>
+                    <div class="flex flex-col gap-2">
+                      <label class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Current Password</label>
+                      <input type="password" placeholder="••••••••••" class="w-full appearance-none rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)] px-[14px] py-[12px] font-[family-name:var(--font-sans)] text-[14px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </div>
+                    <div class="flex flex-col gap-2">
+                      <label class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">New Password</label>
+                      <input type="password" placeholder="••••••••••" class="w-full appearance-none rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)] px-[14px] py-[12px] font-[family-name:var(--font-sans)] text-[14px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </div>
+                    <div class="flex flex-col gap-2">
+                      <label class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Verify New Password</label>
+                      <input type="password" placeholder="••••••••••" class="w-full appearance-none rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)] px-[14px] py-[12px] font-[family-name:var(--font-sans)] text-[14px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </div>
+                  </fieldset>
+                  <button type="submit"
+                          class="mt-2 w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full
+                                 bg-[var(--ink-1)] hover:scale-[1.01] active:scale-100 transition-transform cursor-pointer">
+                    <span class="font-[family-name:var(--font-sans)] text-[14px] font-medium text-[color:var(--page-bg)]">Reset</span>
+                  </button>
+                </form>
+              </section>
+
+              <!-- ============================================================
+                   SECTION · footer-meta — a single mono line under the card.
+                   Not rendered by the auth component (no slot); it is the
+                   mockup's stand-in for the page ending quietly. No inverted
+                   footer on auth pages.
+                   ============================================================ -->
+              <section data-dms-section="lexical:footer-meta" class="pt-8 text-center">
+                <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-4)]">© 1977–2026 WCDB · Albany, NY</span>
+              </section>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Mockup runtime (theme toggle + on-air photo rotation). Dev scaffolding only. -->
+<script src="../mockup.js"></script>
+
+<!-- Shared, section-contextual nav widget (skill §7.0.2). Dev scaffolding only. -->
+<script src="../ds-nav.js"></script>
+
+</body>
+</html>

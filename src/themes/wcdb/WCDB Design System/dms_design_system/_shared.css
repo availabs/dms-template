@@ -286,6 +286,10 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   line-height: 0.85;
   color: rgba(255, 255, 255, 0.14);
   user-select: none;
+  /* Decorative only — must not size its container. At 18vw the glyphs are
+   * wider than a grid column, and a grid/flex item's min-width:auto would
+   * otherwise inherit that and blow the card open (show.html hero). */
+  width: 0; white-space: nowrap; overflow: visible;
 }
 
 /* Light-mode logo flip — the SVG ships white, invert in light mode.

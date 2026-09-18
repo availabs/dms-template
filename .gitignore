@@ -41,6 +41,10 @@ scratchpad
 
 # code references f
 references
+# Anchored: top-level scratch scripts only. An unanchored `scripts` also
+# matches nested dirs (src/themes/*/scripts, planning/*/skills/scripts),
+# silently ignoring new files in tracked source directories.
+/scripts
 
 # Heap snapshots
 *.heapsnapshot

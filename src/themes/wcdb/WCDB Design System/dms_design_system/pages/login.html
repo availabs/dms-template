@@ -13,18 +13,21 @@
 <body>
 
 <!-- ============================================================
-     LAYOUT · default — auth variant.
-     NOTE: WCDB's theme.js doesn't ship an `auth` LayoutGroup variant
-     explicitly. For login, we render a single `content` LayoutGroup
-     with `place-content-center` added so the form lands centred
-     vertically, and the inner shell is `max-w-md mx-auto` to
-     constrain horizontally. The cutaway layout doesn't apply to
-     auth — there's no editorial split, just a centred form on the
-     page background. The active topnav state shows only the WCDB
-     logo (no menu items) so the page reads as a single attentional
-     surface.
+     LAYOUT · auth — the single attentional surface.
+     wcdb_theme.js ships `auth`-named styles on `layout`, `layoutGroup`
+     and (via the pattern's topNav options) a logo-only notch. The auth
+     pattern's AuthLayout asks for them by name: `<Layout activeStyle="auth">
+     <LayoutGroup activeStyle="auth">`. There is no editorial cutaway here —
+     one centred column on the page background, and one card in it.
+
+     The card holds the kicker, headline and subtitle AS WELL AS the form,
+     because authLogin.jsx renders its whole page inside one
+     `pageWrapper` element — a header outside the card is not something
+     the theme can express. Everything in this card maps to a key on
+     `auth.authPages.sectionGroup.default` (src/themes/wcdb/auth.theme.js);
+     anything the component cannot render is noted inline and left out.
      ============================================================ -->
-<div data-dms-layout="default"
+<div data-dms-layout="auth"
      class="bg-[var(--page-bg)] text-[color:var(--ink-1)] font-[family-name:var(--font-sans)]">
 
   <!-- ============================================================
@@ -59,26 +62,16 @@
             </a>
           </div>
 
-          <!-- centerMenuContainer -->
-          <div class="hidden lg:flex items-center flex-1 h-full overflow-visible gap-1 px-2 bg-[var(--page-bg)]">
-            <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5" href="./schedule.html">Schedule</a>
-            <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5" href="./events.html">Events</a>
-            <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5" href="./station-info.html">Station Info</a>
-            <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5" href="./djs.html">DJs</a>
-            <a class="wcdb-navitem group px-1 py-2 text-[14px] font-medium text-[color:var(--ink-1)] transition-colors duration-300 ease-in-out cursor-pointer flex items-center gap-1.5" href="./airwaves.html">Airwaves</a>
-          </div>
+          <!-- centerMenuContainer · EMPTY on auth pages. The auth pattern's
+               topNav options carry no nav items — the notch is logo + mode
+               toggle, so the page reads as a single attentional surface. The
+               container keeps the page-bg so the notch still closes cleanly. -->
+          <div class="hidden lg:flex items-center flex-1 h-full px-2 bg-[var(--page-bg)]"></div>
 
-          <!-- rightMenuContainer · [UserMenu, ThemeModeToggle, NavRightStyleWidget]
-               NOTE: wcdb_theme.js lists the toggle FIRST in its default
-               rightMenu array; live wcdb.fm renders sign-in first. The site
-               overrides the order, and production is what we mirror here. -->
+          <!-- rightMenuContainer · [ThemeModeToggle, NavRightStyleWidget]
+               The auth pattern's topNav options drop the UserMenu — you are
+               on the sign-in page already. -->
           <div class="hidden md:flex h-full items-center pr-4 gap-2 bg-[var(--page-bg)] lg:rounded-br-[28px]">
-            <!-- UserMenu — signed-out state -->
-            <a href="./login.html" aria-label="Sign in" title="Sign in"
-               class="inline-flex items-center justify-center size-8 rounded-full text-[var(--ink-1)] hover:bg-[var(--accent-soft)] transition-colors">
-              <!-- icon: SignIn -->
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M11 8l4 4-4 4M15 12H7"/></svg>
-            </a>
             <!-- ThemeModeToggle — renders Moon while data-mode="dark" (the default) -->
             <button type="button" data-mockup-theme-toggle aria-label="Light mode" title="Light mode"
                     class="inline-flex items-center justify-center size-8 rounded-full border border-[var(--line-2)] text-[var(--ink-1)] hover:bg-[var(--accent-soft)] transition-colors">
@@ -106,123 +99,89 @@
       <!-- LAYOUT.wrapper3 -->
       <div class="flex flex-1 items-start">
 
-        <!-- LAYOUT.childWrapper · single-column collapse for auth -->
-        <div class="flex-1 flex flex-col md:grid md:grid-cols-2">
+        <!-- LAYOUT.childWrapper · layout.styles "auth" — one column, no cutaway grid -->
+        <div class="flex-1 flex flex-col">
 
           <!-- ============================================================
-               LAYOUTGROUP · content (auth variant — centred)
-               `place-content-center` is added so the form lands centred
-               vertically inside the available space. `max-w-md mx-auto`
-               constrains the inner shell horizontally.
+               LAYOUTGROUP · auth — theme.layoutGroup.styles "auth".
+               wrapper1 is the pane: it clears the fixed notch (pt-24) and
+               centres its child both ways. wrapper2 is the column: max-w-md.
+               No card chrome here — the card is `pageWrapper`, below.
                ============================================================ -->
-          <div data-dms-group="content"
-               class="md:col-span-2 w-full flex-1 flex flex-row p-2 place-content-center">
-            <div class="flex flex-1 w-full flex-col relative text-[color:var(--ink-1)] text-md font-light leading-7 p-4 min-h-[200px] max-w-md mx-auto justify-center">
+          <div data-dms-group="auth"
+               class="w-full flex-1 flex flex-col items-center justify-center px-4 pt-24 pb-16">
+            <div class="w-full max-w-md flex flex-col">
 
               <!-- ============================================================
-                   SECTION · lexical:hero — centred header
+                   SECTION · card:login-form — authLogin.jsx, one `pageWrapper`.
+                   Each block names the theme key that renders it.
                    ============================================================ -->
-              <section data-dms-section="lexical:hero" class="pt-12 pb-8 text-center">
-                <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.16em] uppercase text-[color:var(--ink-3)] mb-6">
-                  WCDB · 90.9 FM · SUNY Albany
-                </div>
-                <h1 class="font-[family-name:var(--font-display)] italic
-                           text-[48px] leading-[1.0] tracking-[-0.03em]
-                           text-[color:var(--ink-1)] m-0">
-                  Studio access.
-                </h1>
-                <p class="mt-4 font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] max-w-[320px] mx-auto">
-                  Sign in to manage your show, post spins, and edit the
-                  schedule.
-                </p>
-              </section>
+              <section data-dms-section="card:login-form">
+                <form class="flex flex-col gap-4 rounded-[18px] bg-[var(--card-bg)] p-8"><!-- pageWrapper -->
 
-              <!-- ============================================================
-                   SECTION · card:login-form — centred form card
-                   ============================================================ -->
-              <section data-dms-section="card:login-form" class="mb-8">
-                <div class="rounded-[18px] bg-[var(--card-bg)] p-8">
-
-                  <form class="flex flex-col gap-4">
-
-                    <!-- Email -->
-                    <label class="flex flex-col gap-2">
-                      <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Email</span>
-                      <input type="email"
-                             placeholder="dj@albany.edu"
-                             class="w-full appearance-none rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)] px-[14px] py-[12px] font-[family-name:var(--font-sans)] text-[14px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] outline-none transition-colors duration-150 focus:border-[color:var(--ink-3)]">
-                    </label>
-
-                    <!-- Password -->
-                    <label class="flex flex-col gap-2">
-                      <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Password</span>
-                      <input type="password"
-                             placeholder="••••••••••"
-                             class="w-full appearance-none rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)] px-[14px] py-[12px] font-[family-name:var(--font-sans)] text-[14px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] outline-none transition-colors duration-150 focus:border-[color:var(--ink-3)]">
-                    </label>
-
-                    <!-- Remember + Forgot -->
-                    <div class="flex items-center justify-between pt-1">
-                      <label class="inline-flex items-center gap-2 cursor-pointer select-none">
-                        <span class="relative inline-block w-9 h-5 rounded-full bg-[var(--bg-3)] ring-1 ring-[var(--line-2)] transition-colors">
-                          <span class="absolute left-0.5 top-0.5 size-4 rounded-full bg-[var(--ink-3)] transition-transform"></span>
-                        </span>
-                        <span class="font-[family-name:var(--font-sans)] text-[12px] leading-[1.45] tracking-[-0.01em] text-[color:var(--ink-2)]">Remember me</span>
-                      </label>
-                      <a class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)]">Forgot password</a>
-                    </div>
-
-                    <!-- Sign in button -->
-                    <button type="submit"
-                            class="mt-3 w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full
-                                   bg-[color:var(--ink-1)] text-[color:var(--page-bg)]
-                                   font-[family-name:var(--font-sans)] text-[14px] font-medium
-                                   hover:scale-[1.01] active:scale-100 transition-transform">
-                      Sign in
-                      <!-- icon: ArrowRight -->
-                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
-                    </button>
-
-                    <!-- Divider -->
-                    <div class="flex items-center gap-3 my-2">
-                      <div class="flex-1 wcdb-hairline"></div>
-                      <span class="font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-4)]">or</span>
-                      <div class="flex-1 wcdb-hairline"></div>
-                    </div>
-
-                    <!-- SSO -->
-                    <button type="button"
-                            class="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full
-                                   border border-[var(--line-3)] text-[color:var(--ink-1)] hover:bg-[var(--accent-soft)]
-                                   font-[family-name:var(--font-sans)] text-[13px] font-medium transition-colors">
-                      Continue with SUNY SSO
-                      <!-- icon: ArrowRight -->
-                      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
-                    </button>
-                  </form>
-
-                  <!-- Footer link -->
-                  <div class="mt-7 pt-5 border-t border-[var(--line-1)] text-center">
-                    <a class="font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-2)] hover:text-[color:var(--ink-1)]">
-                      New here?
-                      <span class="text-[color:var(--ink-1)] border-b border-[var(--line-2)] pb-0.5 ml-1">Request studio access</span>
-                    </a>
+                  <!-- headingBlock · kicker / heading / subtitle -->
+                  <div class="flex flex-col items-center text-center mb-2">
+                    <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.16em] uppercase text-[color:var(--ink-3)]">WCDB · 90.9 FM · SUNY Albany</span><!-- kicker -->
+                    <h1 class="mt-5 font-[family-name:var(--font-display)] italic text-[44px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)] m-0">Studio access.</h1><!-- heading -->
+                    <p class="mt-3 font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-2)] max-w-[320px]">Sign in to manage your show, post spins, and edit the schedule.</p><!-- subtitle -->
                   </div>
-                </div>
+
+                  <!-- FieldSet · theme.field (site-wide) + theme.input -->
+                  <fieldset class="flex flex-col gap-4 border-0 p-0 m-0 min-w-0"><!-- field.fieldWrapper -->
+                    <div class="flex flex-col gap-2"><!-- field.field -->
+                      <label class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Email</label><!-- field.label -->
+                      <input type="email" placeholder="dj@albany.edu"
+                             class="w-full appearance-none rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)] px-[14px] py-[12px] font-[family-name:var(--font-sans)] text-[14px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </div>
+                    <div class="flex flex-col gap-2">
+                      <!-- field.labelRow — the component puts the forgot link HERE, inline
+                           with the password label (better tab order than a link below). -->
+                      <div class="flex items-center justify-between gap-3">
+                        <label class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">Password</label>
+                        <a href="./auth-forgot.html" class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] transition-colors">Forgot?</a><!-- forgotPasswordText -->
+                      </div>
+                      <input type="password" placeholder="••••••••••"
+                             class="w-full appearance-none rounded-[8px] border border-[var(--line-2)] bg-[var(--bg-2)] px-[14px] py-[12px] font-[family-name:var(--font-sans)] text-[14px] text-[color:var(--ink-1)] placeholder:text-[color:var(--ink-4)] outline-none focus:border-[color:var(--ink-3)] transition-colors">
+                    </div>
+                  </fieldset>
+
+                  <!-- DEFERRED · a "Remember me" toggle. The component has no slot for
+                       it and the session is a stored token already; revisit with a
+                       key-gated library slot if the station asks. -->
+
+                  <!-- actionButton + actionText · the brand's primary pill, full width.
+                       Text only — the Button has no icon slot, so no arrow glyph. -->
+                  <button type="submit"
+                          class="mt-2 w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-full
+                                 bg-[var(--ink-1)] hover:scale-[1.01] active:scale-100 transition-transform cursor-pointer">
+                    <span class="font-[family-name:var(--font-sans)] text-[14px] font-medium text-[color:var(--page-bg)]">Sign in</span>
+                  </button>
+
+                  <!-- No divider / SSO: the station has no single sign-on, and the
+                       component's `divider` / `ssoButton` keys stay unset. -->
+
+                  <!-- prompt · rendered only while the pattern allows self sign-up
+                       (`disable_signup` unset). The sign-up link shares forgotPasswordText. -->
+                  <div class="mt-4 pt-5 border-t border-[var(--line-1)] flex justify-center gap-2 font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]">
+                    Don't have an account?
+                    <a href="./auth-signup.html" class="text-[color:var(--ink-1)] border-b border-[var(--line-2)] pb-0.5 hover:border-[var(--line-3)] transition-colors">Sign up</a>
+                  </div>
+
+                  <!-- utilityWrapper + utilityLinks · the way back out. -->
+                  <div class="mt-2 flex justify-center font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-4)]">
+                    <a href="./home.html" class="hover:text-[color:var(--ink-2)] transition-colors">← Back to WCDB</a>
+                  </div>
+                </form>
               </section>
 
               <!-- ============================================================
-                   SECTION · card:footer-meta — small metaXS row.
-                   No big inverted footer on auth pages.
+                   SECTION · footer-meta — a single mono line under the card.
+                   Not rendered by the auth component (no slot); it is the
+                   mockup's stand-in for the page ending quietly. No inverted
+                   footer on auth pages.
                    ============================================================ -->
-              <section data-dms-section="card:footer-meta" class="pb-12 text-center">
-                <div class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-4)] inline-flex items-center gap-3">
-                  <a class="hover:text-[color:var(--ink-2)]">Privacy</a>
-                  <span aria-hidden="true">·</span>
-                  <a class="hover:text-[color:var(--ink-2)]">Terms</a>
-                  <span aria-hidden="true">·</span>
-                  <span>© 1977–2026 WCDB</span>
-                </div>
+              <section data-dms-section="lexical:footer-meta" class="pt-8 text-center">
+                <span class="font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-4)]">© 1977–2026 WCDB · Albany, NY</span>
               </section>
 
             </div>

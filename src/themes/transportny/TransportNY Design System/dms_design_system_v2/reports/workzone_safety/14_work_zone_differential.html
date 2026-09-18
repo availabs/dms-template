@@ -1,0 +1,1958 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Work Zone Speed Differential &middot; TransportNY</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap">
+  <style>
+    /* TransportNY design-system v2 surface utilities.
+     * Inlined (not linked) so this document opens standalone, exactly as
+     * ./05_recommendation_report.html does. Values copied verbatim from
+     * dms_design_system_v2/design-system/_shared.css — do not diverge. */
+    .font-display, .font-oswald { font-family: "Oswald", "Bebas Neue", sans-serif; }
+    .font-proxima { font-family: "Source Sans 3", system-ui, sans-serif; }
+    body { font-family: "Source Sans 3", system-ui, sans-serif; background: #ECEEF2; }
+    .tny-pane      { background: #ECEEF2; }
+    .tny-pane-tint { background: #E4E8EE; }
+    .tny-card {
+      background: #fff;
+      border: 1px solid rgba(15, 23, 42, 0.08);
+      border-radius: 8px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 0 rgba(15, 23, 42, 0.02);
+    }
+    .tny-card-tint { background: #FAFBFC; }
+    .tny-card-bone { background: #F5F1E8; }
+    .tny-card-ink  { background: #0F2D4D; color: #fff; }
+    .tny-link      { color: #1F3F8F; text-decoration: underline; text-underline-offset: 2px; }
+    .tny-link:hover{ color: #16307A; }
+    .tny-card-ink .tny-link { color: #BFD3F2; }
+    .tny-mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.92em; padding: 1px 5px;
+      background: rgba(15, 23, 42, 0.05);
+      border: 1px solid rgba(15, 23, 42, 0.06);
+      border-radius: 3px; color: #37576B; white-space: nowrap;
+    }
+    .tny-card-ink .tny-mono { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); color: #DCE6F5; }
+    .tny-hero-topo {
+      background:
+        radial-gradient(circle at 25% 30%, rgba(15, 23, 42, 0.04), transparent 40%),
+        radial-gradient(circle at 75% 70%, rgba(15, 23, 42, 0.05), transparent 50%),
+        repeating-linear-gradient(28deg, transparent 0 30px, rgba(15, 23, 42, 0.035) 30px 31px, transparent 31px 60px),
+        repeating-linear-gradient(-30deg, transparent 0 36px, rgba(15, 23, 42, 0.028) 36px 37px, transparent 37px 70px),
+        #EEF1F3;
+    }
+    .bar { height: 8px; border-radius: 2px; background: #37576B; }
+    .bar-warn { background: #CA8A04; }
+    .bar-bad  { background: #B45309; }
+    .bar-ok   { background: #10B981; }
+    .bar-track { background: rgba(15,23,42,0.06); border-radius: 2px; height: 8px; }
+    .barv { width: 100%; border-radius: 2px 2px 0 0; background: #37576B; }
+    .barv-warn { background: #CA8A04; }
+    table.tny { border-collapse: collapse; width: 100%; }
+    table.tny th {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 10px; text-transform: uppercase; letter-spacing: 0.14em;
+      color: #64748b; text-align: right; padding: 6px 8px;
+      border-bottom: 1px solid rgba(15,23,42,0.12); white-space: nowrap;
+    }
+    table.tny th:first-child, table.tny td:first-child { text-align: left; }
+    table.tny td {
+      font-size: 13px; padding: 7px 8px; text-align: right;
+      border-bottom: 1px solid rgba(15,23,42,0.05);
+      font-variant-numeric: tabular-nums;
+      vertical-align: top;
+    }
+    table.tny td.txt { text-align: left; font-variant-numeric: normal; line-height: 1.5; }
+    table.tny th.txt { text-align: left; }
+    table.tny tr:last-child td { border-bottom: none; }
+    table.tny tr.total td { font-weight: 600; border-top: 1px solid rgba(15,23,42,0.18); background: rgba(15,23,42,0.02); }
+    .step-n {
+      font-family: "Oswald", sans-serif; font-weight: 600; font-size: 13px;
+      width: 26px; height: 26px; border-radius: 4px;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: #37576B; color: #fff; flex: none;
+    }
+    .cite { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10.5px; color:#64748b; }
+    .pill { display:inline-flex; align-items:center; height:22px; padding:0 8px; border-radius:4px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:10px; text-transform:uppercase; letter-spacing:.12em; white-space:nowrap; }
+    .pill-ok   { background:#E6F7EF; color:#0B6B44; border:1px solid #B7E3CC; }
+    .pill-warn { background:#FBF3DB; color:#8A5A00; border:1px solid #EAD59A; }
+    .pill-bad  { background:#FBE9E0; color:#8A3B0C; border:1px solid #F0C9B4; }
+    .pill-ink  { background:#0F2D4D; color:#fff; }
+    .kpi { font-family:"Oswald",sans-serif; font-weight:600; font-size:30px; line-height:1; color:#0F1722; letter-spacing:-0.01em; }
+    .kpi-sm { font-family:"Oswald",sans-serif; font-weight:600; font-size:22px; line-height:1; color:#0F1722; }
+    .lbl { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:9.5px; text-transform:uppercase; letter-spacing:0.16em; color:#64748b; }
+  </style>
+</head>
+<body class="tny-pane">
+
+<!--
+  WORK ZONE SPEED DIFFERENTIAL — phase 6 of the work_zone data-type pipeline
+  Deliverable of planning/transportny/tasks/current/workzone-performance-data-type-pipeline.md (phase 6).
+  GENERATED by scratchpad/gen_report14.py from m4_report_data.json — do not hand-edit figures;
+  re-run the query script and the generator instead.
+  M4 = share of active zone-hours whose APPROACH differential (approach speed − in-zone speed, both space-means over
+  the same active epochs, approach = the 2 segments upstream of the anchor) exceeds 15 mph. The BASELINE drop
+  (segment's own cleaned 12-month median at that hour and day-type − in-zone speed) is reported beside it.
+  Writes INTO wz_speed (DAMA source 2206) on npmrds2 — no new source; M4 stamped on each view's metadata beside M1.
+  CY2024 is the analysis year. Queried 2026-09-17.
+-->
+
+<div class="max-w-[1180px] mx-auto px-6 lg:px-10">
+
+  <nav class="flex flex-wrap items-center gap-x-4 gap-y-1 pt-4 font-mono text-[10.5px] uppercase tracking-[0.14em] text-slate-500">
+    <span class="text-[#0f1722]">work zone speed differential</span>
+    <a class="hover:text-[#1F3F8F]" href="./00_README.md">00 index</a>
+    <a class="hover:text-[#1F3F8F]" href="./05_recommendation_report.html">05 recommendation</a>
+    <a class="hover:text-[#1F3F8F]" href="./06_work_zone_universe.html">06 the universe</a>
+    <a class="hover:text-[#1F3F8F]" href="./09_work_zone_speed.html">09 speed</a>
+    <a class="hover:text-[#1F3F8F]" href="./10_work_zone_queue.html">10 queues</a>
+    <a class="hover:text-[#1F3F8F]" href="./13_work_zone_crashes.html">13 crashes</a>
+    <a class="hover:text-[#1F3F8F]" href="./11_executive_dashboard_statewide.html">11 dashboard</a>
+    <a class="hover:text-[#1F3F8F]" href="../../design-system/theme.html">design system</a>
+  </nav>
+
+  <header class="tny-hero-topo -mx-6 lg:-mx-10 px-6 lg:px-10 pt-9 pb-9 border-b border-zinc-950/10 mt-4">
+    <div class="flex items-center gap-2 mb-3">
+      <span class="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#CA8A04]">// work_zone pipeline &middot; phase 6</span>
+      <span class="h-px w-10 bg-[#CA8A04]/50"></span>
+    </div>
+    <h1 class="font-display font-semibold text-[38px] leading-[1.05] tracking-tight uppercase text-[#0F1722]">
+      Work Zone Speed Differential<span class="text-[#CA8A04]">.</span>
+    </h1>
+    <p class="font-proxima text-[14.5px] leading-[1.65] text-slate-700 mt-3 max-w-[880px]">
+      The safety surrogate. A work zone can pass the speed measure and still be the place where traffic drops
+      30 mph in a quarter mile &mdash; the taper, where rear-end crashes concentrate. This phase measures that
+      drop two ways for every active hour of every zone: <span class="text-[#0f1722] font-medium">how much faster
+      traffic was arriving than it was moving through</span>, and <span class="text-[#0f1722] font-medium">how much
+      slower the segment ran than its own normal</span>. In CY2024 the arriving traffic was more than 15 mph
+      faster than the zone in 6.0% of measured hours; the zone ran more than
+      15 mph under its own normal in 6.3%. Those are close, and they are
+      mostly different hours.
+    </p>
+    <div class="flex flex-wrap items-center gap-2 mt-5 font-mono text-[10.5px] uppercase tracking-[0.14em]">
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] bg-[#37576B] text-white">DAMA source 2206 &middot; wz_speed, filled in place</span>
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] bg-[#0F2D4D] text-white">M4: approach &minus; zone &gt; 15 mph</span>
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white text-slate-600">CY2024 &middot; CY2018&ndash;CY2026 (partial to 2026-08-31) stamped</span>
+      <span class="h-7 px-2.5 inline-flex items-center rounded-[4px] border border-zinc-950/15 bg-white text-slate-600">queried 2026-09-17</span>
+    </div>
+  </header>
+
+  <section class="pt-8">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">M4, CY2024</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">589,627 active zone-hours measured &middot; 499,507 with an approach &middot; 33,339 zones</span>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div class="tny-card tny-card-bone p-4">
+        <div class="lbl">Hours over the approach line</div>
+        <div class="kpi mt-1.5">6.0<span class="text-[18px] text-slate-500">%</span></div>
+        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">30,159 of 499,507 zone-hours with arriving traffic &gt; 15 mph faster than the zone</div>
+      </div>
+      <div class="tny-card tny-card-bone p-4">
+        <div class="lbl">Hours over the baseline line</div>
+        <div class="kpi mt-1.5">6.3<span class="text-[18px] text-slate-500">%</span></div>
+        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">37,220 of 588,754 zone-hours running &gt; 15 mph under the segment&rsquo;s own normal</div>
+      </div>
+      <div class="tny-card p-4">
+        <div class="lbl">Typical approach differential</div>
+        <div class="kpi mt-1.5">+0.6</div>
+        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">mph, mean over measured hours; 90th percentile +10.5 mph</div>
+      </div>
+      <div class="tny-card p-4">
+        <div class="lbl">Typical baseline drop</div>
+        <div class="kpi mt-1.5">+3.7</div>
+        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">mph under normal, mean; 90th percentile +11.5 mph</div>
+      </div>
+      <div class="tny-card p-4">
+        <div class="lbl">Zones with any hour over</div>
+        <div class="kpi mt-1.5">5,146</div>
+        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">of 33,339 with an approach; 997 over the line in most of their hours</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-4">
+    <div class="tny-card tny-card-ink p-6">
+      <div class="font-display font-semibold text-[17px] uppercase tracking-tight">What the measure says</div>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-x-8 gap-y-4 mt-3">
+        <div>
+          <div class="font-display font-medium text-[14px] text-white/95">Most hours, the approach is moving at the zone&rsquo;s speed</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-white/75 mt-1">
+            The mean approach differential is <span class="text-white font-medium">+0.6 mph</span>:
+            arriving traffic is, on the typical active hour, barely faster than traffic in the zone.
+            63.6% of measured time sits within 5 mph either way. The hours that matter are the tail &mdash;
+            4.3% of the time over 15 mph, 0.7% over 25 &mdash;
+            and they concentrate in 997 zones that are over the line for most of their hours.
+          </p>
+        </div>
+        <div>
+          <div class="font-display font-medium text-[14px] text-white/95">The baseline drop is a different measure, not a check on this one</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-white/75 mt-1">
+            The zone ran <span class="text-white font-medium">+3.7 mph</span> under its own
+            cleaned normal on average, with 6.3% of hours more than 15 under. That number
+            says how much the work slowed the road; the approach differential says how abruptly. A zone in a queue that
+            has backed up past the approach scores high on the first and near zero on the second &mdash; the I-495 case below.
+          </p>
+        </div>
+        <div>
+          <div class="font-display font-medium text-[14px] text-white/95">In 3.9% of hours the approach was slower than the zone</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-white/75 mt-1">
+            <span class="text-white font-medium">19,233</span> zone-hours had arriving traffic more than 15 mph
+            <i>slower</i> than the zone. That is the queue: the back-up has passed the approach segments and the taper
+            &mdash; the speed change &mdash; is somewhere further upstream, where the phase-5 queue length puts it. The
+            differential at the queue tail is the refinement this leaves open; these hours count as measured, not over.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">M4 on named universes</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2024 &middot; the same tiers as M1, M2, M3 and M5 &middot; hour grain</span>
+    </div>
+    <div class="tny-card p-5">
+      <table class="tny">
+        <thead>
+          <tr>
+            <th class="txt">Universe</th><th>Zones with<br>an approach</th>
+            <th>Zone-hours<br>measured</th><th>With an<br>approach</th><th>Approach<br>&gt; 15 mph</th>
+            <th>M4<br>hour-weighted</th><th>M4<br>zone mean</th>
+            <th>Approach diff<br>mean</th><th>p90</th>
+            <th>Baseline drop<br>&gt; 15 mph</th><th>Baseline drop<br>mean</th><th>p90</th>
+            <th>Approach<br>slower &gt; 15</th>
+            <th>Zones any<br>hour over</th><th>Zones over<br>most hours</th>
+          </tr>
+        </thead>
+        <tbody>
+            <tr>
+              <td class="txt">All work zones</td>
+              <td>33,339</td>
+              <td>589,627</td><td>499,507</td>
+              <td>30,159</td>
+              <td><span class="font-medium text-[#0f1722]">6.0%</span></td>
+              <td>4.9%</td>
+              <td>+0.6</td><td>+10.5</td>
+              <td>6.3%</td>
+              <td>+3.7</td><td>+11.5</td>
+              <td>19,233</td>
+              <td>5,146</td><td>997</td>
+            </tr>
+            <tr>
+              <td class="txt">Interstate</td>
+              <td>15,260</td>
+              <td>226,001</td><td>214,936</td>
+              <td>6,021</td>
+              <td><span class="font-medium text-[#0f1722]">2.8%</span></td>
+              <td>2.9%</td>
+              <td>+0.9</td><td>+6.7</td>
+              <td>6.2%</td>
+              <td>+3.9</td><td>+11.4</td>
+              <td>3,120</td>
+              <td>1,880</td><td>145</td>
+            </tr>
+            <tr>
+              <td class="txt">Not Interstate</td>
+              <td>18,079</td>
+              <td>363,626</td><td>284,571</td>
+              <td>24,138</td>
+              <td><span class="font-medium text-[#0f1722]">8.5%</span></td>
+              <td>6.7%</td>
+              <td>+0.4</td><td>+13.5</td>
+              <td>6.4%</td>
+              <td>+3.6</td><td>+11.5</td>
+              <td>16,113</td>
+              <td>3,266</td><td>852</td>
+            </tr>
+            <tr>
+              <td class="txt">A week or longer<br><span class="cite">span &ge; 7 days</span></td>
+              <td>2,473</td>
+              <td>344,995</td><td>284,587</td>
+              <td>17,286</td>
+              <td><span class="font-medium text-[#0f1722]">6.1%</span></td>
+              <td>6.4%</td>
+              <td>+0.8</td><td>+10.6</td>
+              <td>5.6%</td>
+              <td>+3.9</td><td>+11.3</td>
+              <td>10,009</td>
+              <td>948</td><td>104</td>
+            </tr>
+            <tr>
+              <td class="txt">Significant-project candidates<br><span class="cite">the rule&rsquo;s 23 CFR 630.1010 screen</span></td>
+              <td>206</td>
+              <td>11,619</td><td>11,292</td>
+              <td>501</td>
+              <td><span class="font-medium text-[#0f1722]">4.4%</span></td>
+              <td>3.2%</td>
+              <td>+2.0</td><td>+9.1</td>
+              <td>9.5%</td>
+              <td>+5.3</td><td>+14.2</td>
+              <td>175</td>
+              <td>57</td><td>1</td>
+            </tr>
+        </tbody>
+      </table>
+      <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-4 max-w-[920px]">
+        The hour-weighted share is the measure; the zone mean gives each zone one vote and is the form the rule's
+        project-level reporting wants. They differ (6.0% against 4.9% statewide)
+        because long zones with many hours are not the zones with the widest tapers.
+        Interstates run 2.8% against 8.5% off them: the higher the approach speed, the further it has to fall.
+        Significant-project candidates: 4.4% of measured hours over the line and a mean baseline drop of +5.3 mph.
+      </p>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">Where the hours fall</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2024 &middot; conflated windows &middot; time-weighted, in mph</span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div class="tny-card p-5">
+        <div class="lbl">Approach speed &minus; in-zone speed</div>
+        <div class="space-y-1.5 mt-3">
+          <div class="grid items-center gap-3" style="grid-template-columns: 110px 1fr 64px 64px;">
+            <div class="font-mono text-[11px] text-slate-600">below &minus;15</div>
+            <div class="h-[14px] bg-zinc-950/5 rounded-[2px]"><div class="h-full bg-[#37576B]/60 rounded-[2px]" style="width:4.5%"></div></div>
+            <div class="font-mono text-[11px] text-right text-[#0f1722]">2.8%</div>
+            <div class="font-mono text-[10px] text-right text-slate-500">10,307 h</div>
+          </div>
+          <div class="grid items-center gap-3" style="grid-template-columns: 110px 1fr 64px 64px;">
+            <div class="font-mono text-[11px] text-slate-600">&minus;15 to &minus;5</div>
+            <div class="h-[14px] bg-zinc-950/5 rounded-[2px]"><div class="h-full bg-[#37576B]/60 rounded-[2px]" style="width:23.4%"></div></div>
+            <div class="font-mono text-[11px] text-right text-[#0f1722]">14.9%</div>
+            <div class="font-mono text-[10px] text-right text-slate-500">54,033 h</div>
+          </div>
+          <div class="grid items-center gap-3" style="grid-template-columns: 110px 1fr 64px 64px;">
+            <div class="font-mono text-[11px] text-slate-600">&minus;5 to +5</div>
+            <div class="h-[14px] bg-zinc-950/5 rounded-[2px]"><div class="h-full bg-[#37576B]/60 rounded-[2px]" style="width:100.0%"></div></div>
+            <div class="font-mono text-[11px] text-right text-[#0f1722]">63.6%</div>
+            <div class="font-mono text-[10px] text-right text-slate-500">231,237 h</div>
+          </div>
+          <div class="grid items-center gap-3" style="grid-template-columns: 110px 1fr 64px 64px;">
+            <div class="font-mono text-[11px] text-slate-600">+5 to +15</div>
+            <div class="h-[14px] bg-zinc-950/5 rounded-[2px]"><div class="h-full bg-[#1F3F8F] rounded-[2px]" style="width:22.7%"></div></div>
+            <div class="font-mono text-[11px] text-right text-[#0f1722]">14.4%</div>
+            <div class="font-mono text-[10px] text-right text-slate-500">52,401 h</div>
+          </div>
+          <div class="grid items-center gap-3" style="grid-template-columns: 110px 1fr 64px 64px;">
+            <div class="font-mono text-[11px] text-slate-600">+15 to +25</div>
+            <div class="h-[14px] bg-zinc-950/5 rounded-[2px]"><div class="h-full bg-[#B4232C] rounded-[2px]" style="width:5.6%"></div></div>
+            <div class="font-mono text-[11px] text-right text-[#0f1722]">3.6%</div>
+            <div class="font-mono text-[10px] text-right text-slate-500">13,041 h</div>
+          </div>
+          <div class="grid items-center gap-3" style="grid-template-columns: 110px 1fr 64px 64px;">
+            <div class="font-mono text-[11px] text-slate-600">+25 and above</div>
+            <div class="h-[14px] bg-zinc-950/5 rounded-[2px]"><div class="h-full bg-[#B4232C] rounded-[2px]" style="width:1.1%"></div></div>
+            <div class="font-mono text-[11px] text-right text-[#0f1722]">0.7%</div>
+            <div class="font-mono text-[10px] text-right text-slate-500">2,608 h</div>
+          </div>
+        </div>
+        <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 mt-3">
+          63.6% of the time the approach and the zone are within 5 mph of each other.
+          17.7% of the time the approach is the slower &mdash; the queue has reached it.
+        </p>
+      </div>
+      <div class="tny-card p-5">
+        <div class="lbl">Segment&rsquo;s own normal &minus; in-zone speed (the baseline drop)</div>
+        <div class="space-y-1.5 mt-3">
+          <div class="grid items-center gap-3" style="grid-template-columns: 110px 1fr 64px 64px;">
+            <div class="font-mono text-[11px] text-slate-600">below &minus;15</div>
+            <div class="h-[14px] bg-zinc-950/5 rounded-[2px]"><div class="h-full bg-[#37576B]/60 rounded-[2px]" style="width:0.7%"></div></div>
+            <div class="font-mono text-[11px] text-right text-[#0f1722]">0.5%</div>
+            <div class="font-mono text-[10px] text-right text-slate-500">2,170 h</div>
+          </div>
+          <div class="grid items-center gap-3" style="grid-template-columns: 110px 1fr 64px 64px;">
+            <div class="font-mono text-[11px] text-slate-600">&minus;15 to &minus;5</div>
+            <div class="h-[14px] bg-zinc-950/5 rounded-[2px]"><div class="h-full bg-[#37576B]/60 rounded-[2px]" style="width:3.3%"></div></div>
+            <div class="font-mono text-[11px] text-right text-[#0f1722]">2.5%</div>
+            <div class="font-mono text-[10px] text-right text-slate-500">10,216 h</div>
+          </div>
+          <div class="grid items-center gap-3" style="grid-template-columns: 110px 1fr 64px 64px;">
+            <div class="font-mono text-[11px] text-slate-600">&minus;5 to +5</div>
+            <div class="h-[14px] bg-zinc-950/5 rounded-[2px]"><div class="h-full bg-[#37576B]/60 rounded-[2px]" style="width:100.0%"></div></div>
+            <div class="font-mono text-[11px] text-right text-[#0f1722]">76.0%</div>
+            <div class="font-mono text-[10px] text-right text-slate-500">314,184 h</div>
+          </div>
+          <div class="grid items-center gap-3" style="grid-template-columns: 110px 1fr 64px 64px;">
+            <div class="font-mono text-[11px] text-slate-600">+5 to +15</div>
+            <div class="h-[14px] bg-zinc-950/5 rounded-[2px]"><div class="h-full bg-[#1F3F8F] rounded-[2px]" style="width:23.3%"></div></div>
+            <div class="font-mono text-[11px] text-right text-[#0f1722]">17.7%</div>
+            <div class="font-mono text-[10px] text-right text-slate-500">73,068 h</div>
+          </div>
+          <div class="grid items-center gap-3" style="grid-template-columns: 110px 1fr 64px 64px;">
+            <div class="font-mono text-[11px] text-slate-600">+15 to +25</div>
+            <div class="h-[14px] bg-zinc-950/5 rounded-[2px]"><div class="h-full bg-[#B4232C] rounded-[2px]" style="width:3.0%"></div></div>
+            <div class="font-mono text-[11px] text-right text-[#0f1722]">2.3%</div>
+            <div class="font-mono text-[10px] text-right text-slate-500">9,319 h</div>
+          </div>
+          <div class="grid items-center gap-3" style="grid-template-columns: 110px 1fr 64px 64px;">
+            <div class="font-mono text-[11px] text-slate-600">+25 and above</div>
+            <div class="h-[14px] bg-zinc-950/5 rounded-[2px]"><div class="h-full bg-[#B4232C] rounded-[2px]" style="width:1.3%"></div></div>
+            <div class="font-mono text-[11px] text-right text-[#0f1722]">1.0%</div>
+            <div class="font-mono text-[10px] text-right text-slate-500">4,176 h</div>
+          </div>
+        </div>
+        <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 mt-3">
+          3.3% of the time the zone runs more than 15 mph under normal, against
+          4.3% on the approach side. The two lines flag different hours: a slowed road
+          and an abrupt one are not the same thing.
+        </p>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+      <div class="tny-card tny-card-tint p-4">
+        <div class="lbl">Median zone&rsquo;s widest hour</div>
+        <div class="kpi mt-1.5">+2.6</div>
+        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">mph; the 90th-percentile zone peaks at +16.0</div>
+      </div>
+      <div class="tny-card tny-card-tint p-4">
+        <div class="lbl">Zones peaking over 15 mph</div>
+        <div class="kpi mt-1.5">3,821</div>
+        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">11.4% of 33,595 zones with an approach</div>
+      </div>
+      <div class="tny-card tny-card-tint p-4">
+        <div class="lbl">Zones peaking over 25 mph</div>
+        <div class="kpi mt-1.5">1,137</div>
+        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">3.4% &mdash; a hard taper in at least one hour of the day</div>
+      </div>
+      <div class="tny-card tny-card-tint p-4">
+        <div class="lbl">Zones never faster on the approach</div>
+        <div class="kpi mt-1.5">8,633</div>
+        <div class="font-proxima text-[11.5px] text-slate-500 mt-1">25.7% &mdash; every hour&rsquo;s approach slower than the zone</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">By hour of day, and by region</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2024 &middot; conflated windows &middot; time-weighted cell evidence</span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="flex flex-col gap-4">
+        <div class="tny-card p-5">
+          <div class="lbl">Mean approach differential by hour, mph</div>
+          <div class="grid gap-[3px] h-[100px] mt-3" style="grid-template-columns: repeat(24, minmax(0, 1fr));">
+        <div class="flex flex-col justify-end h-full" title="00:00 &mdash; mean approach differential +1.9 mph over 2,476 hours"><div class="barv" style="height:78.2%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="01:00 &mdash; mean approach differential +2.1 mph over 2,788 hours"><div class="barv-warn" style="height:87.9%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="02:00 &mdash; mean approach differential +2.4 mph over 4,115 hours"><div class="barv-warn" style="height:100.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="03:00 &mdash; mean approach differential +2.2 mph over 6,142 hours"><div class="barv-warn" style="height:92.1%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="04:00 &mdash; mean approach differential +1.2 mph over 8,709 hours"><div class="barv" style="height:48.1%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="05:00 &mdash; mean approach differential +0.3 mph over 11,034 hours"><div class="barv" style="height:11.7%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="06:00 &mdash; mean approach differential &minus;0.3 mph over 12,435 hours"><div class="barv" style="height:0.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="07:00 &mdash; mean approach differential &minus;0.4 mph over 12,660 hours"><div class="barv" style="height:0.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="08:00 &mdash; mean approach differential &minus;0.3 mph over 11,161 hours"><div class="barv" style="height:0.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="09:00 &mdash; mean approach differential +0.2 mph over 7,483 hours"><div class="barv" style="height:6.3%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="10:00 &mdash; mean approach differential +1.2 mph over 6,961 hours"><div class="barv" style="height:49.8%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="11:00 &mdash; mean approach differential +1.5 mph over 13,251 hours"><div class="barv" style="height:63.6%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="12:00 &mdash; mean approach differential +1.3 mph over 18,839 hours"><div class="barv" style="height:52.7%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="13:00 &mdash; mean approach differential +0.8 mph over 28,540 hours"><div class="barv" style="height:34.3%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="14:00 &mdash; mean approach differential +0.5 mph over 36,696 hours"><div class="barv" style="height:21.8%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="15:00 &mdash; mean approach differential +0.2 mph over 39,646 hours"><div class="barv" style="height:8.8%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="16:00 &mdash; mean approach differential +0.0 mph over 39,411 hours"><div class="barv" style="height:0.4%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="17:00 &mdash; mean approach differential &minus;0.1 mph over 37,024 hours"><div class="barv" style="height:0.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="18:00 &mdash; mean approach differential &minus;0.2 mph over 28,801 hours"><div class="barv" style="height:0.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="19:00 &mdash; mean approach differential &minus;0.1 mph over 16,957 hours"><div class="barv" style="height:0.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="20:00 &mdash; mean approach differential +0.2 mph over 8,964 hours"><div class="barv" style="height:10.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="21:00 &mdash; mean approach differential +0.8 mph over 4,858 hours"><div class="barv" style="height:32.6%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="22:00 &mdash; mean approach differential +0.8 mph over 2,531 hours"><div class="barv" style="height:33.1%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="23:00 &mdash; mean approach differential +1.1 mph over 2,147 hours"><div class="barv" style="height:46.9%"></div></div>
+          </div>
+          <div class="grid gap-[3px] mt-1 font-mono text-[9.5px] text-slate-500" style="grid-template-columns: repeat(24, minmax(0, 1fr));">
+        <div class="text-center">0</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">3</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">6</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">9</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">12</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">15</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">18</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">21</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+          </div>
+        </div>
+        <div class="tny-card p-5">
+          <div class="lbl">Share of hours over 15 mph, by hour</div>
+          <div class="grid gap-[3px] h-[100px] mt-3" style="grid-template-columns: repeat(24, minmax(0, 1fr));">
+        <div class="flex flex-col justify-end h-full" title="00:00 &mdash; 2.9% of hours over 15 mph"><div class="barv" style="height:37.1%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="01:00 &mdash; 4.8% of hours over 15 mph"><div class="barv" style="height:61.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="02:00 &mdash; 4.9% of hours over 15 mph"><div class="barv" style="height:62.1%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="03:00 &mdash; 5.1% of hours over 15 mph"><div class="barv" style="height:65.2%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="04:00 &mdash; 2.3% of hours over 15 mph"><div class="barv" style="height:29.7%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="05:00 &mdash; 1.4% of hours over 15 mph"><div class="barv" style="height:17.5%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="06:00 &mdash; 1.6% of hours over 15 mph"><div class="barv" style="height:20.7%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="07:00 &mdash; 2.4% of hours over 15 mph"><div class="barv" style="height:30.5%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="08:00 &mdash; 2.8% of hours over 15 mph"><div class="barv" style="height:35.5%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="09:00 &mdash; 2.7% of hours over 15 mph"><div class="barv" style="height:34.4%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="10:00 &mdash; 5.9% of hours over 15 mph"><div class="barv" style="height:75.1%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="11:00 &mdash; 7.8% of hours over 15 mph"><div class="barv-warn" style="height:100.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="12:00 &mdash; 6.8% of hours over 15 mph"><div class="barv-warn" style="height:86.1%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="13:00 &mdash; 5.4% of hours over 15 mph"><div class="barv" style="height:69.4%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="14:00 &mdash; 4.8% of hours over 15 mph"><div class="barv" style="height:61.6%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="15:00 &mdash; 4.9% of hours over 15 mph"><div class="barv" style="height:62.8%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="16:00 &mdash; 4.8% of hours over 15 mph"><div class="barv" style="height:61.7%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="17:00 &mdash; 4.8% of hours over 15 mph"><div class="barv" style="height:60.6%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="18:00 &mdash; 3.4% of hours over 15 mph"><div class="barv" style="height:43.6%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="19:00 &mdash; 2.9% of hours over 15 mph"><div class="barv" style="height:36.6%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="20:00 &mdash; 2.3% of hours over 15 mph"><div class="barv" style="height:28.7%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="21:00 &mdash; 2.1% of hours over 15 mph"><div class="barv" style="height:27.0%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="22:00 &mdash; 1.9% of hours over 15 mph"><div class="barv" style="height:24.2%"></div></div>
+        <div class="flex flex-col justify-end h-full" title="23:00 &mdash; 2.3% of hours over 15 mph"><div class="barv" style="height:29.6%"></div></div>
+          </div>
+          <div class="grid gap-[3px] mt-1 font-mono text-[9.5px] text-slate-500" style="grid-template-columns: repeat(24, minmax(0, 1fr));">
+        <div class="text-center">0</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">3</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">6</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">9</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">12</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">15</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">18</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">21</div>
+        <div class="text-center">&middot;</div>
+        <div class="text-center">&middot;</div>
+          </div>
+          <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 mt-2">
+            Peaks at 11:00 (7.8% of hours over the line, mean +1.5 mph);
+            lowest at 05:00 (1.4%). Night work on fast, empty roads is where arriving
+            traffic has the most speed to lose; daytime queues are where it has already lost it.
+          </p>
+        </div>
+      </div>
+      <div class="tny-card p-5 lg:col-span-2">
+        <table class="tny">
+          <thead><tr><th class="txt">Region</th><th>Zones</th><th>Hours with<br>approach</th><th>Zone<br>mph</th><th>Approach<br>mph</th><th>Approach<br>diff</th><th>Over<br>15 mph</th><th>Baseline<br>drop</th><th>Drop over<br>15 mph</th><th>Approach<br>slower</th></tr></thead>
+          <tbody>
+            <tr><td class="txt">Region 8 - Hudson Valley</td><td>5,781</td><td>91,346</td>
+              <td>42.6</td><td>42.5</td>
+              <td>&minus;0.1</td><td><span class="font-medium text-[#0f1722]">3.3%</span></td>
+              <td>+1.9</td><td>2.0%</td><td>2.7%</td></tr>
+            <tr><td class="txt">Region 3 - Central New York</td><td>2,474</td><td>76,657</td>
+              <td>55.5</td><td>56.9</td>
+              <td>+1.4</td><td><span class="font-medium text-[#0f1722]">5.2%</span></td>
+              <td>+4.0</td><td>2.0%</td><td>2.7%</td></tr>
+            <tr><td class="txt">Region 11 - New York City</td><td>9,920</td><td>63,945</td>
+              <td>33.5</td><td>33.2</td>
+              <td>&minus;0.4</td><td><span class="font-medium text-[#0f1722]">2.8%</span></td>
+              <td>+2.5</td><td>6.1%</td><td>1.8%</td></tr>
+            <tr><td class="txt">Region 1 - Capital District</td><td>4,486</td><td>39,369</td>
+              <td>48.7</td><td>49.1</td>
+              <td>+0.3</td><td><span class="font-medium text-[#0f1722]">6.7%</span></td>
+              <td>+3.4</td><td>7.0%</td><td>4.8%</td></tr>
+            <tr><td class="txt">Region 4 - Genesee Valley</td><td>2,083</td><td>26,683</td>
+              <td>51.0</td><td>51.3</td>
+              <td>+0.3</td><td><span class="font-medium text-[#0f1722]">2.3%</span></td>
+              <td>+0.7</td><td>1.0%</td><td>3.4%</td></tr>
+            <tr><td class="txt">Region 10 - Long Island</td><td>5,170</td><td>23,096</td>
+              <td>45.9</td><td>45.9</td>
+              <td>&minus;0.0</td><td><span class="font-medium text-[#0f1722]">3.1%</span></td>
+              <td>+1.3</td><td>3.6%</td><td>2.6%</td></tr>
+            <tr><td class="txt">Region 6 - Southern Tier/Central New York</td><td>1,000</td><td>13,902</td>
+              <td>55.1</td><td>54.0</td>
+              <td>&minus;1.1</td><td><span class="font-medium text-[#0f1722]">1.6%</span></td>
+              <td>+2.5</td><td>0.9%</td><td>3.0%</td></tr>
+            <tr><td class="txt">Region 2 - Mohawk Valley</td><td>946</td><td>13,521</td>
+              <td>47.4</td><td>51.0</td>
+              <td>+3.6</td><td><span class="font-medium text-[#0f1722]">15.2%</span></td>
+              <td>+2.8</td><td>1.2%</td><td>4.7%</td></tr>
+            <tr><td class="txt">Region 5 - Western New York</td><td>1,507</td><td>8,168</td>
+              <td>59.7</td><td>61.0</td>
+              <td>+1.3</td><td><span class="font-medium text-[#0f1722]">3.4%</span></td>
+              <td>+2.5</td><td>4.0%</td><td>0.8%</td></tr>
+            <tr><td class="txt">Region 9 - Southern Tier</td><td>213</td><td>6,806</td>
+              <td>59.0</td><td>59.0</td>
+              <td>+0.0</td><td><span class="font-medium text-[#0f1722]">4.6%</span></td>
+              <td>+1.9</td><td>0.8%</td><td>1.2%</td></tr>
+            <tr><td class="txt">Region 7 - North Country</td><td>15</td><td>135</td>
+              <td>66.7</td><td>66.8</td>
+              <td>+0.1</td><td><span class="font-medium text-[#0f1722]">1.3%</span></td>
+              <td>&minus;0.1</td><td>2.8%</td><td>0.7%</td></tr>
+          </tbody>
+        </table>
+        <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 mt-3">
+          Region 2 - Mohawk Valley has the largest share of hours over the line (15.2%).
+          The last column is the queue signature &mdash; the share of hours in which the approach was more than 15 mph slower than the zone.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">The three validation zones</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2024 &middot; the same zones every phase has checked against &middot; by hour of day</span>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="tny-card p-5">
+        <div class="flex items-baseline justify-between gap-3">
+          <div class="font-display font-medium text-[15px] text-[#0f1722]">I-495, Long Island Expressway</div>
+          <span class="font-mono text-[10px] uppercase tracking-[0.14em] text-slate-500">ORI1237584671 &middot; the queue case</span>
+        </div>
+        <div class="font-mono text-[10.5px] text-slate-500 mt-1">approach: 120+04940 120P04939</div>
+        <div class="overflow-x-auto mt-3">
+        <table class="tny">
+          <thead><tr><th>Hour</th><th>Active<br>hours</th><th>Zone<br>mph</th><th>Approach<br>mph</th><th>Approach<br>diff</th><th>Normal<br>mph</th><th>Baseline<br>drop</th><th>M4</th></tr></thead>
+          <tbody>
+            <tr><td>00</td><td>2.0</td><td>56.3</td><td>51.3</td>
+              <td>&minus;5.0</td><td>59.0</td><td>+2.7</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>01</td><td>1.8</td><td>61.6</td><td>51.8</td>
+              <td>&minus;9.8</td><td>60.0</td><td>&minus;1.6</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>02</td><td>1.7</td><td>60.8</td><td>56.2</td>
+              <td>&minus;4.6</td><td>59.0</td><td>&minus;1.8</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>03</td><td>2.3</td><td>61.1</td><td>54.6</td>
+              <td>&minus;6.5</td><td>59.0</td><td>&minus;2.1</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>04</td><td>2.7</td><td>58.9</td><td>52.8</td>
+              <td>&minus;6.1</td><td>61.0</td><td>+2.1</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>05</td><td>3.0</td><td>54.6</td><td>50.5</td>
+              <td>&minus;4.2</td><td>61.0</td><td>+6.4</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>06</td><td>3.0</td><td>52.1</td><td>44.9</td>
+              <td>&minus;7.2</td><td>59.0</td><td>+7.0</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>07</td><td>3.0</td><td>51.4</td><td>44.4</td>
+              <td>&minus;7.1</td><td>59.0</td><td>+7.6</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>08</td><td>3.0</td><td>47.7</td><td>42.5</td>
+              <td>&minus;5.1</td><td>56.0</td><td>+8.3</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>09</td><td>3.0</td><td>39.8</td><td>39.4</td>
+              <td>&minus;0.4</td><td>51.0</td><td>+11.2</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>10</td><td>3.0</td><td>33.7</td><td>35.9</td>
+              <td>+2.1</td><td>48.0</td><td>+14.3</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>11</td><td>3.0</td><td>36.6</td><td>33.5</td>
+              <td>&minus;3.1</td><td>47.0</td><td>+10.4</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>12</td><td>2.2</td><td>33.3</td><td>32.1</td>
+              <td>&minus;1.2</td><td>46.0</td><td>+12.7</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>13</td><td>2.0</td><td>42.8</td><td>37.4</td>
+              <td>&minus;5.4</td><td>45.0</td><td>+2.2</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>14</td><td>2.0</td><td>23.9</td><td>28.3</td>
+              <td>+4.4</td><td>47.0</td><td>+23.1</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>15</td><td>2.0</td><td>37.4</td><td>34.9</td>
+              <td>&minus;2.5</td><td>45.0</td><td>+7.6</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>16</td><td>2.0</td><td>32.7</td><td>34.4</td>
+              <td>+1.6</td><td>41.0</td><td>+8.3</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>17</td><td>2.0</td><td>30.2</td><td>36.4</td>
+              <td>+6.2</td><td>26.0</td><td>&minus;4.2</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>18</td><td>2.0</td><td>25.3</td><td>30.9</td>
+              <td>+5.6</td><td>19.0</td><td>&minus;6.3</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>19</td><td>2.0</td><td>26.7</td><td>33.9</td>
+              <td>+7.2</td><td>24.0</td><td>&minus;2.7</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>20</td><td>2.0</td><td>25.2</td><td>32.1</td>
+              <td>+6.9</td><td>46.0</td><td>+20.8</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>21</td><td>2.0</td><td>19.2</td><td>30.6</td>
+              <td>+11.4</td><td>51.0</td><td>+31.8</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>22</td><td>2.0</td><td>28.2</td><td>30.6</td>
+              <td>+2.4</td><td>53.0</td><td>+24.8</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>23</td><td>2.0</td><td>52.1</td><td>50.6</td>
+              <td>&minus;1.5</td><td>57.0</td><td>+4.9</td><td><span class="pill pill-ok">under</span></td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+      <div class="tny-card p-5">
+        <div class="flex items-baseline justify-between gap-3">
+          <div class="font-display font-medium text-[15px] text-[#0f1722]">I-87, the Northway</div>
+          <span class="font-mono text-[10px] uppercase tracking-[0.14em] text-slate-500">ORI1237674447 &middot; the night-closure case</span>
+        </div>
+        <div class="font-mono text-[10.5px] text-slate-500 mt-1">approach: 120-05866 120N05866</div>
+        <div class="overflow-x-auto mt-3">
+        <table class="tny">
+          <thead><tr><th>Hour</th><th>Active<br>hours</th><th>Zone<br>mph</th><th>Approach<br>mph</th><th>Approach<br>diff</th><th>Normal<br>mph</th><th>Baseline<br>drop</th><th>M4</th></tr></thead>
+          <tbody>
+            <tr><td>00</td><td>10.4</td><td>53.5</td><td>66.3</td>
+              <td>+12.8</td><td>64.0</td><td>+10.5</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>01</td><td>10.1</td><td>58.6</td><td>67.7</td>
+              <td>+9.1</td><td>67.0</td><td>+8.4</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>02</td><td>11.2</td><td>57.4</td><td>67.7</td>
+              <td>+10.2</td><td>67.0</td><td>+9.6</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>03</td><td>12.3</td><td>58.1</td><td>68.7</td>
+              <td>+10.6</td><td>67.0</td><td>+8.9</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>04</td><td>13.0</td><td>67.4</td><td>70.7</td>
+              <td>+3.3</td><td>67.0</td><td>&minus;0.4</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>05</td><td>13.0</td><td>69.2</td><td>71.8</td>
+              <td>+2.6</td><td>68.0</td><td>&minus;1.2</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>06</td><td>13.0</td><td>68.3</td><td>71.1</td>
+              <td>+2.8</td><td>68.0</td><td>&minus;0.3</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>07</td><td>13.0</td><td>58.4</td><td>56.3</td>
+              <td>&minus;2.1</td><td>65.0</td><td>+6.6</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>08</td><td>13.0</td><td>59.0</td><td>57.9</td>
+              <td>&minus;1.1</td><td>66.0</td><td>+7.1</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>22</td><td>7.8</td><td>57.2</td><td>68.0</td>
+              <td>+10.8</td><td>67.0</td><td>+9.8</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>23</td><td>7.6</td><td>57.9</td><td>68.9</td>
+              <td>+11.0</td><td>64.0</td><td>+6.1</td><td><span class="pill pill-ok">under</span></td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+      <div class="tny-card p-5">
+        <div class="flex items-baseline justify-between gap-3">
+          <div class="font-display font-medium text-[15px] text-[#0f1722]">I-81, Syracuse</div>
+          <span class="font-mono text-[10px] uppercase tracking-[0.14em] text-slate-500">ORI1237605713 &middot; the free-flow case</span>
+        </div>
+        <div class="font-mono text-[10.5px] text-slate-500 mt-1">approach: 104+05003 104P05003</div>
+        <div class="overflow-x-auto mt-3">
+        <table class="tny">
+          <thead><tr><th>Hour</th><th>Active<br>hours</th><th>Zone<br>mph</th><th>Approach<br>mph</th><th>Approach<br>diff</th><th>Normal<br>mph</th><th>Baseline<br>drop</th><th>M4</th></tr></thead>
+          <tbody>
+            <tr><td>11</td><td>35.0</td><td>70.8</td><td>71.5</td>
+              <td>+0.7</td><td>71.0</td><td>+0.2</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>12</td><td>35.0</td><td>70.8</td><td>71.8</td>
+              <td>+1.0</td><td>71.0</td><td>+0.2</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>13</td><td>35.0</td><td>71.0</td><td>71.7</td>
+              <td>+0.7</td><td>71.0</td><td>+0.0</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>14</td><td>35.0</td><td>71.1</td><td>71.8</td>
+              <td>+0.7</td><td>72.0</td><td>+0.9</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>15</td><td>35.0</td><td>71.9</td><td>72.6</td>
+              <td>+0.7</td><td>72.0</td><td>+0.1</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>16</td><td>35.0</td><td>72.4</td><td>73.2</td>
+              <td>+0.9</td><td>72.0</td><td>&minus;0.4</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>17</td><td>35.0</td><td>72.4</td><td>73.3</td>
+              <td>+0.9</td><td>72.0</td><td>&minus;0.4</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>18</td><td>34.9</td><td>72.8</td><td>73.5</td>
+              <td>+0.7</td><td>72.0</td><td>&minus;0.8</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>19</td><td>34.3</td><td>72.3</td><td>72.9</td>
+              <td>+0.7</td><td>72.0</td><td>&minus;0.3</td><td><span class="pill pill-ok">under</span></td></tr>
+            <tr><td>20</td><td>0.3</td><td>73.8</td><td>74.9</td>
+              <td>+1.1</td><td>71.0</td><td>&minus;2.8</td><td><span class="pill pill-ok">under</span></td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+    </div>
+    <div class="tny-card tny-card-bone p-5 mt-4">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-x-8 gap-y-4">
+        <div>
+          <div class="font-display font-medium text-[14px] text-[#0f1722]">I-495: slowed +8.0 mph, but not abruptly here</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+            Phase 5 measured the whole 5.7-mile corridor below 25 mph in the evening. The approach segments are inside that
+            queue, so the approach differential averages &minus;1.3 mph and never crosses the line (0 of 24 hours;
+            15 hours negative) while the baseline drop reaches +31.8 mph. The taper is upstream of what this measure sees.
+          </p>
+        </div>
+        <div>
+          <div class="font-display font-medium text-[14px] text-[#0f1722]">The Northway: an overnight differential of +12.8 mph</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+            Night lane closures: arriving traffic in the high 60s, the zone in the high 50s, a +5.7 mph mean differential and
+            0 hours over 15. This is what the measure is for &mdash; a real, sustained speed change at the
+            taper that the speed measure (M1) alone records as a modest miss.
+          </p>
+        </div>
+        <div>
+          <div class="font-display font-medium text-[14px] text-[#0f1722]">I-81: +0.8 mph &mdash; nothing to see</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+            Free flow through and into the zone at the posted speed; the approach and the zone within a mile an hour of each
+            other and of normal. A zone this measure should, and does, leave alone.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">Significant-project candidates, and the widest tapers</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2024 &middot; 220 candidates, 210 with a measured approach</span>
+    </div>
+    <div class="grid grid-cols-1 gap-4">
+      <div class="tny-card p-5">
+        <div class="lbl">The rule&rsquo;s projects, per project</div>
+        <div class="overflow-x-auto mt-2">
+        <table class="tny">
+          <thead><tr><th class="txt">Project</th><th>Active<br>hours</th><th>With an<br>approach</th><th>Zone<br>mph</th><th>Approach diff<br>mean</th><th>Widest<br>hour</th><th>Hours over<br>15 mph</th><th>Baseline<br>drop</th></tr></thead>
+          <tbody>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237455419 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-02-20 &rarr; 2024-02-27</span></td>
+              <td>30</td><td>30</td><td>52.6</td>
+              <td>+15.0</td><td>+18.9</td>
+              <td><span class="font-medium text-[#0f1722]">52.7%</span></td><td>+11.7</td></tr>
+            <tr><td class="txt">I-481<br><span class="cite">ORI1237723754 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-11-11 &rarr; 2024-11-21</span></td>
+              <td>16</td><td>16</td><td>49.2</td>
+              <td>+14.0</td><td>+21.9</td>
+              <td><span class="font-medium text-[#0f1722]">50.8%</span></td><td>+14.4</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237503997 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-04-19 &rarr; 2024-04-29</span></td>
+              <td>15</td><td>15</td><td>51.5</td>
+              <td>+14.4</td><td>+18.2</td>
+              <td><span class="font-medium text-[#0f1722]">33.9%</span></td><td>+12.5</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237730064 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-11-18 &rarr; 2024-11-25</span></td>
+              <td>36</td><td>36</td><td>36.5</td>
+              <td>+11.6</td><td>+29.3</td>
+              <td><span class="font-medium text-[#0f1722]">33.3%</span></td><td>+20.6</td></tr>
+            <tr><td class="txt">I-495<br><span class="cite">ORI1237567831 &middot; Region 10 - Long Island &middot; NASSAU &middot; 2024-06-25 &rarr; 2024-06-29</span></td>
+              <td>11</td><td>11</td><td>52.3</td>
+              <td>+9.1</td><td>+30.8</td>
+              <td><span class="font-medium text-[#0f1722]">31.0%</span></td><td>+6.9</td></tr>
+            <tr><td class="txt">I-90<br><span class="cite">ORI1237495008 &middot; Region 1 - Capital District &middot; RENSSELAER &middot; 2024-04-10 &rarr; 2024-04-12</span></td>
+              <td>14</td><td>14</td><td>64.3</td>
+              <td>+5.5</td><td>+16.0</td>
+              <td><span class="font-medium text-[#0f1722]">21.2%</span></td><td>+4.9</td></tr>
+            <tr><td class="txt">I-278<br><span class="cite">ORI1237554769 &middot; Region 11 - New York City &middot; BRONX &middot; 2024-06-12 &rarr; 2024-06-19</span></td>
+              <td>21</td><td>21</td><td>33.6</td>
+              <td>+8.5</td><td>+18.4</td>
+              <td><span class="font-medium text-[#0f1722]">19.1%</span></td><td>+1.0</td></tr>
+            <tr><td class="txt">I-678<br><span class="cite">ORI1237583647 &middot; Region 11 - New York City &middot; QUEENS &middot; 2024-07-12 &rarr; 2024-09-06</span></td>
+              <td>107</td><td>107</td><td>23.7</td>
+              <td>+7.2</td><td>+26.6</td>
+              <td><span class="font-medium text-[#0f1722]">17.8%</span></td><td>+6.8</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237646655 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-09-16 &rarr; 2024-10-18</span></td>
+              <td>132</td><td>132</td><td>33.0</td>
+              <td>+10.9</td><td>+17.9</td>
+              <td><span class="font-medium text-[#0f1722]">16.7%</span></td><td>+24.0</td></tr>
+            <tr><td class="txt">I-678<br><span class="cite">ORI1237458076 &middot; Region 11 - New York City &middot; QUEENS &middot; 2024-02-23 &rarr; 2024-08-17</span></td>
+              <td>436</td><td>436</td><td>22.2</td>
+              <td>+3.5</td><td>+20.9</td>
+              <td><span class="font-medium text-[#0f1722]">13.8%</span></td><td>+7.1</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237746984 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-12-09 &rarr; 2024-12-20</span></td>
+              <td>92</td><td>92</td><td>52.6</td>
+              <td>+6.4</td><td>+18.1</td>
+              <td><span class="font-medium text-[#0f1722]">12.8%</span></td><td>+17.0</td></tr>
+            <tr><td class="txt">I-678<br><span class="cite">ORI1237671325 &middot; Region 11 - New York City &middot; QUEENS &middot; 2024-09-20 &rarr; 2024-12-13</span></td>
+              <td>127</td><td>127</td><td>21.1</td>
+              <td>+2.0</td><td>+15.2</td>
+              <td><span class="font-medium text-[#0f1722]">8.1%</span></td><td>+7.0</td></tr>
+            <tr><td class="txt">I-495<br><span class="cite">ORI1237554703 &middot; Region 10 - Long Island &middot; SUFFOLK &middot; 2024-06-12 &rarr; 2024-06-20</span></td>
+              <td>18</td><td>18</td><td>62.8</td>
+              <td>+1.4</td><td>+23.2</td>
+              <td><span class="font-medium text-[#0f1722]">7.0%</span></td><td>+4.3</td></tr>
+            <tr><td class="txt">I-87 NORTHWAY<br><span class="cite">ORI1237478442 &middot; Region 1 - Capital District &middot; SARATOGA &middot; 2024-03-20 &rarr; 2024-03-23</span></td>
+              <td>9</td><td>9</td><td>57.3</td>
+              <td>+1.3</td><td>+25.4</td>
+              <td><span class="font-medium text-[#0f1722]">3.7%</span></td><td>+12.6</td></tr>
+            <tr><td class="txt">I-678<br><span class="cite">ORI1237528225 &middot; Region 11 - New York City &middot; QUEENS &middot; 2024-05-15 &rarr; 2024-05-17</span></td>
+              <td>10</td><td>10</td><td>24.4</td>
+              <td>+6.3</td><td>+23.2</td>
+              <td><span class="font-medium text-[#0f1722]">2.6%</span></td><td>+4.5</td></tr>
+            <tr><td class="txt">I-495<br><span class="cite">ORI1237639816 &middot; Region 10 - Long Island &middot; SUFFOLK &middot; 2024-09-10 &rarr; 2024-09-12</span></td>
+              <td>13</td><td>13</td><td>64.1</td>
+              <td>&minus;0.6</td><td>+20.7</td>
+              <td><span class="font-medium text-[#0f1722]">2.5%</span></td><td>+0.9</td></tr>
+            <tr><td class="txt">I-678<br><span class="cite">ORI1237425843 &middot; Region 11 - New York City &middot; QUEENS &middot; 2024-01-04 &rarr; 2024-02-08</span></td>
+              <td>44</td><td>44</td><td>22.3</td>
+              <td>+3.2</td><td>+15.5</td>
+              <td><span class="font-medium text-[#0f1722]">2.5%</span></td><td>+1.3</td></tr>
+            <tr><td class="txt">I-678<br><span class="cite">ORI1237430612 &middot; Region 11 - New York City &middot; QUEENS &middot; 2024-01-11 &rarr; 2024-02-16</span></td>
+              <td>53</td><td>53</td><td>23.8</td>
+              <td>+1.4</td><td>+23.8</td>
+              <td><span class="font-medium text-[#0f1722]">2.4%</span></td><td>&minus;1.4</td></tr>
+            <tr><td class="txt">I-495<br><span class="cite">ORI1237447126 &middot; Region 11 - New York City &middot; QUEENS &middot; 2024-02-07 &rarr; 2024-02-09</span></td>
+              <td>17</td><td>17</td><td>31.8</td>
+              <td>+1.4</td><td>+19.6</td>
+              <td><span class="font-medium text-[#0f1722]">2.0%</span></td><td>+3.2</td></tr>
+            <tr><td class="txt">I-678<br><span class="cite">ORI1237458078 &middot; Region 11 - New York City &middot; QUEENS &middot; 2024-02-23 &rarr; 2024-03-29</span></td>
+              <td>40</td><td>40</td><td>22.6</td>
+              <td>+3.4</td><td>+19.1</td>
+              <td><span class="font-medium text-[#0f1722]">1.5%</span></td><td>+0.7</td></tr>
+            <tr><td class="txt">I-495<br><span class="cite">ORI1237634068 &middot; Region 10 - Long Island &middot; SUFFOLK &middot; 2024-09-03 &rarr; 2024-10-02</span></td>
+              <td>47</td><td>47</td><td>63.5</td>
+              <td>+3.3</td><td>+17.0</td>
+              <td><span class="font-medium text-[#0f1722]">1.4%</span></td><td>+3.7</td></tr>
+            <tr><td class="txt">I-678<br><span class="cite">ORI1237639882 &middot; Region 11 - New York City &middot; QUEENS &middot; 2024-09-10 &rarr; 2024-09-20</span></td>
+              <td>22</td><td>22</td><td>43.9</td>
+              <td>&minus;1.6</td><td>+17.8</td>
+              <td><span class="font-medium text-[#0f1722]">1.1%</span></td><td>+2.1</td></tr>
+            <tr><td class="txt">I-95<br><span class="cite">ORI1237593227 &middot; Region 11 - New York City &middot; BRONX &middot; 2024-07-23 &rarr; 2024-08-02</span></td>
+              <td>26</td><td>26</td><td>38.9</td>
+              <td>+4.2</td><td>+15.8</td>
+              <td><span class="font-medium text-[#0f1722]">1.0%</span></td><td>+8.5</td></tr>
+            <tr><td class="txt">I-390<br><span class="cite">ORI1237445674 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-02-05 &rarr; 2024-02-09</span></td>
+              <td>6</td><td>6</td><td>30.6</td>
+              <td>+3.6</td><td>+15.0</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;1.8</td></tr>
+            <tr><td class="txt">I-278<br><span class="cite">ORI1237635515 &middot; Region 11 - New York City &middot; KINGS &middot; 2024-09-05 &rarr; 2024-10-17</span></td>
+              <td>57</td><td>57</td><td>23.9</td>
+              <td>&minus;9.3</td><td>+14.9</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.4</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237487597 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-04-01 &rarr; 2024-04-14</span></td>
+              <td>40</td><td>40</td><td>53.0</td>
+              <td>+12.7</td><td>+14.4</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+9.1</td></tr>
+            <tr><td class="txt">I-278<br><span class="cite">ORI1237441540 &middot; Region 11 - New York City &middot; BRONX &middot; 2024-01-30 &rarr; 2024-02-01</span></td>
+              <td>7</td><td>7</td><td>35.7</td>
+              <td>+5.8</td><td>+14.1</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+2.6</td></tr>
+            <tr><td class="txt">I-87 NORTHWAY<br><span class="cite">ORI1237689027 &middot; Region 1 - Capital District &middot; SARATOGA &middot; 2024-10-08 &rarr; 2024-10-25</span></td>
+              <td>68</td><td>68</td><td>60.2</td>
+              <td>+4.6</td><td>+13.7</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+6.4</td></tr>
+            <tr><td class="txt">I-481<br><span class="cite">ORI1237551107 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-06-07 &rarr; 2024-12-31</span></td>
+              <td>1,029</td><td>1,029</td><td>58.8</td>
+              <td>+8.4</td><td>+13.2</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+9.5</td></tr>
+            <tr><td class="txt">I-495<br><span class="cite">ORI1237643937 &middot; Region 10 - Long Island &middot; SUFFOLK &middot; 2024-09-13 &rarr; 2024-10-22</span></td>
+              <td>42</td><td>42</td><td>60.2</td>
+              <td>+5.2</td><td>+12.9</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.3</td></tr>
+            <tr><td class="txt">I-87 NORTHWAY<br><span class="cite">ORI1237674447 &middot; Region 1 - Capital District &middot; SARATOGA &middot; 2024-09-23 &rarr; 2024-10-19</span></td>
+              <td>124</td><td>124</td><td>60.9</td>
+              <td>+5.7</td><td>+12.8</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+5.5</td></tr>
+            <tr><td class="txt">I-481<br><span class="cite">ORI1237487595 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-04-01 &rarr; 2024-04-13</span></td>
+              <td>19</td><td>19</td><td>59.7</td>
+              <td>+4.1</td><td>+12.7</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+2.5</td></tr>
+            <tr><td class="txt">I-678<br><span class="cite">ORI1237643915 &middot; Region 11 - New York City &middot; QUEENS &middot; 2024-09-13 &rarr; 2024-11-20</span></td>
+              <td>124</td><td>124</td><td>44.8</td>
+              <td>+0.8</td><td>+12.4</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.2</td></tr>
+            <tr><td class="txt">I-95<br><span class="cite">ORI1237495636 &middot; Region 11 - New York City &middot; BRONX &middot; 2024-04-11 &rarr; 2024-05-07</span></td>
+              <td>60</td><td>60</td><td>44.4</td>
+              <td>+2.4</td><td>+12.3</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+4.4</td></tr>
+            <tr><td class="txt">I-87 NORTHWAY<br><span class="cite">ORI1237710471 &middot; Region 1 - Capital District &middot; SARATOGA &middot; 2024-10-29 &rarr; 2024-11-02</span></td>
+              <td>34</td><td>34</td><td>62.6</td>
+              <td>+4.1</td><td>+12.0</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+4.1</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237487596 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-04-01 &rarr; 2024-04-14</span></td>
+              <td>28</td><td>28</td><td>62.9</td>
+              <td>+5.9</td><td>+11.7</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+3.4</td></tr>
+            <tr><td class="txt">I-278<br><span class="cite">ORI1237447391 &middot; Region 11 - New York City &middot; RICHMOND &middot; 2024-02-07 &rarr; 2024-03-22</span></td>
+              <td>49</td><td>49</td><td>18.6</td>
+              <td>+6.5</td><td>+11.7</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.8</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237741414 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-12-02 &rarr; 2024-12-20</span></td>
+              <td>93</td><td>93</td><td>54.9</td>
+              <td>+6.3</td><td>+11.6</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+5.8</td></tr>
+            <tr><td class="txt">I-95<br><span class="cite">ORI1237540993 &middot; Region 11 - New York City &middot; BRONX &middot; 2024-05-29 &rarr; 2024-07-30</span></td>
+              <td>126</td><td>126</td><td>46.8</td>
+              <td>+1.8</td><td>+11.2</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.6</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237641786 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-09-11 &rarr; 2024-09-13</span></td>
+              <td>27</td><td>27</td><td>62.9</td>
+              <td>+3.0</td><td>+11.0</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+6.2</td></tr>
+            <tr><td class="txt">I-678<br><span class="cite">ORI1237425058 &middot; Region 11 - New York City &middot; QUEENS &middot; 2024-01-03 &rarr; 2024-02-02</span></td>
+              <td>61</td><td>61</td><td>20.7</td>
+              <td>+1.0</td><td>+10.9</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+3.1</td></tr>
+            <tr><td class="txt">I-678<br><span class="cite">ORI1237494513 &middot; Region 11 - New York City &middot; QUEENS &middot; 2024-04-10 &rarr; 2024-08-24</span></td>
+              <td>223</td><td>223</td><td>45.1</td>
+              <td>+2.1</td><td>+10.7</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.4</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237673994 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-09-23 &rarr; 2024-09-27</span></td>
+              <td>30</td><td>30</td><td>53.8</td>
+              <td>+5.9</td><td>+10.5</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+2.7</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237741401 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-12-02 &rarr; 2024-12-06</span></td>
+              <td>37</td><td>37</td><td>49.7</td>
+              <td>+6.7</td><td>+10.2</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+16.8</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237607280 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-08-06 &rarr; 2024-08-12</span></td>
+              <td>12</td><td>12</td><td>62.7</td>
+              <td>+5.5</td><td>+10.2</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.5</td></tr>
+            <tr><td class="txt">I-87 NORTHWAY<br><span class="cite">ORI1237761542 &middot; Region 1 - Capital District &middot; SARATOGA &middot; 2024-12-28 &rarr; 2024-12-30</span></td>
+              <td>25</td><td>25</td><td>64.6</td>
+              <td>+3.2</td><td>+9.8</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+3.5</td></tr>
+            <tr><td class="txt">I-95<br><span class="cite">ORI1237530069 &middot; Region 11 - New York City &middot; BRONX &middot; 2024-05-17 &rarr; 2024-05-24</span></td>
+              <td>30</td><td>30</td><td>37.4</td>
+              <td>+2.5</td><td>+9.8</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+5.8</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237719473 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-11-06 &rarr; 2024-11-08</span></td>
+              <td>12</td><td>12</td><td>43.1</td>
+              <td>+5.1</td><td>+9.7</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+9.2</td></tr>
+            <tr><td class="txt">I-295<br><span class="cite">ORI1237602796 &middot; Region 11 - New York City &middot; BRONX &middot; 2024-08-01 &rarr; 2024-10-27</span></td>
+              <td>94</td><td>94</td><td>46.8</td>
+              <td>+1.2</td><td>+9.6</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;2.9</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237547516 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-06-04 &rarr; 2024-06-06</span></td>
+              <td>16</td><td>16</td><td>53.3</td>
+              <td>+4.5</td><td>+8.5</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+6.6</td></tr>
+            <tr><td class="txt">I-678<br><span class="cite">ORI1237507186 &middot; Region 11 - New York City &middot; QUEENS &middot; 2024-04-24 &rarr; 2024-05-14</span></td>
+              <td>23</td><td>23</td><td>47.3</td>
+              <td>+2.7</td><td>+8.5</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.5</td></tr>
+            <tr><td class="txt">I-278<br><span class="cite">ORI1237600912 &middot; Region 11 - New York City &middot; KINGS &middot; 2024-07-31 &rarr; 2024-08-06</span></td>
+              <td>14</td><td>14</td><td>42.9</td>
+              <td>+4.4</td><td>+8.2</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.6</td></tr>
+            <tr><td class="txt">I-678<br><span class="cite">ORI1237630339 &middot; Region 11 - New York City &middot; QUEENS &middot; 2024-08-29 &rarr; 2024-09-07</span></td>
+              <td>22</td><td>22</td><td>46.2</td>
+              <td>+1.6</td><td>+7.4</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;1.2</td></tr>
+            <tr><td class="txt">I-95<br><span class="cite">ORI1237472076 &middot; Region 11 - New York City &middot; BRONX &middot; 2024-03-13 &rarr; 2024-03-21</span></td>
+              <td>23</td><td>23</td><td>49.9</td>
+              <td>+0.4</td><td>+7.4</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;0.5</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237540376 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-05-28 &rarr; 2024-05-30</span></td>
+              <td>15</td><td>15</td><td>48.5</td>
+              <td>+6.4</td><td>+7.3</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+13.9</td></tr>
+            <tr><td class="txt">I-495<br><span class="cite">ORI1237563004 &middot; Region 10 - Long Island &middot; SUFFOLK &middot; 2024-06-20 &rarr; 2024-06-22</span></td>
+              <td>4</td><td>4</td><td>65.1</td>
+              <td>&minus;1.5</td><td>+7.3</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.9</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237553342 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-06-10 &rarr; 2024-06-15</span></td>
+              <td>28</td><td>28</td><td>48.7</td>
+              <td>+1.6</td><td>+6.9</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.5</td></tr>
+            <tr><td class="txt">I-278<br><span class="cite">ORI1237690584 &middot; Region 11 - New York City &middot; KINGS &middot; 2024-10-09 &rarr; 2024-11-02</span></td>
+              <td>26</td><td>26</td><td>34.4</td>
+              <td>+0.8</td><td>+6.6</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.7</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237639097 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-09-09 &rarr; 2024-10-31</span></td>
+              <td>30</td><td>30</td><td>63.4</td>
+              <td>+0.3</td><td>+6.5</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+3.6</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237682545 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-10-01 &rarr; 2024-10-04</span></td>
+              <td>16</td><td>16</td><td>43.3</td>
+              <td>+3.6</td><td>+6.5</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+8.4</td></tr>
+            <tr><td class="txt">I-87 NORTHWAY<br><span class="cite">ORI1237460124 &middot; Region 1 - Capital District &middot; SARATOGA &middot; 2024-02-27 &rarr; 2024-03-02</span></td>
+              <td>2</td><td>2</td><td>60.9</td>
+              <td>+0.2</td><td>+6.3</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+8.2</td></tr>
+            <tr><td class="txt">I-678<br><span class="cite">ORI1237466364 &middot; Region 11 - New York City &middot; QUEENS &middot; 2024-03-06 &rarr; 2024-07-11</span></td>
+              <td>261</td><td>261</td><td>28.3</td>
+              <td>+1.6</td><td>+6.3</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.8</td></tr>
+            <tr><td class="txt">I-87 MAJOR DEEGAN EXPRESSWAY<br><span class="cite">ORI1237455469 &middot; Region 11 - New York City &middot; BRONX &middot; 2024-02-20 &rarr; 2024-02-29</span></td>
+              <td>7</td><td>7</td><td>43.3</td>
+              <td>&minus;1.9</td><td>+5.8</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;2.0</td></tr>
+            <tr><td class="txt">I-481<br><span class="cite">ORI1237688403 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-10-07 &rarr; 2024-12-31</span></td>
+              <td>340</td><td>340</td><td>64.1</td>
+              <td>+4.2</td><td>+5.7</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.5</td></tr>
+            <tr><td class="txt">I-678<br><span class="cite">ORI1237720084 &middot; Region 11 - New York City &middot; QUEENS &middot; 2024-11-07 &rarr; 2024-12-04</span></td>
+              <td>53</td><td>53</td><td>22.5</td>
+              <td>0.0</td><td>+5.7</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+17.1</td></tr>
+            <tr><td class="txt">I-87 MAJOR DEEGAN EXPRESSWAY<br><span class="cite">ORI1237468333 &middot; Region 11 - New York City &middot; BRONX &middot; 2024-03-08 &rarr; 2024-03-28</span></td>
+              <td>38</td><td>38</td><td>36.1</td>
+              <td>&minus;2.2</td><td>+5.5</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;0.7</td></tr>
+            <tr><td class="txt">I-87 NORTHWAY<br><span class="cite">ORI1237753983 &middot; Region 1 - Capital District &middot; SARATOGA &middot; 2024-12-17 &rarr; 2024-12-24</span></td>
+              <td>65</td><td>65</td><td>63.1</td>
+              <td>+2.4</td><td>+5.2</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+3.8</td></tr>
+            <tr><td class="txt">I-278<br><span class="cite">ORI1237548203 &middot; Region 11 - New York City &middot; RICHMOND &middot; 2024-06-05 &rarr; 2024-07-10</span></td>
+              <td>38</td><td>38</td><td>45.0</td>
+              <td>+2.1</td><td>+5.2</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.6</td></tr>
+            <tr><td class="txt">I-87 MAJOR DEEGAN EXPRESSWAY<br><span class="cite">ORI1237526308 &middot; Region 11 - New York City &middot; BRONX &middot; 2024-05-14 &rarr; 2024-05-17</span></td>
+              <td>21</td><td>21</td><td>36.9</td>
+              <td>&minus;6.5</td><td>+5.1</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+5.0</td></tr>
+            <tr><td class="txt">I-678<br><span class="cite">ORI1237467344 &middot; Region 11 - New York City &middot; QUEENS &middot; 2024-03-07 &rarr; 2024-03-09</span></td>
+              <td>17</td><td>17</td><td>46.3</td>
+              <td>+0.9</td><td>+5.1</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+4.1</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237560172 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-06-17 &rarr; 2024-06-29</span></td>
+              <td>57</td><td>57</td><td>48.7</td>
+              <td>+2.1</td><td>+5.0</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.5</td></tr>
+            <tr><td class="txt">I-678<br><span class="cite">ORI1237746164 &middot; Region 11 - New York City &middot; QUEENS &middot; 2024-12-07 &rarr; 2024-12-19</span></td>
+              <td>18</td><td>18</td><td>30.5</td>
+              <td>&minus;1.0</td><td>+4.9</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+19.4</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237741408 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-12-02 &rarr; 2024-12-20</span></td>
+              <td>84</td><td>84</td><td>50.2</td>
+              <td>+0.6</td><td>+4.7</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+2.8</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237705465 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-10-23 &rarr; 2024-11-08</span></td>
+              <td>72</td><td>72</td><td>61.5</td>
+              <td>+3.7</td><td>+4.6</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.7</td></tr>
+            <tr><td class="txt">I-390<br><span class="cite">ORI1237629040 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-08-28 &rarr; 2024-08-30</span></td>
+              <td>22</td><td>22</td><td>62.3</td>
+              <td>+1.4</td><td>+4.5</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;0.7</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237526064 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-05-13 &rarr; 2024-05-18</span></td>
+              <td>29</td><td>29</td><td>49.4</td>
+              <td>+0.4</td><td>+4.3</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.3</td></tr>
+            <tr><td class="txt">I-278<br><span class="cite">ORI1237553569 &middot; Region 11 - New York City &middot; KINGS &middot; 2024-06-11 &rarr; 2024-06-29</span></td>
+              <td>21</td><td>21</td><td>48.2</td>
+              <td>&minus;1.5</td><td>+4.2</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;0.4</td></tr>
+            <tr><td class="txt">I-278<br><span class="cite">ORI1237647379 &middot; Region 11 - New York City &middot; RICHMOND &middot; 2024-09-17 &rarr; 2024-09-19</span></td>
+              <td>19</td><td>19</td><td>52.4</td>
+              <td>+1.7</td><td>+4.2</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+4.1</td></tr>
+            <tr><td class="txt">I-678<br><span class="cite">ORI1237714672 &middot; Region 11 - New York City &middot; QUEENS &middot; 2024-11-01 &rarr; 2024-12-18</span></td>
+              <td>57</td><td>57</td><td>21.9</td>
+              <td>+0.2</td><td>+4.2</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.7</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237646270 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-09-16 &rarr; 2024-09-20</span></td>
+              <td>43</td><td>43</td><td>58.4</td>
+              <td>&minus;1.2</td><td>+4.2</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+10.9</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237688571 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-10-07 &rarr; 2024-10-11</span></td>
+              <td>20</td><td>20</td><td>44.9</td>
+              <td>+1.4</td><td>+4.1</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+6.1</td></tr>
+            <tr><td class="txt">I-481<br><span class="cite">ORI1237551099 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-06-07 &rarr; 2024-10-04</span></td>
+              <td>467</td><td>467</td><td>64.8</td>
+              <td>+3.6</td><td>+4.1</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.9</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237599091 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-07-29 &rarr; 2024-08-09</span></td>
+              <td>18</td><td>18</td><td>14.1</td>
+              <td>+1.4</td><td>+4.0</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+5.4</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237709818 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-10-28 &rarr; 2024-11-01</span></td>
+              <td>28</td><td>28</td><td>65.7</td>
+              <td>+3.3</td><td>+4.0</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;0.4</td></tr>
+            <tr><td class="txt">I-481<br><span class="cite">ORI1237514332 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-05-01 &rarr; 2024-06-28</span></td>
+              <td>348</td><td>348</td><td>64.5</td>
+              <td>+3.3</td><td>+3.7</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.9</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237464769 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-03-04 &rarr; 2024-04-30</span></td>
+              <td>377</td><td>377</td><td>61.5</td>
+              <td>+2.5</td><td>+3.6</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+3.4</td></tr>
+            <tr><td class="txt">I-481<br><span class="cite">ORI1237487594 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-04-01 &rarr; 2024-04-13</span></td>
+              <td>7</td><td>7</td><td>64.5</td>
+              <td>+1.3</td><td>+3.5</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.8</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237606512 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-08-05 &rarr; 2024-08-09</span></td>
+              <td>37</td><td>37</td><td>49.4</td>
+              <td>+1.4</td><td>+3.5</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.2</td></tr>
+            <tr><td class="txt">I-390<br><span class="cite">ORI1237717343 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-11-04 &rarr; 2024-11-08</span></td>
+              <td>25</td><td>25</td><td>58.9</td>
+              <td>+1.3</td><td>+3.5</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+2.5</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237712695 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-10-30 &rarr; 2024-11-01</span></td>
+              <td>8</td><td>8</td><td>48.5</td>
+              <td>+2.0</td><td>+3.5</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+2.5</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237712689 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-10-30 &rarr; 2024-11-01</span></td>
+              <td>8</td><td>8</td><td>48.5</td>
+              <td>+2.0</td><td>+3.5</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+2.5</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237549817 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-06-06 &rarr; 2024-06-14</span></td>
+              <td>43</td><td>43</td><td>53.1</td>
+              <td>+1.8</td><td>+3.4</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.7</td></tr>
+            <tr><td class="txt">I-390<br><span class="cite">ORI1237505942 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-04-23 &rarr; 2024-04-26</span></td>
+              <td>24</td><td>24</td><td>57.1</td>
+              <td>+0.8</td><td>+3.4</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+2.4</td></tr>
+            <tr><td class="txt">I-95<br><span class="cite">ORI1237575360 &middot; Region 11 - New York City &middot; BRONX &middot; 2024-07-02 &rarr; 2024-07-04</span></td>
+              <td>20</td><td>20</td><td>53.2</td>
+              <td>&minus;0.6</td><td>+3.3</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;1.6</td></tr>
+            <tr><td class="txt">I-90<br><span class="cite">ORI1237673576 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-09-23 &rarr; 2024-10-11</span></td>
+              <td>162</td><td>162</td><td>68.3</td>
+              <td>+1.7</td><td>+3.3</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;1.7</td></tr>
+            <tr><td class="txt">I-87 NORTHWAY<br><span class="cite">ORI1237723854 &middot; Region 1 - Capital District &middot; SARATOGA &middot; 2024-11-12 &rarr; 2024-11-15</span></td>
+              <td>34</td><td>34</td><td>65.4</td>
+              <td>+1.2</td><td>+3.1</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.4</td></tr>
+            <tr><td class="txt">I-390<br><span class="cite">ORI1237633605 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-09-03 &rarr; 2024-09-06</span></td>
+              <td>20</td><td>20</td><td>62.1</td>
+              <td>+1.2</td><td>+3.0</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.3</td></tr>
+            <tr><td class="txt">I-278<br><span class="cite">ORI1237520747 &middot; Region 11 - New York City &middot; RICHMOND &middot; 2024-05-08 &rarr; 2024-06-25</span></td>
+              <td>87</td><td>87</td><td>55.6</td>
+              <td>0.0</td><td>+3.0</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.1</td></tr>
+            <tr><td class="txt">I-495<br><span class="cite">ORI1237562999 &middot; Region 10 - Long Island &middot; SUFFOLK &middot; 2024-06-20 &rarr; 2024-06-23</span></td>
+              <td>11</td><td>11</td><td>65.4</td>
+              <td>+1.2</td><td>+3.0</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;2.2</td></tr>
+            <tr><td class="txt">I-87 MAJOR DEEGAN EXPRESSWAY<br><span class="cite">ORI1237553562 &middot; Region 11 - New York City &middot; BRONX &middot; 2024-06-11 &rarr; 2024-06-13</span></td>
+              <td>18</td><td>18</td><td>37.3</td>
+              <td>&minus;10.9</td><td>+2.8</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+5.4</td></tr>
+            <tr><td class="txt">I-390<br><span class="cite">ORI1237682399 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-10-01 &rarr; 2024-10-04</span></td>
+              <td>20</td><td>20</td><td>60.7</td>
+              <td>+0.9</td><td>+2.8</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.3</td></tr>
+            <tr><td class="txt">I-495<br><span class="cite">ORI1237561249 &middot; Region 10 - Long Island &middot; SUFFOLK &middot; 2024-06-18 &rarr; 2024-06-21</span></td>
+              <td>2</td><td>2</td><td>59.6</td>
+              <td>+2.1</td><td>+2.7</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;1.8</td></tr>
+            <tr><td class="txt">I-87 MAJOR DEEGAN EXPRESSWAY<br><span class="cite">ORI1237513815 &middot; Region 11 - New York City &middot; BRONX &middot; 2024-05-01 &rarr; 2024-05-08</span></td>
+              <td>18</td><td>18</td><td>41.8</td>
+              <td>&minus;3.7</td><td>+2.7</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.7</td></tr>
+            <tr><td class="txt">I-495<br><span class="cite">ORI1237602182 &middot; Region 10 - Long Island &middot; SUFFOLK &middot; 2024-08-01 &rarr; 2024-08-22</span></td>
+              <td>29</td><td>29</td><td>67.3</td>
+              <td>&minus;0.1</td><td>+2.6</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;0.2</td></tr>
+            <tr><td class="txt">I-390<br><span class="cite">ORI1237683163 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-10-02 &rarr; 2024-10-04</span></td>
+              <td>13</td><td>13</td><td>62.2</td>
+              <td>+1.6</td><td>+2.6</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;0.4</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237560921 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-06-18 &rarr; 2024-06-21</span></td>
+              <td>24</td><td>24</td><td>49.5</td>
+              <td>+0.9</td><td>+2.5</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.9</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237563411 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-06-20 &rarr; 2024-06-22</span></td>
+              <td>17</td><td>17</td><td>49.8</td>
+              <td>+0.4</td><td>+2.5</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.4</td></tr>
+            <tr><td class="txt">I-390<br><span class="cite">ORI1237633544 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-09-03 &rarr; 2024-09-06</span></td>
+              <td>20</td><td>20</td><td>59.4</td>
+              <td>+1.1</td><td>+2.4</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.6</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237424656 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-01-02 &rarr; 2024-02-16</span></td>
+              <td>98</td><td>98</td><td>56.4</td>
+              <td>&minus;1.3</td><td>+2.4</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+6.3</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237574724 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-07-01 &rarr; 2024-07-03</span></td>
+              <td>17</td><td>17</td><td>65.9</td>
+              <td>+2.0</td><td>+2.4</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.3</td></tr>
+            <tr><td class="txt">I-278<br><span class="cite">ORI1237693187 &middot; Region 11 - New York City &middot; RICHMOND &middot; 2024-10-11 &rarr; 2024-10-23</span></td>
+              <td>46</td><td>46</td><td>52.8</td>
+              <td>+0.7</td><td>+2.3</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+4.1</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237470257 &middot; Region 3 - Central New York &middot; OSWEGO &middot; 2024-03-11 &rarr; 2024-03-22</span></td>
+              <td>52</td><td>52</td><td>69.4</td>
+              <td>+1.0</td><td>+2.2</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.5</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237533309 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-05-20 &rarr; 2024-05-24</span></td>
+              <td>26</td><td>26</td><td>48.9</td>
+              <td>+0.3</td><td>+2.2</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.8</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237599094 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-07-29 &rarr; 2024-08-13</span></td>
+              <td>36</td><td>36</td><td>58.6</td>
+              <td>+0.4</td><td>+2.2</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+10.0</td></tr>
+            <tr><td class="txt">I-495<br><span class="cite">ORI1237564281 &middot; Region 10 - Long Island &middot; NASSAU &middot; 2024-06-21 &rarr; 2024-06-23</span></td>
+              <td>10</td><td>10</td><td>60.7</td>
+              <td>+0.3</td><td>+2.0</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;1.2</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237445588 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-02-05 &rarr; 2024-02-07</span></td>
+              <td>17</td><td>17</td><td>67.8</td>
+              <td>+0.2</td><td>+1.9</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.8</td></tr>
+            <tr><td class="txt">I-390<br><span class="cite">ORI1237622037 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-08-21 &rarr; 2024-08-23</span></td>
+              <td>23</td><td>23</td><td>62.6</td>
+              <td>+1.3</td><td>+1.9</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;1.1</td></tr>
+            <tr><td class="txt">I-390<br><span class="cite">ORI1237709990 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-10-28 &rarr; 2024-11-01</span></td>
+              <td>24</td><td>24</td><td>61.7</td>
+              <td>+1.4</td><td>+1.9</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.6</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237696660 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-10-15 &rarr; 2024-10-18</span></td>
+              <td>24</td><td>24</td><td>43.6</td>
+              <td>+0.8</td><td>+1.9</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+8.0</td></tr>
+            <tr><td class="txt">I-87 MAJOR DEEGAN EXPRESSWAY<br><span class="cite">ORI1237437164 &middot; Region 11 - New York City &middot; BRONX &middot; 2024-01-23 &rarr; 2024-02-02</span></td>
+              <td>12</td><td>12</td><td>39.6</td>
+              <td>&minus;3.2</td><td>+1.8</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.7</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237487592 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-04-01 &rarr; 2024-04-13</span></td>
+              <td>20</td><td>20</td><td>59.0</td>
+              <td>+0.5</td><td>+1.8</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.5</td></tr>
+            <tr><td class="txt">I-390<br><span class="cite">ORI1237698232 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-10-16 &rarr; 2024-10-18</span></td>
+              <td>14</td><td>14</td><td>62.7</td>
+              <td>+1.1</td><td>+1.8</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;0.2</td></tr>
+            <tr><td class="txt">I-390<br><span class="cite">ORI1237695593 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-10-14 &rarr; 2024-10-16</span></td>
+              <td>15</td><td>15</td><td>60.3</td>
+              <td>&minus;0.1</td><td>+1.7</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.5</td></tr>
+            <tr><td class="txt">I-495<br><span class="cite">ORI1237569060 &middot; Region 10 - Long Island &middot; SUFFOLK &middot; 2024-06-26 &rarr; 2024-06-28</span></td>
+              <td>4</td><td>4</td><td>65.6</td>
+              <td>&minus;1.9</td><td>+1.7</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.7</td></tr>
+            <tr><td class="txt">I-390<br><span class="cite">ORI1237505186 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-04-22 &rarr; 2024-04-24</span></td>
+              <td>21</td><td>21</td><td>58.7</td>
+              <td>+0.3</td><td>+1.5</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+2.5</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237605987 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-08-05 &rarr; 2024-08-09</span></td>
+              <td>30</td><td>30</td><td>60.5</td>
+              <td>&minus;0.9</td><td>+1.5</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.4</td></tr>
+            <tr><td class="txt">I-495<br><span class="cite">ORI254876209 &middot; Region 10 - Long Island &middot; NASSAU &middot; 2024-03-20 &rarr; 2024-03-23</span></td>
+              <td>16</td><td>16</td><td>60.5</td>
+              <td>&minus;0.4</td><td>+1.3</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.8</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237464885 &middot; Region 3 - Central New York &middot; OSWEGO &middot; 2024-03-04 &rarr; 2024-03-08</span></td>
+              <td>34</td><td>34</td><td>70.7</td>
+              <td>&minus;0.2</td><td>+1.3</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.3</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237464775 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-03-04 &rarr; 2024-04-30</span></td>
+              <td>376</td><td>376</td><td>67.5</td>
+              <td>&minus;0.6</td><td>+1.3</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.9</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237579642 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-07-08 &rarr; 2024-07-13</span></td>
+              <td>19</td><td>19</td><td>49.6</td>
+              <td>+0.5</td><td>+1.3</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>0.0</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237732561 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-11-20 &rarr; 2024-11-25</span></td>
+              <td>24</td><td>24</td><td>50.5</td>
+              <td>+0.8</td><td>+1.3</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.4</td></tr>
+            <tr><td class="txt">I-95<br><span class="cite">ORI1237647373 &middot; Region 11 - New York City &middot; BRONX &middot; 2024-09-17 &rarr; 2024-10-16</span></td>
+              <td>49</td><td>49</td><td>43.0</td>
+              <td>&minus;1.9</td><td>+1.2</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.6</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237502035 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-04-18 &rarr; 2024-04-20</span></td>
+              <td>21</td><td>21</td><td>62.7</td>
+              <td>&minus;0.6</td><td>+1.2</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+6.6</td></tr>
+            <tr><td class="txt">I-87 MAJOR DEEGAN EXPRESSWAY<br><span class="cite">ORI1237513814 &middot; Region 11 - New York City &middot; BRONX &middot; 2024-05-01 &rarr; 2024-05-11</span></td>
+              <td>30</td><td>30</td><td>39.6</td>
+              <td>&minus;5.4</td><td>+1.1</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+2.8</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237494962 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-04-10 &rarr; 2024-04-30</span></td>
+              <td>12</td><td>12</td><td>49.9</td>
+              <td>&minus;4.6</td><td>+1.1</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+13.5</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237560916 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-06-18 &rarr; 2024-06-21</span></td>
+              <td>25</td><td>25</td><td>58.7</td>
+              <td>+0.3</td><td>+1.1</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;0.3</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237606646 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-08-06 &rarr; 2024-08-09</span></td>
+              <td>33</td><td>33</td><td>51.3</td>
+              <td>&minus;0.3</td><td>+1.0</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;0.8</td></tr>
+            <tr><td class="txt">I-390<br><span class="cite">ORI1237639318 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-09-09 &rarr; 2024-09-13</span></td>
+              <td>24</td><td>24</td><td>57.5</td>
+              <td>+0.5</td><td>+1.0</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+3.5</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237688039 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-10-07 &rarr; 2024-10-13</span></td>
+              <td>63</td><td>63</td><td>58.2</td>
+              <td>+0.4</td><td>+1.0</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+10.8</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237494975 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-04-10 &rarr; 2024-05-17</span></td>
+              <td>32</td><td>32</td><td>56.0</td>
+              <td>&minus;0.5</td><td>+1.0</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+3.7</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237747199 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-12-09 &rarr; 2024-12-20</span></td>
+              <td>53</td><td>53</td><td>62.0</td>
+              <td>&minus;0.3</td><td>+0.9</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+7.4</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237498515 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-04-15 &rarr; 2024-04-17</span></td>
+              <td>23</td><td>23</td><td>65.1</td>
+              <td>&minus;0.5</td><td>+0.9</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+4.2</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237560913 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-06-18 &rarr; 2024-06-21</span></td>
+              <td>19</td><td>19</td><td>50.1</td>
+              <td>&minus;0.1</td><td>+0.9</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.2</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237730629 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-11-18 &rarr; 2024-11-27</span></td>
+              <td>72</td><td>72</td><td>54.5</td>
+              <td>&minus;0.7</td><td>+0.8</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+9.4</td></tr>
+            <tr><td class="txt">I-495<br><span class="cite">ORI1237566565 &middot; Region 10 - Long Island &middot; SUFFOLK &middot; 2024-06-24 &rarr; 2024-06-29</span></td>
+              <td>6</td><td>6</td><td>65.5</td>
+              <td>&minus;0.8</td><td>+0.8</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.1</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237540794 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-05-28 &rarr; 2024-06-08</span></td>
+              <td>12</td><td>12</td><td>51.1</td>
+              <td>&minus;0.8</td><td>+0.7</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.2</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237709938 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-10-28 &rarr; 2024-11-01</span></td>
+              <td>24</td><td>24</td><td>64.8</td>
+              <td>&minus;0.6</td><td>+0.6</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;0.9</td></tr>
+            <tr><td class="txt">I-278<br><span class="cite">ORI1237606745 &middot; Region 11 - New York City &middot; KINGS &middot; 2024-08-06 &rarr; 2024-09-06</span></td>
+              <td>41</td><td>41</td><td>46.0</td>
+              <td>&minus;2.0</td><td>+0.6</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+2.0</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237553442 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-06-11 &rarr; 2024-06-13</span></td>
+              <td>18</td><td>18</td><td>59.6</td>
+              <td>&minus;0.7</td><td>+0.6</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.4</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237585967 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-07-15 &rarr; 2024-07-19</span></td>
+              <td>33</td><td>33</td><td>59.5</td>
+              <td>&minus;0.4</td><td>+0.5</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+9.3</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237695628 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-10-14 &rarr; 2024-10-17</span></td>
+              <td>33</td><td>33</td><td>58.2</td>
+              <td>&minus;0.2</td><td>+0.5</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+10.7</td></tr>
+            <tr><td class="txt">I-390<br><span class="cite">ORI1237487192 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-04-01 &rarr; 2024-04-03</span></td>
+              <td>18</td><td>18</td><td>60.8</td>
+              <td>&minus;0.2</td><td>+0.5</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.8</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237688406 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-10-07 &rarr; 2024-10-10</span></td>
+              <td>24</td><td>24</td><td>65.8</td>
+              <td>&minus;0.3</td><td>+0.4</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.3</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237697990 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-10-16 &rarr; 2024-10-21</span></td>
+              <td>22</td><td>22</td><td>67.5</td>
+              <td>&minus;0.1</td><td>+0.4</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;1.2</td></tr>
+            <tr><td class="txt">I-481<br><span class="cite">ORI1237514372 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-05-01 &rarr; 2024-06-28</span></td>
+              <td>294</td><td>294</td><td>59.8</td>
+              <td>0.0</td><td>+0.2</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+7.2</td></tr>
+            <tr><td class="txt">I-390<br><span class="cite">ORI1237614194 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-08-13 &rarr; 2024-08-16</span></td>
+              <td>20</td><td>20</td><td>59.9</td>
+              <td>&minus;0.2</td><td>+0.2</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.9</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237697987 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-10-16 &rarr; 2024-10-18</span></td>
+              <td>17</td><td>17</td><td>64.5</td>
+              <td>&minus;0.5</td><td>+0.2</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.7</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237511596 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-04-29 &rarr; 2024-05-01</span></td>
+              <td>26</td><td>26</td><td>57.7</td>
+              <td>&minus;4.0</td><td>+0.2</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.9</td></tr>
+            <tr><td class="txt">I-390<br><span class="cite">ORI1237634590 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-09-04 &rarr; 2024-09-06</span></td>
+              <td>26</td><td>26</td><td>58.8</td>
+              <td>&minus;0.8</td><td>+0.2</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.9</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237673583 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-09-23 &rarr; 2024-09-27</span></td>
+              <td>45</td><td>45</td><td>58.8</td>
+              <td>&minus;0.3</td><td>+0.1</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+10.2</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237475746 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-03-18 &rarr; 2024-03-22</span></td>
+              <td>28</td><td>28</td><td>68.3</td>
+              <td>&minus;1.4</td><td>+0.1</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.1</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237709932 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-10-28 &rarr; 2024-11-01</span></td>
+              <td>24</td><td>24</td><td>64.9</td>
+              <td>&minus;0.4</td><td>+0.1</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.4</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237730138 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-11-18 &rarr; 2024-11-22</span></td>
+              <td>25</td><td>25</td><td>62.2</td>
+              <td>&minus;0.7</td><td>+0.1</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.4</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237574754 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-07-01 &rarr; 2024-07-24</span></td>
+              <td>66</td><td>66</td><td>65.3</td>
+              <td>&minus;0.9</td><td>+0.1</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.6</td></tr>
+            <tr><td class="txt">I-390<br><span class="cite">ORI1237548783 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-06-05 &rarr; 2024-06-07</span></td>
+              <td>15</td><td>15</td><td>58.4</td>
+              <td>&minus;0.6</td><td>+0.1</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+2.4</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237540125 &middot; Region 3 - Central New York &middot; OSWEGO &middot; 2024-05-28 &rarr; 2024-06-05</span></td>
+              <td>39</td><td>39</td><td>70.3</td>
+              <td>&minus;1.1</td><td>+0.0</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.8</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237605993 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-08-05 &rarr; 2024-08-09</span></td>
+              <td>30</td><td>30</td><td>66.6</td>
+              <td>&minus;0.5</td><td>0.0</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;0.3</td></tr>
+            <tr><td class="txt">I-787<br><span class="cite">ORI1237593793 &middot; Region 1 - Capital District &middot; ALBANY &middot; 2024-07-23 &rarr; 2024-07-26</span></td>
+              <td>29</td><td>29</td><td>65.5</td>
+              <td>&minus;1.1</td><td>0.0</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;1.0</td></tr>
+            <tr><td class="txt">I-590<br><span class="cite">ORI1237566444 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-06-23 &rarr; 2024-06-29</span></td>
+              <td>31</td><td>31</td><td>62.3</td>
+              <td>&minus;2.2</td><td>&minus;0.1</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.1</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237721021 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-11-07 &rarr; 2024-11-15</span></td>
+              <td>61</td><td>61</td><td>57.4</td>
+              <td>&minus;1.4</td><td>&minus;0.2</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+6.6</td></tr>
+            <tr><td class="txt">I-278<br><span class="cite">ORI1237548162 &middot; Region 11 - New York City &middot; BRONX &middot; 2024-06-05 &rarr; 2024-06-21</span></td>
+              <td>26</td><td>26</td><td>49.9</td>
+              <td>&minus;3.1</td><td>&minus;0.4</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.4</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237581703 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-07-10 &rarr; 2024-07-12</span></td>
+              <td>17</td><td>17</td><td>63.4</td>
+              <td>&minus;8.3</td><td>&minus;0.4</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+4.4</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237612668 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-08-12 &rarr; 2024-08-16</span></td>
+              <td>50</td><td>50</td><td>61.0</td>
+              <td>&minus;1.2</td><td>&minus;0.4</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;0.2</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237688431 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-10-07 &rarr; 2024-10-09</span></td>
+              <td>18</td><td>18</td><td>65.9</td>
+              <td>&minus;1.4</td><td>&minus;0.5</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.1</td></tr>
+            <tr><td class="txt">I-87 MAJOR DEEGAN EXPRESSWAY<br><span class="cite">ORI1237425053 &middot; Region 11 - New York City &middot; BRONX &middot; 2024-01-03 &rarr; 2024-01-06</span></td>
+              <td>18</td><td>18</td><td>41.8</td>
+              <td>&minus;3.9</td><td>&minus;0.5</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;0.8</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237614028 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-08-13 &rarr; 2024-08-15</span></td>
+              <td>18</td><td>18</td><td>66.7</td>
+              <td>&minus;1.9</td><td>&minus;0.6</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.3</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237691169 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-10-09 &rarr; 2024-10-11</span></td>
+              <td>27</td><td>27</td><td>66.3</td>
+              <td>&minus;1.5</td><td>&minus;0.6</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.6</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237743495 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-12-04 &rarr; 2024-12-13</span></td>
+              <td>55</td><td>55</td><td>55.9</td>
+              <td>&minus;1.0</td><td>&minus;0.7</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+3.2</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237705459 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-10-23 &rarr; 2024-11-08</span></td>
+              <td>72</td><td>72</td><td>59.9</td>
+              <td>&minus;1.1</td><td>&minus;0.8</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.9</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237613392 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-08-12 &rarr; 2024-08-17</span></td>
+              <td>29</td><td>29</td><td>51.5</td>
+              <td>&minus;1.7</td><td>&minus;0.8</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.8</td></tr>
+            <tr><td class="txt">I-278<br><span class="cite">ORI1237499621 &middot; Region 11 - New York City &middot; KINGS &middot; 2024-04-16 &rarr; 2024-05-21</span></td>
+              <td>30</td><td>30</td><td>33.8</td>
+              <td>&minus;3.0</td><td>&minus;1.0</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+9.1</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237719469 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-11-06 &rarr; 2024-11-08</span></td>
+              <td>12</td><td>12</td><td>58.4</td>
+              <td>&minus;1.6</td><td>&minus;1.0</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.6</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237688427 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-10-07 &rarr; 2024-10-09</span></td>
+              <td>18</td><td>18</td><td>57.0</td>
+              <td>&minus;2.2</td><td>&minus;1.0</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+5.3</td></tr>
+            <tr><td class="txt">I-95<br><span class="cite">ORI1237676115 &middot; Region 11 - New York City &middot; BRONX &middot; 2024-09-25 &rarr; 2024-10-31</span></td>
+              <td>73</td><td>73</td><td>49.5</td>
+              <td>&minus;6.1</td><td>&minus;1.1</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.2</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237639136 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-09-09 &rarr; 2024-09-11</span></td>
+              <td>27</td><td>27</td><td>65.3</td>
+              <td>&minus;3.2</td><td>&minus;1.2</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+3.2</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237612675 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-08-12 &rarr; 2024-08-16</span></td>
+              <td>50</td><td>50</td><td>56.1</td>
+              <td>&minus;2.3</td><td>&minus;1.3</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;6.2</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237579089 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-07-08 &rarr; 2024-07-12</span></td>
+              <td>41</td><td>41</td><td>56.0</td>
+              <td>&minus;3.6</td><td>&minus;1.3</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.2</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237719474 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-11-06 &rarr; 2024-11-08</span></td>
+              <td>12</td><td>12</td><td>42.7</td>
+              <td>&minus;4.4</td><td>&minus;1.3</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>0.0</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237743493 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-12-04 &rarr; 2024-12-18</span></td>
+              <td>66</td><td>66</td><td>54.3</td>
+              <td>&minus;2.3</td><td>&minus;1.4</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+8.2</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237709947 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-10-28 &rarr; 2024-11-01</span></td>
+              <td>32</td><td>32</td><td>67.4</td>
+              <td>&minus;2.1</td><td>&minus;1.4</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;1.9</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237681558 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-09-30 &rarr; 2024-10-03</span></td>
+              <td>4</td><td>4</td><td>53.5</td>
+              <td>&minus;5.6</td><td>&minus;1.5</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+9.0</td></tr>
+            <tr><td class="txt">I-278<br><span class="cite">ORI1237627862 &middot; Region 11 - New York City &middot; BRONX &middot; 2024-08-27 &rarr; 2024-08-30</span></td>
+              <td>10</td><td>10</td><td>53.9</td>
+              <td>&minus;3.7</td><td>&minus;1.6</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.2</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237546886 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-06-04 &rarr; 2024-06-07</span></td>
+              <td>24</td><td>24</td><td>54.9</td>
+              <td>&minus;3.3</td><td>&minus;1.7</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+2.7</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237475909 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-03-18 &rarr; 2024-03-22</span></td>
+              <td>28</td><td>28</td><td>56.5</td>
+              <td>&minus;2.8</td><td>&minus;1.8</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.5</td></tr>
+            <tr><td class="txt">I-95<br><span class="cite">ORI1237596702 &middot; Region 11 - New York City &middot; BRONX &middot; 2024-07-26 &rarr; 2024-08-15</span></td>
+              <td>40</td><td>40</td><td>47.8</td>
+              <td>&minus;7.3</td><td>&minus;1.9</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+3.6</td></tr>
+            <tr><td class="txt">I-278<br><span class="cite">ORI1237750006 &middot; Region 11 - New York City &middot; KINGS &middot; 2024-12-12 &rarr; 2024-12-19</span></td>
+              <td>25</td><td>25</td><td>39.1</td>
+              <td>&minus;10.4</td><td>&minus;2.8</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+7.7</td></tr>
+            <tr><td class="txt">I-678<br><span class="cite">ORI1237720107 &middot; Region 11 - New York City &middot; QUEENS &middot; 2024-11-07 &rarr; 2024-11-26</span></td>
+              <td>30</td><td>30</td><td>44.6</td>
+              <td>&minus;4.3</td><td>&minus;2.8</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+6.3</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237696688 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-10-15 &rarr; 2024-10-25</span></td>
+              <td>54</td><td>54</td><td>40.2</td>
+              <td>&minus;6.1</td><td>&minus;3.4</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+19.8</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237560577 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-06-18 &rarr; 2024-06-27</span></td>
+              <td>55</td><td>55</td><td>66.0</td>
+              <td>&minus;3.9</td><td>&minus;3.5</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+2.4</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237548023 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-06-05 &rarr; 2024-06-07</span></td>
+              <td>17</td><td>17</td><td>58.2</td>
+              <td>&minus;4.6</td><td>&minus;3.5</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;0.1</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237717236 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-11-04 &rarr; 2024-11-08</span></td>
+              <td>25</td><td>25</td><td>56.7</td>
+              <td>&minus;4.7</td><td>&minus;3.6</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;6.6</td></tr>
+            <tr><td class="txt">I-495<br><span class="cite">ORI1237567217 &middot; Region 10 - Long Island &middot; SUFFOLK &middot; 2024-06-24 &rarr; 2024-06-28</span></td>
+              <td>2</td><td>2</td><td>47.6</td>
+              <td>&minus;3.8</td><td>&minus;3.8</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+11.4</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237725793 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-11-13 &rarr; 2024-11-15</span></td>
+              <td>10</td><td>10</td><td>57.0</td>
+              <td>&minus;5.8</td><td>&minus;3.8</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;6.8</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237516761 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-05-03 &rarr; 2024-05-06</span></td>
+              <td>18</td><td>18</td><td>59.1</td>
+              <td>&minus;4.6</td><td>&minus;4.1</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;0.5</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237730141 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-11-18 &rarr; 2024-11-22</span></td>
+              <td>25</td><td>25</td><td>55.6</td>
+              <td>&minus;7.5</td><td>&minus;4.4</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;5.4</td></tr>
+            <tr><td class="txt">I-481<br><span class="cite">ORI1237634600 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-09-04 &rarr; 2024-09-06</span></td>
+              <td>23</td><td>23</td><td>64.7</td>
+              <td>&minus;5.9</td><td>&minus;5.5</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+1.7</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237532448 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-05-20 &rarr; 2024-05-23</span></td>
+              <td>33</td><td>33</td><td>63.2</td>
+              <td>&minus;10.2</td><td>&minus;6.0</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+3.5</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237499900 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-04-16 &rarr; 2024-04-19</span></td>
+              <td>26</td><td>26</td><td>63.1</td>
+              <td>&minus;13.1</td><td>&minus;7.1</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+3.6</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237753617 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-12-16 &rarr; 2024-12-18</span></td>
+              <td>1</td><td>1</td><td>28.9</td>
+              <td>&minus;15.6</td><td>&minus;10.2</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;9.9</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237702643 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-10-21 &rarr; 2024-11-01</span></td>
+              <td>63</td><td>63</td><td>70.8</td>
+              <td>&minus;16.3</td><td>&minus;10.3</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+0.5</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237586062 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-07-15 &rarr; 2024-07-19</span></td>
+              <td>26</td><td>&mdash;</td><td>61.7</td>
+              <td>&mdash;</td><td>&mdash;</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+2.4</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237696617 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-10-15 &rarr; 2024-10-22</span></td>
+              <td>36</td><td>&mdash;</td><td>41.5</td>
+              <td>&mdash;</td><td>&mdash;</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+7.5</td></tr>
+            <tr><td class="txt">I-390<br><span class="cite">ORI1237709930 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-10-28 &rarr; 2024-10-31</span></td>
+              <td>16</td><td>&mdash;</td><td>29.2</td>
+              <td>&mdash;</td><td>&mdash;</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;9.4</td></tr>
+            <tr><td class="txt">I-590<br><span class="cite">ORI1237516707 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-05-03 &rarr; 2024-05-06</span></td>
+              <td>10</td><td>&mdash;</td><td>53.0</td>
+              <td>&mdash;</td><td>&mdash;</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;2.3</td></tr>
+            <tr><td class="txt">I-490<br><span class="cite">ORI1237549809 &middot; Region 4 - Genesee Valley &middot; MONROE &middot; 2024-06-06 &rarr; 2024-06-14</span></td>
+              <td>11</td><td>&mdash;</td><td>24.5</td>
+              <td>&mdash;</td><td>&mdash;</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;3.8</td></tr>
+            <tr><td class="txt">I-87 NORTHWAY<br><span class="cite">ORI1237741970 &middot; Region 1 - Capital District &middot; ALBANY &middot; 2024-12-03 &rarr; 2024-12-06</span></td>
+              <td>8</td><td>&mdash;</td><td>54.2</td>
+              <td>&mdash;</td><td>&mdash;</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+2.7</td></tr>
+            <tr><td class="txt">I-481<br><span class="cite">ORI1237723794 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-11-12 &rarr; 2024-11-16</span></td>
+              <td>31</td><td>&mdash;</td><td>46.8</td>
+              <td>&mdash;</td><td>&mdash;</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+10.4</td></tr>
+            <tr><td class="txt">I-90<br><span class="cite">ORI1237673579 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-09-23 &rarr; 2024-10-11</span></td>
+              <td>157</td><td>&mdash;</td><td>38.0</td>
+              <td>&mdash;</td><td>&mdash;</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;0.9</td></tr>
+            <tr><td class="txt">I-81<br><span class="cite">ORI1237729976 &middot; Region 3 - Central New York &middot; OSWEGO &middot; 2024-11-18 &rarr; 2024-11-20</span></td>
+              <td>24</td><td>&mdash;</td><td>69.8</td>
+              <td>&mdash;</td><td>&mdash;</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>+18.1</td></tr>
+            <tr><td class="txt">I-690<br><span class="cite">ORI1237487593 &middot; Region 3 - Central New York &middot; ONONDAGA &middot; 2024-04-01 &rarr; 2024-04-14</span></td>
+              <td>22</td><td>&mdash;</td><td>46.5</td>
+              <td>&mdash;</td><td>&mdash;</td>
+              <td><span class="font-medium text-[#0f1722]">&mdash;</span></td><td>&minus;4.5</td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 mt-3">
+          23 of the 210 candidates with an approach have at least one hour of the day over the
+          line. This is the table the rule's per-project report reads from; the statewide share above is its roll-up.
+        </p>
+      </div>
+      <div class="tny-card p-5">
+        <div class="lbl">The widest tapers statewide &mdash; cells with two or more active days</div>
+        <div class="overflow-x-auto mt-2">
+        <table class="tny">
+          <thead><tr><th class="txt">Zone</th><th>Hour</th><th>Active<br>hours</th><th>Zone<br>mph</th><th>Approach<br>mph</th><th>Approach<br>diff</th><th>Baseline<br>drop</th><th class="txt">Approach segments</th></tr></thead>
+          <tbody>
+            <tr><td class="txt">NY 13<br><span class="cite">ORI1237619867 &middot; Region 3 - Central New York &middot; from 2024-08-19</span></td>
+              <td>14</td><td>5.0</td><td>10.5</td><td>57.9</td>
+              <td><span class="font-medium text-[#B4232C]">+47.4</span></td><td>+12.5</td>
+              <td class="txt"><span class="tny-mono">104-06021 104N06021</span></td></tr>
+            <tr><td class="txt">NY 13<br><span class="cite">ORI1237619867 &middot; Region 3 - Central New York &middot; from 2024-08-19</span></td>
+              <td>12</td><td>5.0</td><td>10.7</td><td>58.1</td>
+              <td><span class="font-medium text-[#B4232C]">+47.4</span></td><td>+12.3</td>
+              <td class="txt"><span class="tny-mono">104-06021 104N06021</span></td></tr>
+            <tr><td class="txt">PALISADES INTERSTATE PARKWAY<br><span class="cite">ORI256021709 &middot; Region 8 - Hudson Valley &middot; from 2024-05-28</span></td>
+              <td>14</td><td>3.0</td><td>16.1</td><td>63.2</td>
+              <td><span class="font-medium text-[#B4232C]">+47.1</span></td><td>+48.8</td>
+              <td class="txt"><span class="tny-mono">120-04183 120N04183</span></td></tr>
+            <tr><td class="txt">I-684<br><span class="cite">ORI259904409 &middot; Region 8 - Hudson Valley &middot; from 2024-10-29</span></td>
+              <td>13</td><td>2.0</td><td>22.2</td><td>69.1</td>
+              <td><span class="font-medium text-[#B4232C]">+46.9</span></td><td>+45.8</td>
+              <td class="txt"><span class="tny-mono">120+04167 120P04166</span></td></tr>
+            <tr><td class="txt">NY 13<br><span class="cite">ORI1237619867 &middot; Region 3 - Central New York &middot; from 2024-08-19</span></td>
+              <td>13</td><td>5.0</td><td>10.8</td><td>57.5</td>
+              <td><span class="font-medium text-[#B4232C]">+46.7</span></td><td>+14.2</td>
+              <td class="txt"><span class="tny-mono">104-06021 104N06021</span></td></tr>
+            <tr><td class="txt">NY 13<br><span class="cite">ORI1237619867 &middot; Region 3 - Central New York &middot; from 2024-08-19</span></td>
+              <td>15</td><td>5.0</td><td>15.8</td><td>59.9</td>
+              <td><span class="font-medium text-[#B4232C]">+44.1</span></td><td>+2.2</td>
+              <td class="txt"><span class="tny-mono">104-06021 104N06021</span></td></tr>
+            <tr><td class="txt">NY 13<br><span class="cite">ORI1237703801 &middot; Region 3 - Central New York &middot; from 2024-10-22</span></td>
+              <td>16</td><td>4.0</td><td>14.4</td><td>57.8</td>
+              <td><span class="font-medium text-[#B4232C]">+43.4</span></td><td>+3.6</td>
+              <td class="txt"><span class="tny-mono">104-06021 104N06021</span></td></tr>
+            <tr><td class="txt">NY 13<br><span class="cite">ORI1237619867 &middot; Region 3 - Central New York &middot; from 2024-08-19</span></td>
+              <td>16</td><td>5.0</td><td>17.7</td><td>60.7</td>
+              <td><span class="font-medium text-[#B4232C]">+43.0</span></td><td>+0.3</td>
+              <td class="txt"><span class="tny-mono">104-06021 104N06021</span></td></tr>
+            <tr><td class="txt">NY 13<br><span class="cite">ORI1237703801 &middot; Region 3 - Central New York &middot; from 2024-10-22</span></td>
+              <td>17</td><td>4.0</td><td>15.5</td><td>58.2</td>
+              <td><span class="font-medium text-[#B4232C]">+42.7</span></td><td>+5.5</td>
+              <td class="txt"><span class="tny-mono">104-06021 104N06021</span></td></tr>
+            <tr><td class="txt">NY 13<br><span class="cite">ORI1237703801 &middot; Region 3 - Central New York &middot; from 2024-10-22</span></td>
+              <td>15</td><td>4.0</td><td>16.0</td><td>57.3</td>
+              <td><span class="font-medium text-[#B4232C]">+41.2</span></td><td>+2.0</td>
+              <td class="txt"><span class="tny-mono">104-06021 104N06021</span></td></tr>
+            <tr><td class="txt">NY 13<br><span class="cite">ORI1237619867 &middot; Region 3 - Central New York &middot; from 2024-08-19</span></td>
+              <td>17</td><td>5.0</td><td>19.8</td><td>60.1</td>
+              <td><span class="font-medium text-[#B4232C]">+40.3</span></td><td>+1.2</td>
+              <td class="txt"><span class="tny-mono">104-06021 104N06021</span></td></tr>
+            <tr><td class="txt">I-790<br><span class="cite">ORI258936809 &middot; Region 2 - Mohawk Valley &middot; from 2024-08-22</span></td>
+              <td>15</td><td>17.6</td><td>21.0</td><td>59.9</td>
+              <td><span class="font-medium text-[#B4232C]">+38.9</span></td><td>+6.0</td>
+              <td class="txt"><span class="tny-mono">104+09746 104P09746</span></td></tr>
+          </tbody>
+        </table>
+        </div>
+        <p class="font-proxima text-[12.5px] leading-[1.6] text-slate-600 mt-3">
+          Each row is one zone at one hour of the day, pooled over its active days. The largest differentials are on
+          Interstates and expressways where the approach runs near the limit and the zone sits in a queue or a hard
+          lane drop; the segment list is the corridor walk's answer to &ldquo;where is upstream&rdquo;, and is
+          stamped on the row so it can be checked against the map.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">Every vintage</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">CY2018 &ndash; CY2026 (partial to 2026-08-31) &middot; M4 stamped on each wz_speed view beside M1</span>
+    </div>
+    <div class="tny-card p-5">
+      <table class="tny">
+        <thead><tr><th class="txt">Vintage</th><th>Zones with<br>an approach</th><th>Zone-hours<br>measured</th><th>With an<br>approach</th><th>M4<br>hour-weighted</th><th>M4<br>zone mean</th><th>Approach diff<br>mean</th><th>p90</th><th>Baseline drop<br>&gt; 15 mph</th><th>Baseline drop<br>mean</th><th>Approach<br>slower</th><th>Zones over<br>most hours</th></tr></thead>
+        <tbody>
+            <tr><td class="txt">CY2018<br><span class="cite">no baseline-year exclusions (no 2017 inventory)</span></td>
+              <td>24,252</td><td>753,092</td><td>690,623</td>
+              <td><span class="font-medium text-[#0f1722]">3.8%</span></td><td>3.7%</td>
+              <td>+0.4</td><td>+8.3</td>
+              <td>4.6%</td><td>+2.1</td>
+              <td>3.3%</td>
+              <td>444</td></tr>
+            <tr><td class="txt">CY2019</td>
+              <td>26,125</td><td>965,762</td><td>838,283</td>
+              <td><span class="font-medium text-[#0f1722]">3.1%</span></td><td>3.5%</td>
+              <td>+0.1</td><td>+7.4</td>
+              <td>10.1%</td><td>+5.3</td>
+              <td>2.4%</td>
+              <td>480</td></tr>
+            <tr><td class="txt">CY2020</td>
+              <td>27,666</td><td>971,008</td><td>883,010</td>
+              <td><span class="font-medium text-[#0f1722]">3.4%</span></td><td>3.1%</td>
+              <td>+0.2</td><td>+7.4</td>
+              <td>3.0%</td><td>&minus;0.4</td>
+              <td>3.4%</td>
+              <td>464</td></tr>
+            <tr><td class="txt">CY2021</td>
+              <td>27,015</td><td>585,826</td><td>506,370</td>
+              <td><span class="font-medium text-[#0f1722]">3.8%</span></td><td>3.6%</td>
+              <td>+0.1</td><td>+7.6</td>
+              <td>6.0%</td><td>+2.8</td>
+              <td>2.9%</td>
+              <td>567</td></tr>
+            <tr><td class="txt">CY2022</td>
+              <td>28,231</td><td>538,288</td><td>463,780</td>
+              <td><span class="font-medium text-[#0f1722]">4.1%</span></td><td>3.7%</td>
+              <td>+0.1</td><td>+8.3</td>
+              <td>5.5%</td><td>+2.2</td>
+              <td>2.9%</td>
+              <td>593</td></tr>
+            <tr><td class="txt">CY2023</td>
+              <td>28,738</td><td>426,887</td><td>372,495</td>
+              <td><span class="font-medium text-[#0f1722]">4.6%</span></td><td>3.9%</td>
+              <td>+0.5</td><td>+9.0</td>
+              <td>5.8%</td><td>+3.2</td>
+              <td>3.2%</td>
+              <td>648</td></tr>
+            <tr><td class="txt">CY2024</td>
+              <td>33,339</td><td>589,627</td><td>499,507</td>
+              <td><span class="font-medium text-[#0f1722]">6.0%</span></td><td>4.9%</td>
+              <td>+0.6</td><td>+10.5</td>
+              <td>6.3%</td><td>+3.7</td>
+              <td>3.9%</td>
+              <td>997</td></tr>
+            <tr><td class="txt">CY2025</td>
+              <td>31,382</td><td>441,910</td><td>382,624</td>
+              <td><span class="font-medium text-[#0f1722]">5.9%</span></td><td>5.2%</td>
+              <td>+0.5</td><td>+10.0</td>
+              <td>8.1%</td><td>+4.0</td>
+              <td>4.5%</td>
+              <td>961</td></tr>
+            <tr><td class="txt">CY2026 (partial to 2026-08-31)</td>
+              <td>18,668</td><td>387,062</td><td>329,727</td>
+              <td><span class="font-medium text-[#0f1722]">6.4%</span></td><td>6.4%</td>
+              <td>+0.3</td><td>+11.4</td>
+              <td>6.6%</td><td>+2.9</td>
+              <td>5.3%</td>
+              <td>785</td></tr>
+        </tbody>
+      </table>
+      <p class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-4 max-w-[920px]">
+        The trend is the trend in the inventory as much as in the roads: the share of hours over the line moves with
+        the mix of night Interstate work (high approach speeds) against daytime arterial work (low ones), and the
+        2020 vintage sits on empty roads. Read it with report 06. The CY2026 vintage is partial to 2026-08-31 and its
+        baseline year is the whole of 2025; the CY2018 baseline year has no inventory to clean it with.
+      </p>
+    </div>
+  </section>
+
+  <section class="pt-9">
+    <div class="flex items-baseline gap-3 mb-3">
+      <h2 class="font-display font-semibold text-[22px] uppercase tracking-tight text-[#0F1722]">How the measure was computed</h2>
+      <span class="font-mono text-[10px] uppercase tracking-[0.16em] text-slate-500">work_zone pipeline &middot; stage &ldquo;differential&rdquo;</span>
+    </div>
+    <div class="tny-card p-6">
+      <p class="font-proxima text-[13.5px] leading-[1.7] text-slate-700 max-w-[920px]">
+        No new dataset. Phase 3 created <span class="tny-mono">wz_speed</span> with five empty columns for this measure, because
+        every view of a DAMA source shares one column list; this stage fills them for each vintage and stamps M4 on the view
+        beside M1. The inputs are the ones every phase uses &mdash; the inventory, the active windows, the NPMRDS five-minute
+        speeds and the phase-3 baseline &mdash; plus the corridor walk phase 5 built to find the queue.
+      </p>
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5 mt-6">
+        <div class="flex items-start gap-3">
+          <span class="step-n">1</span>
+          <div>
+            <div class="font-display font-medium text-[14.5px] text-[#0f1722]">Find the approach</div>
+            <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+              For each zone's anchor segment, the 2 segments immediately upstream on the same corridor &mdash;
+              same road, same linear, same direction, lower road order &mdash; by the same walk that found the queue. 35,562 of
+              41,036 zones with a CY2024 speed row have one; the rest are at a corridor's start, or on a road the
+              network does not chain.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="step-n">2</span>
+          <div>
+            <div class="font-display font-medium text-[14.5px] text-[#0f1722]">Measure both sides over the same minutes</div>
+            <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+              Per active zone-hour with at least six of twelve five-minute periods observed on the anchor: the space-mean speed
+              of the anchor and of the approach segments, over the identical active epochs. Space-means, so a slow short segment
+              does not outvote a fast long one, and the same epochs, so the approach is not measured while the zone is not.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="step-n">3</span>
+          <div>
+            <div class="font-display font-medium text-[14.5px] text-[#0f1722]">Two differentials, one line</div>
+            <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+              Approach minus zone is the taper; the segment's cleaned twelve-month median at that hour and day-type minus zone
+              is the drop from normal. Positive means the work zone slowed traffic. The flag is on the approach side only, over
+              15 mph &mdash; the rear-end surrogate the literature names &mdash; and the baseline drop is published beside it, not
+              folded into it.
+            </p>
+          </div>
+        </div>
+        <div class="flex items-start gap-3">
+          <span class="step-n">4</span>
+          <div>
+            <div class="font-display font-medium text-[14.5px] text-[#0f1722]">Roll up, then lay the evidence on the rows</div>
+            <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1">
+              M4 is the share of zone-hours over the line, hour-weighted and zone-mean, per tier, stamped on the view. Then the
+              zone &times; hour-of-day cells already in <span class="tny-mono">wz_speed</span> get the approach segments, the
+              approach speed pooled the way <span class="tny-mono">speed_mean</span> is, and the two differentials and the flag
+              derived in SQL from the row's own speed and baseline &mdash; so no cell can disagree with the evidence beside it.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="flex items-start gap-3 mt-5 pt-5 border-t border-zinc-950/8">
+        <span class="step-n">5</span>
+        <div>
+          <div class="font-display font-medium text-[14.5px] text-[#0f1722]">What it does not see</div>
+          <p class="font-proxima text-[13px] leading-[1.65] text-slate-700 mt-1 max-w-[920px]">
+            A taper further upstream than 2 segments, when the queue has passed the approach: 19,233 CY2024 zone-hours
+            (3.9%) had an approach more than 15 mph slower than the zone. Those hours are measured and not
+            over; the differential at the phase-5 queue tail is the refinement recorded for later. And the approach is measured
+            where the network knows what upstream is: 41,143 of 279,234 cells have no approach
+            speed and no flag.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pb-4">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div class="tny-card tny-card-bone p-5">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">What NYSDOT still needs to decide</div>
+        <ol class="font-proxima text-[13px] leading-[1.7] text-slate-700 mt-2 space-y-1.5 list-decimal pl-5">
+          <li><span class="font-medium text-[#0f1722]">The line.</span> 15 mph is the literature's number for a rear-end
+              surrogate; 10 flags 18.7% of hours instead of 4.3%. The
+              threshold is a parameter of the run and stamped on every view.</li>
+          <li><span class="font-medium text-[#0f1722]">Which differential to report.</span> Declare the approach differential as M4
+              &mdash; it is the surrogate &mdash; and publish the baseline drop as the impact measure beside M1. Neither substitutes for
+              the other.</li>
+          <li><span class="font-medium text-[#0f1722]">The queue tail.</span> When the queue passes the approach the taper moves. Measuring the
+              differential at the head of the phase-5 queue instead of at a fixed two segments would find it; it is a change to
+              where the approach is, not to the arithmetic.</li>
+          <li><span class="font-medium text-[#0f1722]">Whether to pair it with crashes.</span> Phase 7 located crashes on the approach
+              segments; the zones that are over this line for most of their hours are the natural set to test the surrogate against.</li>
+        </ol>
+      </div>
+      <div class="tny-card tny-card-tint p-5">
+        <div class="font-display font-medium text-[15px] text-[#0f1722]">Where it lives</div>
+        <ul class="font-proxima text-[13px] leading-[1.75] text-slate-700 mt-2 space-y-1">
+          <li><span class="tny-mono">source 2206</span> &mdash; <span class="tny-mono">wz_speed</span>, one row per zone &times; segment &times; hour of day, now carrying
+              <span class="tny-mono">approach_tmc</span>, <span class="tny-mono">approach_speed</span>, <span class="tny-mono">differential_approach</span>,
+              <span class="tny-mono">differential_baseline</span>, <span class="tny-mono">exceeds_differential</span> beside the phase-3 columns</li>
+          <li>on every view: <span class="tny-mono">metadata.m4</span> (hours measured, with approach, over the line, both weightings, means, p90s, the
+              slower-than-zone count, zones any hour / most hours over) and <span class="tny-mono">m4_by_tier</span>; <span class="tny-mono">m4_thresholds</span>,
+              <span class="tny-mono">m4_approach_tmcs</span>, the baseline window &mdash; M1 untouched beside them</li>
+          <li>pgEnv <span class="tny-mono">npmrds2</span>, schema <span class="tny-mono">work_zone</span>; built by <span class="tny-mono">dms-template/data-types/work_zone</span>,
+              stage <span class="tny-mono">differential</span> (<span class="tny-mono">lib/differential.js</span>, <span class="tny-mono">workers/differential.js</span>)</li>
+          <li>no new source: the stage refuses a year without an existing <span class="tny-mono">wz_speed</span> view and never creates one</li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="font-proxima text-[11.5px] leading-[1.6] text-slate-500 mt-6 border-t border-zinc-950/10 pt-4">
+      Compiled 2026-09-17 for phase 6 of
+      <span class="tny-mono">planning/transportny/tasks/current/workzone-performance-data-type-pipeline.md</span>, generated from a live query of
+      DAMA source 2206 on <span class="tny-mono">npmrds2</span> rather than hand-assembled, so it can be regenerated after any rebuild.
+      <b>Approach differential</b> = space-mean speed of the 2 segments upstream of the anchor minus the anchor's space-mean speed, over the
+      same active five-minute epochs (TRANSCOM view 2799 windows where they exist, the event's own clock times where not), per zone-hour with at least
+      six epochs observed. <b>Baseline drop</b> = the anchor's phase-3 baseline (the prior calendar year's median at that hour and day-type, segment-days
+      inside any work zone removed) minus the anchor's speed. <b>M4</b> = the share of zone-hours with an approach differential over 15 mph.
+      Cell figures in this report are time-weighted over the zone &times; hour-of-day rows with conflated windows; the hour-grain roll-ups are the
+      measure. CY2026 is partial to 2026-08-31.
+    </p>
+  </section>
+
+</div>
+</body>
+</html>

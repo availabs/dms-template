@@ -44,6 +44,11 @@ export const scheduleGridTheme = {
   versionMeta: "font-[family-name:var(--font-mono)] text-[9px] tracking-[0.08em] uppercase text-[color:var(--ink-4)]",
   versionLive: "inline-flex items-center gap-2 font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-2)]",
   liveDot: "wcdb-on-air-dot",
+  // Confirmation that a publish landed. `ml-auto` here and on versionActions puts the
+  // note directly left of the buttons instead of letting it float mid-bar.
+  publishedNote:
+    "ml-auto inline-flex items-center gap-2 font-[family-name:var(--font-mono)] text-[10px] " +
+    "tracking-[0.08em] uppercase text-[color:var(--ink-2)]",
   versionActions: "flex items-center gap-2 ml-auto",
   publishButton:
     "inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[color:var(--ink-1)] text-[color:var(--page-bg)] " +
@@ -128,6 +133,10 @@ export const scheduleGridTheme = {
     "inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[var(--bg-3)] text-[color:var(--ink-4)] " +
     "font-[family-name:var(--font-sans)] text-[13px] font-medium whitespace-nowrap cursor-not-allowed",
   dialogConfirmIcon: "size-[14px]",
+  // Publishing walks ~155 sections, so the footer says where it is up to. `mr-auto`
+  // pins it left while Cancel/Confirm stay right.
+  dialogProgress:
+    "mr-auto font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-4)]",
 
   // ── name dialog (new / duplicate version) ────────────────────────────────
   // Reuses the publish dialog's shell keys (overlay/card/head/body/foot) — same

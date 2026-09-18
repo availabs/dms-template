@@ -1,0 +1,189 @@
+/* =============================================================================
+   TWO CURSES — "An emblem-book of songs"
+   Design System Foundation v0.2 · _shared.css
+   =============================================================================
+   The look of a 17th-century emblem book printed on laid paper: cream vellum
+   ground, black engraved ink floating directly on it (no boxes, no rules),
+   red rubrication for initials and emphasis. Ornaments do the work that
+   hairlines do in a modern layout: a headpiece opens a section, a tailpiece
+   closes it, an engraved frame holds a title.
+
+   Plates are scans from Wither's *Emblemes* (1635), Quarles' *Emblems* (Nisbet,
+   1886) and Hugo's *Pia Desideria* — Internet Archive — converted to ink-only
+   alpha PNGs (assets/alpha), with the rectangular-window plates also split into
+   a frame (assets/frames) and the picture it held (assets/pictures).
+
+   -----------------------------------------------------------------------------
+   COLOR TOKENS (also declared in each page's tailwind.config)
+     vellum        #FCF7E4   page ground — the Quarles leaves' measured centre paper (#F9F2D0) lifted 42% toward white
+     vellum-deep   #E3D5B0   rare tint (hover fills)
+     leaf          #F6EFDD   lighter paper, used for text on ink (buttons)
+     ink           #3A3129   primary text — lighter and warmer than black, to sit with worn engraved ink
+     ink-soft      #5A4E42   secondary text
+     sepia         #7A6A52   meta / muted text
+     rubric        #8A2B1E   rubrication: initials, active nav, links, numerals
+     gilt          #9C7A2E   rare highlight
+     rule          #C6B58D   the only line left: dotted leaders, dotted input underline
+
+   TYPE TOKENS  ({role}{Size}) → textSettings.styles[0]
+     blackletterXL   UnifrakturMaguntia 64 / 1        font-blackletter text-[64px] leading-none
+     blackletterLG   UnifrakturMaguntia 44 / 1        font-blackletter text-[44px] leading-none  (a title inside a frame window)
+     blackletterMD   UnifrakturMaguntia 30 / 1        font-blackletter text-[30px] leading-none
+     displayHero     IM Fell English 60 / 1.05        font-display text-[60px] leading-[1.05]
+     displayXL       IM Fell English 42 / 1.1         font-display text-[42px] leading-[1.1]
+     displayLG       IM Fell English 28 / 1.15        font-display text-[28px] leading-[1.15]
+     displayMD       IM Fell English 22 / 1.25        font-display text-[22px] leading-[1.25]
+     displayItalicMD IM Fell English it. 22 / 1.35    font-display italic text-[22px] leading-[1.35]
+     displayItalicSM IM Fell English it. 17 / 1.4     font-display italic text-[17px] leading-[1.4]
+     proseLG         EB Garamond 22 / 1.55            font-prose text-[22px] leading-[1.55]
+     prose           EB Garamond 19 / 1.6             font-prose text-[19px] leading-[1.6]
+     proseSM         EB Garamond 16 / 1.5             font-prose text-[16px] leading-[1.5]
+     metaMD          IM Fell English SC 15 / +.08em   font-meta text-[15px] tracking-[0.08em]
+     metaSM          IM Fell English SC 12 / +.14em   font-meta text-[12px] tracking-[0.14em]
+   Modifier axes (not new tokens): color (text-rubric / text-sepia), italic on
+   prose, tabular-nums on numerals, the drop-cap surface.
+   ========================================================================== */
+
+/* ----- Font families (Google Fonts, linked in each page <head>) ----------- */
+.font-display     { font-family: "IM Fell English", "EB Garamond", Georgia, serif; }
+.font-prose       { font-family: "EB Garamond", "IM Fell English", Georgia, serif; }
+.font-meta        { font-family: "IM Fell English SC", "EB Garamond", Georgia, serif; }
+.font-blackletter { font-family: "UnifrakturMaguntia", "IM Fell English", serif; }
+
+/* ----- Paper: the Layout outerWrapper surface ------------------------------ */
+/* Four layers cut from the reference scans (assets/paper/), all scrolling with
+   the document so the whole page is one sheet:
+   · grain.jpg  — a seamless 2048px quilt of high-passed blank-margin patches
+     from the 400-ppi Quarles leaves (fibres, flecks, the laid texture), shown
+     at 1024px so it is crisp on retina screens.
+   · edges.jpg  — the leaves' measured side browning, repeated down the page.
+   · top.jpg / bottom.jpg — the head and foot browning, pinned to the ends of
+     the document, with the side component divided out so the corners aren't
+     browned twice. Band depth scales with viewport width (100% auto), not
+     with page length. All three multiply over the grain.
+   The colours are the Quarles leaves' own: paper binned by position over all
+   plates, divided by the centre colour, falloff raised to 1.6, floored at 80%. */
+.tc-paper {
+  background-color: #FCF7E4;
+  background-image: url("assets/paper/top.jpg"), url("assets/paper/bottom.jpg"), url("assets/paper/edges.jpg"), url("assets/paper/grain.jpg");
+  background-size: 100% auto, 100% auto, 100% auto, 1024px 1024px;
+  background-position: center top, center bottom, 0 0, 0 0;
+  background-repeat: no-repeat, no-repeat, repeat-y, repeat;
+  background-attachment: scroll;
+  background-blend-mode: multiply, multiply, multiply, normal;
+}
+
+/* ----- Engravings: ink-only PNGs, never stretched, never boxed ------------- */
+.tc-ornament img, .tc-plate img { display: block; height: auto; max-width: 100%; }
+
+/* ----- Framed: an engraved frame holding text in its window ---------------- */
+/* The frame image sets the box; .tc-window is inset to the cleared picture
+   window (percentages from assets/frames/windows.json, +3% breathing room).
+   This is a brand surface: it composes a Card image cell with a text cell,
+   so it is documented here rather than invented per page. */
+.tc-framed { position: relative; width: 100%; }
+.tc-framed > img { display: block; width: 100%; height: auto; }
+.tc-framed > .tc-window {
+  position: absolute; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; text-align: center;
+}
+.tc-framed--0026 > .tc-window { inset: 26.63% 24.1% 28.38% 24.72%; }
+.tc-framed--0146 > .tc-window { inset: 21.4% 26.41% 34.28% 23.48%; }
+.tc-framed--0140 > .tc-window { inset: 34.06% 26.7% 21.69% 26.94%; }
+
+/* The window stays a window at every size; pages step the type inside it down on
+   phones (e.g. text-[30px] md:text-[44px]) rather than letting it step out. */
+
+
+/* ----- Page frame: one plate's frame wrapped around the whole page ---------- */
+/* NOT USED on any page at present (tried on home.html, set aside 2026-09-04: the
+   proportions of a page-sized frame never sat right). Kept as a working kit. */
+/* Built from Quarles' Book I plate frame (leaf 26): the two upper corner scrolls,
+   the dragon crest, the motto ribbon, and the two lower corners cut together with
+   the figures that stand on them (the dragon on the flames, the rooster on the
+   jug) — each appearing once, as engraved — and thorn-vine runs between them.
+   The upper corners are cut long enough to carry their figures (dragon under
+   TERRA, rooster under AER) as the plate has them; a single middle figure per
+   side (the other creature, facing in) makes three; the runs are plain thorn. Runs start where the
+   upper corners leave off (continuous) and dissolve into the lower pieces. The side runs are a vine
+   segment that starts where the corner leaves off, followed by its reflection,
+   tiled (seamless by construction). Corners and side figures overrun their cuts
+   by 70 source px with the ink fading out (crest and ribbon are cut at their
+   natural extents, 24 px fade), and the runs fade in beneath them over the same
+   span, so each join is a cross-dissolve inside the tangle rather than
+   a cut. --pf is the side thickness; every length scales from it (source 330). */
+.tc-framed-page { position: relative; --pf: 150px; padding: calc(520 * var(--pf) / 330 + 8px) var(--pf) calc(599 * var(--pf) / 330 + 8px); }
+.tc-pageframe { position: absolute; inset: 0; pointer-events: none; z-index: 5; --k: calc(var(--pf) / 330); --f: calc(70 * var(--k)); }
+.tc-pageframe > * { position: absolute; }
+.tc-pageframe img { display: block; width: var(--pf); height: auto; }
+.tc-pf-tl { left: 0; top: 0; }  .tc-pf-tr { right: 0; top: 0; }
+.tc-pf-bl { left: 0; bottom: 0; } .tc-pf-br { right: 0; bottom: 0; }
+.tc-pf-tl img { width: calc(1000 * var(--k)); } .tc-pf-tr img { width: calc(1002 * var(--k)); } .tc-pf-bl img { width: calc(545 * var(--k)); } .tc-pf-br img { width: calc(527 * var(--k)); }
+.tc-pf-crest  { top: 0; left: 50%; transform: translateX(-50%); }   .tc-pf-crest img  { width: calc(1030 * var(--k)); }
+.tc-pf-ribbon { bottom: 0; left: 50%; transform: translateX(-50%); } .tc-pf-ribbon img { width: calc(530 * var(--k)); }
+/* runs: extend under the fixed pieces by --f and fade there */
+/* each side: [upper corner + its figure] · plain-thorn run · [middle figure] · plain-thorn run ·
+   [lower corner + its figure]. Runs are plain mirrored thorn; every join is a dissolve except
+   where a run leaves a piece continuously. The middle figure hides on pages too short for it. */
+.tc-pf-left, .tc-pf-left-b   { left: 0;  width: var(--pf); background: url("assets/pageframe/left-tile.png") 0 0 / var(--pf) auto repeat-y; }
+.tc-pf-right, .tc-pf-right-b { right: 0; width: var(--pf); background: url("assets/pageframe/right-tile.png") 0 0 / var(--pf) auto repeat-y; }
+.tc-pf-left    { top: calc(1250 * var(--k) - var(--f)); bottom: calc(50% + 225 * var(--k) - var(--f)); }
+.tc-pf-right   { top: calc(1300 * var(--k) - var(--f)); bottom: calc(50% + 225 * var(--k) - var(--f)); }
+.tc-pf-left-b  { top: calc(50% + 225 * var(--k) - var(--f)); bottom: calc(1374 * var(--k) - var(--f)); background-position: 0 100%; }
+.tc-pf-right-b { top: calc(50% + 225 * var(--k) - var(--f)); bottom: calc(1334 * var(--k) - var(--f)); background-position: 0 100%; }
+.tc-pf-lmid { left: 0; top: 50%; transform: translateY(-50%); } .tc-pf-rmid { right: 0; top: 50%; transform: translateY(-50%); }
+.tc-pageframe { container-type: size; }
+@container (max-height: 1500px) { .tc-pf-lmid, .tc-pf-rmid { display: none; } .tc-pf-left, .tc-pf-right { bottom: calc(50% - var(--f)); } .tc-pf-left-b, .tc-pf-right-b { top: calc(50% - var(--f)); } }
+.tc-pf-left, .tc-pf-right, .tc-pf-left-b, .tc-pf-right-b { -webkit-mask: linear-gradient(to bottom, transparent, #000 var(--f), #000 calc(100% - var(--f)), transparent); mask: linear-gradient(to bottom, transparent, #000 var(--f), #000 calc(100% - var(--f)), transparent); }
+.tc-pf-top-l, .tc-pf-top-r { top: calc(135 * var(--k)); height: var(--pf); background: url("assets/pageframe/top-tile.png") 0 0 / auto var(--pf) repeat-x; }
+.tc-pf-top-l { left: calc(690 * var(--k)); right: calc(50% + 515 * var(--k) - 1.5 * var(--f)); }
+.tc-pf-top-r { right: calc(672 * var(--k)); left: calc(50% + 515 * var(--k) - 1.5 * var(--f)); background-position: 100% 0; }
+.tc-pf-bot-l, .tc-pf-bot-r { bottom: calc(120 * var(--k)); height: var(--pf); background: url("assets/pageframe/bottom-tile.png") 0 100% / auto var(--pf) repeat-x; }
+.tc-pf-bot-l { left: calc(545 * var(--k) - var(--f)); right: calc(50% + 265 * var(--k) - var(--f)); }
+.tc-pf-bot-r { right: calc(527 * var(--k) - var(--f)); left: calc(50% + 265 * var(--k) - var(--f)); background-position: 100% 100%; }
+.tc-pf-top-l, .tc-pf-top-r, .tc-pf-bot-l, .tc-pf-bot-r { -webkit-mask: linear-gradient(to right, transparent, #000 var(--f), #000 calc(100% - var(--f)), transparent); mask: linear-gradient(to right, transparent, #000 var(--f), #000 calc(100% - var(--f)), transparent); }
+@media (max-width: 767px) { .tc-framed-page { --pf: 56px; } }
+
+/* ----- Cartouches: the book's engraved title scrolls, lettering cleared, as headings.
+   Same mechanics as .tc-framed; the window is the cleared panel (+2%). */
+.tc-framed--c0275 > .tc-window { inset: 45.62% 21.13% 35.83% 24.35%; }
+.tc-framed--c0151 > .tc-window { inset: 42.11% 24.29% 36.89% 25.5%; }
+.tc-framed--c0085 > .tc-window { inset: 59.59% 33.35% 33.230000000000004% 32.11%; }
+.tc-framed--c0213 > .tc-window { inset: 38.09% 25.58% 50.9% 26.79%; }
+.tc-framed--c0217 > .tc-window { inset: 52.69% 27.0% 37.0% 25.52%; }
+
+
+
+/* ----- Ink: type printed, not typeset ------------------------------------------ */
+/* The plates are worn grey-brown ink; flat black vector type sat on top of them like
+   a different medium. Two corrections: the ink tokens are lighter and warmer
+   (ink #3A3129, ink-soft #5A4E42), and every text colour is a tiled ink texture
+   clipped to the glyphs (assets/ink/*.png: fine speckle and sparse pale wear over the
+   token colour) so letters carry flecks and thin spots like impressions from a forme.
+   Specificity under .tc-paper beats the Play CDN utilities; hover states swap the
+   texture, not the colour. */
+.tc-paper .text-ink, .tc-paper .text-ink-soft, .tc-paper .text-sepia, .tc-paper .text-rubric, .tc-paper .text-leaf-ink {
+  color: transparent; -webkit-background-clip: text; background-clip: text; background-size: 256px 256px; }
+.tc-paper .text-ink      { background-image: url("assets/ink/ink.png"); }
+.tc-paper .text-ink-soft { background-image: url("assets/ink/ink-soft.png"); }
+.tc-paper .text-sepia    { background-image: url("assets/ink/sepia.png"); }
+.tc-paper .text-rubric   { background-image: url("assets/ink/rubric.png"); }
+.tc-paper .hover\:text-rubric:hover, .tc-paper .group:hover .group-hover\:text-rubric { background-image: url("assets/ink/rubric.png"); color: transparent; }
+.tc-paper .tc-fleuron::before, .tc-paper .tc-dropcap::first-letter { color: #8A2B1E; }   /* pseudo-elements can't clip; plain rubric */
+.tc-paper input { color: #3A3129; }
+
+/* ----- Rubricated drop cap ------------------------------------------------- */
+.tc-dropcap::first-letter {
+  font-family: "IM Fell English", Georgia, serif;
+  float: left;
+  font-size: 4.6em;
+  line-height: 0.78;
+  padding: 0.08em 0.1em 0 0;
+  color: #8A2B1E;
+}
+
+/* ----- Fleuron: the printer's flower that stands in for bullets and rules -- */
+.tc-fleuron::before { content: "\2767\00a0"; color: #8A2B1E; }
+
+/* ----- Poem stanza: preserve the lines, wrap gracefully -------------------- */
+.tc-verse p { white-space: pre-line; }

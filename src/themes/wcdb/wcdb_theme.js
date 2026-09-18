@@ -16,7 +16,10 @@ import rowAction from "./columnTypes/rowAction.config"
 import { rowActionTheme } from "./columnTypes/rowAction.theme"
 import scheduleGrid from "./ScheduleGrid.config"
 import { scheduleGridTheme } from "./ScheduleGrid.theme"
+import showBlockNav from "./ShowBlockNav.config"
+import { showBlockNavTheme } from "./ShowBlockNav.theme"
 import { wcdbSectionTheme } from "./wcdb_section.theme"
+import { authTheme } from "./auth.theme"
 
 // ── The brand's section grid ────────────────────────────────────────────────
 // `design-system/grid.html` specifies twelve columns for WCDB; the DMS default
@@ -85,6 +88,37 @@ const GRID_12 = {
   borderColors: ["var(--line-1)", "var(--line-2)", "var(--line-3)"],
 }
 
+// ── The now-playing block on a phone ──────────────────────────────────
+// That section declares fixed tracks — `104px minmax(0,1fr) 124px`, art |
+// text | button — with a 20px gap. Right at the rail's desktop width, wrong
+// on a phone: at 390px the middle track is ~74px and the track title, the one
+// line the block exists to show, truncates after a few letters. A section's
+// `cellsTracksTemplate` is emitted INLINE (Card.layout.js `resolveCellTracks`),
+// so the theme can only re-track it at a breakpoint with `!`. Scoped with
+// `has-[…]` to a cells grid that CONTAINS a stream player — i.e. this block —
+// so no other three-track card is touched.
+//
+// The numbers move together: 72px art (`imgArt`), a 40px disc
+// (`streamPlayer.theme.js`), 12px gaps. The third track is `fit-content(78px)`
+// because it also carries `FULL PLAYLIST →` on row 1, which wraps to two short
+// lines at that width rather than forcing the track back out to 124px. Net:
+// the title track grows from ~74px to ~180px.
+const NP_MOBILE_TRACKS =
+  "max-md:has-[[data-stream-player]]:grid-cols-[72px_minmax(0,1fr)_fit-content(78px)]! " +
+  "max-md:has-[[data-stream-player]]:gap-x-3!";
+
+// The spins list below `md`. Four fixed tracks (`64px 44px 1fr 150px`, emitted
+// INLINE from the section's `cellsTracksTemplate`) leave a 390px phone about
+// 70px for the track title, which then wraps word by word. The public design
+// drops its secondary columns at narrow widths (`hidden min-[1800px]:block`
+// on Album/Show in `pages/spins.html`); here the PLAYED date is the one that
+// goes — it is the 4th cell of both the row (`spinRow`) and the fused header
+// strip (`spinHeaderRow`), so the same rule keeps them in step. Re-tracked to
+// three columns with `!` because the inline template would otherwise win.
+const SPIN_MOBILE_TRACKS =
+  "max-md:grid-cols-[60px_40px_minmax(0,1fr)]! max-md:gap-x-2! max-md:px-4 " +
+  "max-md:[&>:nth-child(4)]:hidden";
+
 const theme = {
   layout: {
     styles: [
@@ -116,6 +150,18 @@ const theme = {
         wrapper2: "flex-1 flex items-start flex-col items-stretch max-w-full min-h-screen min-w-0",
         wrapper3: "flex flex-1 items-start w-full min-w-0",
         childWrapper: "flex-1 flex flex-col min-w-0",
+      },
+      {
+        // "auth" — the sign-in pages. The auth pattern's AuthLayout asks for
+        // this style BY NAME (`<Layout activeStyle="auth">`); without it the
+        // pages fell back to styles[0] and got the public cutaway grid. One
+        // column, no grid, nothing else.
+        name: "auth",
+        outerWrapper: "bg-[var(--page-bg)] text-[color:var(--ink-1)] font-[family-name:var(--font-sans)]",
+        wrapper: "relative isolate flex min-h-svh w-full",
+        wrapper2: "flex-1 flex items-start flex-col items-stretch max-w-full min-h-screen",
+        wrapper3: "flex flex-1 items-start",
+        childWrapper: "flex-1 flex flex-col",
       },
     ],
     options: {
@@ -192,6 +238,16 @@ const theme = {
         name: "admin",
         wrapper1: "w-full flex-1 flex flex-row px-2 py-0 min-w-0",
         wrapper2: "flex flex-1 w-full flex-col relative text-[color:var(--ink-1)] px-4 pt-3 min-w-0 mr-auto",
+        wrapper3: "",
+      },
+      {
+        // "auth" — asked for by name by the auth pattern's AuthLayout. wrapper1
+        // is the pane: clears the fixed notch and centres both ways; wrapper2 is
+        // the column. Borderless — the card is `auth.authPages…pageWrapper`,
+        // and a card here too would double it (auth skill §4).
+        name: "auth",
+        wrapper1: "w-full flex-1 flex flex-col items-center justify-center px-4 pt-24 pb-16",
+        wrapper2: "w-full max-w-md flex flex-col",
         wrapper3: "",
       },
     ],
@@ -421,8 +477,10 @@ const theme = {
           "tracking-[0.10em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] transition-colors",
         // The list's own column-header micro-caps, one step quieter than `label`.
         colHead: "font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--ink-4)]",
-        // A row's second line: the mono meta under an editorial title.
-        rowMeta: "font-[family-name:var(--font-mono)] text-[9px] tracking-[0.08em] uppercase text-[color:var(--ink-3)]",
+        // A row's second line: the mono meta under an editorial title. 10px is
+        // the design system's floor (colHead, tileEyebrow sit there too); the
+        // 9px this shipped at was illegible at arm's length on the spins list.
+        rowMeta: "font-[family-name:var(--font-mono)] text-[10px] tracking-[0.08em] uppercase text-[color:var(--ink-3)]",
         // A row's editorial title — display italic at list scale (17px).
         rowTitle: "font-[family-name:var(--font-display)] italic text-[17px] leading-[1.15] tracking-[-0.02em] text-[color:var(--ink-1)]",
         // Mono tabular value (times, ids, counts).
@@ -454,8 +512,10 @@ const theme = {
         // out above it the design sets it at something close to a headline.
         // These are page-ink tokens (unlike the on-air ones) — this block sits
         // on its own surface, not on a photograph, so it follows the mode.
-        npTitle: "font-[family-name:var(--font-display)] italic text-[32px] leading-[1.02] tracking-[-0.02em] text-[color:var(--ink-1)] truncate",
-        npArtist: "font-[family-name:var(--font-display)] italic text-[19px] leading-[1.2] tracking-[-0.02em] text-[color:var(--ink-2)] truncate",
+        // Below `md` both lines step down a size: at 32px a phone-width track
+        // fits about ten characters of a title before the ellipsis.
+        npTitle: "font-[family-name:var(--font-display)] italic text-[32px] max-md:text-[24px] leading-[1.02] tracking-[-0.02em] text-[color:var(--ink-1)] truncate",
+        npArtist: "font-[family-name:var(--font-display)] italic text-[19px] max-md:text-[16px] leading-[1.2] tracking-[-0.02em] text-[color:var(--ink-2)] truncate",
         npMeta: "font-[family-name:var(--font-mono)] text-[11px] tracking-[0.08em] uppercase text-[color:var(--ink-4)] truncate",
         // `FULL PLAYLIST →` — chrome, not a control. Underlined rather than
         // pilled, per the design.
@@ -468,8 +528,12 @@ const theme = {
         // for sections that own a whole band (events, the schedule's day list).
         sectionHeading: "font-[family-name:var(--font-display)] italic text-[36px] leading-[1.0] tracking-[-0.03em] text-[color:var(--ink-1)]",
         // The stats strip: a figure at 64px over a mono label.
-        statValue: "font-[family-name:var(--font-display)] italic text-[64px] leading-[0.95] tracking-[-0.04em] text-[color:var(--ink-1)] tabular-nums",
-        statLabel: "font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)]",
+        // Below `md` the figure steps down so two fit side by side on a phone
+        // (`statStrip` re-tracks the grid to 2 columns there). The label carries
+        // the design's `mt-2` itself: in the Card's reversed column layout it
+        // sits under the figure with no other spacing between them.
+        statValue: "font-[family-name:var(--font-display)] italic text-[64px] max-md:text-[44px] leading-[0.95] tracking-[-0.04em] text-[color:var(--ink-1)] tabular-nums",
+        statLabel: "font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] mt-2",
         // The featured post's read-through link — a sentence-case control, not
         // the mono chrome the section links use.
         featureLink: "w-fit! inline-flex items-center gap-2 font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--ink-1)] border-b border-[var(--line-2)] hover:border-[var(--line-3)] pb-0.5 transition-colors",
@@ -484,7 +548,11 @@ const theme = {
         // address. Inverted ink, like everything else on that surface.
         footMeta: "font-[family-name:var(--font-mono)] text-[11px] tracking-[0.10em] uppercase text-[color:var(--inv-ink)]",
         footListHead: "font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--inv-ink-2)]",
-        footLink: "font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--inv-ink)] hover:underline",
+        // The items are Lexical link nodes (real anchors). The editor paints
+        // every link its own blue (`lexical/theme.js` `link`); `[&_a]` re-inks
+        // the anchor here, scoped to this token, so body-copy links elsewhere
+        // keep the site treatment.
+        footLink: "font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--inv-ink)] [&_a]:text-[color:var(--inv-ink)] [&_a]:no-underline [&_a]:hover:underline",
         footColophon: "font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--inv-ink-2)]",
         footColophonEnd: "w-fit! ml-auto font-[family-name:var(--font-mono)] text-[10px] tracking-[0.12em] uppercase text-[color:var(--inv-ink-2)]",
 
@@ -621,6 +689,14 @@ const theme = {
           "tracking-[0.10em] uppercase text-[color:var(--ink-3)] hover:text-[color:var(--ink-1)] " +
           "border-b border-transparent hover:border-[var(--line-3)] pb-0.5 transition-colors cursor-pointer",
       },
+      {
+        // The inverted footer's link-list items (`footLink` in textSettings,
+        // as a real link). A lexical `button` node with this style is how the
+        // footer's Schedule / Recent spins / Station info / DJ login navigate;
+        // the text token alone renders plain text.
+        name: "footLink",
+        button: "font-[family-name:var(--font-sans)] text-[13px] text-[color:var(--inv-ink)] hover:underline cursor-pointer",
+      },
     ],
   },
   // Card surface treatments — Hanssen card aesthetic.
@@ -672,10 +748,35 @@ const theme = {
         cellGutter: 8,
         itemEditOutline: "outline outline-[var(--accent)] -outline-offset-1",
         subWrapper: "w-full font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)]",
-        subWrapperCompactView: "flex flex-col rounded-[18px] bg-[var(--card-bg)] text-[color:var(--ink-1)]",
+        subWrapperCompactView: `${NP_MOBILE_TRACKS} flex flex-col rounded-[18px] bg-[var(--card-bg)] text-[color:var(--ink-1)]`,
         headerValueWrapper: "w-full rounded-[18px] flex items-center justify-center",
         header: "w-full font-[family-name:var(--font-mono)] uppercase tracking-[0.12em] text-[length:var(--tx-xs)] text-[color:var(--ink-3)]",
         description: "w-full font-[family-name:var(--font-sans)] text-[length:var(--tx-xs)] font-light text-[color:var(--ink-3)]",
+        // ── Form action rows (the admin's Add / Fix dialogs) ──────────────────
+        // Right-aligned at the CARD's edge (`col-span-full`), with the dialog's
+        // own gutter so the pills never sit on the field grid's edge. Primary =
+        // the brand's white pill (`btnPrimary`), quiet = `btnGhost`, and delete
+        // is a ghost that turns the station's red only on the confirm step.
+        formEditButtonsWrapper: "col-span-full w-fit justify-self-end self-end flex items-center gap-2 pt-6 pr-2 pb-2",
+        formAddNewItemWrapper: "col-span-full w-fit justify-self-end self-end pt-6 pr-2 pb-2",
+        formSaveButton:
+          "inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[color:var(--ink-1)] text-[color:var(--page-bg)] " +
+          "font-[family-name:var(--font-sans)] text-[13px] font-medium whitespace-nowrap cursor-pointer hover:opacity-90 transition-opacity",
+        formAddButton:
+          "inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[color:var(--ink-1)] text-[color:var(--page-bg)] " +
+          "font-[family-name:var(--font-sans)] text-[13px] font-medium whitespace-nowrap cursor-pointer hover:opacity-90 transition-opacity",
+        formCancelButton:
+          "inline-flex items-center gap-2 rounded-full border border-[var(--line-2)] px-4 py-2.5 " +
+          "font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-2)] " +
+          "cursor-pointer hover:text-[color:var(--ink-1)] hover:border-[var(--line-3)] transition-colors",
+        formDeleteButton:
+          "inline-flex items-center gap-2 rounded-full border border-[var(--line-2)] px-4 py-2.5 mr-auto " +
+          "font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase text-[color:var(--ink-3)] " +
+          "cursor-pointer hover:text-[color:var(--on-air)] hover:border-[rgba(255,59,47,0.4)] transition-colors",
+        formDeleteConfirmButton:
+          "inline-flex items-center gap-2 rounded-full px-4 py-2.5 bg-[var(--on-air)] text-[color:var(--page-bg)] " +
+          "font-[family-name:var(--font-mono)] text-[10px] tracking-[0.10em] uppercase font-semibold whitespace-nowrap " +
+          "cursor-pointer hover:opacity-90 transition-opacity",
         // New image-size key alongside the inherited `imgXS`…`img8XL` caps.
         // (see `imgFill` below — kept here so the default style still owns it)
         // `imgFill` is for cells where the *cell* is the source of truth for
@@ -708,7 +809,10 @@ const theme = {
         // The now-playing cover art — a fixed square slot, sized by the design
         // (104px) rather than by the cell, so it stays square whatever the
         // track name does to the row beside it.
-        imgArt: "w-[104px] h-[104px] object-cover rounded-[10px] bg-[var(--bg-3)]",
+        // Below `md` the rail is the phone's full width and the art steps down
+        // to 72px, in lockstep with the button and the grid tracks in
+        // `tokens.css` — the width it gives up all goes to the track title.
+        imgArt: "w-[104px] h-[104px] max-md:w-[72px] max-md:h-[72px] object-cover rounded-[10px] bg-[var(--bg-3)]",
       },
       {
         // "adminRow" — a record-card drawn as a ROW of a list, not as a card.
@@ -749,6 +853,56 @@ const theme = {
         imgFill: "w-full h-full object-cover rounded-[6px]",
       },
       {
+        // "spinRow" — `adminRow` at the PUBLIC list's rhythm. The admin lists are
+        // dense on purpose (52px rows, `py-2`); the public spins page
+        // (`pages/spins.html`) draws the same hairline row but breathes:
+        // `py-4`, and a row is two lines (title over mono meta) beside a
+        // 44px cover, so it sits at ~68px. Same `px-6` as `adminRow` /
+        // `adminHeaderRow` so the fused header strip's tracks line up exactly.
+        // Selected per-section via `cardStyle: 'spinRow'`; the admin spin log
+        // keeps `adminRow`.
+        //
+        // The padding here only renders if the section does NOT set
+        // `cardsPadding` — Card emits that key as inline `padding` on this very
+        // element, and `cardsPadding: 0` (which the admin-page seeds all carry)
+        // silently zeroes the gutter. The playlist sections had it; removed.
+        name: "spinRow",
+        itemHighlight: "bg-[var(--on-air-soft)] border-l-2 border-l-[var(--on-air)]",
+        itemHighlightBorder: "ring-1 ring-[var(--on-air)]",
+        cellGutter: 0,
+        subWrapper: "w-full font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)]",
+        subWrapperCompactView:
+          `${SPIN_MOBILE_TRACKS} group flex flex-col justify-center min-h-[68px] rounded-none border-t border-[var(--line-1)] ` +
+          "px-6 py-4 hover:bg-[var(--accent-soft)] transition-colors text-[color:var(--ink-1)]",
+        headerValueWrapper: "w-full flex items-center justify-center",
+        header: "w-full font-[family-name:var(--font-mono)] uppercase tracking-[0.12em] text-[length:var(--tx-xs)] text-[color:var(--ink-4)]",
+        description: "w-full font-[family-name:var(--font-sans)] text-[length:var(--tx-xs)] font-light text-[color:var(--ink-3)]",
+        imgFill: "w-full h-full object-cover rounded-[6px]",
+      },
+      {
+        // "statStrip" — the figures band (`pages/home.html` § Stats): big display
+        // numerals over mono labels, no surface of its own (the SECTION paints the
+        // card). Pair it with `cellsTracksTemplate: 'repeat(auto-fit, minmax(180px, 1fr))'`
+        // so the figures wrap instead of overflowing when the column narrows —
+        // a 64px "13,786" is ~190px wide, and three of them do not fit a half-
+        // width column at tablet sizes. Below `md` the template is overridden to
+        // exactly two columns (`!`, because the section emits its template
+        // inline) and `statValue` steps down to 44px, so a phone gets a 2-up grid.
+        name: "statStrip",
+        cellGutter: 0,
+        subWrapper: "w-full font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)]",
+        // `bg-[var(--card-bg)]`: this band is fused under a lexical eyebrow section
+        // that paints the card surface, so it must paint the same one (the section's
+        // own `bg` is a step darker). The band's INNER spacing lives here, not on
+        // the section: a section's `padding` is the page gutter OUTSIDE its box
+        // (sectionArray.jsx), so any top step there opens a seam between this and
+        // the eyebrow it is fused under. `px-4` is the eyebrow's 16px inset,
+        // measured live; `pt-4` + the eyebrow paragraph's mb-3 = the mockup's 28px
+        // eyebrow→figure gap; `pb-8` + the cells' 8px bottom = its 40px floor.
+        subWrapperCompactView: "max-md:grid-cols-2! max-md:gap-x-4! max-md:gap-y-6! flex flex-col px-4 pt-4 pb-8 bg-[var(--card-bg)] text-[color:var(--ink-1)]",
+        headerValueWrapper: "w-full flex items-start justify-start",
+      },
+      {
         // "tileSoft" — `tile` on the card-soft tone with a tighter radius. The
         // design uses two tile surfaces: `--bg-2` for the board's role tiles
         // (inset inside a card) and `--card-bg-soft` at 14px for the event
@@ -780,7 +934,7 @@ const theme = {
         name: "plain",
         cellGutter: 0,
         subWrapper: "w-full font-[family-name:var(--font-sans)] text-[15px] leading-[1.4] tracking-[-0.01em] text-[color:var(--ink-1)]",
-        subWrapperCompactView: "flex flex-col text-[color:var(--ink-1)]",
+        subWrapperCompactView: `${NP_MOBILE_TRACKS} flex flex-col text-[color:var(--ink-1)]`,
         headerValueWrapper: "w-full flex items-center justify-center",
       },
       {
@@ -836,6 +990,17 @@ const theme = {
         headerValueWrapper: "w-full flex items-center",
         header: "hidden",
       },
+      {
+        // "spinHeaderRow" — `adminHeaderRow` for the public spins list: the same
+        // gutter as `spinRow`, plus the same below-`md` re-tracking so TIME /
+        // TRACK stay over their columns when PLAYED drops out.
+        name: "spinHeaderRow",
+        cellGutter: 0,
+        subWrapper: "w-full",
+        subWrapperCompactView: `${SPIN_MOBILE_TRACKS} flex flex-col rounded-none px-6 pb-2`,
+        headerValueWrapper: "w-full flex items-center",
+        header: "hidden",
+      },
     ],
   },
   // Table treatments — borderless rows with mono uppercase header.
@@ -850,6 +1015,11 @@ const theme = {
         headerCellContainer: "w-full font-[family-name:var(--font-mono)] uppercase tracking-[0.12em] text-[length:var(--tx-xs)] px-3 py-2 content-center text-[color:var(--ink-3)]",
         headerCellContainerBg: "bg-transparent",
         headerCellContainerBgSelected: "bg-[var(--accent-soft)] text-[color:var(--ink-1)]",
+        // The sticky header / footer bands of a scrolling table. The library
+        // default paints them `bg-white` so rows cannot show through while
+        // scrolling — on this surface that is a white bar; use the card tone.
+        stickyHeader: "top-0 sticky z-[5] bg-[var(--card-bg)]",
+        stickyBottom: "bottom-0 sticky z-[5] bg-[var(--card-bg)]",
         cell: "relative flex items-center min-h-[44px] border-t border-[var(--line-1)]",
         cellInner: "w-full min-h-full flex flex-wrap items-center truncate py-1 px-3 text-[color:var(--ink-2)]",
         cellBg: "bg-transparent hover:bg-[var(--bg-2)]",
@@ -1026,6 +1196,19 @@ const theme = {
   // bg-2/bg-1, 8px radius, ink-3 on focus, ink-4 placeholder. The Select
   // chevron in `Select.jsx` is hardcoded `stroke-zinc-*` and isn't themable
   // here — `dark:stroke-zinc-400` reads close enough to ink-3 in both modes.
+  // FieldSet — every `UI.FieldSet` form on the site (the auth pages are the
+  // first consumer). Without `fieldWrapper` a bare <fieldset> keeps the
+  // browser's groove border; `labelRow` is the label + accessory row the
+  // login page puts its forgot link on.
+  field: {
+    fieldWrapper: "flex flex-col gap-4 border-0 p-0 m-0 min-w-0",
+    field: "flex flex-col gap-2",
+    label: "font-[family-name:var(--font-mono)] text-[11px] tracking-[0.12em] uppercase text-[color:var(--ink-3)]",
+    labelRow: "flex items-center justify-between gap-3",
+    description: "font-[family-name:var(--font-sans)] text-[12px] text-[color:var(--ink-3)]",
+  },
+  // The auth pattern's pages — see auth.theme.js.
+  auth: authTheme,
   input: {
     inputContainer: "relative block w-full",
     input:
@@ -1073,8 +1256,12 @@ const theme = {
   // than in the library.
   pageComponents: {
     ScheduleGrid: scheduleGrid,
+    // The playlist's block navigator: names the show (or automation slice) the
+    // page is on and publishes its edges as the `from`/`to` page variables.
+    ShowBlockNav: showBlockNav,
   },
   scheduleGrid: scheduleGridTheme,
+  showBlockNav: showBlockNavTheme,
   // Theme-registered column types. Auto-registered in
   // patterns/page/siteConfig.jsx via the registerColumnType API.
   columnTypes: {
@@ -1092,9 +1279,8 @@ const theme = {
   // and initials glyph size site-wide without touching column metadata.
   portraitBanner: portraitBannerTheme,
   // Theme namespace consumed by the stream_player column type. Owns the
-  // player's padding, art size, play-button size, and the static
-  // placeholders (elapsed/total/listeners) used until a live-clock data
-  // source replaces them.
+  // default stream URL and the play button's two sizes (full, and the compact
+  // one `tokens.css` applies below `md`).
   streamPlayer: streamPlayerTheme,
   // Theme namespace consumed by the now_indicator column type. Owns the
   // pill/meta typography sizes and the default `timestampField` name; the

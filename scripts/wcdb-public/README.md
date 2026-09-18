@@ -34,7 +34,7 @@ Review at `/edit/<slug>` first.
 
 | Page | slug | Source |
 |---|---|---|
-| Home | `home` | 10 ⋈ 9 ⋈ 8 · 13 · 11 · 7 |
+| Home | `home` | 10 ⋈ 9 ⋈ 8 · 11 · 7 (· 13 only with `BLOG_LIVE=1` — the dispatches block is held back until the blog launches) |
 | Schedule | `schedule` | 10 ⋈ 9 ⋈ 8 |
 | DJs | `djs` | 8 |
 | Spins | `playlist` | 7 |

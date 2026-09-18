@@ -157,8 +157,15 @@ export const band = ({ index, displayName, theme = 'admin', position = 'content'
  * names against) — an empty one renders a blank card. The per-section
  * projection is the section's own top-level `columns`.
  */
+// `isEditable: true` on every binding: it mirrors each source's `metadata.isEditable`
+// (all seven wcdb-dama sources carry it — confirmed via the graph 2026-09-12), and the
+// dataWrapper reads the SECTION's copy, not the source's: without it `updateItem` /
+// `addItem` / `removeItem` return before writing, and getData strips the row `id`
+// (external sources only get an `id` attribute when the binding says editable), so a
+// live-edit form saved nothing and a Delete had no key. The source picker sets this
+// flag when an author binds through the UI (useDataSource.js); a seed has to say it.
 const pg = (source_id, view_id, name, type, columns) => ({
-  source_id, view_id, isDms: false,
+  source_id, view_id, isDms: false, isEditable: true,
   env: 'wcdb-dama', srcEnv: 'wcdb-dama', baseUrl: '',
   type, name, view_name: '1',
   columns: columns.map(([n, t]) => ({ name: n, type: t, display_name: n })),
@@ -270,7 +277,7 @@ export const fusedEnd = { bg: CARD_BG, border: { left: true, right: true, bottom
  *  the column-header row. It binds to the list's own source at pageSize 1
  *  because a Card renders one card per ROW, and static cells need a row to
  *  render into; the row's data is never read. */
-export const staticRowSection = ({ source, tracks, cells, valueFontStyle = 'label', padding }) =>
+export const staticRowSection = ({ source, tracks, cells, valueFontStyle = 'label', padding, rowGutter }) =>
   dataSection({
     source,
     columns: [
@@ -293,7 +300,11 @@ export const staticRowSection = ({ source, tracks, cells, valueFontStyle = 'labe
     display: {
       pageSize: 1, usePagination: false, fetchMode: 'cache',
       cellsTracksTemplate: tracks, cellsGridSize: cells.length,
-      cellsGridGap: 12, cellsPadding: padding ?? 0, cardsGridGap: 0, cardsPadding: 0,
+      cellsGridGap: 12, cellsPadding: padding ?? 0, cardsGridGap: 0,
+      // See listCard: `cardsPadding: 0` zeroes the theme's `px-6` on this very
+      // element. A list that keeps its row gutter drops it here too so the header
+      // labels stay over their columns.
+      ...(rowGutter ? {} : { cardsPadding: 0 }),
       cardBorder: false, cardStyle: 'adminHeaderRow',
     },
   });

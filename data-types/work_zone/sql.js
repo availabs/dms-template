@@ -765,12 +765,801 @@ const WZ_SPEED_TABLE_COLUMNS = [
   { name: 'posted_speed_drop_mph', display_name: 'Posted drop used (mph)', type: 'DOUBLE PRECISION', desc: 'mph below the posted limit, for the primary measure' },
   { name: 'speed_threshold_mph', display_name: 'Absolute threshold used', type: 'DOUBLE PRECISION', desc: null },
   { name: 'reference_speed_pct', display_name: 'Relative threshold used (%)', type: 'DOUBLE PRECISION', desc: null },
-  { name: 'approach_tmc', display_name: 'Approach TMC', type: 'TEXT', desc: 'Phase 6 (M4)' },
-  { name: 'approach_speed', display_name: 'Approach speed', type: 'DOUBLE PRECISION', desc: 'Phase 6 (M4)' },
-  { name: 'differential_approach', display_name: 'Differential · approach − zone', type: 'DOUBLE PRECISION', desc: 'Phase 6 (M4)' },
-  { name: 'differential_baseline', display_name: 'Differential · baseline − during', type: 'DOUBLE PRECISION', desc: 'Phase 6 (M4)' },
-  { name: 'exceeds_differential', display_name: 'Exceeds differential threshold', type: 'BOOLEAN', desc: 'Phase 6 (M4)' },
+  { name: 'approach_tmc', display_name: 'Approach TMCs', type: 'TEXT', desc: 'M4 (phase 6): the 1-2 segments immediately upstream of the anchor on the same corridor, space-separated. NULL where the corridor has nothing upstream.' },
+  { name: 'approach_speed', display_name: 'Approach speed', type: 'DOUBLE PRECISION', desc: 'M4: mean speed on the approach segments over this cell\'s active epochs, pooled like speed_mean. NULL where unobserved.' },
+  { name: 'differential_approach', display_name: 'M4 · approach − in-zone (mph)', type: 'DOUBLE PRECISION', desc: 'PRIMARY M4 surrogate: approach_speed − speed_mean. Positive = traffic arrives faster than it moves through the zone (the taper). Negative beyond the threshold = the queue reached past the approach.' },
+  { name: 'differential_baseline', display_name: 'M4 · baseline − during (mph)', type: 'DOUBLE PRECISION', desc: 'baseline_speed − speed_mean: the drop against the segment\'s normal speed at this hour and day-type. Positive = slower than normal.' },
+  { name: 'exceeds_differential', display_name: 'Approach drop over threshold', type: 'BOOLEAN', desc: 'differential_approach > differential_mph. NULL where the approach is unobserved — unknown, not FALSE.' },
 ];
+
+
+// ── phase 5: queues and M3 ──────────────────────────────────────────────────
+
+/**
+ * `wz_queue` — one row per work zone, the `wz_delay` shape: the M3 statistics
+ * over the zone's whole active window, at the primary (absolute) threshold and
+ * the road-scaled PHED comparator, with the corridor that was walked and how
+ * much of the queue length is a lower bound. Geometry is the MAXIMUM queue
+ * extent — the anchor plus the upstream TMCs queued at the longest epoch — so
+ * the layer draws how far back the queue reached, not just where the work was.
+ *
+ * `max_queue_tmcs` is space-separated TEXT for the same reason
+ * `member_event_ids` is: DMS filter chips and falcor keys are hostile to
+ * commas. Phase 7's crash join reads it for the upstream queue extent.
+ *
+ * Queue length is UPSTREAM length: the anchor's own miles are on the row
+ * (`anchor_miles`) but not in `max_queue_len_mi`. See lib/queue.js.
+ */
+function wzQueueTableDDL(schema, table) {
+  return `
+CREATE SCHEMA IF NOT EXISTS ${schema};
+CREATE TABLE IF NOT EXISTS ${schema}.${table} (
+    ogc_fid SERIAL PRIMARY KEY,
+    wz_event_id TEXT UNIQUE NOT NULL,
+    first_start TIMESTAMP,
+    last_end TIMESTAMP,
+    region_name TEXT,
+    county_name TEXT,
+    facility TEXT,
+    work_activity_class TEXT,
+    is_interstate BOOLEAN,
+    in_tma BOOLEAN,
+    is_significant_candidate BOOLEAN,
+    -- where the walk started, and what it had to walk
+    anchor_tmc TEXT,
+    anchor_miles DOUBLE PRECISION,
+    window_source TEXT,
+    n_upstream_tmcs INTEGER,
+    corridor_reach_mi DOUBLE PRECISION,
+    corridor_end_reason TEXT,
+    -- observation. FALSE where the anchor had no speed observation in the
+    -- active window: the queue is UNKNOWN, not absent. Filter on it.
+    queue_measured BOOLEAN,
+    epochs_observed INTEGER,
+    active_hours_observed DOUBLE PRECISION,
+    epochs_2799 INTEGER,
+    epochs_anchor_below INTEGER,
+    -- M3 at the primary threshold (queue_speed_mph)
+    epochs_queued INTEGER,
+    pct_time_queued DOUBLE PRECISION,
+    queue_hours DOUBLE PRECISION,
+    hours_with_queue INTEGER,
+    max_queue_len_mi DOUBLE PRECISION,
+    p95_queue_len_mi DOUBLE PRECISION,
+    mean_queue_len_mi DOUBLE PRECISION,
+    queue_mile_hours DOUBLE PRECISION,
+    longest_queue_run_min INTEGER,
+    exceeds_queue_threshold BOOLEAN,
+    max_queue_tmcs TEXT,
+    max_queue_date DATE,
+    max_queue_time TEXT,
+    epochs_lower_bound INTEGER,
+    epochs_corridor_end INTEGER,
+    -- the road-scaled comparator: below max(20, 0.6 x posted limit)
+    epochs_queued_phed INTEGER,
+    pct_time_queued_phed DOUBLE PRECISION,
+    max_queue_len_phed_mi DOUBLE PRECISION,
+    p95_queue_len_phed_mi DOUBLE PRECISION,
+    longest_queue_run_phed_min INTEGER,
+    exceeds_queue_threshold_phed BOOLEAN,
+    -- context
+    anchor_speed_mean DOUBLE PRECISION,
+    anchor_speed_min DOUBLE PRECISION,
+    -- the parameters this row was measured with, so it is self-describing
+    queue_speed_mph DOUBLE PRECISION,
+    queue_threshold_mi DOUBLE PRECISION,
+    min_consecutive_epochs SMALLINT,
+    wkb_geometry public.geometry(Geometry, 4326)
+);
+CREATE INDEX IF NOT EXISTS ${table}_first_start_idx ON ${schema}.${table} (first_start);
+CREATE INDEX IF NOT EXISTS ${table}_maxq_idx ON ${schema}.${table} (max_queue_len_mi);
+CREATE INDEX IF NOT EXISTS ${table}_signif_idx ON ${schema}.${table} (is_significant_candidate);
+CREATE INDEX IF NOT EXISTS ${table}_gix ON ${schema}.${table} USING gist (wkb_geometry);`;
+}
+
+/** Insert column order for wz_queue, with the cast each needs out of a VALUES subquery. */
+const WZ_QUEUE_COLUMN_TYPES = [
+  ['wz_event_id', 'text'], ['first_start', 'timestamp'], ['last_end', 'timestamp'],
+  ['region_name', 'text'], ['county_name', 'text'], ['facility', 'text'],
+  ['work_activity_class', 'text'], ['is_interstate', 'boolean'], ['in_tma', 'boolean'],
+  ['is_significant_candidate', 'boolean'],
+  ['anchor_tmc', 'text'], ['anchor_miles', 'double precision'], ['window_source', 'text'],
+  ['n_upstream_tmcs', 'integer'], ['corridor_reach_mi', 'double precision'], ['corridor_end_reason', 'text'],
+  ['queue_measured', 'boolean'], ['epochs_observed', 'integer'], ['active_hours_observed', 'double precision'],
+  ['epochs_2799', 'integer'], ['epochs_anchor_below', 'integer'],
+  ['epochs_queued', 'integer'], ['pct_time_queued', 'double precision'], ['queue_hours', 'double precision'],
+  ['hours_with_queue', 'integer'], ['max_queue_len_mi', 'double precision'], ['p95_queue_len_mi', 'double precision'],
+  ['mean_queue_len_mi', 'double precision'], ['queue_mile_hours', 'double precision'],
+  ['longest_queue_run_min', 'integer'], ['exceeds_queue_threshold', 'boolean'],
+  ['max_queue_tmcs', 'text'], ['max_queue_date', 'date'], ['max_queue_time', 'text'],
+  ['epochs_lower_bound', 'integer'], ['epochs_corridor_end', 'integer'],
+  ['epochs_queued_phed', 'integer'], ['pct_time_queued_phed', 'double precision'],
+  ['max_queue_len_phed_mi', 'double precision'], ['p95_queue_len_phed_mi', 'double precision'],
+  ['longest_queue_run_phed_min', 'integer'], ['exceeds_queue_threshold_phed', 'boolean'],
+  ['anchor_speed_mean', 'double precision'], ['anchor_speed_min', 'double precision'],
+  ['queue_speed_mph', 'double precision'], ['queue_threshold_mi', 'double precision'],
+  ['min_consecutive_epochs', 'smallint'],
+];
+const WZ_QUEUE_COLUMNS = WZ_QUEUE_COLUMN_TYPES.map(([c]) => c);
+
+/**
+ * Batch insert for wz_queue. The geometry is the union of the anchor and the
+ * max-queue TMCs, taken from the per-TMC geometry temp table
+ * (metaGeomTempTableSQL) and wrapped in ST_SetSRID so the values carry 4326.
+ * ST_CollectionExtract(..., 2) keeps the union a (Multi)LineString even when
+ * PostGIS returns a collection.
+ */
+function wzQueueInsertSQL({ schema = WORK_ZONE_SCHEMA, table, rows, geomTable }) {
+  if (!rows.length) return null;
+  if (!geomTable) throw new Error('wzQueueInsertSQL: geomTable is required');
+  const values = rows
+    .map((r) => `(${WZ_QUEUE_COLUMNS.map((c) => sqlLiteral(r[c])).join(', ')})`)
+    .join(',\n');
+  const selectList = WZ_QUEUE_COLUMN_TYPES
+    .map(([c, t]) => (t === 'text' ? `v.${c}` : `v.${c}::${t}`)).join(', ');
+  const updates = WZ_QUEUE_COLUMNS.filter((c) => c !== 'wz_event_id')
+    .map((c) => `${c} = EXCLUDED.${c}`).join(', ');
+  return `INSERT INTO ${schema}.${table} (${WZ_QUEUE_COLUMNS.join(', ')}, wkb_geometry)
+SELECT ${selectList}, gg.geom
+  FROM (VALUES ${values}) AS v(${WZ_QUEUE_COLUMNS.join(', ')})
+  LEFT JOIN LATERAL (
+        SELECT ST_SetSRID(ST_Multi(ST_CollectionExtract(ST_Union(g.wkb_geometry), 2)), 4326) AS geom
+          FROM ${geomTable} g
+         WHERE g.tmc = ANY(string_to_array(trim(coalesce(v.anchor_tmc, '') || ' ' || coalesce(v.max_queue_tmcs, '')), ' '))
+       ) gg ON TRUE
+ON CONFLICT (wz_event_id) DO UPDATE SET ${updates}, wkb_geometry = EXCLUDED.wkb_geometry;`;
+}
+
+/** metadata.columns for the wz_queue source. */
+const WZ_QUEUE_TABLE_COLUMNS = [
+  { name: 'wz_event_id', display_name: 'Work Zone ID', type: 'TEXT', desc: 'Joins wz_event' },
+  { name: 'first_start', display_name: 'First Start', type: 'TIMESTAMP', desc: null },
+  { name: 'last_end', display_name: 'Last End', type: 'TIMESTAMP', desc: null },
+  { name: 'region_name', display_name: 'NYSDOT Region', type: 'TEXT', desc: null },
+  { name: 'county_name', display_name: 'County', type: 'TEXT', desc: null },
+  { name: 'facility', display_name: 'Facility', type: 'TEXT', desc: null },
+  { name: 'work_activity_class', display_name: 'Work Activity', type: 'TEXT', desc: null },
+  { name: 'is_interstate', display_name: 'Interstate', type: 'BOOLEAN', desc: null },
+  { name: 'in_tma', display_name: 'In TMA', type: 'BOOLEAN', desc: null },
+  { name: 'is_significant_candidate', display_name: 'Significant Candidate', type: 'BOOLEAN', desc: null },
+  { name: 'anchor_tmc', display_name: 'Anchor TMC', type: 'TEXT', desc: 'Where the work is; the walk starts here and goes upstream' },
+  { name: 'anchor_miles', display_name: 'Anchor length (mi)', type: 'DOUBLE PRECISION', desc: 'NOT included in the queue length' },
+  { name: 'window_source', display_name: 'Active-window source', type: 'TEXT', desc: "'2799' | 'event' | 'mixed' — see wz_speed. Filter on '2799' for the conflated windows." },
+  { name: 'n_upstream_tmcs', display_name: 'Upstream TMCs walked', type: 'INTEGER', desc: 'Corridor segments available upstream of the anchor, within the reach and gap limits' },
+  { name: 'corridor_reach_mi', display_name: 'Corridor reach (mi)', type: 'DOUBLE PRECISION', desc: 'Upstream miles available to the walk — a queue cannot measure longer than this' },
+  { name: 'corridor_end_reason', display_name: 'Corridor ended by', type: 'TEXT', desc: 'end_of_linear | gap | reach | tmcs | no_meta' },
+  { name: 'queue_measured', display_name: 'Queue measured', type: 'BOOLEAN', desc: 'FALSE where the anchor had no speed observation while active — the queue is UNKNOWN, not zero. Filter on this before aggregating.' },
+  { name: 'epochs_observed', display_name: 'Epochs observed', type: 'INTEGER', desc: 'Five-minute periods with an anchor observation while active — the denominator' },
+  { name: 'active_hours_observed', display_name: 'Active hours observed', type: 'DOUBLE PRECISION', desc: 'epochs_observed / 12' },
+  { name: 'epochs_2799', display_name: 'Epochs on conflated windows', type: 'INTEGER', desc: null },
+  { name: 'epochs_anchor_below', display_name: 'Epochs anchor below threshold', type: 'INTEGER', desc: 'Before the consecutive-epoch rule' },
+  { name: 'epochs_queued', display_name: 'M3 · Epochs queued', type: 'INTEGER', desc: 'Anchor below queue_speed_mph in two or more consecutive epochs' },
+  { name: 'pct_time_queued', display_name: 'M3 · Share of time queued', type: 'DOUBLE PRECISION', desc: 'epochs_queued / epochs_observed' },
+  { name: 'queue_hours', display_name: 'M3 · Queue hours', type: 'DOUBLE PRECISION', desc: 'epochs_queued / 12' },
+  { name: 'hours_with_queue', display_name: 'Clock hours with a queue', type: 'INTEGER', desc: 'Distinct (date, hour) with any queued epoch' },
+  { name: 'max_queue_len_mi', display_name: 'M3 · Max queue (mi)', type: 'DOUBLE PRECISION', desc: 'PRIMARY. Longest contiguous run of upstream TMCs below queue_speed_mph in any queued epoch. Upstream length only.' },
+  { name: 'p95_queue_len_mi', display_name: 'M3 · 95th-pct queue (mi)', type: 'DOUBLE PRECISION', desc: 'Over queued epochs. The report figure the recommendation asks for beside the max.' },
+  { name: 'mean_queue_len_mi', display_name: 'Mean queue when present (mi)', type: 'DOUBLE PRECISION', desc: null },
+  { name: 'queue_mile_hours', display_name: 'Queue-mile-hours', type: 'DOUBLE PRECISION', desc: 'Sum over queued epochs of queue length, in hours' },
+  { name: 'longest_queue_run_min', display_name: 'M3 · Longest queue (min)', type: 'INTEGER', desc: 'Longest run of consecutive queued epochs, in minutes — the duration measure' },
+  { name: 'exceeds_queue_threshold', display_name: 'Over the queue threshold', type: 'BOOLEAN', desc: 'max_queue_len_mi > queue_threshold_mi. NULL where unmeasured.' },
+  { name: 'max_queue_tmcs', display_name: 'Max-queue TMCs', type: 'TEXT', desc: 'Space-separated upstream TMCs queued at the longest epoch — the extent phase 7 joins crashes to' },
+  { name: 'max_queue_date', display_name: 'Max-queue date', type: 'DATE', desc: null },
+  { name: 'max_queue_time', display_name: 'Max-queue time', type: 'TEXT', desc: 'HH:MM of the epoch' },
+  { name: 'epochs_lower_bound', display_name: 'Epochs where length is a lower bound', type: 'INTEGER', desc: 'The walk ran out of observed segments while still queued' },
+  { name: 'epochs_corridor_end', display_name: 'Epochs queued to the corridor end', type: 'INTEGER', desc: 'Queue reached the last segment the corridor had — reach or linear end' },
+  { name: 'epochs_queued_phed', display_name: 'PHED · Epochs queued', type: 'INTEGER', desc: 'Comparator: below max(20, 0.6 x posted limit) per segment' },
+  { name: 'pct_time_queued_phed', display_name: 'PHED · Share of time queued', type: 'DOUBLE PRECISION', desc: null },
+  { name: 'max_queue_len_phed_mi', display_name: 'PHED · Max queue (mi)', type: 'DOUBLE PRECISION', desc: null },
+  { name: 'p95_queue_len_phed_mi', display_name: 'PHED · 95th-pct queue (mi)', type: 'DOUBLE PRECISION', desc: null },
+  { name: 'longest_queue_run_phed_min', display_name: 'PHED · Longest queue (min)', type: 'INTEGER', desc: null },
+  { name: 'exceeds_queue_threshold_phed', display_name: 'PHED · Over the queue threshold', type: 'BOOLEAN', desc: null },
+  { name: 'anchor_speed_mean', display_name: 'Anchor speed (mean)', type: 'DOUBLE PRECISION', desc: 'Over observed active epochs' },
+  { name: 'anchor_speed_min', display_name: 'Anchor speed (min)', type: 'DOUBLE PRECISION', desc: null },
+  { name: 'queue_speed_mph', display_name: 'Queue speed used (mph)', type: 'DOUBLE PRECISION', desc: null },
+  { name: 'queue_threshold_mi', display_name: 'Queue threshold used (mi)', type: 'DOUBLE PRECISION', desc: null },
+  { name: 'min_consecutive_epochs', display_name: 'Consecutive epochs required', type: 'SMALLINT', desc: null },
+];
+
+/**
+ * `wz_queue_hour` — one row per (work zone x date x clock hour): the evidence
+ * under wz_queue, at the grain that keeps the DATE (so a queue's day-by-day
+ * shape and its duration survive) without the ~5 million rows a year the
+ * epoch grain would cost. `first_start` is carried so the window delete works
+ * the same way as on every other table.
+ */
+function wzQueueHourTableDDL(schema, table) {
+  return `
+CREATE SCHEMA IF NOT EXISTS ${schema};
+CREATE TABLE IF NOT EXISTS ${schema}.${table} (
+    ogc_fid SERIAL PRIMARY KEY,
+    wz_event_id TEXT NOT NULL,
+    date DATE NOT NULL,
+    hour SMALLINT NOT NULL,
+    first_start TIMESTAMP,
+    region_name TEXT,
+    is_interstate BOOLEAN,
+    is_significant_candidate BOOLEAN,
+    window_source TEXT,
+    epochs_observed INTEGER,
+    epochs_anchor_below INTEGER,
+    epochs_queued INTEGER,
+    max_queue_len_mi DOUBLE PRECISION,
+    mean_queue_len_mi DOUBLE PRECISION,
+    queue_mile_epochs DOUBLE PRECISION,
+    epochs_lower_bound INTEGER,
+    epochs_queued_phed INTEGER,
+    max_queue_len_phed_mi DOUBLE PRECISION,
+    anchor_speed_mean DOUBLE PRECISION,
+    anchor_speed_min DOUBLE PRECISION,
+    UNIQUE (wz_event_id, date, hour)
+);
+CREATE INDEX IF NOT EXISTS ${table}_event_idx ON ${schema}.${table} (wz_event_id);
+CREATE INDEX IF NOT EXISTS ${table}_start_idx ON ${schema}.${table} (first_start);
+CREATE INDEX IF NOT EXISTS ${table}_date_idx ON ${schema}.${table} (date);`;
+}
+
+const WZ_QUEUE_HOUR_COLUMN_TYPES = [
+  ['wz_event_id', 'text'], ['date', 'date'], ['hour', 'smallint'], ['first_start', 'timestamp'],
+  ['region_name', 'text'], ['is_interstate', 'boolean'], ['is_significant_candidate', 'boolean'],
+  ['window_source', 'text'], ['epochs_observed', 'integer'], ['epochs_anchor_below', 'integer'],
+  ['epochs_queued', 'integer'], ['max_queue_len_mi', 'double precision'], ['mean_queue_len_mi', 'double precision'],
+  ['queue_mile_epochs', 'double precision'], ['epochs_lower_bound', 'integer'],
+  ['epochs_queued_phed', 'integer'], ['max_queue_len_phed_mi', 'double precision'],
+  ['anchor_speed_mean', 'double precision'], ['anchor_speed_min', 'double precision'],
+];
+const WZ_QUEUE_HOUR_COLUMNS = WZ_QUEUE_HOUR_COLUMN_TYPES.map(([c]) => c);
+
+/** Batch insert for wz_queue_hour. Idempotent on (wz_event_id, date, hour). */
+function wzQueueHourInsertSQL({ schema = WORK_ZONE_SCHEMA, table, rows }) {
+  if (!rows.length) return null;
+  const values = rows
+    .map((r) => `(${WZ_QUEUE_HOUR_COLUMNS.map((c) => sqlLiteral(r[c])).join(', ')})`)
+    .join(',\n');
+  const selectList = WZ_QUEUE_HOUR_COLUMN_TYPES
+    .map(([c, t]) => (t === 'text' ? `v.${c}` : `v.${c}::${t}`)).join(', ');
+  const updates = WZ_QUEUE_HOUR_COLUMNS.filter((c) => !['wz_event_id', 'date', 'hour'].includes(c))
+    .map((c) => `${c} = EXCLUDED.${c}`).join(', ');
+  return `INSERT INTO ${schema}.${table} (${WZ_QUEUE_HOUR_COLUMNS.join(', ')})
+SELECT ${selectList}
+  FROM (VALUES ${values}) AS v(${WZ_QUEUE_HOUR_COLUMNS.join(', ')})
+ON CONFLICT (wz_event_id, date, hour) DO UPDATE SET ${updates};`;
+}
+
+/** metadata.columns for the wz_queue_hour source. */
+const WZ_QUEUE_HOUR_TABLE_COLUMNS = [
+  { name: 'wz_event_id', display_name: 'Work Zone ID', type: 'TEXT', desc: 'Joins wz_event / wz_queue' },
+  { name: 'date', display_name: 'Date', type: 'DATE', desc: null },
+  { name: 'hour', display_name: 'Hour', type: 'SMALLINT', desc: '0-23, clock hour of this date' },
+  { name: 'first_start', display_name: 'Zone first start', type: 'TIMESTAMP', desc: null },
+  { name: 'region_name', display_name: 'NYSDOT Region', type: 'TEXT', desc: null },
+  { name: 'is_interstate', display_name: 'Interstate', type: 'BOOLEAN', desc: null },
+  { name: 'is_significant_candidate', display_name: 'Significant Candidate', type: 'BOOLEAN', desc: null },
+  { name: 'window_source', display_name: 'Active-window source', type: 'TEXT', desc: "'2799' or 'event'" },
+  { name: 'epochs_observed', display_name: 'Epochs observed', type: 'INTEGER', desc: 'Anchor observations in this hour while active (max 12)' },
+  { name: 'epochs_anchor_below', display_name: 'Epochs anchor below threshold', type: 'INTEGER', desc: 'Before the consecutive-epoch rule' },
+  { name: 'epochs_queued', display_name: 'Epochs queued', type: 'INTEGER', desc: null },
+  { name: 'max_queue_len_mi', display_name: 'Max queue (mi)', type: 'DOUBLE PRECISION', desc: 'Upstream length' },
+  { name: 'mean_queue_len_mi', display_name: 'Mean queue when present (mi)', type: 'DOUBLE PRECISION', desc: null },
+  { name: 'queue_mile_epochs', display_name: 'Queue-mile-epochs', type: 'DOUBLE PRECISION', desc: 'Divide by 12 for queue-mile-hours' },
+  { name: 'epochs_lower_bound', display_name: 'Epochs where length is a lower bound', type: 'INTEGER', desc: null },
+  { name: 'epochs_queued_phed', display_name: 'PHED · Epochs queued', type: 'INTEGER', desc: null },
+  { name: 'max_queue_len_phed_mi', display_name: 'PHED · Max queue (mi)', type: 'DOUBLE PRECISION', desc: null },
+  { name: 'anchor_speed_mean', display_name: 'Anchor speed (mean)', type: 'DOUBLE PRECISION', desc: null },
+  { name: 'anchor_speed_min', display_name: 'Anchor speed (min)', type: 'DOUBLE PRECISION', desc: null },
+];
+
+
+// ── phase 7: crashes and M5 ─────────────────────────────────────────────────
+
+/**
+ * `clear_crash_raw` — the CLEAR extract as delivered, every column TEXT plus
+ * a point built from the derived lon/lat. This is the "file_upload" input the
+ * crashes_clear stage reads; the loader (load-clear-csv.js) creates it from
+ * the CSV exactly as the platform uploader would, and the stage never reads
+ * the CSV itself so a server-side run needs no file.
+ */
+function clearCrashRawTableDDL(schema, table, columns) {
+  if (!Array.isArray(columns) || !columns.length) throw new Error('clearCrashRawTableDDL: columns are required');
+  const cols = columns.map((c) => `    "${String(c).replace(/"/g, '')}" TEXT`).join(',\n');
+  return `
+CREATE SCHEMA IF NOT EXISTS ${schema};
+CREATE TABLE IF NOT EXISTS ${schema}.${table} (
+    ogc_fid SERIAL PRIMARY KEY,
+${cols},
+    wkb_geometry public.geometry(Point, 4326)
+);`;
+}
+
+/** After the COPY: build the points (SRID in the VALUES) and index them. */
+function clearCrashRawGeometrySQL(schema, table) {
+  return `
+UPDATE ${schema}.${table}
+   SET wkb_geometry = ST_SetSRID(ST_MakePoint(lon::double precision, lat::double precision), 4326)
+ WHERE lon ~ '^-?[0-9.]+$' AND lat ~ '^-?[0-9.]+$';
+CREATE INDEX IF NOT EXISTS ${table}_gix ON ${schema}.${table} USING gist (wkb_geometry);
+CREATE INDEX IF NOT EXISTS ${table}_date_idx ON ${schema}.${table} ("CrashDate");`;
+}
+
+/**
+ * `nys_crashes_clear` — one row per crash, typed. The KABCO letter, the
+ * severity class, the work-zone code and the five-minute epoch are derived
+ * once here (lib/crashes.js) so every consumer reads the same answer. The
+ * point carries SRID 4326 in the value and a geography column is generated
+ * for the metre-based join.
+ */
+function nysCrashesClearTableDDL(schema, table) {
+  return `
+CREATE SCHEMA IF NOT EXISTS ${schema};
+CREATE TABLE IF NOT EXISTS ${schema}.${table} (
+    ogc_fid SERIAL PRIMARY KEY,
+    crash_id TEXT UNIQUE NOT NULL,
+    case_year SMALLINT,
+    crash_date DATE,
+    crash_time TEXT,
+    crash_ts TIMESTAMP,
+    epoch SMALLINT,
+    hour SMALLINT,
+    time_known BOOLEAN,
+    time_uncertain BOOLEAN,
+    -- severity
+    severity_class TEXT,
+    severity_kabco TEXT,
+    crash_severity TEXT,
+    max_injury_severity TEXT,
+    n_fatalities INTEGER,
+    n_injuries INTEGER,
+    n_serious_injuries INTEGER,
+    n_other_injuries INTEGER,
+    n_vehicles INTEGER,
+    -- circumstances
+    collision_type TEXT,
+    crash_type TEXT,
+    light_condition TEXT,
+    roadway_characteristic TEXT,
+    road_surface TEXT,
+    weather TEXT,
+    traffic_control TEXT,
+    -- the work-zone attribution CLEAR carries (MV-104A traffic control 12/13/14), and the flagger code
+    wz_coded BOOLEAN,
+    wz_code TEXT,
+    flagger_coded BOOLEAN,
+    commercial_vehicle BOOLEAN,
+    non_reportable BOOLEAN,
+    police_dept TEXT,
+    reporting_agency TEXT,
+    -- location
+    county_name TEXT,
+    municipality TEXT,
+    on_street TEXT,
+    cross_street TEXT,
+    intersection_ind BOOLEAN,
+    distance_from_int_m DOUBLE PRECISION,
+    direction_from_int TEXT,
+    master_intersection_id TEXT,
+    reference_marker TEXT,
+    functional_class_clear SMALLINT,
+    functional_class_fhwa SMALLINT,
+    functional_class_desc TEXT,
+    fc_interstate BOOLEAN,
+    fc_urban BOOLEAN,
+    access_control TEXT,
+    divided TEXT,
+    posted_speed SMALLINT,
+    road_name TEXT,
+    maint_jurisdiction TEXT,
+    owning_jurisdiction TEXT,
+    apparent_factors TEXT,
+    dmv_insert_date DATE,
+    utm_easting DOUBLE PRECISION,
+    utm_northing DOUBLE PRECISION,
+    lon DOUBLE PRECISION,
+    lat DOUBLE PRECISION,
+    has_point BOOLEAN,
+    wkb_geometry public.geometry(Point, 4326),
+    geog geography(Point, 4326) GENERATED ALWAYS AS (wkb_geometry::geography) STORED
+);
+CREATE INDEX IF NOT EXISTS ${table}_date_idx ON ${schema}.${table} (crash_date);
+CREATE INDEX IF NOT EXISTS ${table}_wz_idx ON ${schema}.${table} (wz_coded);
+CREATE INDEX IF NOT EXISTS ${table}_gix ON ${schema}.${table} USING gist (wkb_geometry);
+CREATE INDEX IF NOT EXISTS ${table}_geog_gix ON ${schema}.${table} USING gist (geog);`;
+}
+
+const NYS_CRASHES_CLEAR_COLUMN_TYPES = [
+  ['crash_id', 'text'], ['case_year', 'smallint'], ['crash_date', 'date'], ['crash_time', 'text'], ['crash_ts', 'timestamp'],
+  ['epoch', 'smallint'], ['hour', 'smallint'], ['time_known', 'boolean'], ['time_uncertain', 'boolean'],
+  ['severity_class', 'text'], ['severity_kabco', 'text'], ['crash_severity', 'text'], ['max_injury_severity', 'text'],
+  ['n_fatalities', 'integer'], ['n_injuries', 'integer'], ['n_serious_injuries', 'integer'], ['n_other_injuries', 'integer'],
+  ['n_vehicles', 'integer'],
+  ['collision_type', 'text'], ['crash_type', 'text'], ['light_condition', 'text'], ['roadway_characteristic', 'text'],
+  ['road_surface', 'text'], ['weather', 'text'], ['traffic_control', 'text'],
+  ['wz_coded', 'boolean'], ['wz_code', 'text'], ['flagger_coded', 'boolean'], ['commercial_vehicle', 'boolean'],
+  ['non_reportable', 'boolean'], ['police_dept', 'text'], ['reporting_agency', 'text'],
+  ['county_name', 'text'], ['municipality', 'text'], ['on_street', 'text'], ['cross_street', 'text'],
+  ['intersection_ind', 'boolean'], ['distance_from_int_m', 'double precision'], ['direction_from_int', 'text'],
+  ['master_intersection_id', 'text'], ['reference_marker', 'text'],
+  ['functional_class_clear', 'smallint'], ['functional_class_fhwa', 'smallint'], ['functional_class_desc', 'text'],
+  ['fc_interstate', 'boolean'], ['fc_urban', 'boolean'], ['access_control', 'text'], ['divided', 'text'],
+  ['posted_speed', 'smallint'], ['road_name', 'text'], ['maint_jurisdiction', 'text'], ['owning_jurisdiction', 'text'],
+  ['apparent_factors', 'text'], ['dmv_insert_date', 'date'],
+  ['utm_easting', 'double precision'], ['utm_northing', 'double precision'],
+  ['lon', 'double precision'], ['lat', 'double precision'], ['has_point', 'boolean'],
+];
+const NYS_CRASHES_CLEAR_COLUMNS = NYS_CRASHES_CLEAR_COLUMN_TYPES.map(([c]) => c);
+
+/** Batch insert for nys_crashes_clear, the point built from lon/lat with the SRID in the value. */
+function nysCrashesClearInsertSQL({ schema = WORK_ZONE_SCHEMA, table, rows }) {
+  if (!rows.length) return null;
+  const values = rows
+    .map((r) => `(${NYS_CRASHES_CLEAR_COLUMNS.map((c) => sqlLiteral(r[c])).join(', ')})`)
+    .join(',\n');
+  const selectList = NYS_CRASHES_CLEAR_COLUMN_TYPES
+    .map(([c, t]) => (t === 'text' ? `v.${c}` : `v.${c}::${t}`)).join(', ');
+  const updates = NYS_CRASHES_CLEAR_COLUMNS.filter((c) => c !== 'crash_id')
+    .map((c) => `${c} = EXCLUDED.${c}`).join(', ');
+  return `INSERT INTO ${schema}.${table} (${NYS_CRASHES_CLEAR_COLUMNS.join(', ')}, wkb_geometry)
+SELECT ${selectList},
+       CASE WHEN v.lon IS NOT NULL AND v.lat IS NOT NULL
+            THEN ST_SetSRID(ST_MakePoint(v.lon::double precision, v.lat::double precision), 4326) END
+  FROM (VALUES ${values}) AS v(${NYS_CRASHES_CLEAR_COLUMNS.join(', ')})
+ON CONFLICT (crash_id) DO UPDATE SET ${updates}, wkb_geometry = EXCLUDED.wkb_geometry;`;
+}
+
+const NYS_CRASHES_CLEAR_TABLE_COLUMNS = [
+  { name: 'crash_id', display_name: 'Case Number', type: 'TEXT', desc: 'CLEAR / DMV case number' },
+  { name: 'case_year', display_name: 'Case Year', type: 'SMALLINT', desc: null },
+  { name: 'crash_date', display_name: 'Crash Date', type: 'DATE', desc: null },
+  { name: 'crash_time', display_name: 'Crash Time', type: 'TEXT', desc: 'As reported, h:mm AM/PM' },
+  { name: 'crash_ts', display_name: 'Crash Timestamp', type: 'TIMESTAMP', desc: null },
+  { name: 'epoch', display_name: 'Epoch', type: 'SMALLINT', desc: 'Five-minute period of the day, 0-287 — the grid the work-zone windows use' },
+  { name: 'hour', display_name: 'Hour', type: 'SMALLINT', desc: null },
+  { name: 'time_known', display_name: 'Time known', type: 'BOOLEAN', desc: 'FALSE where the time did not parse' },
+  { name: 'time_uncertain', display_name: 'Time uncertain', type: 'BOOLEAN', desc: 'TRUE at exactly midnight, which occurs twice as often as any other minute and is partly an unknown-time default' },
+  { name: 'severity_class', display_name: 'Severity', type: 'TEXT', desc: 'fatal | injury | pdo | unknown, from CrashSeverity' },
+  { name: 'severity_kabco', display_name: 'KABCO', type: 'TEXT', desc: 'K/A/B/C from MaxInjurySeverity; O when the crash is property damage only; U unknown' },
+  { name: 'crash_severity', display_name: 'Crash Severity (raw)', type: 'TEXT', desc: null },
+  { name: 'max_injury_severity', display_name: 'Max Injury (raw)', type: 'TEXT', desc: null },
+  { name: 'n_fatalities', display_name: 'Fatalities', type: 'INTEGER', desc: null },
+  { name: 'n_injuries', display_name: 'Injuries', type: 'INTEGER', desc: null },
+  { name: 'n_serious_injuries', display_name: 'Serious injuries', type: 'INTEGER', desc: null },
+  { name: 'n_other_injuries', display_name: 'Other injuries', type: 'INTEGER', desc: null },
+  { name: 'n_vehicles', display_name: 'Vehicles', type: 'INTEGER', desc: null },
+  { name: 'collision_type', display_name: 'Collision Type', type: 'TEXT', desc: null },
+  { name: 'crash_type', display_name: 'Crash Type', type: 'TEXT', desc: null },
+  { name: 'light_condition', display_name: 'Light', type: 'TEXT', desc: null },
+  { name: 'roadway_characteristic', display_name: 'Road Characteristic', type: 'TEXT', desc: null },
+  { name: 'road_surface', display_name: 'Road Surface', type: 'TEXT', desc: null },
+  { name: 'weather', display_name: 'Weather', type: 'TEXT', desc: null },
+  { name: 'traffic_control', display_name: 'Traffic Control', type: 'TEXT', desc: 'MV-104A traffic control device at the crash' },
+  { name: 'wz_coded', display_name: 'Work-zone coded', type: 'BOOLEAN', desc: 'TrafficControl is HIGHWAY / MAINTENANCE / UTILITY WORK AREA (codes 12/13/14) — the only work-zone attribution CLEAR carries' },
+  { name: 'wz_code', display_name: 'Work-zone code', type: 'TEXT', desc: 'highway | maintenance | utility' },
+  { name: 'flagger_coded', display_name: 'Flagger coded', type: 'BOOLEAN', desc: 'TrafficControl is OFFICER/FLAGMAN/GUARD — usually a work zone, not always' },
+  { name: 'commercial_vehicle', display_name: 'Commercial vehicle', type: 'BOOLEAN', desc: null },
+  { name: 'non_reportable', display_name: 'Non-reportable', type: 'BOOLEAN', desc: null },
+  { name: 'police_dept', display_name: 'Police Dept', type: 'TEXT', desc: null },
+  { name: 'reporting_agency', display_name: 'Reporting Agency', type: 'TEXT', desc: null },
+  { name: 'county_name', display_name: 'County', type: 'TEXT', desc: null },
+  { name: 'municipality', display_name: 'Municipality', type: 'TEXT', desc: null },
+  { name: 'on_street', display_name: 'On Street', type: 'TEXT', desc: null },
+  { name: 'cross_street', display_name: 'Cross Street', type: 'TEXT', desc: null },
+  { name: 'intersection_ind', display_name: 'At intersection', type: 'BOOLEAN', desc: null },
+  { name: 'distance_from_int_m', display_name: 'Distance from intersection (m)', type: 'DOUBLE PRECISION', desc: null },
+  { name: 'direction_from_int', display_name: 'Direction from intersection', type: 'TEXT', desc: null },
+  { name: 'master_intersection_id', display_name: 'Intersection ID', type: 'TEXT', desc: null },
+  { name: 'reference_marker', display_name: 'Reference Marker', type: 'TEXT', desc: 'NYSDOT reference marker where recorded (38% of CY2024)' },
+  { name: 'functional_class_clear', display_name: 'Functional Class (CLEAR code)', type: 'SMALLINT', desc: 'CLEAR uses its own 1-14 codes — see functional_class_fhwa' },
+  { name: 'functional_class_fhwa', display_name: 'Functional Class (FHWA)', type: 'SMALLINT', desc: 'Mapped through the CLEAR lookup table' },
+  { name: 'functional_class_desc', display_name: 'Functional Class', type: 'TEXT', desc: null },
+  { name: 'fc_interstate', display_name: 'Interstate (by class)', type: 'BOOLEAN', desc: null },
+  { name: 'fc_urban', display_name: 'Urban (by class)', type: 'BOOLEAN', desc: null },
+  { name: 'access_control', display_name: 'Access Control (raw)', type: 'TEXT', desc: null },
+  { name: 'divided', display_name: 'Divided (raw)', type: 'TEXT', desc: null },
+  { name: 'posted_speed', display_name: 'Posted Speed', type: 'SMALLINT', desc: null },
+  { name: 'road_name', display_name: 'Road Name (inventory)', type: 'TEXT', desc: null },
+  { name: 'maint_jurisdiction', display_name: 'Maintenance Jurisdiction', type: 'TEXT', desc: null },
+  { name: 'owning_jurisdiction', display_name: 'Owning Jurisdiction', type: 'TEXT', desc: null },
+  { name: 'apparent_factors', display_name: 'Apparent Contributing Factors', type: 'TEXT', desc: 'Per-vehicle driver/vehicle/environment factors; the vocabulary has no work-zone value' },
+  { name: 'dmv_insert_date', display_name: 'DMV Insert Date', type: 'DATE', desc: 'When the crash reached CLEAR — the completeness clock' },
+  { name: 'utm_easting', display_name: 'UTM Easting', type: 'DOUBLE PRECISION', desc: 'EPSG:26918' },
+  { name: 'utm_northing', display_name: 'UTM Northing', type: 'DOUBLE PRECISION', desc: null },
+  { name: 'lon', display_name: 'Longitude', type: 'DOUBLE PRECISION', desc: null },
+  { name: 'lat', display_name: 'Latitude', type: 'DOUBLE PRECISION', desc: null },
+  { name: 'has_point', display_name: 'Has point', type: 'BOOLEAN', desc: null },
+];
+
+/**
+ * `wz_crash` — one row per work zone: M5. Crashes located inside the zone
+ * during its active windows, by role (work extent vs upstream queue) and by
+ * severity, the coded/flagger counts among them, the exposure denominator
+ * from phase 2 and the rate per 100 million VMT. `rate_measured` is FALSE
+ * where the exposure is incomplete — the rate is unknown, not zero.
+ */
+function wzCrashTableDDL(schema, table) {
+  return `
+CREATE SCHEMA IF NOT EXISTS ${schema};
+CREATE TABLE IF NOT EXISTS ${schema}.${table} (
+    ogc_fid SERIAL PRIMARY KEY,
+    wz_event_id TEXT UNIQUE NOT NULL,
+    first_start TIMESTAMP,
+    last_end TIMESTAMP,
+    region_name TEXT,
+    county_name TEXT,
+    facility TEXT,
+    work_activity_class TEXT,
+    is_interstate BOOLEAN,
+    in_tma BOOLEAN,
+    is_significant_candidate BOOLEAN,
+    anchor_tmc TEXT,
+    queue_extent_available BOOLEAN,
+    buffer_m DOUBLE PRECISION,
+    active_hours DOUBLE PRECISION,
+    -- M5: crashes inside the zone while active
+    crashes_total INTEGER,
+    crashes_work_extent INTEGER,
+    crashes_queue INTEGER,
+    crashes_fatal INTEGER,
+    crashes_injury INTEGER,
+    crashes_pdo INTEGER,
+    crashes_unknown INTEGER,
+    kabco_k INTEGER,
+    kabco_a INTEGER,
+    kabco_b INTEGER,
+    kabco_c INTEGER,
+    kabco_o INTEGER,
+    n_fatalities INTEGER,
+    n_injuries INTEGER,
+    crashes_wz_coded INTEGER,
+    crashes_flagger INTEGER,
+    crashes_time_uncertain INTEGER,
+    -- located within the extent on an active day but outside the reported hours
+    crashes_off_window INTEGER,
+    -- the exposure denominator (phase 2) and the rate
+    veh_through_wz DOUBLE PRECISION,
+    vmt_through_wz DOUBLE PRECISION,
+    exposure_complete BOOLEAN,
+    rate_measured BOOLEAN,
+    crash_rate_per_100m_vmt DOUBLE PRECISION,
+    crash_rate_work_extent_per_100m_vmt DOUBLE PRECISION,
+    injury_rate_per_100m_vmt DOUBLE PRECISION,
+    crashes_per_1000_active_hours DOUBLE PRECISION,
+    wkb_geometry public.geometry(Geometry, 4326)
+);
+CREATE INDEX IF NOT EXISTS ${table}_first_start_idx ON ${schema}.${table} (first_start);
+CREATE INDEX IF NOT EXISTS ${table}_crashes_idx ON ${schema}.${table} (crashes_total);
+CREATE INDEX IF NOT EXISTS ${table}_signif_idx ON ${schema}.${table} (is_significant_candidate);
+CREATE INDEX IF NOT EXISTS ${table}_gix ON ${schema}.${table} USING gist (wkb_geometry);`;
+}
+
+const WZ_CRASH_COLUMN_TYPES = [
+  ['wz_event_id', 'text'], ['first_start', 'timestamp'], ['last_end', 'timestamp'],
+  ['region_name', 'text'], ['county_name', 'text'], ['facility', 'text'], ['work_activity_class', 'text'],
+  ['is_interstate', 'boolean'], ['in_tma', 'boolean'], ['is_significant_candidate', 'boolean'],
+  ['anchor_tmc', 'text'], ['queue_extent_available', 'boolean'], ['buffer_m', 'double precision'], ['active_hours', 'double precision'],
+  ['crashes_total', 'integer'], ['crashes_work_extent', 'integer'], ['crashes_queue', 'integer'],
+  ['crashes_fatal', 'integer'], ['crashes_injury', 'integer'], ['crashes_pdo', 'integer'], ['crashes_unknown', 'integer'],
+  ['kabco_k', 'integer'], ['kabco_a', 'integer'], ['kabco_b', 'integer'], ['kabco_c', 'integer'], ['kabco_o', 'integer'],
+  ['n_fatalities', 'integer'], ['n_injuries', 'integer'],
+  ['crashes_wz_coded', 'integer'], ['crashes_flagger', 'integer'], ['crashes_time_uncertain', 'integer'], ['crashes_off_window', 'integer'],
+  ['veh_through_wz', 'double precision'], ['vmt_through_wz', 'double precision'], ['exposure_complete', 'boolean'], ['rate_measured', 'boolean'],
+  ['crash_rate_per_100m_vmt', 'double precision'], ['crash_rate_work_extent_per_100m_vmt', 'double precision'],
+  ['injury_rate_per_100m_vmt', 'double precision'], ['crashes_per_1000_active_hours', 'double precision'],
+];
+const WZ_CRASH_COLUMNS = WZ_CRASH_COLUMN_TYPES.map(([c]) => c);
+
+/** Batch insert for wz_crash; geometry from the spine (the anchor extent), like wz_delay. */
+function wzCrashInsertSQL({ schema = WORK_ZONE_SCHEMA, table, rows, eventTable }) {
+  if (!rows.length) return null;
+  const values = rows
+    .map((r) => `(${WZ_CRASH_COLUMNS.map((c) => sqlLiteral(r[c])).join(', ')})`)
+    .join(',\n');
+  const selectList = WZ_CRASH_COLUMN_TYPES
+    .map(([c, t]) => (t === 'text' ? `v.${c}` : `v.${c}::${t}`)).join(', ');
+  const updates = WZ_CRASH_COLUMNS.filter((c) => c !== 'wz_event_id')
+    .map((c) => `${c} = EXCLUDED.${c}`).join(', ');
+  return `INSERT INTO ${schema}.${table} (${WZ_CRASH_COLUMNS.join(', ')}, wkb_geometry)
+SELECT ${selectList}, e.wkb_geometry
+  FROM (VALUES ${values}) AS v(${WZ_CRASH_COLUMNS.join(', ')})
+  LEFT JOIN ${schema}.${eventTable} e ON e.wz_event_id = v.wz_event_id
+ON CONFLICT (wz_event_id) DO UPDATE SET ${updates}, wkb_geometry = EXCLUDED.wkb_geometry;`;
+}
+
+const WZ_CRASH_TABLE_COLUMNS = [
+  { name: 'wz_event_id', display_name: 'Work Zone ID', type: 'TEXT', desc: 'Joins wz_event' },
+  { name: 'first_start', display_name: 'First Start', type: 'TIMESTAMP', desc: null },
+  { name: 'last_end', display_name: 'Last End', type: 'TIMESTAMP', desc: null },
+  { name: 'region_name', display_name: 'NYSDOT Region', type: 'TEXT', desc: null },
+  { name: 'county_name', display_name: 'County', type: 'TEXT', desc: null },
+  { name: 'facility', display_name: 'Facility', type: 'TEXT', desc: null },
+  { name: 'work_activity_class', display_name: 'Work Activity', type: 'TEXT', desc: null },
+  { name: 'is_interstate', display_name: 'Interstate', type: 'BOOLEAN', desc: null },
+  { name: 'in_tma', display_name: 'In TMA', type: 'BOOLEAN', desc: null },
+  { name: 'is_significant_candidate', display_name: 'Significant Candidate', type: 'BOOLEAN', desc: null },
+  { name: 'anchor_tmc', display_name: 'Anchor TMC', type: 'TEXT', desc: null },
+  { name: 'queue_extent_available', display_name: 'Queue extent available', type: 'BOOLEAN', desc: 'Phase 5 measured a queue extent for this zone, so crashes on the approach could be located' },
+  { name: 'buffer_m', display_name: 'Buffer (m)', type: 'DOUBLE PRECISION', desc: 'Distance from the segment centreline within which a crash counts' },
+  { name: 'active_hours', display_name: 'Active hours', type: 'DOUBLE PRECISION', desc: 'Hours in the active windows the crashes were matched against' },
+  { name: 'crashes_total', display_name: 'M5 · Crashes in zone', type: 'INTEGER', desc: 'Crashes within the buffer of the work extent or the queue extent during an active window' },
+  { name: 'crashes_work_extent', display_name: 'On the work extent', type: 'INTEGER', desc: null },
+  { name: 'crashes_queue', display_name: 'On the queue approach', type: 'INTEGER', desc: 'Within the buffer of the upstream queue segments but not of the anchor' },
+  { name: 'crashes_fatal', display_name: 'Fatal', type: 'INTEGER', desc: null },
+  { name: 'crashes_injury', display_name: 'Injury', type: 'INTEGER', desc: null },
+  { name: 'crashes_pdo', display_name: 'Property damage only', type: 'INTEGER', desc: null },
+  { name: 'crashes_unknown', display_name: 'Unknown severity', type: 'INTEGER', desc: null },
+  { name: 'kabco_k', display_name: 'K', type: 'INTEGER', desc: null },
+  { name: 'kabco_a', display_name: 'A', type: 'INTEGER', desc: null },
+  { name: 'kabco_b', display_name: 'B', type: 'INTEGER', desc: null },
+  { name: 'kabco_c', display_name: 'C', type: 'INTEGER', desc: null },
+  { name: 'kabco_o', display_name: 'O', type: 'INTEGER', desc: null },
+  { name: 'n_fatalities', display_name: 'Persons killed', type: 'INTEGER', desc: null },
+  { name: 'n_injuries', display_name: 'Persons injured', type: 'INTEGER', desc: null },
+  { name: 'crashes_wz_coded', display_name: 'Of which work-zone coded', type: 'INTEGER', desc: 'Located crashes whose police report also coded a work area — the under-coding check' },
+  { name: 'crashes_flagger', display_name: 'Of which flagger coded', type: 'INTEGER', desc: null },
+  { name: 'crashes_time_uncertain', display_name: 'Of which time uncertain', type: 'INTEGER', desc: 'Matched on a midnight timestamp' },
+  { name: 'crashes_off_window', display_name: 'Nearby, outside the hours', type: 'INTEGER', desc: 'Within the extent on an active day but outside the reported active hours — not counted in M5' },
+  { name: 'veh_through_wz', display_name: 'Vehicles through zone', type: 'DOUBLE PRECISION', desc: 'From phase 2' },
+  { name: 'vmt_through_wz', display_name: 'VMT through zone', type: 'DOUBLE PRECISION', desc: 'From phase 2' },
+  { name: 'exposure_complete', display_name: 'Exposure complete', type: 'BOOLEAN', desc: null },
+  { name: 'rate_measured', display_name: 'Rate measured', type: 'BOOLEAN', desc: 'FALSE where exposure is incomplete — the rate is unknown, not zero. Filter on this before averaging.' },
+  { name: 'crash_rate_per_100m_vmt', display_name: 'All-roles rate per 100M VMT (upper bound)', type: 'DOUBLE PRECISION', desc: 'crashes_total x 1e8 / vmt_through_wz. The numerator includes crashes on the upstream queue approach but the denominator is VMT through the WORK EXTENT only (phase 2 has no approach VMT), so this overstates; compare crash_rate_work_extent_per_100m_vmt like for like.' },
+  { name: 'crash_rate_work_extent_per_100m_vmt', display_name: 'M5 · Work-extent crash rate per 100M VMT', type: 'DOUBLE PRECISION', desc: 'PRIMARY rate: crashes within the buffer of the work extent x 1e8 / VMT through that extent while active — numerator and denominator on the same segments' },
+  { name: 'injury_rate_per_100m_vmt', display_name: 'Fatal + injury rate per 100M VMT', type: 'DOUBLE PRECISION', desc: 'All roles over work-extent VMT — the same upper-bound caveat as crash_rate_per_100m_vmt' },
+  { name: 'crashes_per_1000_active_hours', display_name: 'Crashes per 1,000 active hours', type: 'DOUBLE PRECISION', desc: 'A time-based rate that needs no volume' },
+];
+
+/**
+ * `wz_crash_match` — one row per (crash, zone): the evidence under wz_crash.
+ * Every located crash, in window or not, with the role, the distance and the
+ * gap to the nearest active window. The point is the crash's.
+ */
+function wzCrashMatchTableDDL(schema, table) {
+  return `
+CREATE SCHEMA IF NOT EXISTS ${schema};
+CREATE TABLE IF NOT EXISTS ${schema}.${table} (
+    ogc_fid SERIAL PRIMARY KEY,
+    crash_id TEXT NOT NULL,
+    wz_event_id TEXT NOT NULL,
+    first_start TIMESTAMP,
+    crash_date DATE,
+    epoch SMALLINT,
+    time_known BOOLEAN,
+    time_uncertain BOOLEAN,
+    role TEXT,
+    distance_m DOUBLE PRECISION,
+    dist_anchor_m DOUBLE PRECISION,
+    dist_queue_m DOUBLE PRECISION,
+    in_window BOOLEAN,
+    active_that_day BOOLEAN,
+    epoch_gap INTEGER,
+    window_source TEXT,
+    severity_class TEXT,
+    severity_kabco TEXT,
+    n_fatalities INTEGER,
+    n_injuries INTEGER,
+    wz_coded BOOLEAN,
+    wz_code TEXT,
+    flagger_coded BOOLEAN,
+    on_street TEXT,
+    facility TEXT,
+    region_name TEXT,
+    is_interstate BOOLEAN,
+    is_significant_candidate BOOLEAN,
+    wkb_geometry public.geometry(Point, 4326),
+    UNIQUE (crash_id, wz_event_id)
+);
+CREATE INDEX IF NOT EXISTS ${table}_event_idx ON ${schema}.${table} (wz_event_id);
+CREATE INDEX IF NOT EXISTS ${table}_start_idx ON ${schema}.${table} (first_start);
+CREATE INDEX IF NOT EXISTS ${table}_inwin_idx ON ${schema}.${table} (in_window);
+CREATE INDEX IF NOT EXISTS ${table}_gix ON ${schema}.${table} USING gist (wkb_geometry);`;
+}
+
+const WZ_CRASH_MATCH_COLUMN_TYPES = [
+  ['crash_id', 'text'], ['wz_event_id', 'text'], ['first_start', 'timestamp'], ['crash_date', 'date'], ['epoch', 'smallint'],
+  ['time_known', 'boolean'], ['time_uncertain', 'boolean'], ['role', 'text'],
+  ['distance_m', 'double precision'], ['dist_anchor_m', 'double precision'], ['dist_queue_m', 'double precision'],
+  ['in_window', 'boolean'], ['active_that_day', 'boolean'], ['epoch_gap', 'integer'], ['window_source', 'text'],
+  ['severity_class', 'text'], ['severity_kabco', 'text'], ['n_fatalities', 'integer'], ['n_injuries', 'integer'],
+  ['wz_coded', 'boolean'], ['wz_code', 'text'], ['flagger_coded', 'boolean'], ['on_street', 'text'],
+  ['facility', 'text'], ['region_name', 'text'], ['is_interstate', 'boolean'], ['is_significant_candidate', 'boolean'],
+];
+const WZ_CRASH_MATCH_COLUMNS = WZ_CRASH_MATCH_COLUMN_TYPES.map(([c]) => c);
+
+/** Batch insert for wz_crash_match; the point comes from the crash table. */
+function wzCrashMatchInsertSQL({ schema = WORK_ZONE_SCHEMA, table, rows, crashTable }) {
+  if (!rows.length) return null;
+  if (!crashTable) throw new Error('wzCrashMatchInsertSQL: crashTable is required');
+  const values = rows
+    .map((r) => `(${WZ_CRASH_MATCH_COLUMNS.map((c) => sqlLiteral(r[c])).join(', ')})`)
+    .join(',\n');
+  const selectList = WZ_CRASH_MATCH_COLUMN_TYPES
+    .map(([c, t]) => (t === 'text' ? `v.${c}` : `v.${c}::${t}`)).join(', ');
+  const updates = WZ_CRASH_MATCH_COLUMNS.filter((c) => !['crash_id', 'wz_event_id'].includes(c))
+    .map((c) => `${c} = EXCLUDED.${c}`).join(', ');
+  return `INSERT INTO ${schema}.${table} (${WZ_CRASH_MATCH_COLUMNS.join(', ')}, wkb_geometry)
+SELECT ${selectList}, c.wkb_geometry
+  FROM (VALUES ${values}) AS v(${WZ_CRASH_MATCH_COLUMNS.join(', ')})
+  LEFT JOIN ${crashTable} c ON c.crash_id = v.crash_id
+ON CONFLICT (crash_id, wz_event_id) DO UPDATE SET ${updates}, wkb_geometry = EXCLUDED.wkb_geometry;`;
+}
+
+const WZ_CRASH_MATCH_TABLE_COLUMNS = [
+  { name: 'crash_id', display_name: 'Case Number', type: 'TEXT', desc: 'Joins nys_crashes_clear' },
+  { name: 'wz_event_id', display_name: 'Work Zone ID', type: 'TEXT', desc: 'Joins wz_event / wz_crash' },
+  { name: 'first_start', display_name: 'Zone first start', type: 'TIMESTAMP', desc: null },
+  { name: 'crash_date', display_name: 'Crash Date', type: 'DATE', desc: null },
+  { name: 'epoch', display_name: 'Epoch', type: 'SMALLINT', desc: null },
+  { name: 'time_known', display_name: 'Time known', type: 'BOOLEAN', desc: null },
+  { name: 'time_uncertain', display_name: 'Time uncertain', type: 'BOOLEAN', desc: 'Midnight timestamp' },
+  { name: 'role', display_name: 'Where', type: 'TEXT', desc: 'work_extent = within the buffer of the anchor segment; queue = of the upstream queue segments only' },
+  { name: 'distance_m', display_name: 'Distance (m)', type: 'DOUBLE PRECISION', desc: 'To the nearest matched segment' },
+  { name: 'dist_anchor_m', display_name: 'Distance to work extent (m)', type: 'DOUBLE PRECISION', desc: null },
+  { name: 'dist_queue_m', display_name: 'Distance to queue extent (m)', type: 'DOUBLE PRECISION', desc: null },
+  { name: 'in_window', display_name: 'In active window', type: 'BOOLEAN', desc: 'The crash fell inside one of the zone\'s active windows — the M5 condition' },
+  { name: 'active_that_day', display_name: 'Zone active that day', type: 'BOOLEAN', desc: null },
+  { name: 'epoch_gap', display_name: 'Periods outside the window', type: 'INTEGER', desc: '0 when inside; otherwise five-minute periods to the nearest window that day' },
+  { name: 'window_source', display_name: 'Window source', type: 'TEXT', desc: null },
+  { name: 'severity_class', display_name: 'Severity', type: 'TEXT', desc: null },
+  { name: 'severity_kabco', display_name: 'KABCO', type: 'TEXT', desc: null },
+  { name: 'n_fatalities', display_name: 'Persons killed', type: 'INTEGER', desc: null },
+  { name: 'n_injuries', display_name: 'Persons injured', type: 'INTEGER', desc: null },
+  { name: 'wz_coded', display_name: 'Work-zone coded', type: 'BOOLEAN', desc: null },
+  { name: 'wz_code', display_name: 'Work-zone code', type: 'TEXT', desc: null },
+  { name: 'flagger_coded', display_name: 'Flagger coded', type: 'BOOLEAN', desc: null },
+  { name: 'on_street', display_name: 'On Street (crash report)', type: 'TEXT', desc: null },
+  { name: 'facility', display_name: 'Facility (work zone)', type: 'TEXT', desc: null },
+  { name: 'region_name', display_name: 'NYSDOT Region', type: 'TEXT', desc: null },
+  { name: 'is_interstate', display_name: 'Interstate', type: 'BOOLEAN', desc: null },
+  { name: 'is_significant_candidate', display_name: 'Significant Candidate', type: 'BOOLEAN', desc: null },
+];
+
+
+// ── phase 6: M4 fills the wz_speed differential columns in place ────────────
+
+/**
+ * Fill the approach side of the differential on wz_speed cells for one
+ * vintage. Batched through a VALUES join on (wz_event_id, hour): the anchor
+ * is single per zone, so (zone, hour) identifies the cell. The differential
+ * and the flag are derived in SQL from the row's own speed_mean, so they
+ * cannot drift from the evidence beside them. The window keeps a re-run of
+ * one month from touching another month's cells.
+ */
+function wzSpeedApproachUpdateSQL({ schema = WORK_ZONE_SCHEMA, table, rows, thresholdMph, startDate, endDate }) {
+  if (!rows.length) return null;
+  if (!table) throw new Error('wzSpeedApproachUpdateSQL: table is required');
+  const t = Number(thresholdMph);
+  if (!Number.isFinite(t) || t <= 0) throw new Error('wzSpeedApproachUpdateSQL: thresholdMph must be a positive number');
+  if (!startDate || !endDate) throw new Error('wzSpeedApproachUpdateSQL: startDate and endDate are required');
+  const values = rows
+    .map((r) => `(${sqlLiteral(r.wz_event_id)}, ${sqlLiteral(r.hour)}, ${sqlLiteral(r.approach_tmc)}, ${sqlLiteral(r.approach_speed)})`)
+    .join(',\n');
+  return `UPDATE ${schema}.${table} t
+   SET approach_tmc = v.approach_tmc,
+       approach_speed = v.approach_speed::double precision,
+       differential_approach = round((v.approach_speed::double precision - t.speed_mean)::numeric, 2),
+       exceeds_differential = CASE WHEN v.approach_speed IS NULL OR t.speed_mean IS NULL THEN NULL
+                                   ELSE (v.approach_speed::double precision - t.speed_mean) > ${t} END
+  FROM (VALUES ${values}) AS v(wz_event_id, hour, approach_tmc, approach_speed)
+ WHERE t.wz_event_id = v.wz_event_id AND t.hour = v.hour::smallint
+   AND t.first_start >= ${sqlLiteral(startDate)}::date
+   AND t.first_start < (${sqlLiteral(endDate)}::date + INTERVAL '1 day');`;
+}
+
+/**
+ * The baseline side needs no new observation: every wz_speed cell already
+ * carries its contamination-cleaned baseline median beside its observed
+ * mean. One statement fills the whole window, and clears the approach side
+ * first so a cell whose corridor has no approach cannot keep a stale value
+ * from an earlier run.
+ */
+function wzSpeedBaselineDropUpdateSQL({ schema = WORK_ZONE_SCHEMA, table, startDate, endDate }) {
+  if (!table) throw new Error('wzSpeedBaselineDropUpdateSQL: table is required');
+  if (!startDate || !endDate) throw new Error('wzSpeedBaselineDropUpdateSQL: startDate and endDate are required');
+  return `UPDATE ${schema}.${table}
+   SET differential_baseline = CASE WHEN baseline_speed IS NULL OR speed_mean IS NULL THEN NULL
+                                    ELSE round((baseline_speed - speed_mean)::numeric, 2) END,
+       approach_tmc = NULL, approach_speed = NULL, differential_approach = NULL, exceeds_differential = NULL
+ WHERE first_start >= ${sqlLiteral(startDate)}::date
+   AND first_start < (${sqlLiteral(endDate)}::date + INTERVAL '1 day');`;
+}
 
 module.exports = {
   WORK_ZONE_SCHEMA,
@@ -806,4 +1595,33 @@ module.exports = {
   WZ_SPEED_COLUMNS,
   WZ_SPEED_COLUMN_TYPES,
   WZ_SPEED_TABLE_COLUMNS,
+  wzQueueTableDDL,
+  wzQueueInsertSQL,
+  WZ_QUEUE_COLUMNS,
+  WZ_QUEUE_COLUMN_TYPES,
+  WZ_QUEUE_TABLE_COLUMNS,
+  wzQueueHourTableDDL,
+  wzQueueHourInsertSQL,
+  WZ_QUEUE_HOUR_COLUMNS,
+  WZ_QUEUE_HOUR_COLUMN_TYPES,
+  WZ_QUEUE_HOUR_TABLE_COLUMNS,
+  clearCrashRawTableDDL,
+  clearCrashRawGeometrySQL,
+  nysCrashesClearTableDDL,
+  nysCrashesClearInsertSQL,
+  NYS_CRASHES_CLEAR_COLUMNS,
+  NYS_CRASHES_CLEAR_COLUMN_TYPES,
+  NYS_CRASHES_CLEAR_TABLE_COLUMNS,
+  wzCrashTableDDL,
+  wzCrashInsertSQL,
+  WZ_CRASH_COLUMNS,
+  WZ_CRASH_COLUMN_TYPES,
+  WZ_CRASH_TABLE_COLUMNS,
+  wzCrashMatchTableDDL,
+  wzCrashMatchInsertSQL,
+  WZ_CRASH_MATCH_COLUMNS,
+  WZ_CRASH_MATCH_COLUMN_TYPES,
+  WZ_CRASH_MATCH_TABLE_COLUMNS,
+  wzSpeedApproachUpdateSQL,
+  wzSpeedBaselineDropUpdateSQL,
 };
